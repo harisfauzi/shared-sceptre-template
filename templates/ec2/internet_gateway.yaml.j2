@@ -1,0 +1,50 @@
+Description: VPC for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for internet_gateway in sceptre_user_data.internet_gateways %}
+{%- set internet_gateway_name = internet_gateway.name %}
+  {{ internet_gateway_name }}:
+    Type: AWS::EC2::InternetGateway
+    Properties: 
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url }}
+{%- if internet_gateway.tags is defined %}
+{%- for key,value in internet_gateway.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{% if internet_gateway.vpc_id is defined %}
+  {{ internet_gateway_name }}VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      InternetGatewayId:
+        Ref: {{ internet_gateway_name }}
+      VpcId: {{ internet_gateway.vpc_id }}
+{% endif %}
+{%- endfor %}
+
+Outputs:
+{% for internet_gateway in sceptre_user_data.internet_gateways %}
+{% set internet_gateway_name = internet_gateway.name %}
+  {{ internet_gateway_name }}:
+    Description: The name for {{ internet_gateway_name }}
+    Value:
+      Ref: {{ internet_gateway_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ internet_gateway_name }}"
+
+  {{ internet_gateway_name }}VPCGatewayAttachment:
+    Description: The attachment ID for {{ internet_gateway_name }}VPCGatewayAttachment
+    Value:
+      Ref: {{ internet_gateway_name }}VPCGatewayAttachment
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ internet_gateway_name }}VPCGatewayAttachment"
+
+{% endfor %}

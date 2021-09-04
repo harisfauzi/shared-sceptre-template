@@ -1,0 +1,43 @@
+Description: IAM Instance Profile(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for instance_profile in sceptre_user_data.instance_profiles %}
+{%- set instance_profile_name = instance_profile.name %}
+  {{ instance_profile_name }}:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+{%- if instance_profile.instance_profile_name is defined %}
+      InstanceProfileName: {{ instance_profile.instance_profile_name }}
+{%- endif %}
+{%- if instance_profile.path is defined %}
+      Path: {{ instance_profile.path }}
+{%- endif %}
+      Roles: 
+        - {{ instance_profile.role_name }}
+{%- endfor %}
+
+Outputs:
+
+{%- for instance_profile in sceptre_user_data.instance_profiles %}
+{% set instance_profile_name = instance_profile.name %}
+  {{ instance_profile_name }}:
+    Description: Instance Profile Name for {{ instance_profile_name }}
+    Value:
+      Ref: {{ instance_profile_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_profile_name }}"
+
+  {{ instance_profile_name }}Arn:
+    Description: The ARN for {{ instance_profile_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_profile_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_profile_name }}-Arn"
+
+{%- endfor %}

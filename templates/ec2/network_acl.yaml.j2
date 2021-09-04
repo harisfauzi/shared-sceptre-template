@@ -1,0 +1,71 @@
+Description: nacl for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for nacl in sceptre_user_data.nacls %}
+{%- set nacl_name = nacl.name %}
+  {{ nacl_name }}:
+    Type: AWS::EC2::NetworkAcl
+    Properties:
+      VpcId: {{ nacl.vpc_id }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url }}
+{%- if nacl.tags is defined %}
+{%- for key,value in nacl.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- if nacl.nacl_entries is defined %}
+{%- for nacl_entry in nacl.nacl_entries %}
+{%- set nacl_entry_name = nacl_name ~ nacl_entry.rule_number %}
+  {{ nacl_entry_name }}:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: {{ nacl_name }}
+      Protocol: {{ nacl_entry.protocol }}
+      RuleAction: {{ nacl_entry.rule_action }}
+      RuleNumber: {{ nacl_entry.rule_number }}
+{%- if nacl_entry.direction is defined %}
+      Egress: {{ 'true' if nacl_entry.direction == 'egress' else 'false' }}
+{%- endif %}
+{%- if nacl_entry.cidr_block is defined %}
+      CidrBlock: {{ nacl_entry.cidr_block }}
+{%- endif %}
+{%- if nacl_entry.ipv6_cidr_block is defined %}
+      Ipv6CidrBlock: {{ nacl_entry.ipv6_cidr_block }}
+{%- endif %}
+{%- if nacl_entry.icmp is defined %}
+      Icmp:
+{%- if nacl_entry.icmp.code is defined %}
+        Code: {{ nacl_entry.icmp.code }}
+{%- endif %}
+{%- if nacl_entry.icmp.type is defined %}
+        Type: {{ nacl_entry.icmp.type }}
+{%- endif %}
+{%- endif %}
+{%- if nacl_entry.port_range is defined %}
+      PortRange:
+        From: {{ nacl_entry.port_range.from }}
+        To: {{ nacl_entry.port_range.to }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for nacl in sceptre_user_data.nacls %}
+{% set nacl_name = nacl.name %}
+  {{ nacl_name }}:
+    Description: NetworkAcl ID for {{ nacl_name }}
+    Value:
+      Ref: {{ nacl_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nacl_name }}"
+
+{%- endfor %}

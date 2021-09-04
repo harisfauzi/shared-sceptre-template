@@ -1,0 +1,67 @@
+Description: VPN Connection(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for vpn_connection in sceptre_user_data.vpn_connections %}
+{%- set vpn_connection_name = vpn_connection.name %}
+  {{ vpn_connection_name }}:
+    Type: AWS::EC2::VPNConnection
+    Properties:
+      CustomerGatewayId: {{ vpn_connection.customer_gateway_id }}
+{%- if vpn_connection.static_routes_only is defined %}
+      StaticRoutesOnly: {{ vpn_connection.static_routes_only }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url }}
+{%- if vpn_connection.tags is defined %}
+{%- for key,value in vpn_connection.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+      Type: ipsec.1
+{%- if vpn_connection.transit_gateway_id is defined %}
+      TransitGatewayId: {{ vpn_connection.transit_gateway_id }}
+{%- endif %}
+{%- if vpn_connection.vpn_gateway_id is defined %}
+      VpnGatewayId: {{ vpn_connection.vpn_gateway_id }}
+{%- endif %}
+{%- if vpn_connection.vpn_tunnel_option_specifications is defined %}
+      VpnTunnelOptionsSpecifications:
+{%- for specification in vpn_connection.vpn_tunnel_option_specifications %}
+        -
+{%- if specification.pre_shared_key is defined %}
+          PreSharedKey: {{ specification.pre_shared_key }}
+{%- endif %}
+{%- if specification.tunnel_inside_cidr is defined %}
+          TunnelInsideCidr: {{ specification.tunnel_inside_cidr }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- if vpn_connection.connection_routes is defined %}
+{%- for route in vpn_connection.connection_routes %}
+{%- set route_name = vpn_connection_name ~ route.name %}
+  {{ route_name }}:
+    Type: AWS::EC2::VPNConnectionRoute
+    Properties: 
+      DestinationCidrBlock: {{ route.destination_cidr_block }}
+      VpnConnectionId:
+        Ref: {{ vpn_connection_name }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{% for vpn_connection in sceptre_user_data.vpn_connections %}
+{% set vpn_connection_name = vpn_connection.name %}
+  {{ vpn_connection_name }}:
+    Description: The ID of {{ vpn_connection_name }}
+    Value:
+      Ref: {{ vpn_connection_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpn_connection_name }}"
+{% endfor %}

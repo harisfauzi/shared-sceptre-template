@@ -1,0 +1,66 @@
+Description: VPC for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for vpc in sceptre_user_data.vpcs %}
+{%- set vpc_name = vpc.name %}
+  {{ vpc_name }}:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: {{ vpc.cidr_block }}
+      EnableDnsHostnames: {{ vpc.enable_dns_hostnames | default('false') }}
+      EnableDnsSupport: {{ vpc.enable_dns_hostnames | default('true') }}
+      InstanceTenancy: {{ vpc.instance_tenancy | default('default') }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url }}
+{%- if vpc.tags is defined %}
+{%- for key,value in vpc.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- if vpc.use_ipv6 %}
+  {{ vpc_name }}CidrBlock:
+    Type: AWS::EC2::VPCCidrBlock
+    Properties: 
+      VpcId:
+        Ref: {{ vpc_name }}
+      AmazonProvidedIpv6CidrBlock: true
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for vpc in sceptre_user_data.vpcs %}
+{% set vpc_name = vpc.name %}
+  {{ vpc_name }}:
+    Description: VPC ID for {{ vpc_name }}
+    Value:
+      Ref: {{ vpc_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_name }}"
+
+  {{ vpc_name }}CidrBlock:
+    Description: The IPv4 CIDR block for {{ vpc_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vpc_name }}
+        - CidrBlock
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_name }}-CidrBlock"
+
+{%- if vpc.use_ipv6 %}
+  {{ vpc_name }}Block:
+    Description: Association ID of VPCCidrBlock for {{ vpc_name }}
+    Value:
+      Ref: {{ vpc_name }}CidrBlock
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_name }}-Block"
+{%- endif %}
+{%- endfor %}

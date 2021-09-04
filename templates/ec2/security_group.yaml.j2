@@ -1,0 +1,114 @@
+Description: Security Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for security_group in sceptre_user_data.security_groups %}
+{%- set security_group_name = security_group.name %}
+  {{ security_group_name }}:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: {{ security_group.group_description }}
+{%- if security_group.group_name is defined %}
+      GroupName: {{ security_group.group_name }}
+{%- endif %}
+{%- if security_group.security_group_egress is defined %}
+      SecurityGroupEgress:
+{%- for egress in security_group.security_group_egress %}
+        - IpProtocol: {{ egress.ip_protocol }}
+{%- if egress.description is defined %}
+          Description: {{ egress.description }}
+{%- endif %}
+{%- if egress.cidr_ip is defined %}
+          CidrIp: {{ egress.cidr_ip }}
+{%- elif egress.cidr_ipv6 is defined %}
+          CidrIpv6: {{ egress.cidr_ipv6 }}
+{%- elif egress.destination_prefix_list_id is defined %}
+          DestinationPrefixListId: {{ egress.destination_prefix_list_id }}
+{%- elif egress.destination_security_group_id is defined %}
+          DestinationSecurityGroupId: {{ egress.destination_security_group_id }}
+{%- endif %}
+{%- if egress.from_port is defined %}
+          FromPort: {{ egress.from_port }}
+{%- endif %}
+{%- if egress.to_port is defined %}
+          ToPort: {{ egress.to_port }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if security_group.security_group_ingress is defined %}
+      SecurityGroupIngress:
+{%- for ingress in security_group.security_group_ingress %}
+        - IpProtocol: {{ ingress.ip_protocol }}
+{%- if ingress.description is defined %}
+          Description: {{ ingress.description }}
+{%- endif %}
+{%- if ingress.cidr_ip is defined %}
+          CidrIp: {{ ingress.cidr_ip }}
+{%- elif ingress.cidr_ipv6 is defined %}
+          CidrIpv6: {{ ingress.cidr_ipv6 }}
+{%- elif ingress.source_prefix_list_id is defined %}
+          SourcePrefixListId: {{ ingress.source_prefix_list_id }}
+{%- elif ingress.source_security_group_id is defined %}
+          SourceSecurityGroupId: {{ ingress.source_security_group_id }}
+{%- elif ingress.source_security_group_name is defined %}
+          SourceSecurityGroupName: {{ ingress.source_security_group_name }}
+{%- endif %}
+{%- if ingress.source_security_group_owner_id is defined %}
+          SourceSecurityGroupOwnerId: {{ ingress.source_security_group_owner_id }}
+{%- endif %}
+{%- if ingress.from_port is defined %}
+          FromPort: {{ ingress.from_port }}
+{%- endif %}
+{%- if ingress.to_port is defined %}
+          ToPort: {{ ingress.to_port }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if security_group.vpc_id is defined %}
+      VpcId: {{ security_group.vpc_id }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url }}
+{%- if security_group.tags is defined %}
+{%- for key,value in security_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for security_group in sceptre_user_data.security_groups %}
+{% set security_group_name = security_group.name %}
+  {{ security_group_name }}:
+    Description: SecurityGroup ID for {{ security_group_name }}
+    Value:
+      Ref: {{ security_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_group_name }}"
+
+  {{ security_group_name }}GroupId:
+    Description: SecurityGroup ID for {{ security_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ security_group_name }}
+        - GroupId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_group_name }}-GroupId"
+
+  {{ security_group_name }}VpcId:
+    Description: VPC ID for {{ security_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ security_group_name }}
+        - VpcId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_group_name }}-VpcId"
+
+{%- endfor %}

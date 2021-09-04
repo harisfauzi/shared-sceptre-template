@@ -1,0 +1,58 @@
+Description: VPN Gateway(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for vpn_gateway in sceptre_user_data.vpn_gateways %}
+{%- set vpn_gateway_name = vpn_gateway.name %}
+  {{ vpn_gateway_name }}:
+    Type: AWS::EC2::VPNGateway
+    Properties:
+{%- if vpn_gateway.amazon_side_asn is defined %}
+      AmazonSideAsn: {{ vpn_gateway.amazon_side_asn }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url }}
+{%- if vpn_gateway.tags is defined %}
+{%- for key,value in vpn_gateway.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+      Type: ipsec.1
+
+{% if vpn_gateway.vpc_id is defined %}
+  {{ vpn_gateway_name }}VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      VpnGatewayId:
+        Ref: {{ vpn_gateway_name }}
+      VpcId: {{ vpn_gateway.vpc_id }}
+{% endif %}
+
+{%- if vpn_gateway.route_table_ids is defined %}
+  {{ vpn_gateway_name }}VPNGatewayRoutePropagation:
+    Type: AWS::EC2::VPNGatewayRoutePropagation
+    DependsOn: {{ vpn_gateway_name }}VPCGatewayAttachment
+    Properties:
+      VpnGatewayId:
+        Ref: {{ vpn_gateway_name }}
+      RouteTableIds:
+{%- for route_table_id in vpn_gateway.route_table_ids %}
+        - {{ route_table_id }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{% for vpn_gateway in sceptre_user_data.vpn_gateways %}
+{% set vpn_gateway_name = vpn_gateway.name %}
+  {{ vpn_gateway_name }}:
+    Description: The ID of {{ vpn_gateway_name }}
+    Value:
+      Ref: {{ vpn_gateway_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpn_gateway_name }}"
+{% endfor %}

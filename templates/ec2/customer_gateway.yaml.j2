@@ -1,0 +1,35 @@
+Description: Customer Gateway(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for customer_gateway in sceptre_user_data.customer_gateways %}
+{%- set customer_gateway_name = customer_gateway.name %}
+  {{ customer_gateway_name }}:
+    Type: AWS::EC2::CustomerGateway
+    Properties:
+      BgpAsn: {{ customer_gateway.bgp_asn }}
+      IpAddress: {{ customer_gateway.ip_address }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url }}
+{%- if customer_gateway.tags is defined %}
+{%- for key,value in customer_gateway.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+      Type: ipsec.1
+{%- endfor %}
+
+Outputs:
+{% for customer_gateway in sceptre_user_data.customer_gateways %}
+{% set customer_gateway_name = customer_gateway.name %}
+  {{ customer_gateway_name }}:
+    Description: The ID of {{ customer_gateway_name }}
+    Value:
+      Ref: {{ customer_gateway_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ customer_gateway_name }}"
+{% endfor %}

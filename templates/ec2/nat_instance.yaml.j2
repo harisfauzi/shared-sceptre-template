@@ -1,0 +1,184 @@
+---
+Description: NAT instances for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for nat_instance in sceptre_user_data.nat_instances %}
+{%- set nat_instance_name = nat_instance.name %}
+  {{ nat_instance_name }}:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          default:
+            - cfn_hup
+            - config_enable_ip_forward
+        cfn_hup:
+          files:
+            /etc/cfn/cfn-hup.conf:
+              content:
+                Fn::Sub: |
+                  [main]
+                  stack=${AWS::StackId}
+                  region=${AWS::Region}
+                  umask=022
+                  interval=2
+              mode: "000400"
+              owner: root
+              group: root
+              encoding: plain
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content:
+                Fn::Sub: |
+                  [cfn-auto-reloader-hook]
+                  triggers=post.update
+                  path=Resources.{{ nat_instance_name }}.Metadata.AWS::CloudFormation::Init
+                  action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource {{ nat_instance_name }} --configsets default --region ${AWS::Region}
+                  runas=root
+              mode: "000400"
+              owner: root
+              group: root
+              encoding: plain
+          services:
+            cfn-hup:
+              enabled: true
+              ensureRunning: true
+              files:
+                - /etc/cfn/cfn-hup.conf
+                - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+        config_enable_ip_forward:
+          packages:
+            yum:
+              jq: []
+          files:
+            /usr/local/bin/setup_nat.sh:
+              content: |
+                #!/bin/bash
+                echo 1 > /proc/sys/net/ipv4/ip_forward
+                echo 0 > /proc/sys/net/ipv4/conf/eth0/send_redirects
+                /sbin/iptables -t nat -A POSTROUTING -o eth0 -s 0.0.0.0/0 -j MASQUERADE
+                /sbin/iptables-save > /etc/sysconfig/iptables
+                mkdir -p /etc/sysctl.d/
+                cat <<EOF > /etc/sysctl.d/nat.conf
+                net.ipv4.ip_forward = 1
+                net.ipv4.conf.eth0.send_redirects = 0
+                EOF
+              encoding: plain
+              mode: '000755'
+              owner: root
+              group: root
+          commands:
+            01_setup_nat:
+              command: /usr/local/bin/setup_nat.sh
+
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT10M
+    Properties:
+      AvailabilityZone: {{ nat_instance.availability_zone }}
+      IamInstanceProfile: {{ nat_instance.instance_profile_name }}
+      ImageId: {{ nat_instance.image_id }}
+      InstanceType: t3a.nano
+      KeyName: {{ nat_instance.ec2_key_pair }}
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: True
+          DeleteOnTermination: True
+          Description: "Primary network interface"
+          DeviceIndex: "0"
+          GroupSet: {{ nat_instance.security_group_ids }}
+          Ipv6AddressCount: 1
+          SubnetId: {{ nat_instance.subnet_id }}
+      SourceDestCheck: False
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url }}
+{%- if nat_instance.tags is defined %}
+{%- for key,value in nat_instance.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+      UserData:
+        Fn::Base64:
+          Fn::Sub: |
+            #!/bin/bash -xe
+            yum install -y aws-cfn-bootstrap
+            sudo yum install -y https://s3.${AWS::Region}.amazonaws.com/amazon-ssm-${AWS::Region}/latest/linux_amd64/amazon-ssm-agent.rpm
+            /opt/aws/bin/cfn-init \
+              --stack ${AWS::StackName} \
+              --resource {{ nat_instance_name }} \
+              --region ${AWS::Region} \
+              --configsets default \
+              --verbose
+            /opt/aws/bin/cfn-signal -e $? \
+              --stack ${AWS::StackName} \
+              --resource {{ nat_instance_name }} \
+              --region ${AWS::Region}
+
+{%- if nat_instance.default_route_tables is defined %}
+{%- for route_table in nat_instance.default_route_tables %}
+  {{ nat_instance_name }}{{ route_table.name }}:
+    Type: AWS::EC2::Route
+    Properties: 
+      RouteTableId: {{ route_table.route_table_id }}
+      DestinationCidrBlock: 0.0.0.0/0
+      InstanceId:
+        Ref: {{ nat_instance_name }}
+{%- endfor %}
+
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for nat_instance in sceptre_user_data.nat_instances %}
+{%- set nat_instance_name = nat_instance.name %}
+  {{ nat_instance_name }}:
+    Description: The Instance ID of {{ nat_instance_name }}
+    Value:
+      Ref: {{ nat_instance_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nat_instance_name }}"
+
+  {{ nat_instance_name }}AvailabilityZone:
+    Description: The Availability Zone for {{ nat_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ nat_instance_name }}
+        - AvailabilityZone
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nat_instance_name }}-AvailabilityZone"
+
+  {{ nat_instance_name }}PrivateDnsName:
+    Description: The Private DNS Name for {{ nat_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ nat_instance_name }}
+        - PrivateDnsName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nat_instance_name }}-PrivateDnsName"
+
+  {{ nat_instance_name }}PrivateIp:
+    Description: The Private IP address for {{ nat_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ nat_instance_name }}
+        - PrivateIp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nat_instance_name }}-PrivateIp"
+
+  
+  {{ nat_instance_name }}PublicIp:
+    Description: The Public IP Address for {{ nat_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ nat_instance_name }}
+        - PublicIp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nat_instance_name }}-PublicIp"
+{%- endfor %}
+

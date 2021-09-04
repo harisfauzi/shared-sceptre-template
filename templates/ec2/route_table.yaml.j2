@@ -1,0 +1,81 @@
+Description: Route table(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for route_table in sceptre_user_data.route_tables %}
+{%- set route_table_name = route_table.name %}
+  {{ route_table_name }}:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: {{ route_table.vpc_id }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url }}
+{%- if route_table.tags is defined %}
+{%- for key,value in route_table.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+
+{%- if route_table.route_entries is defined %}
+{%- for route_entry in route_table.route_entries %}  {# BEGIN {%- for route_entry in route_table.route_entries %} #}
+{%- set route_entry_name = route_table_name ~ route_entry.name %}
+  {{ route_entry_name }}:
+    Type: AWS::EC2::Route
+    Properties: 
+      RouteTableId:
+        Ref: {{ route_table_name }}
+{%- if route_entry.destination_cidr_block is defined %}
+      DestinationCidrBlock: {{ route_entry.destination_cidr_block }}
+{%- elif route_entry.destination_ipv6_cidr_block is defined %}
+      DestinationIpv6CidrBlock: {{ route_entry.destination_ipv6_cidr_block }}
+{% endif %}
+{%- if route_entry.carrier_gateway_id is defined %}
+      CarrierGatewayId: {{ route_entry.carrier_gateway_id }}
+{%- endif %}
+{%- if route_entry.egress_only_internet_gateway_id is defined %}
+      EgressOnlyInternetGatewayId: {{ route_entry.egress_only_internet_gateway_id }}
+{%- endif %}
+{%- if route_entry.gateway_id is defined %}
+      GatewayId: {{ route_entry.gateway_id }}
+{%- endif %}
+{%- if route_entry.instance_id is defined %}
+      InstanceId: {{ route_entry.instance_id }}
+{%- endif %}
+{%- if route_entry.local_gateway_id is defined %}
+      LocalGatewayId: {{ route_entry.local_gateway_id }}
+{%- endif %}
+{%- if route_entry.nat_gateway_id is defined %}
+      NatGatewayId: {{ route_entry.nat_gateway_id }}
+{%- endif %}
+{%- if route_entry.network_interface_id is defined %}
+      NetworkInterfaceId: {{ route_entry.network_interface_id }}
+{%- endif %}
+{%- if route_entry.transit_gateway_id is defined %}
+      TransitGatewayId: {{ route_entry.transit_gateway_id }}
+{%- endif %}
+{%- if route_entry.vpc_endpoint_id is defined %}
+      VpcEndpointId: {{ route_entry.vpc_endpoint_id }}
+{%- endif %}
+{%- if route_entry.vpc_peering_connection_id is defined %}
+      VpcPeeringConnectionId: {{ route_entry.vpc_peering_connection_id }}
+{%- endif %}
+
+{%- endfor %}  {# END {%- for route_entry in route_table.route_entries %} #}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+{%- for route_table in sceptre_user_data.route_tables %}
+{% set route_table_name = route_table.name %}
+  {{ route_table_name }}:
+    Description: Route Table ID for {{ route_table_name }}
+    Value:
+      Ref: {{ route_table_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_table_name }}"
+
+{%- endfor %}

@@ -1,0 +1,94 @@
+Description: VPC for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for subnet in sceptre_user_data.subnets %}
+{%- set subnet_name = subnet.name %}
+  {{ subnet_name }}:
+    Type: AWS::EC2::Subnet
+    Properties: 
+      CidrBlock: {{ subnet.cidr_block }}
+{%- if subnet.assign_ipv6_on_creation is defined %}
+      AssignIpv6AddressOnCreation: {{ subnet.assign_ipv6_on_creation }}
+{%- endif %}
+{%- if subnet.availability_zone is defined %}
+      AvailabilityZone: {{ subnet.availability_zone }}
+{%- endif %}
+{%- if subnet.ipv6_cidr_block is defined %}
+      Ipv6CidrBlock:
+        Fn::Select:
+          - {{ subnet.ipv6_cidr_block.index }}
+          - Fn::Cidr:
+              - {{ subnet.ipv6_cidr_block.cidr }}
+              - {{ subnet.ipv6_cidr_block.array_size }}
+              - {{ subnet.ipv6_cidr_block.subnet_size }}
+{%- endif %}
+{%- if subnet.map_public_ip_on_launch is defined %}
+      MapPublicIpOnLaunch: {{ subnet.map_public_ip_on_launch }}
+{%- endif %}
+{%- if subnet.outpost_arn is defined %}
+      OutpostArn: {{ subnet.outpost_arn }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url }}
+{%- if subnet.tags is defined %}
+{%- for key,value in subnet.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+      VpcId: {{ subnet.vpc_id }}
+
+{%- if subnet.network_acl_id is defined %}
+  {{ subnet_name }}SubnetNetworkAclAssociation:
+    Type: AWS::EC2::SubnetNetworkAclAssociation
+    Properties: 
+      NetworkAclId: {{ subnet.network_acl_id }}
+      SubnetId:
+        Ref: {{ subnet_name }}
+{%- endif %}
+
+{%- if subnet.route_table_id is defined %}
+  {{ subnet_name }}SubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: {{ subnet.route_table_id }}
+      SubnetId:
+        Ref: {{ subnet_name }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{% for subnet in sceptre_user_data.subnets %}
+{% set subnet_name = subnet.name %}
+  {{ subnet_name }}:
+    Description: Subnet ID for {{ subnet_name }}
+    Value:
+      Ref: {{ subnet_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ subnet_name }}"
+
+  {{ subnet_name }}AvailabilityZone:
+    Description: AvailabilityZone for {{ subnet_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ subnet_name }}
+        - AvailabilityZone
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ subnet_name }}-AvailabilityZone"
+
+  {{ subnet_name }}VpcId:
+    Description: VPC ID for {{ subnet_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ subnet_name }}
+        - VpcId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ subnet_name }}-VpcId"
+
+{% endfor %}

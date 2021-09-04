@@ -1,0 +1,71 @@
+Description: Route table(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for route in sceptre_user_data.routes %}
+{%- set route_name = route.name %}
+  {{ route_name }}:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: {{ route.vpc_id }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ route.source_repo_url }}
+{%- if route.tags is defined %}
+{%- for key,value in route.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- if route.route_entries is defined %}
+{%- for route_entry in route.route_entries %}
+{%- set route_entry_name = route_name ~ route_entry.rule_number %}
+  {{ route_entry_name }}:
+    Type: AWS::EC2::NetworkAclEntry
+    Properties:
+      NetworkAclId:
+        Ref: {{ route_name }}
+      Protocol: {{ route_entry.protocol }}
+      RuleAction: {{ route_entry.rule_action }}
+      RuleNumber: {{ route_entry.rule_number }}
+{%- if route_entry.direction is defined %}
+      Egress: {{ 'true' if route_entry.direction == 'egress' else 'false' }}
+{%- endif %}
+{%- if route_entry.cidr_block is defined %}
+      CidrBlock: {{ route_entry.cidr_block }}
+{%- endif %}
+{%- if route_entry.ipv6_cidr_block is defined %}
+      Ipv6CidrBlock: {{ route_entry.ipv6_cidr_block }}
+{%- endif %}
+{%- if route_entry.icmp is defined %}
+      Icmp:
+{%- if route_entry.icmp.code is defined %}
+        Code: {{ route_entry.icmp.code }}
+{%- endif %}
+{%- if route_entry.icmp.type is defined %}
+        Type: {{ route_entry.icmp.type }}
+{%- endif %}
+{%- endif %}
+{%- if route_entry.port_range is defined %}
+      PortRange:
+        From: {{ route_entry.port_range.from }}
+        To: {{ route_entry.port_range.to }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for route in sceptre_user_data.routes %}
+{% set route_name = route.name %}
+  {{ route_name }}:
+    Description: NetworkAcl ID for {{ route_name }}
+    Value:
+      Ref: {{ route_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_name }}"
+
+{%- endfor %}
