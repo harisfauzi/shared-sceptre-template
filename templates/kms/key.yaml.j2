@@ -1,0 +1,88 @@
+Description: KMS Key(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for key in sceptre_user_data.keys %}
+{%- set key_name = key.name %}
+  {{ key_name }}:
+    Type: AWS::KMS::Key
+    DeletionPolicy: {{ key.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ key.update_replace_policy | default('Delete') }}
+    Properties:
+      KeyPolicy:
+{{ key.key_policy | indent(width=8, first=true) }}
+{%- if key.description is defined %}
+      Description: {{ key.description }}
+{%- endif %}
+{%- if key.enabled is defined %}
+      Enabled: {{ key.enabled }}
+{%- endif %}
+{%- if key.enable_key_rotation is defined %}
+      EnableKeyRotation: {{ key.enable_key_rotation }}
+{%- endif %}
+{%- if key.key_spec is defined %}
+      KeySpec: {{ key.key_spec }}
+{%- endif %}
+{%- if key.key_usage is defined %}
+      KeyUsage: {{ key.key_usage }}
+{%- endif %}
+{%- if key.multi_region is defined %}
+      MultiRegion: {{ key.multi_region }}
+{%- endif %}
+{%- if key.pending_window_in_days is defined %}
+      PendingWindowInDays: {{ key.pending_window_in_days }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if function.tags is defined %}
+{%- for key,value in function.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- if key.alias_name is defined %}
+  {{ key_name }}Alias:
+    Type: AWS::KMS::Alias
+    DeletionPolicy: {{ key.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ key.update_replace_policy | default('Delete') }}
+    Properties:
+      AliasName: alias/{{ key.alias_name }}
+      TargetKeyId:
+        Ref: {{ key_name }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for key in sceptre_user_data.keys %}
+{% set key_name = key.name %}
+  {{ key_name }}:
+    Description: The Key ID for {{ key_name }}
+    Value:
+      Ref: {{ key_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_name }}"
+
+  {{ key_name }}Arn:
+    Description: The ARN for {{ key_name }}
+    Value:
+      Fn::GetAtt:
+      - {{ key_name }}
+      - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_name }}-Arn"
+
+{%- if key.alias_name is defined %}
+  {{ key_name }}Alias:
+    Description: The Alias for {{ key_name }}
+    Value:
+      Ref: {{ key_name }}Alias
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_name }}-Alias"
+
+{%- endif %}
+{%- endfor %}

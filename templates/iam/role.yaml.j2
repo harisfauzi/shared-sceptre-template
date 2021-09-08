@@ -32,8 +32,12 @@ Resources:
       Policies:
 {%- for policy in role.policies %}
         - PolicyName: {{ policy.policy_name }}
+{%- if policy.policy_document_json is defined %}
+          PolicyDocument: {{ policy.policy_document_json }}
+{%- else %}
           PolicyDocument:
 {{ policy.policy_document | indent(width=12, first=true) }}
+{%- endif %}
 {%- endfor %}
 {%- endif %}
 {%- if role.role_name is defined %}

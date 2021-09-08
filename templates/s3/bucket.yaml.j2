@@ -1,0 +1,558 @@
+---
+
+Description: S3 Bucket(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for bucket in sceptre_user_data.buckets %}  {# BEGIN {%- for bucket in sceptre_user_data.buckets %} #}
+{% set bucket_name = bucket.name %}
+  {{ bucket_name }}:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: {{ bucket.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ bucket.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if bucket.accelerate_configuration is defined %}  {## BEGIN {%- if bucket.accelerate_configuration is defined %} #}
+      AccelerateConfiguration:
+        AccelerationStatus: {{ bucket.accelerate_configuration.acceleration_status }}
+{%- endif %}  {## END {%- if bucket.accelerate_configuration is defined %} #}
+{%- if bucket.access_control is defined %}  {## BEGIN {%- if bucket.access_control is defined %} #}
+      AccessControl: {{ bucket.access_control }}
+{%- endif %}  {## END {%- if bucket.access_control is defined %} #}
+{%- if bucket.analytics_configurations is defined %}  {## BEGIN {%- if bucket.analytics_configurations is defined %} #}
+      AnalyticsConfigurations:
+{%- for analytics_configurations in bucket.analytics_configurations %}
+        - Id: {{ analytics_configurations.id }}
+{%- if analytics_configurations.prefix is defined %}
+          Prefix: {{ analytics_configurations.prefix }}
+{%- endif %}
+          StorageClassAnalysis:
+            DataExport:
+              Destination:
+                BucketArn: {{ analytics_configurations.storage_class_analysis.data_export.destination.bucket_arn }}
+                Format: {{ analytics_configurations.storage_class_analysis.data_export.destination.format }}  {# one of CSV | ORC | Parquet #}
+{%- if analytics_configurations.storage_class_analysis.data_export.destination.bucket_account_id is defined %}
+                BucketAccountId: {{ analytics_configurations.storage_class_analysis.data_export.destination.bucket_account_id }}
+{%- endif %}
+{%- if analytics_configurations.storage_class_analysis.data_export.destination.prefix is defined %}
+                Prefix: {{ analytics_configurations.storage_class_analysis.data_export.destination.prefix }}
+{%- endif %}
+              OutputSchemaVersion: V_1
+{%- if analytics_configurations.tag_filters is defined %}
+          TagFilters:
+{%- for key,value in analytics_configurations.tag_filters.items() %}
+            - Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}
+{%- endif %}  {# if analytics_configurations.tag_filters #}
+{%- endfor %} {# for analytics_configurations in bucket.analytics_configurations #}
+{%- endif %}  {## END {%- if bucket.analytics_configurations is defined %} #}
+{%- if bucket.bucket_encryption is defined %}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+{%- for server_side_encryption_configuration in bucket.bucket_encryption.server_side_encryption_configuration %}
+          -
+{%- if server_side_encryption_configuration.bucket_key_enabled is defined %}
+            BucketKeyEnabled: {{ server_side_encryption_configuration.bucket_key_enabled }}
+{%- endif %}
+{%- if server_side_encryption_configuration.server_side_encryption_by_default is defined %}
+            ServerSideEncryptionByDefault:
+{%- if server_side_encryption_configuration.server_side_encryption_by_default.kms_master_key_id is defined %}
+              KMSMasterKeyID: String
+{%- endif %}
+{%- if server_side_encryption_configuration.server_side_encryption_by_default.sse_algorithm is defined %}
+              SSEAlgorithm: {{ server_side_encryption_configuration.server_side_encryption_by_default.sse_algorithm }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}  {# for server_side_encryption_configuration in bucket.bucket_encryption.server_side_encryption_configuration #}
+{%- endif %}  {# if bucket.bucket_encryption is defined #}
+{%- if bucket.bucket_name is defined %}
+      BucketName: {{ bucket.bucket_name }}
+{%- endif %}
+{%- if bucket.cors_configuration is defined %}
+      CorsConfiguration:
+          CorsRules:
+{%- for corse_rule in bucket.cors_configuration.cors_rules %}
+            - AllowedMethods:
+{%- for allowed_method in corse_rule.allowed_methods %}
+                - {{ allowed_method }}
+{%- endfor %}
+              AllowedOrigins:
+{%- for allowed_origin in corse_rule.allowed_origins %}
+                - {{ allowed_origin }}
+{%- endfor %}
+{%- if corse_rule.allowed_headers is defined %}
+              AllowedHeaders:
+{%- for allowed_header in corse_rule.allowed_headers %}
+                - {{ allowed_header }}
+{%- endfor %}
+{%- endif %}
+{%- if corse_rule.exposed_headers is defined %}
+              ExposedHeaders:
+{%- for exposed_header in corse_rule.exposed_headers %}
+                - {{ exposed_header }}
+{%- endfor %}
+{%- endif %}
+{%- if corse_rule.id is defined %}
+              Id: {{ corse_rule.id }}
+{%- endif %}
+{%- if corse_rule.max_age is defined %}
+              MaxAge: {{ corse_rule.max_age }}
+{%- endif %}
+{%- endfor %}  {# for corse_rule in bucket.cors_configuration.cors_rules #}
+{%- endif %}  {# if bucket.cors_configuration is defined #}
+{%- if bucket.intelligent_tiering_configurations is defined %}
+      IntelligentTieringConfigurations:
+{%- for intelligent_tiering_configuration in bucket.intelligent_tiering_configurations %}
+        - Id: {{ intelligent_tiering_configuration.id }}
+{%- if intelligent_tiering_configuration.prefix is defined %}
+          Prefix: {{ intelligent_tiering_configuration.prefix }}
+{%- endif %}
+          Status: {{ intelligent_tiering_configuration.status }}
+{%- if intelligent_tiering_configuration.tag_filters is defined %}
+          TagFilters:
+{%- for key,value in intelligent_tiering_configuration.tag_filters.items() %}
+            - Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+          Tierings:
+{%- for tiering in intelligent_tiering_configuration.tierings %}
+            - AccessTier: {{ tiering.access_tier }}
+              Days: {{ tiering.days }}
+{%- endfor %}
+{%- endfor %}  {# for intelligent_tiering_configuration in bucket.intelligent_tiering_configurations #}
+{%- endif %}  {# if bucket.intelligent_tiering_configurations is defined #}
+{%- if bucket.inventory_configurations is defined %}
+      InventoryConfigurations:
+{%- for inventory_configuration in bucket.inventory_configurations %}
+        - Destination:
+            BucketArn: {{ inventory_configuration.destination.bucket_arn }}
+            Format: {{ inventory_configuration.destination.format }}
+{%- if inventory_configuration.destination.bucket_account_id is defined %}
+            BucketAccountId: {{ inventory_configuration.destination.bucket_account_id }}
+{%- endif %}
+{%- if inventory_configuration.destination.prefix is defined %}
+            Prefix: {{ inventory_configuration.destination.prefix }}
+{%- endif %}
+          Enabled: {{ inventory_configuration.enabled }}
+          Id: {{ inventory_configuration.id }}
+          IncludedObjectVersions: {{ inventory_configuration.included_object_versions }}
+          ScheduleFrequency: {{ inventory_configuration.schedule_frequency }}
+{%- if inventory_configuration.optional_fields is defined %}
+          OptionalFields:
+{%- for optional_field in inventory_configuration.optional_fields %}
+            - {{ optional_field }}
+{%- endfor %}
+{%- endif %}
+{%- if inventory_configuration.prefix is defined %}
+          Prefix: {{ inventory_configuration.prefix }}
+{%- endif %}
+{%- endfor %}  {# for inventory_configuration in bucket.inventory_configurations #}
+{%- endif %}  {# if bucket.inventory_configurations is defined #}
+{%- if bucket.lifecycle_configuration is defined %}
+      LifecycleConfiguration:
+          Rules:
+{%- for rule in bucket.lifecycle_configuration.rules %}
+            - Status: {{ rule.status }}
+{%- if rule.abort_incomplete_multipart_upload is defined %}
+              AbortIncompleteMultipartUpload:
+                DaysAfterInitiation: {{ rule.abort_incomplete_multipart_upload.days_after_initiation }}
+{%- endif %}
+{%- if rule.expiration_date is defined %}
+              ExpirationDate: {{ rule.expiration_date }}
+{%- endif %}
+{%- if rule.expiration_in_days is defined %}
+              ExpirationInDays: {{ rule.expiration_in_days }}
+{%- endif %}
+{%- if rule.expired_object_delete_marker is defined %}
+              ExpiredObjectDeleteMarker: {{ rule.expired_object_delete_marker }}
+{%- endif %}
+{%- if rule.id is defined %}
+              Id: {{ rule.id }}
+{%- endif %}
+{%- if rule.non_current_version_expiraration_in_days is defined %}
+              NoncurrentVersionExpirationInDays: {{ rule.non_current_version_expiraration_in_days }}
+{%- endif %}
+{%- if rule.non_current_version_transitions is defined %}
+              NoncurrentVersionTransition:
+                StorageClass: {{ rule.non_current_version_transitions.storage_class }}
+                TransitionInDays: {{ rule.non_current_version_transitions.transition_in_days }}
+{%- endif %}
+{%- if rule.non_current_version_transitionss is defined %}
+              NoncurrentVersionTransitions:
+{%- for non_current_version_transition in rule.non_current_version_transitionss %}
+                - StorageClass: {{ non_current_version_transition.storage_class }}
+                  TransitionInDays: {{ non_current_version_transition.transition_in_days }}
+{%- endfor %}
+{%- endif %}
+{%- if rule.prefix is defined %}
+              Prefix: {{ rule.prefix }}
+{%- endif %}
+{%- if rule.tag_filters is defined %}
+              TagFilters:
+{%- for key,value in rule.tag_filters.items() %}
+                - Key: {{ key }}
+                  Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if rule.transition is defined %}
+              Transition:
+                StorageClass: {{ rule.transition.storage_class }}
+{%- if rule.transition.transition_date is defined %}
+                TransitionDate: {{ rule.transition.transition_date }}
+{%- endif %}
+{%- if rule.transition.transition_in_days is defined %}
+                TransitionInDays: {{ rule.transition.transition_in_days }}
+{%- endif %}
+{%- endif %}
+{%- if rule.transitions is defined %}
+              Transitions:
+{%- for transition in rule.transitions %}
+                - StorageClass: {{ transition.storage_class }}
+{%- if transition.transition_date is defined %}
+                  TransitionDate: {{ transition.transition_date }}
+{%- endif %}
+{%- if transition.transition_in_days is defined %}
+                  TransitionInDays: {{ transition.transition_in_days }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# if rule.transitions is defined #}
+{%- endfor %}
+{%- endif %}
+{%- if bucket.logging_configuration is defined %}
+      LoggingConfiguration:
+{%- if bucket.logging_configuration.destination_bucket_name is defined %}
+        DestinationBucketName: {{ bucket.logging_configuration.destination_bucket_name }}
+{%- endif %}
+{%- if bucket.logging_configuration.log_file_prefix is defined %}
+        LogFilePrefix: {{ bucket.logging_configuration.log_file_prefix }}
+{%- endif %}
+{%- endif %}
+{%- if bucket.metrics_configuration is defined %}
+      MetricsConfigurations:
+{%- for metrics_configuration in bucket.metrics_configuration %}
+        - Id: {{ metrics_configuration.id }}
+{%- if metrics_configuration.prefix is defined %}
+          Prefix: {{ metrics_configuration.prefix }}
+{%- endif %}
+{%- if metrics_configuration.tag_filters is defined %}
+          TagFilters:
+{%- for key,value in metrics_configuration.tag_filters.items() %}
+            - Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# if bucket.metrics_configuration is defined #}
+{%- if bucket.notification_configuration is defined %}
+      NotificationConfiguration:
+{%- if bucket.notification_configuration.lambda_configurations is defined %}
+        LambdaConfigurations:
+{%- for lambda_configuration in bucket.notification_configuration.lambda_configurations %}
+          - Event: {{ lambda_configuration.event }}
+            Function: {{ lambda_configuration.function }}
+{%- if lambda_configuration.filter is defined %}
+            Filter:
+              S3Key:
+                Rules:
+{%- for rule in lambda_configuration.filter.s3_key.rules %}
+                  - Name: {{ rule.name }}
+                    Value: {{ rule.value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# if bucket.notification_configuration.lambda_configurations is defined #}
+{%- if bucket.notification_configuration.queue_configurations is defined %}
+        QueueConfigurations:
+{%- for queue_configuration in bucket.notification_configuration.queue_configurations %}
+          - Event: {{ queue_configuration.event }}
+            Queue: {{ queue_configuration.queue }}
+{%- if queue_configuration.filter is defined %}
+            Filter:
+              S3Key:
+                Rules:
+{%- for rule in queue_configuration.filter.s3_key.rules %}
+                  - Name: {{ rule.name }}
+                    Value: {{ rule.value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# if bucket.notification_configuration.queue_configurations is defined #}
+{%- if bucket.notification_configuration.topic_configurations is defined %}
+        TopicConfigurations:
+{%- for topic_configuration in bucket.notification_configuration.queue_configurations %}
+          - Event: {{ topic_configuration.event }}
+            Queue: {{ topic_configuration.queue }}
+{%- if topic_configuration.filter is defined %}
+            Filter:
+              S3Key:
+                Rules:
+{%- for rule in topic_configuration.filter.s3_key.rules %}
+                  - Name: {{ rule.name }}
+                    Value: {{ rule.value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# if bucket.notification_configuration.topic_configurations is defined #}
+{%- endif %}  {# if bucket.notification_configuration is defined #}
+{%- if bucket.object_lock_configuration is defined %}
+      ObjectLockConfiguration:
+{%- if bucket.object_lock_configuration.object_lock_enabled is defined %}
+        ObjectLockEnabled: {{ bucket.object_lock_configuration.object_lock_enabled }}
+{%- endif %}
+{%- if bucket.object_lock_configuration.rule is defined %}
+        Rule:
+          DefaultRetention:
+{%- if bucket.object_lock_configuration.rule.default_retention.days is defined %}
+            Days: {{ bucket.object_lock_configuration.rule.default_retention.days }}
+{%- endif %}
+{%- if bucket.object_lock_configuration.rule.default_retention.mode is defined %}
+            Mode: {{ bucket.object_lock_configuration.rule.default_retention.mode }}
+{%- endif %}
+{%- if bucket.object_lock_configuration.rule.default_retention.years is defined %}
+            Years: {{ bucket.object_lock_configuration.rule.default_retention.years }}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- if bucket.object_lock_enabled is defined %}
+      ObjectLockEnabled: {{ bucket.object_lock_enabled }}
+{%- endif %}
+{%- if bucket.ownership_controls is defined %}
+      OwnershipControls:
+        Rules:
+{%- for rule in bucket.ownership_controls.rules %}
+          - ObjectOwnership: {{ rule.object_ownership }}
+{%- endfor %}
+{%- endif %}
+{%- if bucket.public_access_block_configuration is defined %}
+      PublicAccessBlockConfiguration:
+{%- if bucket.public_access_block_configuration.block_public_acls is defined %}
+        BlockPublicAcls: {{ bucket.public_access_block_configuration.block_public_acls }}
+{%- endif %}
+{%- if bucket.public_access_block_configuration.block_public_policy is defined %}
+        BlockPublicPolicy: {{ bucket.public_access_block_configuration.block_public_policy }}
+{%- endif %}
+{%- if bucket.public_access_block_configuration.ignore_public_acls is defined %}
+        IgnorePublicAcls: {{ bucket.public_access_block_configuration.ignore_public_acls }}
+{%- endif %}
+{%- if bucket.public_access_block_configuration.restrict_public_buckets is defined %}
+        RestrictPublicBuckets: {{ bucket.public_access_block_configuration.restrict_public_buckets }}
+{%- endif %}
+{%- endif %}
+{%- if bucket.replication_configuration is defined %}
+      ReplicationConfiguration:
+        Role: {{ bucket.replication_configuration.role }}
+        Rules:
+{%- for rule in bucket.replication_configuration.rules %}
+          - Destination:
+              Bucket: {{ rule.destination.bucket }}
+{%- if rule.destination.AccessControlTranslation is defined %}
+              AccessControlTranslation:
+                Owner: Destination
+{%- endif %}
+{%- if rule.destination.account is defined %}
+              Account: {{ rule.destination.account }}
+{%- endif %}
+{%- if rule.destination.encryption_configuration is defined %}
+              EncryptionConfiguration:
+                ReplicaKmsKeyID: {{ rule.destination.encryption_configuration.replica_kms_key_id }}
+{%- endif %}
+{%- if rule.destination.metrics is defined %}
+              Metrics:
+                Status: {{ rule.destination.metrics.status }}
+{%- if rule.destination.metrics.event_threshold is defined %}
+                EventThreshold:
+                  Minutes: 15
+{%- endif %}
+{%- endif %}
+{%- if rule.destination.replication_time is defined %}
+              ReplicationTime:
+                Status: {{ rule.destination.replication_time.status }}
+                Time:
+                  Minutes: 15
+{%- endif %}
+{%- if rule.destination.storage_class is defined %}
+              StorageClass: {{ rule.destination.storage_class }}
+{%- endif %}
+            Status: {{ rule.status }}
+{%- if rule.delete_marker_replication is defined %}
+            DeleteMarkerReplication:
+              Status: {{ rule.delete_marker_replication.status }}
+{%- endif %}
+{%- if rule.filter is defined %}
+            Filter:
+{%- if rule.filter.and is defined %}
+              And:
+{%- if rule.filter.and.prefix is defined %}
+                Prefix: {{ rule.filter.and.prefix }}
+{%- endif %}
+{%- if rule.filter.and.tag_filters is defined %}
+                TagFilters:
+{%- for key,value in rule.filter.and.tag_filters.items() %}
+                  - Key: {{ key }}
+                    Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if rule.filter.prefix is defined %}
+              Prefix: {{ rule.filter.prefix }}
+{%- endif %}
+{%- if rule.filter.tag_filter is defined %}
+              TagFilter:
+                Key: {{ rule.filter.tag_filter.key }}
+                Value: {{ rule.filter.tag_filter.value }}
+{%- endif %}
+{%- endif %}
+{%- if rule.id is defined %}
+            Id: {{ rule.id }}
+{%- endif %}
+{%- if rule.prefix is defined %}
+            Prefix: {{ rule.prefix }}
+{%- endif %}
+{%- if rule.Priority is defined %}
+            Priority: {{ rule.Priority }}
+{%- endif %}
+{%- if rule.source_selection_criteria is defined %}
+            SourceSelectionCriteria:
+{%- if rule.source_selection_criteria.replica_modifications is defined %}
+              ReplicaModifications:
+                Status: {{ rule.source_selection_criteria.replica_modifications.status }}
+{%- endif %}
+{%- if rule.source_selection_criteria.sse_kms_encrypted_objects is defined %}
+              SseKmsEncryptedObjects:
+                Status: {{ rule.source_selection_criteria.sse_kms_encrypted_objects.status }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# if bucket.replication_configuration is defined #}
+{%- if bucket.tags is defined %}
+      Tags:
+{%- for key,value in bucket.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if bucket.versioning_configuration is defined %}
+      VersioningConfiguration:
+        Status: {{ bucket.versioning_configuration.status }}
+{%- endif %}
+{%- if bucket.website_configuration is defined %}
+      WebsiteConfiguration:
+{%- if bucket.website_configuration.error_document is defined %}
+        ErrorDocument: {{ bucket.website_configuration.error_document }}
+{%- endif %}
+{%- if bucket.website_configuration.index_document is defined %}
+        IndexDocument: {{ bucket.website_configuration.index_document }}
+{%- endif %}
+{%- if bucket.website_configuration.redirect_all_requests_to is defined %}
+        RedirectAllRequestsTo:
+          HostName: {{ bucket.website_configuration.redirect_all_requests_to.hostname }}
+{%- if bucket.website_configuration.redirect_all_requests_to.protocol is defined %}
+          Protocol: {{ bucket.website_configuration.redirect_all_requests_to.protocol }}
+{%- endif %}
+{%- endif %}
+{%- if bucket.website_configuration.routing_rules is defined %}
+        RoutingRules:
+{%- for routing_rule in bucket.website_configuration.routing_rules %}
+          - RedirectRule:
+{%- if routing_rule.redirect_rule.hostname is defined %}
+              HostName: {{ routing_rule.redirect_rule.hostname }}
+{%- endif %}
+{%- if routing_rule.redirect_rule.http_redirect_code is defined %}
+              HttpRedirectCode: {{ routing_rule.redirect_rule.http_redirect_code }}
+{%- endif %}
+{%- if routing_rule.redirect_rule.protocol is defined %}
+              Protocol: {{ routing_rule.redirect_rule.protocol }}
+{%- endif %}
+{%- if routing_rule.redirect_rule.replace_key_prefix_with is defined %}
+              ReplaceKeyPrefixWith: {{ routing_rule.redirect_rule.replace_key_prefix_with }}
+{%- endif %}
+{%- if routing_rule.redirect_rule.replace_key_with is defined %}
+              ReplaceKeyWith: {{ routing_rule.redirect_rule.replace_key_with }}
+{%- endif %}
+{%- if routing_rule.routing_rule_condition is defined %}
+            RoutingRuleCondition:
+{%- if routing_rule.routing_rule_condition.http_error_code_returned_equals is defined %}
+              HttpErrorCodeReturnedEquals: {{ routing_rule.routing_rule_condition.http_error_code_returned_equals }}
+{%- endif %}
+{%- if routing_rule.routing_rule_condition.key_prefix_equals is defined %}
+              KeyPrefixEquals: {{ routing_rule.routing_rule_condition.key_prefix_equals }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}  {# if bucket.website_configuration is defined #}
+
+{% if bucket.bucket_policy is defined %}
+  {{ bucket_name }}Policy:
+    Type: AWS::S3::BucketPolicy
+    DeletionPolicy: {{ bucket.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ bucket.update_replace_policy | default('Delete') }}
+    Properties:
+      Bucket:
+        Ref: {{ bucket_name }}
+      PolicyDocument:
+{{ bucket.bucket_policy.policy_document | indent(width=8, first=true) }}
+{%- endif %}  {# if bucket.bucket_policy is defined #}
+{%- endfor %}  {# END {%- for bucket in sceptre_user_data.buckets %} #}
+
+Outputs:
+{%- for bucket in sceptre_user_data.buckets %}
+{% set bucket_name = bucket.name %}
+
+  {{ bucket_name }}:
+    Value:
+      Ref: {{ bucket_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ bucket_name }}"
+
+  {{ bucket_name }}Arn:
+    Value:
+      Fn::GetAtt:
+        - {{ bucket_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-Arn"
+
+  {{ bucket_name }}ArnAllObjects:
+    Value:
+      Fn::Join:
+        - '/'
+        - - Fn::GetAtt:
+              - {{ bucket_name }}
+              - Arn
+          - '*'
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-ArnAllObjects"
+
+  {{ bucket_name }}DomainName:
+    Value:
+      Fn::GetAtt:
+        - {{ bucket_name }}
+        - DomainName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-DomainName"
+
+  {{ bucket_name }}DualStackDomainName:
+    Value:
+      Fn::GetAtt:
+        - {{ bucket_name }}
+        - DualStackDomainName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-DualStackDomainName"
+
+  {{ bucket_name }}RegionalDomainName:
+    Value:
+      Fn::GetAtt:
+        - {{ bucket_name }}
+        - RegionalDomainName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-RegionalDomainName"
+
+{%- endfor %}

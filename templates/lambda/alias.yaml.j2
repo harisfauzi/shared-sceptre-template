@@ -1,0 +1,42 @@
+Description: Lambda Alias(es) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for alias in sceptre_user_data.aliases %}
+{%- set alias_name = alias.name %}
+  {{ alias_name }}:
+    Type: AWS::Lambda::Alias
+    DeletionPolicy: {{ alias.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ alias.update_replace_policy | default('Delete') }}
+    Properties:
+      FunctionName: {{ alias.function_name }}
+      FunctionVersion: {{ alias.function_version }}
+      Name: {{ alias.name }}
+{%- if alias.description is defined %}
+      Description: {{ alias.description }}
+{%- endif %}
+{%- if alias.provisioned_concurrency_config is defined %}
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: {{ alias.provisioned_concurrency_config.provisioned_concurrent_executions }}
+{%- endif %}
+{%- if alias.routing_config is defined %}
+      RoutingConfig:
+        AdditionalVersionWeights:
+{%- for additional_version_weight in alias.routing_config.additional_version_weights %}
+          - FunctionVersion: {{ additional_version_weight.function_version }}
+            FunctionWeight: {{ additional_version_weight.function_weight }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for alias in sceptre_user_data.aliases %}
+{% set alias_name = alias.name %}
+  {{ alias_name }}:
+    Description: The ARN for {{ alias_name }}
+    Value:
+      Ref: {{ alias_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ alias_name }}"
+
+{%- endfor %}
