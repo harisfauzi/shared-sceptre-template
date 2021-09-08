@@ -1,0 +1,46 @@
+Description: StepFunctions Activity(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for activity in sceptre_user_data.activities %}
+{%- set activity_name = activity.name %}
+  {{ activity_name }}:
+    Type: AWS::StepFunctions::Activity
+    DeletionPolicy: {{ activity.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ activity.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ activity.name }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if activity.tags is defined %}
+{%- for key,value in activity.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for activity in sceptre_user_data.activities %}
+{% set activity_name = activity.name %}
+  {{ activity_name }}:
+    Description: The ARN for {{ activity_name }}
+    Value:
+      Ref: {{ activity_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ activity_name }}"
+
+  {{ activity_name }}Name:
+    Description: The Name for {{ activity_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ activity_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ activity_name }}-Name"
+
+{%- endfor %}

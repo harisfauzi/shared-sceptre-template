@@ -1,0 +1,95 @@
+Description: StepFunctions StateMachine(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for state_machine in sceptre_user_data.state_machines %}
+{%- set state_machine_name = state_machine.name %}
+  {{ state_machine_name }}:
+    Type: AWS::StepFunctions::StateMachine
+    DeletionPolicy: {{ state_machine.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ state_machine.update_replace_policy | default('Delete') }}
+    Properties:
+      RoleArn: {{ state_machine.role_arn }}
+{%- if state_machine.definition is defined %}
+      Definition:
+{{ state_machine.definition | indent(width=8, first=true) }}
+{%- endif %}
+{%- if state_machine.definition_s3_location is defined %}
+      DefinitionS3Location:
+        Bucket: {{ state_machine.definition_s3_location.bucket }}
+        Key: {{ state_machine.definition_s3_location.key }}
+{%- if state_machine.definition_s3_location.version is defined %}
+        Version: {{ state_machine.definition_s3_location.version }}
+{%- endif %}
+{%- endif %}
+{%- if state_machine.definition_string is defined %}
+      DefinitionString:
+{{ state_machine.definition_string | indent(width=8, first=true) }}
+{%- endif %}
+{%- if state_machine.definition_substitutions is defined %}
+      DefinitionSubstitutions:
+{%- for key, value in state_machine.definition_substitutions %}
+        {{ key }} : {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if state_machine.logging_configuration is defined %}
+      LoggingConfiguration:
+{%- if state_machine.logging_configuration.destinations is defined %}
+        Destinations:
+{%- for destination in state_machine.logging_configuration.destinations %}
+          - CloudWatchLogsLogGroup:
+              LogGroupArn: {{ destination.cloudwatch_logs_loggroup.loggroup_arn }}  {# must end with :* #}
+{%- endfor %}
+{%- endif %}
+{%- if state_machine.logging_configuration.include_execution_data is defined %}
+        IncludeExecutionData: {{ state_machine.logging_configuration.include_execution_data }}
+{%- endif %}
+{%- if state_machine.logging_configuration.level is defined %}
+        Level: {{ state_machine.logging_configuration.level }}
+{%- endif %}
+{%- endif %}
+{%- if state_machine.state_machine_name is defined %}
+      StateMachineName: {{ state_machine.state_machine_name }}
+{%- endif %}
+{%- if state_machine.state_machine_type is defined %}
+      StateMachineType: {{ state_machine.state_machine_type }}
+{%- endif %}
+{%- if state_machine.tracing_configuration is defined %}
+      TracingConfiguration:
+        Enabled: {{ state_machine.tracing_configuration.enabled }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if state_machine.tags is defined %}
+{%- for key,value in state_machine.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for state_machine in sceptre_user_data.state_machines %}
+{% set state_machine_name = state_machine.name %}
+  {{ state_machine_name }}:
+    Description: The ARN for {{ state_machine_name }}
+    Value:
+      Ref: {{ state_machine_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ state_machine_name }}"
+
+  {{ state_machine_name }}Name:
+    Description: The Name for {{ state_machine_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ state_machine_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ state_machine_name }}-Name"
+
+{%- endfor %}

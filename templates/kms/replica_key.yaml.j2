@@ -1,0 +1,57 @@
+Description: KMS ReplicaKey(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for replica_key in sceptre_user_data.replica_keys %}
+{%- set replica_key_name = replica_key.name %}
+  {{ replica_key_name }}:
+    Type: AWS::KMS::ReplicaKey
+    DeletionPolicy: {{ replica_key.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ replica_key.update_replace_policy | default('Delete') }}
+    Properties:
+      PrimaryKeyArn: {{ replica_key.primary_key_arn }}
+      KeyPolicy:
+{{ replica_key.replica_key_policy | indent(width=8, first=true) }}
+{%- if replica_key.description is defined %}
+      Description: {{ replica_key.description }}
+{%- endif %}
+{%- if replica_key.enabled is defined %}
+      Enabled: {{ replica_key.enabled }}
+{%- endif %}
+{%- if replica_key.pending_window_in_days is defined %}
+      PendingWindowInDays: {{ replica_key.pending_window_in_days }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if function.tags is defined %}
+{%- for replica_key,value in function.tags.items() %}
+        - Key: {{ replica_key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+{%- for replica_key in sceptre_user_data.replica_keys %}
+{% set replica_key_name = replica_key.name %}
+  {{ replica_key_name }}:
+    Description: The Key ID for {{ replica_key_name }}
+    Value:
+      Ref: {{ replica_key_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replica_key_name }}"
+
+  {{ replica_key_name }}Arn:
+    Description: The ARN for {{ replica_key_name }}
+    Value:
+      Fn::GetAtt:
+      - {{ replica_key_name }}
+      - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replica_key_name }}-Arn"
+
+{%- endfor %}

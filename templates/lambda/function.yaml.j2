@@ -1,0 +1,154 @@
+Description: Lambda Function(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for function in sceptre_user_data.functions %}
+{%- set function_name = function.name %}
+  {{ function_name }}:
+    Type: AWS::Lambda::Function
+    DeletionPolicy: {{ function.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ function.update_replace_policy | default('Delete') }}
+    Properties:
+      Code:
+{%- if function.code.image_uri is defined %}
+        ImageUri: {{ function.code.image_uri }}
+{%- endif %}
+{%- if function.code.s3_bucket is defined %}
+        S3Bucket: {{ function.code.s3_bucket }}
+{%- endif %}
+{%- if function.code.s3_key is defined %}
+        S3Key: {{ function.code.s3_key }}
+{%- endif %}
+{%- if function.code.s3_object_version is defined %}
+        S3ObjectVersion: {{ function.code.s3_object_version }}
+{%- endif %}
+{%- if function.code.zip_file is defined %}
+        ZipFile:
+{{ function.code.zip_file | indent(width=10, first=true) }}
+{%- endif %}
+      Role: {{ function.role }}
+{%- if function.code_signing_config_arn is defined %}
+      CodeSigningConfigArn: {{ function.code_signing_config_arn }}
+{%- endif %}
+{%- if function.dead_letter_config is defined %}
+      DeadLetterConfig:
+        TargetArn: {{ function.dead_letter_config.target_arn }}
+{%- endif %}
+{%- if function.description is defined %}
+      Description: {{ function.description }}
+{%- endif %}
+{%- if function.environment is defined %}
+      Environment:
+        Variables:
+{%- for key, value in function.environment.variables.items() %}
+          {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if function.file_system_configs is defined %}
+      FileSystemConfigs:
+{%- for file_system_config in function.file_system_configs %}
+        - Arn: {{ file_system_config.arn }}
+          LocalMountPath: {{ file_system_config.local_mounth_path }}
+{%- endfor %}
+{%- endif %}
+{%- if function.function_name is defined %}
+      FunctionName: {{ function.function_name }}
+{%- endif %}
+{%- if function.handler is defined %}
+      Handler: {{ function.handler }}
+{%- endif %}
+{%- if function.image_config is defined %}
+      ImageConfig:
+{%- if function.image_config.command is defined %}
+        Command:
+{%- for command in function.image_config.command %}
+          - {{ command }}
+{%- endfor %}
+{%- endif %}
+{%- if function.image_config.entry_point is defined %}
+        EntryPoint:
+{%- for entry_point in function.image_config.entry_point %}
+          - {{ entry_point }}
+{%- endfor %}
+{%- endif %}
+{%- if function.image_config.working_directory is defined %}
+        WorkingDirectory: {{ function.image_config.working_directory }}
+{%- endif %}
+{%- endif %}
+{%- if function.kms_key_arn is defined %}
+      KmsKeyArn: {{ function.kms_key_arn }}
+{%- endif %}
+{%- if function.layers is defined %}
+      Layers:
+{%- for layer_arn in function.layers %}
+        - {{ layer_arn }}
+{%- endfor %}
+{%- endif %}
+{%- if function.memory_size is defined %}
+      MemorySize: {{ function.memory_size }}
+{%- endif %}
+{%- if function.package_type is defined %}
+      PackageType: {{ function.package_type }}
+{%- endif %}
+{%- if function.reserved_concurrent_execution is defined %}
+      ReservedConcurrentExecutions: {{ function.reserved_concurrent_execution }}
+{%- endif %}
+{%- if function.runtime is defined %}
+      Runtime: {{ function.runtime }}
+{%- endif %}
+{%- if function.timeout is defined %}
+      Timeout: {{ function.timeout }}
+{%- endif %}
+{%- if function.tracing_config is defined %}
+      TracingConfig:
+        Mode: {{ function.tracing_config.mode }}
+{%- endif %}
+{%- if function.vpc_config is defined %}
+      VpcConfig:
+{%- if function.vpc_config.security_group_ids is defined %}
+        SecurityGroupIds:
+{%- for security_group_id in function.vpc_config.security_group_ids %}
+          - {{ security_group_id }}
+{%- endfor %}
+{%- endif %}
+{%- if function.vpc_config.subnet_ids is defined %}
+        SubnetIds:
+{%- for subnet_id in function.vpc_config.subnet_ids %}
+          - {{ subnet_id }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if function.tags is defined %}
+{%- for key,value in function.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for function in sceptre_user_data.functions %}
+{% set function_name = function.name %}
+  {{ function_name }}:
+    Description: Lambda Function Name for {{ function_name }}
+    Value:
+      Ref: {{ function_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ function_name }}"
+
+  {{ function_name }}Arn:
+    Description: The ARN for {{ function_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ function_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ function_name }}-Arn"
+
+{%- endfor %}

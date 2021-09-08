@@ -1,0 +1,119 @@
+{%- import 'macros/artifact_store.yaml.j2' as pipeline_artifactstore %}
+Description: CodePipeline Pipeline for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for pipeline in sceptre_user_data.pipelines %}  {# BEGIN {%- for pipeline in sceptre_user_data.pipelines %} #}
+{%- set pipeline_name = pipeline.name %}
+  {{ pipeline_name }}:
+    Type: AWS::CodePipeline::Pipeline
+    DeletionPolicy: {{ pipeline.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ pipeline.update_replace_policy | default('Delete') }}
+    Properties:
+      RoleArn: {{ pipeline.role_arn }}
+      Stages:
+{%- for stage in pipeline.stages %}  {## BEGIN {%- for stage in pipeline.stages %} #}
+        - Name: {{ stage.name }}
+          Actions:
+{%- for action_declaration in stage.actions %}  {### BEGIN {%- for action_declaration in stage.actions %} #}
+            - Name: {{ action_declaration.name }}
+              ActionTypeId:
+                Category: {{ action_declaration.action_type_id.category }}
+                Owner: {{ action_declaration.action_type_id.owner }}
+                Provider: {{ action_declaration.action_type_id.provider }}
+                Version: {{ action_declaration.action_type_id.version }}
+{%- if action_declaration.configuration is defined %}  {#### BEGIN {%- if action_declaration.configuration is defined %} #}
+              Configuration:
+{{ action_declaration.configuration | indent(width=16, first=true) }}
+{%- endif %}    {#### END {%- if action_declaration.configuration is defined %} #}
+{%- if action_declaration.input_artifacts is defined %}  {#### BEGIN {%- if action_declaration.input_artifacts is defined %} #}
+              InputArtifacts:
+{%- for artifact in action_declaration.input_artifacts %}  {##### BEGIN {%- for artifact in action_declaration.input_artifacts %} #}
+                - Name: {{ artifact.name }}
+{%- endfor %}  {##### END {%- for artifact in action_declaration.input_artifacts %} #}
+{%- endif %}  {#### END {%- if action_declaration.input_artifacts is defined %} #}
+{%- if action_declaration.namespace is defined %}  {#### BEGIN {%- if action_declaration.namespace is defined %} #}
+              Namespace: {{ action_declaration.namespace }}
+{%- endif %}  {#### END {%- if action_declaration.namespace is defined %} #}
+{%- if action_declaration.output_artifacts is defined %}  {#### BEGIN {%- if action_declaration.output_artifacts is defined %} #}
+              OutputArtifacts:
+{%- for artifact in action_declaration.output_artifacts %}  {##### BEGIN {%- for artifact in action_declaration.output_artifacts %} #}
+                - Name: {{ artifact.name }}
+{%- endfor %}  {##### END {%- for artifact in action_declaration.output_artifacts %} #}
+{%- endif %}  {#### END {%- if action_declaration.output_artifacts is defined %} #}
+{%- if action_declaration.region is defined %}  {#### BEGIN {%- if action_declaration.region is defined %} #}
+              Region: {{ action_declaration.region }}
+{%- endif %}  {#### END {%- if action_declaration.region is defined %} #}
+{%- if action_declaration.role_arn is defined %}  {#### BEGIN {%- if action_declaration.role_arn is defined %} #}
+              RoleArn: {{ action_declaration.role_arn }}
+{%- endif %}  {#### END {%- if action_declaration.role_arn is defined %} #}
+{%- if action_declaration.run_order is defined %}  {#### BEGIN {%- if action_declaration.run_order is defined %} #}
+              RunOrder: {{ action_declaration.run_order }}
+{%- endif %}  {#### END {%- if action_declaration.run_order is defined %} #}
+{%- endfor %}  {### END {%- for action_declaration in stage.actions %} #}
+{%- if stage.blockers is defined %}  {### BEGIN {%- if stage.blockers is defined %} #}
+          Blockers:
+{%- for blocker in stage.blockers %}  {#### BEGIN {%- for blocker in stage.blockers %} #}
+            - Name: {{ blocker.name }}
+              Type: {{ blocker.type }}
+{%- endfor %}  {##### END {%- for blocker in stage.blockers %} #}
+{%- endif %}  {### END {%- if stage.blockers is defined %} #}
+{%- endfor %}  {## END {%- for stage in pipeline.stages %} #}
+{%- if pipeline.artifact_store is defined %}  {## BEGIN {%- if pipeline.artifact_store is defined %} #}
+      ArtifactStore:
+{{ pipeline_artifactstore.prep(pipeline.artifact_store) | indent(width=8, first=true) }}
+{## {%- endif %}  END {%- if pipeline.artifact_store is defined %} #}
+{%- elif pipeline.artifact_stores is defined %}  {## BEGIN {%- if pipeline.artifact_stores is defined %} #}
+      ArtifactStores:
+{%- for artifact_store_map in pipeline.artifact_stores %}  {### BEGIN {%- for artifact_store_map in pipeline.artifact_stores %} #}
+        - ArtifactStore:
+{{ pipeline_artifactstore.prep(artifact_store_map.artifact_store) | indent(width=12, first=true) }}
+          Region: {{ artifact_store_map.region }}
+{%- endfor %}  {### END {%- for artifact_store_map in pipeline.artifact_stores %} #}
+{%- endif %}  {## END {%- if pipeline.artifact_stores is defined %} #}
+{%- if pipeline.disable_inbound_stage_transitions is defined %}  {## BEGIN {%- if pipeline.disable_inbound_stage_transitions is defined %} #}
+      DisableInboundStageTransitions:
+{%- for stage_transition in pipeline.disable_inbound_stage_transitions %}  {### BEGIN {%- for stage_transition in pipeline.disable_inbound_stage_transitions %} #}
+        - Reason: {{ stage_transition.reason }}
+          StageName: {{ stage_transition.stage_name }}
+{%- endfor %}  {### END {%- for stage_transition in pipeline.disable_inbound_stage_transitions %} #}
+{%- endif %}  {## END {%- if pipeline.disable_inbound_stage_transitions is defined %} #}
+{%- if pipeline.pipeline_name is defined %}  {## BEGIN {%- if pipeline.pipeline_name is defined %} #}
+      Name: {{ pipeline.pipeline_name }}
+{%- endif %}  {## END {%- if pipeline.pipeline_name is defined %} #}
+{%- if pipeline.restart_execution_on_update is defined %}  {## BEGIN {%- if pipeline.restart_execution_on_update is defined %} #}
+      RestartExecutionOnUpdate: {{ pipeline.restart_execution_on_update }}
+{%- endif %}  {## END {%- if pipeline.restart_execution_on_update is defined %} #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if pipeline.tags is defined %}  {## BEGIN {%- if pipeline.tags is defined %} #}
+{%- for key,value in pipeline.tags.items() %}  {### BEGIN {%- for key,value in pipeline.tags.items() %} #}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}  {### END {%- for key,value in pipeline.tags.items() %} #}
+{%- endif %}  {## END {%- if pipeline.tags is defined %} #}
+{%- endfor %}  {# END {%- for pipeline in sceptre_user_data.pipelines %} #}
+
+Outputs:
+{%- for pipeline in sceptre_user_data.pipelines %}
+{% set pipeline_name = pipeline.name %}
+  {{ pipeline_name }}:
+    Description: Pipeline name for {{ pipeline_name }}
+    Value:
+      Ref: {{ pipeline_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ pipeline_name }}"
+
+  {{ pipeline_name }}Version:
+    Description: The Version for {{ pipeline_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ pipeline_name }}
+        - Version
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ pipeline_name }}-Version"
+{%- endfor %}
