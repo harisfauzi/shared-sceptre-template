@@ -12,7 +12,7 @@ Resources:
       IpAddress: {{ customer_gateway.ip_address }}
       Tags:
         - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url }}
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if customer_gateway.tags is defined %}
 {%- for key,value in customer_gateway.tags.items() %}
         - Key: {{ key }}

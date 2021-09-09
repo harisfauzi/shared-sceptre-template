@@ -10,7 +10,7 @@ Resources:
       VpcId: {{ nacl.vpc_id }}
       Tags:
         - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url }}
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if nacl.tags is defined %}
 {%- for key,value in nacl.tags.items() %}
         - Key: {{ key }}

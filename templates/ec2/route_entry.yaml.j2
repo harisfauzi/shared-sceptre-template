@@ -10,7 +10,7 @@ Resources:
       VpcId: {{ route.vpc_id }}
       Tags:
         - Key: SourceRepoURL
-          Value: {{ route.source_repo_url }}
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if route.tags is defined %}
 {%- for key,value in route.tags.items() %}
         - Key: {{ key }}

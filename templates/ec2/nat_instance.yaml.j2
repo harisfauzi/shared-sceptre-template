@@ -91,7 +91,7 @@ Resources:
       SourceDestCheck: False
       Tags:
         - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url }}
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if nat_instance.tags is defined %}
 {%- for key,value in nat_instance.tags.items() %}
         - Key: {{ key }}

@@ -14,7 +14,7 @@ Resources:
       InstanceTenancy: {{ vpc.instance_tenancy | default('default') }}
       Tags:
         - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url }}
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if vpc.tags is defined %}
 {%- for key,value in vpc.tags.items() %}
         - Key: {{ key }}

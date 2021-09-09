@@ -69,7 +69,7 @@ Resources:
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url }}
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if security_group.tags is defined %}
 {%- for key,value in security_group.tags.items() %}
         - Key: {{ key }}

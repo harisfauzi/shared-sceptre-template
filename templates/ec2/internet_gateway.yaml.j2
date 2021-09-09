@@ -10,7 +10,7 @@ Resources:
     Properties: 
       Tags:
         - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url }}
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if internet_gateway.tags is defined %}
 {%- for key,value in internet_gateway.tags.items() %}
         - Key: {{ key }}
