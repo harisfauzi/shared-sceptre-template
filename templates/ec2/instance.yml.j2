@@ -1,0 +1,260 @@
+{% import 'macros/ec2_instance_blockdevicemapping.yml.j2' as ec2_instance_blockdevicemapping %}
+{% import 'macros/ec2_instance_networkinterface.yml.j2' as ec2_instance_networkinterface %}
+---
+Description: {{ TMPL_description }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for instance in instances %}
+{%- set instance_name = instance.name %}
+  {{ instance_name }}:
+    Type: AWS::EC2::Instance
+{%- if instance.metadata is defined %}
+    Metadata:
+{{ instance.metadata | indent(width=6,first=True) }}
+{%- endif %}
+{%- if instance.creation_policy is defined %}
+    CreationPolicy:
+      ResourceSignal:
+{%- if instance.creation_policy.resource_signal.count is defined %}
+        Count: {{ instance.creation_policy.resource_signal.count }}
+{%- endif %}
+{%- if instance.creation_policy.resource_signal.timeout is defined %}
+        Timeout: {{ instance.creation_policy.resource_signal.timeout }}
+{%- endif %}
+{%- endif %}
+    Properties:
+{%- if instance.additional_info is defined %}
+      AdditionalInfo: {{ instance.additional_info }}
+{%- endif %}
+{%- if instance.affinity is defined %}
+      Affinity: {{ instance.affinity == "host" | ternary('host', 'default') }}
+{%- endif %}
+{%- if instance.availability_zone is defined %}
+      AvailabilityZone: {{ instance.availability_zone }}
+{%- endif %}
+{%- if instance.block_device_mappings is defined %}
+{{ ec2_instance_blockdevicemapping.prep(instance.block_device_mappings) }}
+{%- endif %}
+{%- if instance.cpu_options is defined %}
+      CpuOptions:
+{%- if instance.cpu_options.core_count is defined %}
+        CoreCount: {{ instance.cpu_options.core_count | int }}
+{%- endif %}
+{%- if instance.cpu_options.threads_per_core is defined %}
+        ThreadsPerCore: {{ instance.cpu_options.threads_per_core | int }}
+{%- endif %}
+{%- endif %}
+{%- if instance.credit_specification is defined %}
+      CreditSpecification:
+        CPUCredits: {{ instance.credit_specification.CPUCredits }}
+{%- endif %}
+{%- if instance..disable_api_termination is defined %}
+      .disable_api_termination: {{ instance..disable_api_termination | bool }}
+{%- endif %}
+{%- if instance.ebs_optimized is defined %}
+      EbsOptimized: {{ instance.ebs_optimized | bool }}
+{%- endif %}
+{%- if instance.elastic_gpu_specifications is defined %}
+      ElasticGpuSpecifications:
+{%- for specification in instance.elastic_gpu_specifications %}
+        - Type: {{ specification.Type }}
+{%- endfor %}
+{%- endif %}
+{%- if instance.elastic_inference_accelerators is defined %}
+      ElasticInferenceAccelerators:
+{%- for accelerator in instance.elastic_inference_accelerators %}
+        - Count: {{ accelerator.count | int }}
+          Type: {{ accelerator.Type }}
+{%- endfor %}
+{%- endif %}
+{%- if instance.hibernation_options is defined %}
+      HibernationOptions:
+        Configured: {{ instance.hibernation_options.Configured | bool }}
+{%- endif %}
+{%- if instance.host_id is defined %}
+      HostId: {{ instance.host_id }}
+{%- endif %}
+{%- if instance.host_resource_group_arn is defined %}
+      HostResourceGroupArn: {{ instance.host_resource_group_arn }}
+{%- endif %}
+{%- if instance.iam_instance_profile is defined %}
+      IamInstanceProfile: {{ instance.iam_instance_profile }}
+{%- endif %}
+{%- if instance.image_id is defined %}
+      ImageId: {{ instance.image_id }}
+{%- endif %}
+{%- if instance.instance_initiated_shutdown_behavior is defined %}
+      InstanceInitiatedShutdownBehavior: {{ instance.instance_initiated_shutdown_behavior }}
+{%- endif %}
+{%- if instance.instance_type is defined %}
+      InstanceType: {{ instance.instance_type }}
+{%- endif %}
+{%- if instance.ipv6_address_coutn is defined %}
+      Ipv6AddressCount: {{ instance.ipv6_address_coutn | int }}
+{%- endif %}
+{%- if instance.ipv6_addresses is defined %}
+      Ipv6Addresses:
+{%- for address in instance.ipv6_addresses %}
+        - Ipv6Address: {{ address.Ipv6Address }}
+{%- endfor %}
+{%- endif %}
+{%- if instance.kernel_id is defined %}
+      KernelId: {{ instance.kernel_id }}
+{%- endif %}
+{%- if instance.key_name is defined %}
+      KeyName: {{ instance.key_name }}
+{%- endif %}
+{%- if instance.launch_template is defined %}
+      LaunchTemplate: 
+        Version: String
+{%- if instance.launch_template.launch_template_id is defined %}
+        LaunchTemplateId: {{ instance.launch_template.launch_template_id }}
+{%- elif instance.launch_template.launch_templateName is defined %}
+        LaunchTemplateName: {{ instance.launch_template.launch_templateName }}
+{%- endif %}
+{%- endif %}
+{%- if instance.license_specifications is defined %}
+      LicenseSpecifications:
+{%- for specification in instance.license_specifications %}
+        - LicenseConfigurationArn: {{ specification.license_configuration_arn }}
+{%- endfor %}
+{%- endif %}
+{%- if instance.monitoring is defined %}
+      Monitoring: {{ instance.monitoring | bool }}
+{%- endif %}
+{%- if instance.network_interfaces is defined %}
+{{ ec2_instance_networkinterface.prep(instance.network_interfaces) }}
+{%- endif %}
+{%- if instance.placement_group_name is defined %}
+      PlacementGroupName: {{ instance.placement_group_name }}
+{%- endif %}
+{%- if instance.private_ip_address is defined %}
+      PrivateIpAddress: {{ instance.private_ip_address }}
+{%- endif %}
+{%- if instance.ram_disk_id is defined %}
+      RamdiskId: {{ instance.ram_disk_id }}
+{%- endif %}
+{%- if instance.security_group_ids is defined %}
+      SecurityGroupIds:
+{%- for item in instance.security_group_ids %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if instance.security_groups is defined %}
+      SecurityGroups:
+{%- for item in instance.security_groups %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if instance.source_dest_check is defined %}
+      SourceDestCheck: {{ instance.source_dest_check | bool }}
+{%- endif %}
+{%- if instance.ssm_associations is defined %}
+      SsmAssociations:
+{%- for association in instance.ssm_associations %}
+        - DocumentName: {{ association.document_name }}
+{%- if association.association_parameters is defined %}
+          AssociationParameters:
+{%- for parameter in association.association_parameters %}
+            - 
+              Key: {{ parameter.Key }}
+              Value:
+{%- for paramvalue in parameter.Value %}
+                - {{ paramvalue }}
+{%- endfor %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if instance.subnet_id is defined %}
+      SubnetId: {{ instance.subnet_id }}
+{%- endif %}
+{%- if instance.tags is defined %}
+      Tags:
+{%- for key,value in instance.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if instance.tenancy is defined %}
+      Tenancy: {{ instance.tenancy }}
+{%- endif %}
+{%- if instance.user_data is defined %}
+      UserData:
+{{ instance.user_data | indent(width=8,first=True) }}
+{%- endif %}
+{%- if instance.volumes is defined %}
+      Volumes:
+{%- for volume in instance.volumes %}
+        - Device: {{ volume.device }}
+          VolumeId: {{ volume.volume_id }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+{%- for instance in instances %}
+{%- set instance_name = instance.name %}
+  {{ instance_name }}:
+{%- if instance.description is defined %}
+    Description: {{ instance.description }}
+{%- else %}
+    Description: The instance ID of {{ instance_name }}
+{%- endif %}
+    Value:
+      Ref: {{ instance_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}"
+
+  {{ instance_name }}AvailabilityZone:
+    Description: The Availability Zone for {{ instance_name }}
+    Value:
+      Fn::GetAtt:
+      - {{ instance_name }}
+      - AvailabilityZone
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-AvailabilityZone"
+
+  {{ instance_name }}PrivateDnsName:
+    Description: The Private DNS Name for {{ instance_name }}
+    Value:
+      Fn::GetAtt:
+      - {{ instance_name }}
+      - PrivateDnsName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-PrivateDnsName"
+
+  {{ instance_name }}PrivateIp:
+    Description: The Private IP address for {{ instance_name }}
+    Value:
+      Fn::GetAtt:
+      - {{ instance_name }}
+      - PrivateIp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-PrivateIp"
+
+{# {%- if False %}
+  {{ instance_name }}PublicDnsName:
+    Description: The Public DNS Name for {{ instance_name }}
+    Value:
+      Fn::GetAtt: ["{{ instance_name }}", "PublicDnsName"]
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}PublicDnsName"
+
+  {{ instance_name }}PublicIp:
+    Description: The Public IP Address for {{ instance_name }}
+    Value:
+      Fn::GetAtt: ["{{ instance_name }}", "PublicIp"]
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}PublicIp"
+{%- endif %} #}
+
+{%- endfor %}
