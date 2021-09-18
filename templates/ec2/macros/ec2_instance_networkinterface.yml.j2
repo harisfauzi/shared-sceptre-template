@@ -3,10 +3,10 @@
 {% for networkinterface in network_interfaces %}
         - 
 {% if networkinterface.associate_public_ip_address is defined %}
-          AssociatePublicIpAddress: {{ networkinterface.associate_public_ip_address | bool }}
+          AssociatePublicIpAddress: {{ networkinterface.associate_public_ip_address }}
 {% endif %}
 {% if networkinterface.delete_on_termination is defined %}
-          DeleteOnTermination: {{ networkinterface.delete_on_termination | bool }}
+          DeleteOnTermination: {{ networkinterface.delete_on_termination }}
 {% endif %}
 {% if networkinterface.description is defined %}
           Description: {{ networkinterface.description }}
@@ -21,7 +21,7 @@
 {% endfor %}
 {% endif %}
 {% if networkinterface.ipv6_address_count is defined %}
-          Ipv6AddressCount: {{ networkinterface.ipv6_address_count | int }}
+          Ipv6AddressCount: {{ networkinterface.ipv6_address_count }}
 {% endif %}
 {% if networkinterface.ipv6_addresses is defined %}
           Ipv6Addresses:
@@ -38,12 +38,12 @@
 {% if networkinterface.private_ip_addresses is defined %}
           PrivateIpAddresses:
 {% for specification in networkinterface.private_ip_addresses %}
-            - Primary: {{ specification.primary | bool }}
+            - Primary: {{ specification.primary }}
               PrivateIpAddress: {{ specification.private_ip_address }}
 {% endfor %}
 {% endif %}
 {% if networkinterface.secondary_private_ip_address_count is defined %}
-          SecondaryPrivateIpAddressCount: {{ networkinterface.secondary_private_ip_address_count | int }}
+          SecondaryPrivateIpAddressCount: {{ networkinterface.secondary_private_ip_address_count }}
 {% endif %}
 {% if networkinterface.subnet_id is defined %}
           SubnetId: {{ networkinterface.subnet_id }}

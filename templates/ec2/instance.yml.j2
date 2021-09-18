@@ -1,11 +1,11 @@
 {% import 'macros/ec2_instance_blockdevicemapping.yml.j2' as ec2_instance_blockdevicemapping %}
 {% import 'macros/ec2_instance_networkinterface.yml.j2' as ec2_instance_networkinterface %}
 ---
-Description: {{ TMPL_description }}
+Description: EC2 Instances for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-{%- for instance in instances %}
+{%- for instance in sceptre_user_data.instances %}
 {%- set instance_name = instance.name %}
   {{ instance_name }}:
     Type: AWS::EC2::Instance
@@ -23,12 +23,14 @@ Resources:
         Timeout: {{ instance.creation_policy.resource_signal.timeout }}
 {%- endif %}
 {%- endif %}
+    DeletionPolicy: {{ instance.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ instance.deletion_policy | default('Delete') }}
     Properties:
 {%- if instance.additional_info is defined %}
       AdditionalInfo: {{ instance.additional_info }}
 {%- endif %}
 {%- if instance.affinity is defined %}
-      Affinity: {{ instance.affinity == "host" | ternary('host', 'default') }}
+      Affinity: {{ instance.affinity }}
 {%- endif %}
 {%- if instance.availability_zone is defined %}
       AvailabilityZone: {{ instance.availability_zone }}
@@ -39,21 +41,21 @@ Resources:
 {%- if instance.cpu_options is defined %}
       CpuOptions:
 {%- if instance.cpu_options.core_count is defined %}
-        CoreCount: {{ instance.cpu_options.core_count | int }}
+        CoreCount: {{ instance.cpu_options.core_count }}
 {%- endif %}
 {%- if instance.cpu_options.threads_per_core is defined %}
-        ThreadsPerCore: {{ instance.cpu_options.threads_per_core | int }}
+        ThreadsPerCore: {{ instance.cpu_options.threads_per_core }}
 {%- endif %}
 {%- endif %}
 {%- if instance.credit_specification is defined %}
       CreditSpecification:
         CPUCredits: {{ instance.credit_specification.CPUCredits }}
 {%- endif %}
-{%- if instance..disable_api_termination is defined %}
-      .disable_api_termination: {{ instance..disable_api_termination | bool }}
+{%- if instance.disable_api_termination is defined %}
+      DisableApiTermination: {{ instance.disable_api_termination }}
 {%- endif %}
 {%- if instance.ebs_optimized is defined %}
-      EbsOptimized: {{ instance.ebs_optimized | bool }}
+      EbsOptimized: {{ instance.ebs_optimized }}
 {%- endif %}
 {%- if instance.elastic_gpu_specifications is defined %}
       ElasticGpuSpecifications:
@@ -64,13 +66,13 @@ Resources:
 {%- if instance.elastic_inference_accelerators is defined %}
       ElasticInferenceAccelerators:
 {%- for accelerator in instance.elastic_inference_accelerators %}
-        - Count: {{ accelerator.count | int }}
+        - Count: {{ accelerator.count }}
           Type: {{ accelerator.Type }}
 {%- endfor %}
 {%- endif %}
 {%- if instance.hibernation_options is defined %}
       HibernationOptions:
-        Configured: {{ instance.hibernation_options.Configured | bool }}
+        Configured: {{ instance.hibernation_options.Configured }}
 {%- endif %}
 {%- if instance.host_id is defined %}
       HostId: {{ instance.host_id }}
@@ -82,7 +84,7 @@ Resources:
       IamInstanceProfile: {{ instance.iam_instance_profile }}
 {%- endif %}
 {%- if instance.image_id is defined %}
-      ImageId: {{ instance.image_id }}
+      ImageId: {{ instance.image_id | trim }}
 {%- endif %}
 {%- if instance.instance_initiated_shutdown_behavior is defined %}
       InstanceInitiatedShutdownBehavior: {{ instance.instance_initiated_shutdown_behavior }}
@@ -91,7 +93,7 @@ Resources:
       InstanceType: {{ instance.instance_type }}
 {%- endif %}
 {%- if instance.ipv6_address_coutn is defined %}
-      Ipv6AddressCount: {{ instance.ipv6_address_coutn | int }}
+      Ipv6AddressCount: {{ instance.ipv6_address_coutn }}
 {%- endif %}
 {%- if instance.ipv6_addresses is defined %}
       Ipv6Addresses:
@@ -121,7 +123,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if instance.monitoring is defined %}
-      Monitoring: {{ instance.monitoring | bool }}
+      Monitoring: {{ instance.monitoring }}
 {%- endif %}
 {%- if instance.network_interfaces is defined %}
 {{ ec2_instance_networkinterface.prep(instance.network_interfaces) }}
@@ -148,7 +150,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if instance.source_dest_check is defined %}
-      SourceDestCheck: {{ instance.source_dest_check | bool }}
+      SourceDestCheck: {{ instance.source_dest_check }}
 {%- endif %}
 {%- if instance.ssm_associations is defined %}
       SsmAssociations:
@@ -195,7 +197,7 @@ Resources:
 {%- endfor %}
 
 Outputs:
-{%- for instance in instances %}
+{%- for instance in sceptre_user_data.instances %}
 {%- set instance_name = instance.name %}
   {{ instance_name }}:
 {%- if instance.description is defined %}
