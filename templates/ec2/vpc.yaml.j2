@@ -55,6 +55,18 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ vpc_name }}-CidrBlock"
 
 {%- if vpc.use_ipv6 %}
+  {{ vpc_name }}CidrBlockIPv6:
+    Description: The IPv6 CIDR block for {{ vpc_name }}
+    Value:
+      Fn::Select:
+        - 0
+        - Fn::GetAtt:
+          - {{ vpc_name }}
+          - Ipv6CidrBlocks
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_name }}-CidrBlockIPv6"
+
   {{ vpc_name }}Block:
     Description: Association ID of VPCCidrBlock for {{ vpc_name }}
     Value:

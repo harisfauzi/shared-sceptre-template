@@ -24,8 +24,7 @@ Resources:
       Type: ipsec.1
 {%- if vpn_connection.transit_gateway_id is defined %}
       TransitGatewayId: {{ vpn_connection.transit_gateway_id }}
-{%- endif %}
-{%- if vpn_connection.vpn_gateway_id is defined %}
+{%- elif vpn_connection.vpn_gateway_id is defined %}
       VpnGatewayId: {{ vpn_connection.vpn_gateway_id }}
 {%- endif %}
 {%- if vpn_connection.vpn_tunnel_option_specifications is defined %}

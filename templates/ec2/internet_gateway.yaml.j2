@@ -1,4 +1,4 @@
-Description: VPC for {{ sceptre_user_data.project_code }}
+Description: Internet Gateway(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -18,19 +18,19 @@ Resources:
 {%- endfor %}
 {%- endif %}
 
-{% if internet_gateway.vpc_id is defined %}
+{%- if internet_gateway.vpc_id is defined %}
   {{ internet_gateway_name }}VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties: 
       InternetGatewayId:
         Ref: {{ internet_gateway_name }}
       VpcId: {{ internet_gateway.vpc_id }}
-{% endif %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-{% for internet_gateway in sceptre_user_data.internet_gateways %}
-{% set internet_gateway_name = internet_gateway.name %}
+{%- for internet_gateway in sceptre_user_data.internet_gateways %}
+{%- set internet_gateway_name = internet_gateway.name %}
   {{ internet_gateway_name }}:
     Description: The name for {{ internet_gateway_name }}
     Value:
@@ -47,4 +47,4 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ internet_gateway_name }}VPCGatewayAttachment"
 
-{% endfor %}
+{%- endfor %}
