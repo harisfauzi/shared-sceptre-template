@@ -77,7 +77,7 @@ Resources:
     Properties:
       AvailabilityZone: {{ nat_instance.availability_zone }}
       IamInstanceProfile: {{ nat_instance.instance_profile_name }}
-      ImageId: {{ nat_instance.image_id }}
+      ImageId: {{ nat_instance.image_id | trim }}
       InstanceType: t3a.nano
       KeyName: {{ nat_instance.ec2_key_pair }}
       NetworkInterfaces:

@@ -16,6 +16,7 @@ Resources:
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
+{%- endif %}
 
 {%- if route_table.route_entries is defined %}
 {%- for route_entry in route_table.route_entries %}  {# BEGIN {%- for route_entry in route_table.route_entries %} #}
@@ -62,7 +63,6 @@ Resources:
 {%- endif %}
 
 {%- endfor %}  {# END {%- for route_entry in route_table.route_entries %} #}
-{%- endif %}
 {%- endif %}
 
 {%- endfor %}

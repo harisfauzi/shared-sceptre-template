@@ -1,4 +1,4 @@
-Description: VPC for {{ sceptre_user_data.project_code }}
+Description: Subnet(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -20,7 +20,7 @@ Resources:
         Fn::Select:
           - {{ subnet.ipv6_cidr_block.index }}
           - Fn::Cidr:
-              - {{ subnet.ipv6_cidr_block.cidr }}
+              - {{ subnet.ipv6_cidr_block.cidr | trim }}
               - {{ subnet.ipv6_cidr_block.array_size }}
               - {{ subnet.ipv6_cidr_block.subnet_size }}
 {%- endif %}
