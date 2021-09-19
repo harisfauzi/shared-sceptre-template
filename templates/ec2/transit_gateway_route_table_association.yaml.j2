@@ -1,0 +1,25 @@
+Description: Transit Gateway Route Table Association(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for tgrt_association in sceptre_user_data.transit_gateway_route_table_associations %}
+{%- set tgrt_association_name = tgrt_association.name %}
+  {{ tgrt_association_name }}:
+    Type: AWS::EC2::TransitGatewayRouteTableAssociation
+    Properties: 
+      TransitGatewayAttachmentId: {{ tgrt_association.transit_gateway_attachment_id | trim }}
+      TransitGatewayRouteTableId: {{ tgrt_association.transit_gateway_route_table_id | trim }}
+{%- endfor %}
+
+Outputs:
+{%- for tgrt_association in sceptre_user_data.transit_gateway_route_table_associations %}
+{%- set tgrt_association_name = tgrt_association.name %}
+  {{ tgrt_association_name }}:
+    Description: The ID of {{ tgrt_association_name }}
+    Value:
+      Ref: {{ tgrt_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ tgrt_association_name }}"
+
+{%- endfor %}
