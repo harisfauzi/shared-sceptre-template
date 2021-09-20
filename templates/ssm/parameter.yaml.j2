@@ -1,0 +1,71 @@
+---
+Description: SSM Parameter(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for parameter in sceptre_user_data.parameters %}
+{%- parameter_name = parameter.name %}
+{%- if parameter.type != 'SecureString' %}
+  {{ parameter_name }}:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '{{ parameter.parameter_name }}'
+      Type: '{{ parameter.type }}'
+      Value: '{{ parameter.value }}'
+{%- if parameter.allowed_pattern is defined %}
+      AllowedPattern: '{{ parameter.allowed_pattern }}'
+{%- endif %}
+{%- if parameter.description is defined %}
+      Description: '{{ parameter.description }}'
+{%- endif %}
+{%- if parameter.policies is defined %}
+      Policies: '{{ parameter.policies }}'
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if parameter.tags is defined %}
+{%- for key,value in parameter.tags.items() %}
+        "{{ key }}": "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for parameter in sceptre_user_data.parameters %}
+{%- parameter_name = parameter.name %}
+{%- if parameter.type != 'SecureString' %}
+  {{ parameter_name }}:
+{%- if parameter.description is defined %}
+    Description: {{ parameter.description }}
+{%- else %}
+    Description: The parameter name of {{ parameter_name }}
+{%- endif %}
+    Value:
+      Ref: {{ parameter_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ parameter_name }}"
+
+  {{ parameter_name }}Type:
+    Description: The parameter type of {{ parameter_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ parameter_name }}
+        - Type
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ parameter_name }}-Type"
+
+  {{ parameter_name }}Value:
+    Description: The parameter value of {{ parameter_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ parameter_name }}
+        - Value
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ parameter_name }}-Value"
+{%- endif %}
+{%- endfor %}
