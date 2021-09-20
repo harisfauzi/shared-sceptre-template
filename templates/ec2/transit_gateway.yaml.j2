@@ -1,0 +1,81 @@
+Description: Transit Gateway(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for transit_gateway in sceptre_user_data.transit_gateways %}
+{%- set transit_gateway_name = transit_gateway.name %}
+  {{ transit_gateway_name }}:
+    Type: AWS::EC2::TransitGateway
+    Properties:
+{%- if transit_gateway.amazon_side_asn is defined %}
+      AmazonSideAsn: {{ transit_gateway.amazon_side_asn }}
+{%- endif %}
+{%- if transit_gateway.association_default_route_table_id is defined %}
+      AssociationDefaultRouteTableId: {{ transit_gateway.association_default_route_table_id }}
+{%- endif %}
+{%- if transit_gateway.auto_accept_shared_attachments is defined %}
+      AutoAcceptSharedAttachments: {{ transit_gateway.auto_accept_shared_attachments }}
+{%- endif %}
+{%- if transit_gateway.default_route_table_association is defined %}
+      DefaultRouteTableAssociation: {{ transit_gateway.default_route_table_association }}
+{%- endif %}
+{%- if transit_gateway.default_route_table_propagation is defined %}
+      DefaultRouteTablePropagation: {{ transit_gateway.default_route_table_propagation }}
+{%- endif %}
+{%- if transit_gateway.description is defined %}
+      Description: {{ transit_gateway.description }}
+{%- endif %}
+{%- if transit_gateway.dns_support is defined %}
+      DnsSupport: {{ transit_gateway.dns_support }}
+{%- endif %}
+{%- if transit_gateway.multicast_support is defined %}
+      MulticastSupport: {{ transit_gateway.multicast_support }}
+{%- endif %}
+{%- if transit_gateway.propagation_default_route_table_id is defined %}
+      PropagationDefaultRouteTableId: {{ transit_gateway.propagation_default_route_table_id }}
+{%- endif %}
+{%- if transit_gateway.transit_gateway_cidr_blocks is defined %}
+      TransitGatewayCidrBlocks:
+{%- for cidr_block in transit_gateway.transit_gateway_cidr_blocks %}
+        - {{ cidr_block }}
+{%- endfor %}
+{%- endif %}
+{%- if transit_gateway.vpn_ecmp_support is defined %}
+      VpnEcmpSupport: {{ transit_gateway.vpn_ecmp_support }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if transit_gateway.tags is defined %}
+{%- for key,value in transit_gateway.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+
+Outputs:
+{%- for transit_gateway in sceptre_user_data.transit_gateways %}
+{%- set transit_gateway_name = transit_gateway.name %}
+  {{ transit_gateway_name }}:
+    Description: The ID of {{ transit_gateway_name }}
+    Value:
+      Ref: {{ transit_gateway_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_name }}"
+
+  {{ transit_gateway_name }}Arn:
+    Description: The ARN of {{ transit_gateway_name }}
+    Value:
+      Fn::Join:
+        - ''
+        - - Fn::Sub: arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:transit-gateway/
+          - Ref: {{ transit_gateway_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_name }}-Arn"
+{%- endfor %}

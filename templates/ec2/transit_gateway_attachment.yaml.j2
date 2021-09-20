@@ -1,0 +1,38 @@
+Description: Transit Gateway Attachment(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for transit_gateway_attachment in sceptre_user_data.transit_gateway_attachments %}
+{%- set transit_gateway_attachment_name = transit_gateway_attachment.name %}
+  {{ transit_gateway_attachment_name }}:
+    Type: AWS::EC2::TransitGatewayAttachment
+    Properties:
+      SubnetIds:
+{%- for subnet_id in transit_gateway_attachment.subnet_ids %}
+        - {{ subnet_id }}
+{%- endfor %}
+      TransitGatewayId: {{ transit_gateway_attachment.transit_gateway_id }}
+      VpcId: {{ transit_gateway_attachment.vpc_id }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if transit_gateway_attachment.tags is defined %}
+{%- for key,value in transit_gateway_attachment.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for transit_gateway_attachment in sceptre_user_data.transit_gateway_attachments %}
+{%- set transit_gateway_attachment_name = transit_gateway_attachment.name %}
+  {{ transit_gateway_attachment_name }}:
+    Description: The ID of {{ transit_gateway_attachment_name }}
+    Value:
+      Ref: {{ transit_gateway_attachment_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_attachment_name }}"
+{%- endfor %}

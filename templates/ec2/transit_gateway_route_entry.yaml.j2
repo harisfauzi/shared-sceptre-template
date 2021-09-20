@@ -1,0 +1,34 @@
+Description: Transit Gateway Route Table Entry(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for transit_gateway_route_entry in sceptre_user_data.transit_gateway_route_entries %}
+{%- set transit_gateway_route_entry_name = transit_gateway_route_entry.name %}
+  {{ transit_gateway_route_entry_name }}:
+    Type: AWS::EC2::TransitGatewayRoute
+    Properties:
+      TransitGatewayRouteTableId: {{ transit_gateway_route_entry.transit_gateway_route_table_id }}
+{%- if route.blackhole is defined %}
+      Blackhole: {{ route.blackhole }}
+{%- endif %}
+{%- if route.destination_cidr_block is defined %}
+      DestinationCidrBlock: {{ route.destination_cidr_block }}
+{%- endif %}
+{%- if route.transit_gateway_attachment_id is defined %}
+      TransitGatewayAttachmentId: {{ route.transit_gateway_attachment_id }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for transit_gateway_route_entry in sceptre_user_data.transit_gateway_route_entries %}
+{%- set transit_gateway_route_entry_name = transit_gateway_route_entry.name %}
+  {{ transit_gateway_route_entry_name }}:
+    Description: The ID of {{ transit_gateway_route_entry_name }}
+    Value:
+      Ref: {{ transit_gateway_route_entry_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_route_entry_name }}"
+
+{%- endfor %}
