@@ -22,8 +22,7 @@ Resources:
       Policies: '{{ parameter.policies }}'
 {%- endif %}
       Tags:
-        - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if parameter.tags is defined %}
 {%- for key,value in parameter.tags.items() %}
         "{{ key }}": "{{ value }}"
