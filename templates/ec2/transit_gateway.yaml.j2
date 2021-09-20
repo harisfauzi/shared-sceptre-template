@@ -71,7 +71,10 @@ Outputs:
   {{ transit_gateway_name }}Arn:
     Description: The ARN of {{ transit_gateway_name }}
     Value:
-      Fn::Sub: "arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:transit-gateway/${ {{ transit_gateway_name }} }"
+      Fn::Join:
+        - ''
+        - - Fn::Sub: arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:transit-gateway/
+          - {{ transit_gateway_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_name }}-Arn"
