@@ -68,7 +68,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_name }}"
 
-  {# {{ transit_gateway_name }}Arn:
+  {{ transit_gateway_name }}Arn:
     Description: The ARN of {{ transit_gateway_name }}
     Value:
       Fn::Join:
@@ -77,5 +77,5 @@ Outputs:
           - {{ transit_gateway_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_name }}-Arn" #}
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_name }}-Arn"
 {%- endfor %}
