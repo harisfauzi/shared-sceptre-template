@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 {%- for parameter in sceptre_user_data.parameters %}
-{%- parameter_name = parameter.name %}
+{%- set parameter_name = parameter.name %}
 {%- if parameter.type != 'SecureString' %}
   {{ parameter_name }}:
     Type: AWS::SSM::Parameter
@@ -34,7 +34,7 @@ Resources:
 
 Outputs:
 {%- for parameter in sceptre_user_data.parameters %}
-{%- parameter_name = parameter.name %}
+{%- set parameter_name = parameter.name %}
 {%- if parameter.type != 'SecureString' %}
   {{ parameter_name }}:
 {%- if parameter.description is defined %}
