@@ -6,6 +6,8 @@ Resources:
 {%- set route_entry_name = route_entry.name %}
   {{ route_entry_name }}:
     Type: AWS::EC2::Route
+    DeletionPolicy: {{ route_entry.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ route_entry.update_replace_policy | default('Delete') }}
     Properties: 
       RouteTableId: {{ route_entry.route_table_id }}
 {%- if route_entry.destination_cidr_block is defined %}

@@ -6,6 +6,8 @@ Resources:
 {%- set route_table_name = route_table.name %}
   {{ route_table_name }}:
     Type: AWS::EC2::RouteTable
+    DeletionPolicy: {{ route_table.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ route_table.update_replace_policy | default('Delete') }}
     Properties:
       VpcId: {{ route_table.vpc_id }}
       Tags:
@@ -23,6 +25,8 @@ Resources:
 {%- set route_entry_name = route_table_name ~ route_entry.name %}
   {{ route_entry_name }}:
     Type: AWS::EC2::Route
+    DeletionPolicy: {{ route_entry.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ route_entry.update_replace_policy | default('Delete') }}
     Properties: 
       RouteTableId:
         Ref: {{ route_table_name }}

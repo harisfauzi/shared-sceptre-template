@@ -7,6 +7,8 @@ Resources:
 {%- set role_name = role.name %}
   {{ role_name }}:
     Type: AWS::IAM::Role
+    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
     Properties:
       AssumeRolePolicyDocument:
 {{ role.assume_role_policy_document | indent(width=8, first=true)}}

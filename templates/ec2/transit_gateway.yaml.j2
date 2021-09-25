@@ -7,6 +7,8 @@ Resources:
 {%- set transit_gateway_name = transit_gateway.name %}
   {{ transit_gateway_name }}:
     Type: AWS::EC2::TransitGateway
+    DeletionPolicy: {{ transit_gateway.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway.update_replace_policy | default('Delete') }}
     Properties:
 {%- if transit_gateway.amazon_side_asn is defined %}
       AmazonSideAsn: {{ transit_gateway.amazon_side_asn }}

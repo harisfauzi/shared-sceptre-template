@@ -7,6 +7,8 @@ Resources:
 {%- set vpc_name = vpc.name %}
   {{ vpc_name }}:
     Type: AWS::EC2::VPC
+    DeletionPolicy: {{ vpc.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc.update_replace_policy | default('Delete') }}
     Properties:
       CidrBlock: {{ vpc.cidr_block }}
       EnableDnsHostnames: {{ vpc.enable_dns_hostnames | default('false') }}
@@ -25,6 +27,8 @@ Resources:
 {%- if vpc.use_ipv6 %}
   {{ vpc_name }}CidrBlock:
     Type: AWS::EC2::VPCCidrBlock
+    DeletionPolicy: {{ vpc.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc.update_replace_policy | default('Delete') }}
     Properties: 
       VpcId:
         Ref: {{ vpc_name }}

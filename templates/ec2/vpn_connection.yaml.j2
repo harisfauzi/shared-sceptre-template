@@ -7,6 +7,8 @@ Resources:
 {%- set vpn_connection_name = vpn_connection.name %}
   {{ vpn_connection_name }}:
     Type: AWS::EC2::VPNConnection
+    DeletionPolicy: {{ vpn_connection.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpn_connection.update_replace_policy | default('Delete') }}
     Properties:
       CustomerGatewayId: {{ vpn_connection.customer_gateway_id }}
 {%- if vpn_connection.static_routes_only is defined %}

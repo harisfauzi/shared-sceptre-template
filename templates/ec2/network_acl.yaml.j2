@@ -6,6 +6,8 @@ Resources:
 {%- set nacl_name = nacl.name %}
   {{ nacl_name }}:
     Type: AWS::EC2::NetworkAcl
+    DeletionPolicy: {{ nacl.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ nacl.update_replace_policy | default('Delete') }}
     Properties:
       VpcId: {{ nacl.vpc_id }}
       Tags:
@@ -23,6 +25,8 @@ Resources:
 {%- set nacl_entry_name = nacl_name ~ nacl_entry.rule_number %}
   {{ nacl_entry_name }}:
     Type: AWS::EC2::NetworkAclEntry
+    DeletionPolicy: {{ nacl_entry.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ nacl_entry.update_replace_policy | default('Delete') }}
     Properties:
       NetworkAclId:
         Ref: {{ nacl_name }}

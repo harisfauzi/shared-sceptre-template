@@ -7,6 +7,8 @@ Resources:
 {%- set resource_share_name = resource_share.name %}
   {{ resource_share_name }}:
     Type: AWS::RAM::ResourceShare
+    DeletionPolicy: {{ resource_share.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resource_share.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ resource_share_name }}
 {%- if resource_share.allow_external_principals is defined %}

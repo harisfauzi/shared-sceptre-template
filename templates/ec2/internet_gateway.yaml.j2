@@ -7,6 +7,8 @@ Resources:
 {%- set internet_gateway_name = internet_gateway.name %}
   {{ internet_gateway_name }}:
     Type: AWS::EC2::InternetGateway
+    DeletionPolicy: {{ internet_gateway.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ internet_gateway.update_replace_policy | default('Delete') }}
     Properties: 
       Tags:
         - Key: SourceRepoURL
