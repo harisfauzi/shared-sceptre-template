@@ -1,0 +1,107 @@
+{%- import 'macros/listener_action.yaml.j2' as listener_action %}
+---
+Description: ELBv2 Listener Rule(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for listener_rule in sceptre_user_data.listener_rules %}
+{%- set listener_rule_name = listener_rule.name %}
+  {{ listener_rule_name }}:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    DeletionPolicy: {{ listener_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ listener_rule.update_replace_policy | default('Delete') }}
+    Properties:
+      Actions:
+{{ listener_action.prep(listener_rule.actions) }}
+      Conditions:
+{%- for condition in listener_rule.conditions %}
+        -
+{%- if condition.field is defined %}
+          Field: {{ condition.field }}
+{%- endif%}
+{%- if condition.host_header_config is defined %}
+          HostHeaderConfig:
+            Values:
+{%- for value in condition.host_header_config.values %}
+              - {{ value }}
+{%- endfor %}
+{%- endif%}
+{%- if condition.http_header_config is defined %}
+          HttpHeaderConfig:
+{%- if condition.http_header_config.http_header_name is defined %}
+            HttpHeaderName: {{ condition.http_header_config.http_header_name }}
+{%- endif %}
+{%- if condition.http_header_config.values is defined %}
+            Values:
+{%- for value in condition.http_header_config.values %}
+              - {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endif%}
+{%- if condition.http_request_method_config is defined %}
+          HttpRequestMethodConfig:
+            Values:
+{%- for value in condition.http_request_method_config.values %}
+              - {{ value }}
+{%- endfor %}
+{%- endif%}
+{%- if condition.path_pattern_config is defined %}
+          PathPatternConfig:
+            Values:
+{%- for value in condition.path_pattern_config.values %}
+              - {{ value }}
+{%- endfor %}
+{%- endif%}
+{%- if condition.query_string_config is defined %}
+          QueryStringConfig:
+            Values:
+{%- for value in condition.path_pattern_config.values %}
+              -
+{%- if value.key is defined %}
+                Key: {{ value.key }}
+{%- endif %}
+{%- if value.value is defined %}
+                Value: {{ value.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif%}
+{%- if condition.source_ip_config is defined %}
+          SourceIpConfig:
+            Values:
+{%- for value in condition.source_ip_config.values %}
+              - {{ value }}
+{%- endfor %}
+{%- endif%}
+{%- if condition.values is defined %}
+          Values:
+{%- for value in condition.values %}
+            - {{ value }}
+{%- endfor %}
+{%- endif%}
+{%- endfor %}
+      ListenerArn: {{ listener_rule.listener_arn }}
+      Priority: {{ listener.priority }}
+{%- endfor %}
+
+Outputs:
+{%- for listener_rule in sceptre_user_data.listener_rules %}
+{%- set listener_rule_name = listener_rule.name %}
+  {{ listener_rule_name }}:
+    Description: The ARN of {{ listener_rule_name }}
+    Value:
+      Ref: {{ listener_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ listener_rule_name }}"
+
+  {{ listener_rule_name }}IsDefault:
+    Description: Indicate whether {{ listener_rule_name }} is the default rule for the listener.
+    Value:
+      Fn::GetAtt:
+        - {{ listener_rule_name }}
+        - IsDefault
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ listener_rule_name }}-IsDefault"
+
+{%- endfor %}

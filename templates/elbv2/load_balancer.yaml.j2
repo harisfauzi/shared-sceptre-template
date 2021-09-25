@@ -1,0 +1,126 @@
+---
+Description: ELBv2 Load Balancer(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for load_balancer in sceptre_user_data.load_balancers %}
+{%- set load_balancer_name = load_balancer.name %}
+  {{ load_balancer_name }}:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    DeletionPolicy: {{ load_balancer.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ load_balancer.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if load_balancer.ip_address_type is defined %}
+      IpAddressType: {{ load_balancer.ip_address_type }}
+{%- endif %}
+{%- if load_balancer.load_balancer_attributes is defined %}
+      LoadBalancerAttributes:
+{%- for attribute in load_balancer.load_balancer_attributes %}
+        -
+{%- if attribute.key is defined %}
+          Key: {{ attribute.key }}
+{%- endif %}
+{%- if attribute.value is defined %}
+          Value: {{ attribute.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if load_balancer.load_balancer_name is defined %}
+      Name: {{ load_balancer.load_balancer_name }}
+{%- endif %}
+{%- if load_balancer.scheme is defined %}
+      Scheme: {{ load_balancer.scheme }}
+{%- endif %}
+{%- if load_balancer.security_groups is defined %}
+      SecurityGroups:
+{%- for security_group in load_balancer.security_groups %}
+        - {{ security_group }}
+{%- endfor %}
+{%- endif %}
+{%- if load_balancer.subnet_mappings is defined %}
+      SubnetMappings:
+{%- for subnet_mapping in load_balancer.subnet_mappings %}
+        - SubnetId: {{ subnet_mapping.subnet_id }}
+{%- if subnet_mapping.allocation_id is defined %}
+          AllocationId: {{ subnet_mapping.allocation_id }}
+{%- endif %}
+{%- if subnet_mapping.ipv6_address is defined %}
+          IPv6Address: {{ subnet_mapping.ipv6_address }}
+{%- endif %}
+{%- if subnet_mapping.private_ipv4_address is defined %}
+          PrivateIPv4Address: {{ subnet_mapping.private_ipv4_address }}
+{%- endif %}
+{%_ endfor %}
+{%- endif %}
+{%- if load_balancer.subnets is defined %}
+      Subnets:
+{%- for subnet in load_balancer.subnets %}
+        - {{ subnet }}
+{%- endfor %}
+{%- endif %}
+{%- if load_balancer.type is defined %}
+      Type: {{ load_balancer.type }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if stored_query.tags is defined %}
+{%- for key,value in stored_query.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for load_balancer in sceptre_user_data.load_balancers %}
+{%- set load_balancer_name = load_balancer.name %}
+  {{ load_balancer_name }}:
+    Description: The ARN of {{ load_balancer_name }}
+    Value:
+      Ref: {{ load_balancer_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}"
+
+  {{ load_balancer_name }}CanonicalHostedZoneID:
+    Description: The ID of the Amazon Route 53 hosted zone associated with {{ load_balancer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ load_balancer_name }}
+        - CanonicalHostedZoneID
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-CanonicalHostedZoneID"
+
+  {{ load_balancer_name }}DNSName:
+    Description: The DNS name for {{ load_balancer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ load_balancer_name }}
+        - DNSName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-DNSName"
+
+  {{ load_balancer_name }}LoadBalancerFullName:
+    Description: The full name of {{ load_balancer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ load_balancer_name }}
+        - LoadBalancerFullName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-LoadBalancerFullName"
+
+  {{ load_balancer_name }}LoadBalancerName:
+    Description: The name of the load balancer {{ load_balancer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ load_balancer_name }}
+        - LoadBalancerName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-LoadBalancerName"
+
+{%- endfor %}
