@@ -1,0 +1,24 @@
+Description: Lambda Permission(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for permission in sceptre_user_data.permissions %}
+{%- set permission_name = permission.name %}
+  {{ permission_name }}:
+    Type: AWS::Lambda::Permission
+    DeletionPolicy: {{ permission.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ permission.update_replace_policy | default('Delete') }}
+    Properties:
+      Action: {{ permission.action }}
+      FunctionName: {{ permission.function_name }}
+      Principal: {{ permission.principal }}
+{%- if permission.event_source_token is defined %}
+      EventSourceToken: {{ permission.event_source_token }}
+{%- endif %}
+{%- if permission.source_account is defined %}
+      SourceAccount: {{ permission.source_account }}
+{%- endif %}
+{%- if permission.source_arn is defined %}
+      SourceArn: {{ permission.source_arn }}
+{%- endif %}
+{%- endfor %}
