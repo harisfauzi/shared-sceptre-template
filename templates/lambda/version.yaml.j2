@@ -1,0 +1,47 @@
+Description: Lambda Version(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for version in sceptre_user_data.versions %}
+{%- set version_name = version.name %}
+  {{ version_name }}:
+    Type: AWS::Lambda::Version
+    DeletionPolicy: {{ version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ version.update_replace_policy | default('Delete') }}
+    Properties:
+      FunctionName: {{ version.function_name }}
+{%- if version.code_sha256 is defined %}
+      CodeSha256: {{ version.code_sha256 }}
+{%- endif %}
+{%- if version.description is defined %}
+      Description: {{ version.code_sha256 }}
+{%- endif %}
+{%- if version.provisioned_concurrency_configuration is defined %}
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: {{ provisioned_concurrency_configuration.provisioned_concurrent_executions }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for version in sceptre_user_data.versions %}
+{% set version_name = version.name %}
+  {{ version_name }}:
+    Description: Version ARN for {{ version_name }}
+    Value:
+      Ref: {{ version_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ version_name }}"
+
+  {{ version_name }}Version:
+    Description: The version number for {{ version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ version_name }}
+        - Version
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ version_name }}-Version"
+
+{%- endfor %}

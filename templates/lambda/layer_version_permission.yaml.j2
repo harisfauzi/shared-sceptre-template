@@ -1,0 +1,32 @@
+Description: Lambda Layer Version Permission(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for layer_version_permission in sceptre_user_data.layer_version_permissions %}
+{%- set layer_version_permission_name = layer_version_permission.name %}
+  {{ layer_version_permission_name }}:
+    Type: AWS::Lambda::LayerVersionPermission
+    DeletionPolicy: {{ layer_version_permission.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ layer_version_permission.update_replace_policy | default('Delete') }}
+    Properties:
+      Action: {{ layer_version_permission.action }}
+      LayerVersionArn: {{ layer_version_permission.layer_version_arn }}
+      Principal: {{ layer_version_permission.principal }}
+{%- if layer_version_permission.organization_id is defind %}
+      OrganizationId: {{ layer_version_permission.organization_id }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for layer_version_permission in sceptre_user_data.layer_version_permissions %}
+{% set layer_version_permission_name = layer_version_permission.name %}
+  {{ layer_version_permission_name }}:
+    Description: Layer Version ARN and statement ID for {{ layer_version_permission_name }}
+    Value:
+      Ref: {{ layer_version_permission_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ layer_version_permission_name }}"
+
+{%- endfor %}

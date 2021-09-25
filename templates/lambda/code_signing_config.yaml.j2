@@ -1,0 +1,58 @@
+Description: Lambda Code Signing Config(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for code_signing_config in sceptre_user_data.code_signing_configs %}
+{%- set code_signing_config_name = code_signing_config.name %}
+  {{ code_signing_config_name }}:
+    Type: AWS::Lambda::CodeSigningConfig
+    DeletionPolicy: {{ code_signing_config.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ code_signing_config.update_replace_policy | default('Delete') }}
+    Properties:
+      AllowedPublishers:
+        SigningProfileVersionArns:
+{%- for signing_profile_version_arn in code_signing_config.allowed_publishers.signing_profile_version_arns %}
+          - {{ signing_profile_version_arn }}
+{%- endfor %}
+{%- if code_signing_config.code_signing_policies is defined %}
+      CodeSigningPolicies:
+        UntrustedArtifactOnDeployment: {{ code_signing_config.code_signing_policies.untrusted_artifact_on_deployment }}
+{%- endif %}
+{%- if code_signing_config.description is defined %}
+      Description: {{ code_signing_config.code_sha256 }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for code_signing_config in sceptre_user_data.code_signing_configs %}
+{% set code_signing_config_name = code_signing_config.name %}
+  {{ code_signing_config_name }}:
+    Description: The resource name for {{ code_signing_config_name }}
+    Value:
+      Ref: {{ code_signing_config_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ code_signing_config_name }}"
+
+  {{ code_signing_config_name }}CodeSigningConfigArn:
+    Description: The ARN for {{ code_signing_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ code_signing_config_name }}
+        - CodeSigningConfigArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ code_signing_config_name }}-CodeSigningConfigArn"
+
+  {{ code_signing_config_name }}CodeSigningConfigId:
+    Description: The Id for {{ code_signing_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ code_signing_config_name }}
+        - CodeSigningConfigId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ code_signing_config_name }}-CodeSigningConfigId"
+
+{%- endfor %}

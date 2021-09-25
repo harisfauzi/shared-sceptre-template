@@ -1,0 +1,101 @@
+Description: Lambda Event Source Mapping(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for event_source_mapping in sceptre_user_data.event_source_mappings %}
+{%- set event_source_mapping_name = event_source_mapping.name %}
+  {{ event_source_mapping_name }}:
+    Type: AWS::Lambda::EventSourceMapping
+    DeletionPolicy: {{ event_source_mapping.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ event_source_mapping.update_replace_policy | default('Delete') }}
+    Properties:
+      FunctionName: {{ event_source_mapping.function_name }}
+{%- if event_source_mapping.batch_size is defined %}
+      BatchSize: {{ event_source_mapping.batch_size }}
+{%- endif %}
+{%- if event_source_mapping.bisect_batch_on_function_error is defined %}
+      BisectBatchOnFunctionError: {{ event_source_mapping.bisect_batch_on_function_error }}
+{%- endif %}
+{%- if event_source_mapping.destination_config is defined %}
+      DestinationConfig:
+{%- if event_source_mapping.destination_config.on_failure is defined %}
+        OnFailure:
+          Destination: {{ event_source_mapping.destination_config.on_failure.destination }}
+{%- endif %}
+{%- endif %}
+{%- if event_source_mapping.enabled is defined %}
+      Enabled: {{ event_source_mapping.enabled }}
+{%- endif %}
+{%- if event_source_mapping.event_source_arn is defined %}
+      EventSourceArn: {{ event_source_mapping.event_source_arn }}
+{%- endif %}
+{%- if event_source_mapping.function_response_types is defined %}
+      FunctionResponseTypes:
+        - ReportBatchItemFailures
+{%- endif %}
+{%- if event_source_mapping.maximum_batching_window_in_seconds is defined %}
+      MaximumBatchingWindowInSeconds: {{ event_source_mapping.maximum_batching_window_in_seconds }}
+{%- endif %}
+{%- if event_source_mapping.maximum_record_age_in_seconds is defined %}
+      MaximumRecordAgeInSeconds: {{ event_source_mapping.maximum_record_age_in_seconds }}
+{%- endif %}
+{%- if event_source_mapping.maximum_retry_attempts is defined %}
+      MaximumRetryAttempts: {{ event_source_mapping.maximum_retry_attempts }}
+{%- endif %}
+{%- if event_source_mapping.parallelization_factor is defined %}
+      ParallelizationFactor: {{ event_source_mapping.parallelization_factor }}
+{%- endif %}
+{%- if event_source_mapping.queues is defined %}
+      Queues:
+        - {{ event_source_mapping.queues[0] }}
+{%- endif %}
+{%- if event_source_mapping.self_managed_event_source is defined %}
+      SelfManagedEventSource:
+        Endpoints:
+          KafkaBootstrapServers:
+{%- for kafka_bootstrap_server in event_source_mapping.self_managed_event_source.endpoints.kafka_bootstrap_servers %}
+            - {{ kafka_bootstrap_server }}
+{%- endfor %}
+{%- endif %}
+{%- if event_source_mapping.source_access_configurations is defined %}
+      SourceAccessConfigurations:
+{%- for source_access_configuration in event_source_mapping.source_access_configurations %}
+        -
+{%- if source_access_configuration.type is defined %}
+          Type: {{ source_access_configuration.type }}
+{%- endif %}
+{%- if source_access_configuration.uri is defined %}
+          URI: {{ source_access_configuration.uri }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if event_source_mapping.starting_position is defined %}
+      StartingPosition: {{ event_source_mapping.starting_position }}
+{%- endif %}
+{%- if event_source_mapping.starting_position_timestamp is defined %}
+      StartingPositionTimestamp: {{ event_source_mapping.starting_position_timestamp }}
+{%- endif %}
+{%- if event_source_mapping.topics is defined %}
+      Topics:
+{%- for topic in event_source_mapping.topics %}
+        - {{ topic }}
+{%- endfor %}
+{%- endif %}
+{%- if event_source_mapping.tumbling_window_in_seconds is defined %}
+      TumblingWindowInSeconds: {{ event_source_mapping.tumbling_window_in_seconds }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for event_source_mapping in sceptre_user_data.event_source_mappings %}
+{% set event_source_mapping_name = event_source_mapping.name %}
+  {{ event_source_mapping_name }}:
+    Description: The mapping ID for {{ event_source_mapping_name }}
+    Value:
+      Ref: {{ event_source_mapping_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_source_mapping_name }}"
+
+{%- endfor %}

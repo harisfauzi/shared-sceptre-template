@@ -1,0 +1,47 @@
+Description: Lambda Layer Version(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for layer_version in sceptre_user_data.layer_versions %}
+{%- set layer_version_name = layer_version.name %}
+  {{ layer_version_name }}:
+    Type: AWS::Lambda::LayerVersion
+    DeletionPolicy: {{ layer_version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ layer_version.update_replace_policy | default('Delete') }}
+    Properties:
+      Content:
+        S3Bucket: {{ layer_version.content.s3_bucket }}
+        S3Key: {{ layer_version.content.s3_key }}
+{%- if layer_version.content.s3_object_version is defined %}
+        S3ObjectVersion: {{ layer_version.content.s3_object_version }}
+{%- endif %}
+{%- if layer_version.compatible_run_times is defined %}
+      CompatibleRuntimes:
+{%- for compatible_run_time in layer_version.compatible_run_times %}
+        - {{ compatible_run_time }}
+{%- endfor %}
+{%- endif %}
+{%- if layer_version.description is defined %}
+      Description: {{ layer_version.description }}
+{%- endif %}
+{%- if layer_version.layer_name is defined %}
+      LayerName: {{ layer_version.layer_name }}
+{%- endif %}
+{%- if layer_version.license_info is defined %}
+      LicenseInfo: {{ layer_version.license_info }}}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for layer_version in sceptre_user_data.layer_versions %}
+{% set layer_version_name = layer_version.name %}
+  {{ layer_version_name }}:
+    Description: The ARN of the layer version for {{ layer_version_name }}
+    Value:
+      Ref: {{ layer_version_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ layer_version_name }}"
+
+{%- endfor %}
