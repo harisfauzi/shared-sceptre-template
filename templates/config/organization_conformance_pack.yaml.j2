@@ -1,0 +1,52 @@
+---
+Description: Config Organization Conformance Pack(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for organization_conformance_pack in sceptre_user_data.organization_conformance_packs %}
+{%- set organization_conformance_pack_name = organization_conformance_pack.name %}
+  {{ organization_conformance_pack_name }}:
+    Type: AWS::Config::ConformancePack
+    DeletionPolicy: {{ organization_conformance_pack.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ organization_conformance_pack.update_replace_policy | default('Delete') }}
+    Properties:
+      OrganizationConformancePackName: {{ organization_conformance_pack.organization_conformance_pack_name }}
+{%- if organization_conformance_pack.organization_conformance_pack_input_parameters is defined %}
+      ConformancePackInputParameters:
+{%- for organization_conformance_pack_input_parameter in organization_conformance_pack.organization_conformance_pack_input_parameters %}
+        - ParameterName: {{ organization_conformance_pack_input_parameter.parameter_name }}
+          ParameterValue: {{ organization_conformance_pack_input_parameter.parameter_value }}
+{%- endfor %}
+{%- endif %}
+{%- if organization_conformance_pack.delivery_s3_bucket is defined %}
+      DeliveryS3Bucket: {{ organization_conformance_pack.delivery_s3_bucket }}
+{%- endif %}
+{%- if organization_conformance_pack.delivery_s3_key_prefix is defined %}
+      DeliveryS3KeyPrefix: {{ organization_conformance_pack.delivery_s3_key_prefix }}
+{%- endif %}
+{%- if organization_conformance_pack.excluded_accounts is defined %}
+      ExcludedAccounts:
+{%- for excluded_account in organization_conformance_pack.excluded_accounts %}
+        - {{ excluded_account }}
+{%- endfor %}
+{%- endif %}
+{%- if organization_conformance_pack.template_body is defined %}
+      TemplateBody: {{ organization_conformance_pack.template_body }}
+{%- endif %}
+{%- if organization_conformance_pack.template_s3_uri is defined %}
+      TemplateS3Uri: {{ organization_conformance_pack.template_s3_uri }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for organization_conformance_pack in sceptre_user_data.organization_conformance_packs %}
+{%- set organization_conformance_pack_name = organization_conformance_pack.name %}
+  {{ organization_conformance_pack_name }}:
+    Description: The name for {{ organization_conformance_pack_name }}
+    Value:
+      Ref: {{ organization_conformance_pack_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organization_conformance_pack_name }}"
+
+{%- endfor %}

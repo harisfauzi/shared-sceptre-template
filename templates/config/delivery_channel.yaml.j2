@@ -1,0 +1,43 @@
+---
+Description: Config Delivery Channel(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for delivery_channel in sceptre_user_data.delivery_channels %}
+{%- set delivery_channel_name = delivery_channel.name %}
+  {{ delivery_channel_name }}:
+    Type: AWS::Config::DeliveryChannel
+    DeletionPolicy: {{ delivery_channel.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ delivery_channel.update_replace_policy | default('Delete') }}
+    Properties:
+      S3BucketName: {{ delivery_channel.s3_bucket_name }}
+{%- if delivery_channel.config_snapshot_delivery_properties is defined %}
+      ConfigSnapshotDeliveryProperties:
+        DeliveryFrequency: {{ delivery_channel.config_snapshot_delivery_properties.delivery_frequency }}
+{%- endif %}
+{%- if delivery_channel.delivery_channel_name is defined %}
+      Name: {{ delivery_channel.delivery_channel_name }}
+{%- endif %}
+{%- if delivery_channel.s3_key_prefix is defined %}
+      S3KeyPrefix: {{ delivery_channel.s3_key_prefix }}
+{%- endif %}
+{%- if delivery_channel.s3_kms_key_arn is defined %}
+      S3KmsKeyArn: {{ delivery_channel.s3_kms_key_arn }}
+{%- endif %}
+{%- if delivery_channel.sns_topic_arn is defined %}
+      SnsTopicARN: {{ delivery_channel.sns_topic_arn }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for delivery_channel in sceptre_user_data.delivery_channels %}
+{%- set delivery_channel_name = delivery_channel.name %}
+  {{ delivery_channel_name }}:
+    Description: The delivery channel name for {{ delivery_channel_name }}
+    Value:
+      Ref: {{ delivery_channel_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ delivery_channel_name }}"
+
+{%- endfor %}

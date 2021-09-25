@@ -1,0 +1,58 @@
+Description: Config Remediation Configuration(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for remediation_configuration in sceptre_user_data.remediation_configurations %}
+{%- set remediation_configuration_name = remediation_configuration.name %}
+  {{ remediation_configuration_name }}:
+    Type: AWS::Config::RemediationConfiguration
+    DeletionPolicy: {{ remediation_configuration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ remediation_configuration.update_replace_policy | default('Delete') }}
+    Properties:
+      ConfigRuleName: {{ remediation_configuration.config_rule_name }}
+      TargetId: {{ remediation_configuration.target_id }}
+      TargetType: {{ remediation_configuration.target_type }}
+{%- if remediation_configuration.automatic is defined %}
+      Automatic: {{ remediation_configuration.automatic }}
+{%- endif %}
+{%- if remediation_configuration.execution_controls is defined %}
+      ExecutionControls:
+        SsmControls:
+{%- if remediation_configuration.execution_controls.ssm_controls.concurrent_execution_rate_percentage is defined %}
+          ConcurrentExecutionRatePercentage: {{ remediation_configuration.execution_controls.ssm_controls.concurrent_execution_rate_percentage }}
+{%- endif %}
+{%- if remediation_configuration.execution_controls.ssm_controls.error_percentage is defined %}
+          ErrorPercentage: {{ remediation_configuration.execution_controls.ssm_controls.error_percentage }}
+{%- endif %}
+{%- endif %}
+{%- if remediation_configuration.maximum_automatic_attempts is defined %}
+      MaximumAutomaticAttempts: {{ remediation_configuration.maximum_automatic_attempts }}
+{%- endif %}
+{%- if remediation_configuration.parameters is defined %}
+      Parameters:
+{{ remediation_configuration.parameters | indent(width=8, first=true) }}
+{%- endif %}
+{%- if remediation_configuration.resource_type is defined %}
+      ResourceType: {{ remediation_configuration.resource_type }}
+{%- endif %}
+{%- if remediation_configuration.retry_attempt_seconds is defined %}
+      RetryAttemptSeconds: {{ remediation_configuration.retry_attempt_seconds }}
+{%- endif %}
+{%- if remediation_configuration.target_version is defined %}
+      TargetVersion: {{ remediation_configuration.target_version }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for remediation_configuration in sceptre_user_data.remediation_configurations %}
+{% set remediation_configuration_name = remediation_configuration.name %}
+  {{ remediation_configuration_name }}:
+    Description: The remediation acion for {{ remediation_configuration_name }}
+    Value:
+      Ref: {{ remediation_configuration_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ remediation_configuration_name }}"
+
+{%- endfor %}

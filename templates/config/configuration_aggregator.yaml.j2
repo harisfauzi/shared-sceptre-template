@@ -1,0 +1,69 @@
+---
+Description: Config Configuration Aggregation(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for configuration_aggregator in sceptre_user_data.configuration_aggregators %}
+{%- set configuration_aggregator_name = configuration_aggregator.name %}
+  {{ configuration_aggregator_name }}:
+    Type: AWS::Config::ConfigurationAggregator
+    DeletionPolicy: {{ configuration_aggregator.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ configuration_aggregator.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if configuration_aggregator.account_aggregation_sources is defined %}
+      AccountAggregationSources:
+{%- for account_aggregation_source in configuration_aggregator.account_aggregation_sources %}
+        - AccountIds:
+{%- for account_id in account_aggregation_source.account_ids %}
+            - {{ account_id }}
+{%- endfor %}
+{%- if account_aggregation_source.all_aws_regions is defined %}
+          AllAwsRegions: {{ account_aggregation_source.all_aws_regions }}
+{%- endif %}
+{%- if account_aggregation_source.aws_regions is defined %}
+          AwsRegions:
+{%- for aws_region in account_aggregation_source.aws_regions %}
+            - {{ aws_region }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if configuration_aggregator.configuration_aggregator_name is defined %}
+      ConfigurationAggregatorName: {{ configuration_aggregator.configuration_aggregator_name }}
+{%- endif %}
+{%- if configuration_aggregator.organization_aggregation_source is defined %}
+      OrganizationAggregationSource:
+        RoleArn: {{ configuration_aggregator.organization_aggregation_source.role_arn }}
+{%- if configuration_aggregator.organization_aggregation_source.all_aws_regions is defined %}
+        AllAwsRegions: {{ configuration_aggregator.organization_aggregation_source.all_aws_regions }}
+{%- endif %}
+{%- if configuration_aggregator.organization_aggregation_source.all_aws_regions is defined %}
+        AwsRegions:
+{%- for aws_region in configuration_aggregator.organization_aggregation_source.all_aws_regions %}
+          - {{ aws_region }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if configuration_aggregator.tags is defined %}
+{%- for key,value in configuration_aggregator.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for configuration_aggregator in sceptre_user_data.configuration_aggregators %}
+{%- set configuration_aggregator_name = configuration_aggregator.name %}
+  {{ configuration_aggregator_name }}:
+    Description: The aggregator name for {{ configuration_aggregator_name }}
+    Value:
+      Ref: {{ configuration_aggregator_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ configuration_aggregator_name }}"
+
+{%- endfor %}

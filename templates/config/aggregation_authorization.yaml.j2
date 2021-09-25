@@ -1,0 +1,37 @@
+---
+Description: Config Aggregation Authorization(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for aggregation_authorization in sceptre_user_data.aggregation_authorizations %}
+{%- set aggregation_authorization_name = aggregation_authorization.name %}
+  {{ aggregation_authorization_name }}:
+    Type: AWS::Config::AggregationAuthorization
+    DeletionPolicy: {{ aggregation_authorization.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ aggregation_authorization.update_replace_policy | default('Delete') }}
+    Properties:
+      AuthorizedAccountId: {{ aggregation_authorization.authorized_account_id }}
+      AuthorizedAwsRegion: {{ aggregation_authorization.authorized_aws_region }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if aggregation_authorization.tags is defined %}
+{%- for key,value in aggregation_authorization.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for aggregation_authorization in sceptre_user_data.aggregation_authorizations %}
+{%- set aggregation_authorization_name = aggregation_authorization.name %}
+  {{ aggregation_authorization_name }}:
+    Description: The ARN of {{ aggregation_authorization_name }}
+    Value:
+      Ref: {{ aggregation_authorization_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ aggregation_authorization_name }}"
+
+{%- endfor %}

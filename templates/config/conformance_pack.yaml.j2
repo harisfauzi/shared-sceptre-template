@@ -1,0 +1,46 @@
+---
+Description: Config Conformance Pack(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for conformance_pack in sceptre_user_data.conformance_packs %}
+{%- set conformance_pack_name = conformance_pack.name %}
+  {{ conformance_pack_name }}:
+    Type: AWS::Config::ConformancePack
+    DeletionPolicy: {{ conformance_pack.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ conformance_pack.update_replace_policy | default('Delete') }}
+    Properties:
+      ConformancePackName: {{ conformance_pack.conformance_pack_name }}
+{%- if conformance_pack.conformance_pack_input_parameters is defined %}
+      ConformancePackInputParameters:
+{%- for conformance_pack_input_parameter in conformance_pack.conformance_pack_input_parameters %}
+        - ParameterName: {{ conformance_pack_input_parameter.parameter_name }}
+          ParameterValue: {{ conformance_pack_input_parameter.parameter_value }}
+{%- endfor %}
+{%- endif %}
+{%- if conformance_pack.delivery_s3_bucket is defined %}
+      DeliveryS3Bucket: {{ conformance_pack.delivery_s3_bucket }}
+{%- endif %}
+{%- if conformance_pack.delivery_s3_key_prefix is defined %}
+      DeliveryS3KeyPrefix: {{ conformance_pack.delivery_s3_key_prefix }}
+{%- endif %}
+{%- if conformance_pack.template_body is defined %}
+      TemplateBody: {{ conformance_pack.template_body }}
+{%- endif %}
+{%- if conformance_pack.template_s3_uri is defined %}
+      TemplateS3Uri: {{ conformance_pack.template_s3_uri }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for conformance_pack in sceptre_user_data.conformance_packs %}
+{%- set conformance_pack_name = conformance_pack.name %}
+  {{ conformance_pack_name }}:
+    Description: The name for {{ conformance_pack_name }}
+    Value:
+      Ref: {{ conformance_pack_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ conformance_pack_name }}"
+
+{%- endfor %}

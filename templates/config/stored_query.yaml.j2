@@ -1,0 +1,40 @@
+---
+Description: Config Stored Query(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for stored_query in sceptre_user_data.stored_queries %}
+{%- set stored_query_name = stored_query.name %}
+  {{ stored_query_name }}:
+    Type: AWS::Config::StoredQuery
+    DeletionPolicy: {{ stored_query.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ stored_query.update_replace_policy | default('Delete') }}
+    Properties:
+      QueryExpression: {{ stored_query.query_expression }}
+      QueryName: {{ stored_query.query_name }}
+{%- if stored_query.query_description is defined %}
+      QueryDescription: {{ stored_query.query_description }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if stored_query.tags is defined %}
+{%- for key,value in stored_query.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for stored_query in sceptre_user_data.stored_queries %}
+{%- set stored_query_name = stored_query.name %}
+  {{ stored_query_name }}:
+    Description: The name of {{ stored_query_name }}
+    Value:
+      Ref: {{ stored_query_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stored_query_name }}"
+
+{%- endfor %}

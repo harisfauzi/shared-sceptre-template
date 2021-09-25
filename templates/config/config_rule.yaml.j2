@@ -1,0 +1,98 @@
+Description: Config Config Rule(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for config_rule in sceptre_user_data.config_rules %}
+{%- set config_rule_name = config_rule.name %}
+  {{ config_rule_name }}:
+    Type: AWS::Config::ConfigRule
+    DeletionPolicy: {{ config_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ config_rule.update_replace_policy | default('Delete') }}
+    Properties:
+      Source:
+        Owner: {{ config_rule.source.owner }}
+        SourceIdentifier: {{ config_rule.source.source_identifier }}
+{%- if config_rule.source.source_details is defined %}
+        SourceDetails:
+{%- for source_detail in config_rule.source.source_details %}
+          - EventSource: aws.config
+            MessageType: {{ source_detail.message_type }}
+{%- if source_detail.maximum_execution_frequency is defined %}
+            MaximumExecutionFrequency: {{ source_detail.maximum_execution_frequency }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if config_rule.config_rule_name is defined %}
+      ConfigRuleName: {{ config_rule.config_rule_name }}
+{%- endif %}
+{%- if config_rule.description is defined %}
+      Description: {{ config_rule.description }}
+{%- endif %}
+{%- if config_rule.input_parameters is defined %}
+      InputParameters:
+{{ config_rule.input_parameters | indent(width=8, first=true) }}
+{%- endif %}
+{%- if config_rule.maximum_execution_frequency is defined %}
+      MaximumExecutionFrequency: {{ config_rule.maximum_execution_frequency }}
+{%- endif %}
+{%- if config_rule.scope is defined %}
+      Scope:
+{%- if config_rule.scope.compliance_resource_id is defined %}
+        ComplianceResourceId: {{ config_rule.scope.compliance_resource_id }}
+{%- endif %}
+{%- if config_rule.scope.compliance_resource_types is defined %}
+        ComplianceResourceTypes:
+{%- for compliance_resource_type in config_rule.scope.compliance_resource_types %}
+          - {{ compliance_resource_type }}
+{%- endfor %}
+{%- endif %}
+{%- if config_rule.scope.tag_key is defined and config_rule.scope.tag_value is defined %}
+        TagKey: {{ config_rule.scope.tag_key }}
+        TagValue: {{ config_rule.scope.tag_value }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for config_rule in sceptre_user_data.config_rules %}
+{% set config_rule_name = config_rule.name %}
+  {{ config_rule_name }}:
+    Description: Rule name for {{ config_rule_name }}
+    Value:
+      Ref: {{ config_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ config_rule_name }}"
+
+  {{ config_rule_name }}Arn:
+    Description: The ARN for {{ config_rule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ config_rule_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ config_rule_name }}-Arn"
+
+  {{ config_rule_name }}ComplianceType:
+    Description: The compliance status for {{ config_rule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ config_rule_name }}
+        - Compliance.Type
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ config_rule_name }}-ComplianceType"
+
+  {{ config_rule_name }}ConfigRuleId:
+    Description: The ID of {{ config_rule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ config_rule_name }}
+        - ConfigRuleId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ config_rule_name }}-ConfigRuleId"
+
+{%- endfor %}
