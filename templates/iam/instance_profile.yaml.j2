@@ -7,6 +7,8 @@ Resources:
 {%- set instance_profile_name = instance_profile.name %}
   {{ instance_profile_name }}:
     Type: AWS::IAM::InstanceProfile
+    DeletionPolicy: {{ instance_profile.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ instance_profile.update_replace_policy | default('Delete') }}
     Properties:
 {%- if instance_profile.instance_profile_name is defined %}
       InstanceProfileName: {{ instance_profile.instance_profile_name }}

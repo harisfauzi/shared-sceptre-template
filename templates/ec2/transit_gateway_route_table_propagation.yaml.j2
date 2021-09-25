@@ -7,6 +7,8 @@ Resources:
 {%- set tgrt_propagation_name = tgrt_propagation.name %}
   {{ tgrt_propagation_name }}:
     Type: AWS::EC2::TransitGatewayRouteTablePropagation
+    DeletionPolicy: {{ tgrt_propagation.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ tgrt_propagation.update_replace_policy | default('Delete') }}
     Properties: 
       TransitGatewayAttachmentId: {{ tgrt_propagation.transit_gateway_attachment_id | trim }}
       TransitGatewayRouteTableId: {{ tgrt_propagation.transit_gateway_route_table_id | trim }}

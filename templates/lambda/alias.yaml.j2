@@ -8,6 +8,18 @@ Resources:
     Type: AWS::Lambda::Alias
     DeletionPolicy: {{ alias.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ alias.update_replace_policy | default('Delete') }}
+{%- if alias.update_policy is defined %}
+    UpdatePolicy:
+      CodeDeployLambdaAliasUpdate:
+        ApplicationName: {{ alias.update_policy.code_deploy_lambda_alias_update.application_name }}
+        DeploymentGroupName: {{ alias.update_policy.code_deploy_lambda_alias_update.deployment_group_name }}
+{%- if alias.update_policy.code_deploy_lambda_alias_update.after_allow_traffic_hook is defined %}
+        AfterAllowTrafficHook: {{ alias.update_policy.code_deploy_lambda_alias_update.after_allow_traffic_hook }}
+{%- endif %}
+{%- if alias.update_policy.code_deploy_lambda_alias_update.before_allow_traffic_hook is defined %}
+        BeforeAllowTrafficHook: {{ alias.update_policy.code_deploy_lambda_alias_update.before_allow_traffic_hook }}
+{%- endif %}
+{%- endif %}
     Properties:
       FunctionName: {{ alias.function_name }}
       FunctionVersion: {{ alias.function_version }}

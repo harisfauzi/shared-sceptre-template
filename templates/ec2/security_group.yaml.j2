@@ -6,6 +6,8 @@ Resources:
 {%- set security_group_name = security_group.name %}
   {{ security_group_name }}:
     Type: AWS::EC2::SecurityGroup
+    DeletionPolicy: {{ security_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ security_group.update_replace_policy | default('Delete') }}
     Properties:
       GroupDescription: {{ security_group.group_description }}
 {%- if security_group.group_name is defined %}

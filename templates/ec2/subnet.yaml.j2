@@ -7,6 +7,8 @@ Resources:
 {%- set subnet_name = subnet.name %}
   {{ subnet_name }}:
     Type: AWS::EC2::Subnet
+    DeletionPolicy: {{ subnet.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ subnet.update_replace_policy | default('Delete') }}
     Properties: 
       CidrBlock: {{ subnet.cidr_block }}
 {%- if subnet.assign_ipv6_on_creation is defined %}

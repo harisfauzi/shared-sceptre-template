@@ -7,6 +7,8 @@ Resources:
 {%- set customer_gateway_name = customer_gateway.name %}
   {{ customer_gateway_name }}:
     Type: AWS::EC2::CustomerGateway
+    DeletionPolicy: {{ customer_gateway.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ customer_gateway.update_replace_policy | default('Delete') }}
     Properties:
       BgpAsn: {{ customer_gateway.bgp_asn }}
       IpAddress: {{ customer_gateway.ip_address }}

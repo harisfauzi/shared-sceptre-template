@@ -7,6 +7,8 @@ Resources:
 {%- set transit_gateway_route_entry_name = transit_gateway_route_entry.name %}
   {{ transit_gateway_route_entry_name }}:
     Type: AWS::EC2::TransitGatewayRoute
+    DeletionPolicy: {{ transit_gateway_route_entry.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_route_entry.update_replace_policy | default('Delete') }}
     Properties:
       TransitGatewayRouteTableId: {{ transit_gateway_route_entry.transit_gateway_route_table_id }}
 {%- if route.blackhole is defined %}

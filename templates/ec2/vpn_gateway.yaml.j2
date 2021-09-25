@@ -7,6 +7,8 @@ Resources:
 {%- set vpn_gateway_name = vpn_gateway.name %}
   {{ vpn_gateway_name }}:
     Type: AWS::EC2::VPNGateway
+    DeletionPolicy: {{ vpn_gateway.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpn_gateway.update_replace_policy | default('Delete') }}
     Properties:
 {%- if vpn_gateway.amazon_side_asn is defined %}
       AmazonSideAsn: {{ vpn_gateway.amazon_side_asn }}

@@ -7,6 +7,8 @@ Resources:
 {%- set transit_gateway_attachment_name = transit_gateway_attachment.name %}
   {{ transit_gateway_attachment_name }}:
     Type: AWS::EC2::TransitGatewayAttachment
+    DeletionPolicy: {{ transit_gateway_attachment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_attachment.update_replace_policy | default('Delete') }}
     Properties:
       SubnetIds:
 {%- for subnet_id in transit_gateway_attachment.subnet_ids %}

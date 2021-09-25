@@ -7,6 +7,8 @@ Resources:
 {%- set nat_instance_name = nat_instance.name %}
   {{ nat_instance_name }}:
     Type: AWS::EC2::Instance
+    DeletionPolicy: {{ nat_instance.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ nat_instance.update_replace_policy | default('Delete') }}
     Metadata:
       AWS::CloudFormation::Init:
         configSets:

@@ -6,6 +6,8 @@ Resources:
 {%- set transit_gateway_route_table_name = transit_gateway_route_table.name %}
   {{ transit_gateway_route_table_name }}:
     Type: AWS::EC2::TransitGatewayRouteTable
+    DeletionPolicy: {{ transit_gateway_route_table.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_route_table.update_replace_policy | default('Delete') }}
     Properties:
       TransitGatewayId: {{ transit_gateway_route_table.transit_gateway_id }}
       Tags:
@@ -22,6 +24,8 @@ Resources:
 {%- for route in transit_gateway_route_table.routes %}
   {{ transit_gateway_route_table_name }}{{ route.name }}:
     Type: AWS::EC2::TransitGatewayRoute
+    DeletionPolicy: {{ route.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ route.update_replace_policy | default('Delete') }}
     Properties:
       TransitGatewayRouteTableId:
         Ref: {{ transit_gateway_route_table_name }}
