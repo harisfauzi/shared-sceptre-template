@@ -1,0 +1,101 @@
+---
+Description: Config Organization Config Rule(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for organization_config_rule in sceptre_user_data.organization_config_rules %}
+{%- set organization_config_rule_name = organization_config_rule.name %}
+  {{ organization_config_rule_name }}:
+    Type: AWS::Config::OrganizationConfigRule
+    DeletionPolicy: {{ organization_config_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ organization_config_rule.update_replace_policy | default('Delete') }}
+    Properties:
+      OrganizationConfigRuleName: String
+{%- if organization_config_rule.excluded_accounts is defined %}
+      ExcludedAccounts:
+{%- for excluded_account in organization_config_rule.excluded_accounts %}
+        - {{ excluded_account }}
+{%- endfor %}
+{%- endif %}
+{%- if organization_config_rule.organization_custom_rule_metadata is defined %}  {# BEGIN {%- if organization_config_rule.organization_custom_rule_metadata is defined %} #}
+      OrganizationCustomRuleMetadata:
+        LambdaFunctionArn: {{ organization_config_rule.organization_custom_rule_metadata.lambda_function_arn }}
+        OrganizationConfigRuleTriggerTypes:
+{%- for trigger_type in organization_config_rule.organization_custom_rule_metadata.organization_config_rule_trigger_types %}
+          - {{ trigger_type }}
+{%- endfor %}
+{%- if organization_config_rule.organization_custom_rule_metadata.description is defined %}
+        Description: {{ organization_config_rule.organization_custom_rule_metadata.description }}
+{%- endif %}
+{%- if organization_config_rule.organization_custom_rule_metadata.input_parameters is defined %}
+        InputParameters: {{ organization_config_rule.organization_custom_rule_metadata.input_parameters }}
+{%- endif %}
+{%- if organization_config_rule.organization_custom_rule_metadata.maximum_execution_frequency is defined %}
+        MaximumExecutionFrequency: {{ organization_config_rule.organization_custom_rule_metadata.maximum_execution_frequency }}
+{%- endif %}
+{%- if organization_config_rule.organization_custom_rule_metadata.resource_id_scope is defined %}
+        ResourceIdScope: {{ organization_config_rule.organization_custom_rule_metadata.resource_id_scope }}
+{%- endif %}
+{%- if organization_config_rule.organization_custom_rule_metadata.resource_types_scope is defined %}
+        ResourceTypesScope:
+{%- for scope in organization_config_rule.organization_custom_rule_metadata.resource_types_scope %}
+          - {{ scope }}
+{%- endfor %}
+{%- endif %}
+{%- if organization_config_rule.organization_custom_rule_metadata.tag_key_scope is defined %}
+        TagKeyScope: {{ organization_config_rule.organization_custom_rule_metadata.tag_key_scope }}
+{%- endif %}
+{%- if organization_config_rule.organization_custom_rule_metadata.tag_value_scope is defined %}
+        TagValueScope: {{ organization_config_rule.organization_custom_rule_metadata.tag_value_scope }}
+{%- endif %}
+{%- endif %}    {# END {%- if organization_config_rule.organization_custom_rule_metadata is defined %} #}
+{%- if organization_config_rule.organization_managed_rule_metadata is defined %}  {# BEGIN {%- if organization_config_rule.organization_managed_rule_metadata is defined %} #}
+      OrganizationManagedRuleMetadata:
+        RuleIdentifier: {{ organization_config_rule.organization_managed_rule_metadata.rule_identifier }}
+        Description: String
+        InputParameters: String
+        MaximumExecutionFrequency: String
+        ResourceIdScope: String
+        ResourceTypesScope: 
+          - String
+        TagKeyScope: String
+        TagValueScope: String
+{%- if organization_config_rule.organization_managed_rule_metadata.description is defined %}
+        Description: {{ organization_config_rule.organization_managed_rule_metadata.description }}
+{%- endif %}
+{%- if organization_config_rule.organization_managed_rule_metadata.input_parameters is defined %}
+        InputParameters: {{ organization_config_rule.organization_managed_rule_metadata.input_parameters }}
+{%- endif %}
+{%- if organization_config_rule.organization_managed_rule_metadata.maximum_execution_frequency is defined %}
+        MaximumExecutionFrequency: {{ organization_config_rule.organization_managed_rule_metadata.maximum_execution_frequency }}
+{%- endif %}
+{%- if organization_config_rule.organization_managed_rule_metadata.resource_id_scope is defined %}
+        ResourceIdScope: {{ organization_config_rule.organization_managed_rule_metadata.resource_id_scope }}
+{%- endif %}
+{%- if organization_config_rule.organization_managed_rule_metadata.resource_types_scope is defined %}
+        ResourceTypesScope:
+{%- for scope in organization_config_rule.organization_managed_rule_metadata.resource_types_scope %}
+          - {{ scope }}
+{%- endfor %}
+{%- endif %}
+{%- if organization_config_rule.organization_managed_rule_metadata.tag_key_scope is defined %}
+        TagKeyScope: {{ organization_config_rule.organization_managed_rule_metadata.tag_key_scope }}
+{%- endif %}
+{%- if organization_config_rule.organization_managed_rule_metadata.tag_value_scope is defined %}
+        TagValueScope: {{ organization_config_rule.organization_managed_rule_metadata.tag_value_scope }}
+{%- endif %}
+{%- endif %}  {# END {%- if organization_config_rule.organization_managed_rule_metadata is defined %} #}
+{%- endfor %}
+
+Outputs:
+{%- for organization_config_rule in sceptre_user_data.organization_config_rules %}
+{%- set organization_config_rule_name = organization_config_rule.name %}
+  {{ organization_config_rule_name }}:
+    Description: The organization config rule name for {{ organization_config_rule_name }}
+    Value:
+      Ref: {{ organization_config_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organization_config_rule_name }}"
+
+{%- endfor %}

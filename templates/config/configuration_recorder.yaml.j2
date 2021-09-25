@@ -1,0 +1,45 @@
+---
+Description: Config Configuration Recorder(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for configuration_recorder in sceptre_user_data.configuration_recorders %}
+{%- set configuration_recorder_name = configuration_recorder.name %}
+  {{ configuration_recorder_name }}:
+    Type: AWS::Config::ConfigurationRecorder
+    DeletionPolicy: {{ configuration_recorder.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ configuration_recorder.update_replace_policy | default('Delete') }}
+    Properties:
+      RoleARN: {{ configuration_recorder.role_arn }}
+{%- if configuration_recorder.name is defined %}
+      Name: {{ configuration_recorder.configuration_recorder_name }}
+{%- endif %}
+{%- if configuration_recorder.recording_group is defined %}
+      RecordingGroup:
+{%- if configuration_recorder.recording_group.all_supported is defined %}
+        AllSupported: {{ configuration_recorder.recording_group.all_supported }}
+{%- endif %}
+{%- if configuration_recorder.recording_group.include_global_resource_types is defined %}
+        IncludeGlobalResourceTypes: {{ configuration_recorder.recording_group.include_global_resource_types }}
+{%- endif %}
+{%- if configuration_recorder.recording_group.resource_types is defined %}
+        ResourceTypes:
+{%- for resource_type in configuration_recorder.recording_group.resource_types %}
+          - {{ resource_type }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for configuration_recorder in sceptre_user_data.configuration_recorders %}
+{%- set configuration_recorder_name = configuration_recorder.name %}
+  {{ configuration_recorder_name }}:
+    Description: The recorder name for {{ configuration_recorder_name }}
+    Value:
+      Ref: {{ configuration_recorder_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ configuration_recorder_name }}"
+
+{%- endfor %}
