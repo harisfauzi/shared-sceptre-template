@@ -1,0 +1,146 @@
+---
+Description: ELBv2 Target Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for target_group in sceptre_user_data.target_groups %}
+{%- set target_group_name = target_group.name %}
+  {{ target_group_name }}:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DeletionPolicy: {{ target_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ target_group.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if target_group.health_check_enabled is defined %}
+      HealthCheckEnabled: {{ target_group.health_check_enabled }}
+{%- endif %}
+{%- if target_group.health_check_interval_seconds is defined %}
+      HealthCheckIntervalSeconds: {{ target_group.health_check_interval_seconds }}
+{%- endif %}
+{%- if target_group.health_check_path is defined %}
+      HealthCheckPath: {{ target_group.health_check_path }}
+{%- endif %}
+{%- if target_group.health_check_port is defined %}
+      HealthCheckPort: {{ target_group.health_check_port }}
+{%- endif %}
+{%- if target_group.health_check_protocol is defined %}
+      HealthCheckProtocol: {{ target_group.health_check_protocol }}
+{%- endif %}
+{%- if target_group.health_check_timeout_seconds is defined %}
+      HealthCheckTimeoutSeconds: {{ target_group.health_check_timeout_seconds }}
+{%- endif %}
+{%- if target_group.healthy_threshold_count is defined %}
+      HealthyThresholdCount: {{ target_group.healthy_threshold_count }}
+{%- endif %}
+{%- if target_group.ip_address_type is defined %}
+      IpAddressType: {{ target_group.ip_address_type }}
+{%- endif %}
+{%- if target_group.matcher is defined %}
+      Matcher:
+{%- if target_group.matcher.grpc_code is defined %}
+        GrpcCode: {{ target_group.matcher.grpc_code }}
+{%- endif %}
+{%- if target_group.matcher.http_code is defined %}
+        HttpCode: {{ target_group.matcher.http_code }}
+{%- endif %}
+{%- endif %}
+{%- if target_group.target_group_name is defined %}
+      Name: {{ target_group.target_group_name }}
+{%- endif %}
+{%- if target_group.port is defined %}
+      Port: {{ target_group.port }}
+{%- endif %}
+{%- if target_group.protocol is defined %}
+      Protocol: {{ target_group.protocol }}
+{%- endif %}
+{%- if target_group.protocol_version is defined %}
+      ProtocolVersion: {{ target_group.protocol_version }}
+{%- endif %}
+{%- if target_group.target_group_attributes is defined %}
+      TargetGroupAttributes:
+{%- for attribute in target_group.target_group_attributes %}
+        -
+{%- if attribute.key is defined %}
+          Key: {{ attribute.key }}
+{%- endif %}
+{%- if attribute.value is defined %}
+          Value: {{ ttribute.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if target_group.targets is defined %}
+      Targets:
+{%- for target in target_group.targets %}
+        - Id: {{ target.id }}
+{%- if target.availability_zone is defined %}
+          AvailabilityZone: {{ target.availability_zone }}
+{%- endif %}
+{%- if target.port is defined %}
+          Port: {{ target.port}}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if target_group.target_type is defined %}
+      TargetType: {{ target_group.target_type }}
+{%- endif %}
+{%- if target_group.unhealthy_threshold_count is defined %}
+      UnhealthyThresholdCount: {{ target_group.unhealthy_threshold_count }}
+{%- endif %}
+{%- if target_group.vpc_id is defined %}
+      VpcId: {{ target_group.vpc_id }}
+{%- endif %}
+{%- if target_group.health_check_enabled is defined %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if target_group.tags is defined %}
+{%- for key,value in target_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for target_group in sceptre_user_data.target_groups %}
+{%- set target_group_name = target_group.name %}
+  {{ target_group_name }}:
+    Description: The ARN of {{ target_group_name }}
+    Value:
+      Ref: {{ target_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ target_group_name }}"
+
+  {{ target_group_name }}LoadBalancerArns:
+    Description: The Amazon Resource Names (ARNs) of the load balancers that route traffic to this {{ target_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ target_group_name }}
+        - LoadBalancerArns
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ target_group_name }}-LoadBalancerArns"
+
+  {{ target_group_name }}TargetGroupFullName:
+    Description: The full name of the target group of {{ target_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ target_group_name }}
+        - TargetGroupFullName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ target_group_name }}-TargetGroupFullName"
+
+  {{ target_group_name }}TargetGroupName:
+    Description: The name of the target group {{ target_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ target_group_name }}
+        - TargetGroupName
+      Ref: {{ target_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ target_group_name }}-TargetGroupName"
+
+{%- endfor %}

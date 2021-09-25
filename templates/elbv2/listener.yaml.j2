@@ -1,0 +1,51 @@
+{%- import 'macros/listener_action.yaml.j2' as listener_action %}
+---
+Description: ELBv2 Listener(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for listener in sceptre_user_data.listeners %}
+{%- set listener_name = listener.name %}
+  {{ listener_name }}:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    DeletionPolicy: {{ listener.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ listener.update_replace_policy | default('Delete') }}
+    Properties:
+      DefaultActions:
+{{ listener_action.prep(listener.default_actions) }}
+      LoadBalancerArn: {{ listener.load_balancer_arn }}
+{%- if listener.alpn_policy is defined %}
+      AlpnPolicy:
+{%- for alpn_policy in listener.alpn_policy %}
+        - {{ alpn_policy }}
+{%- endfor %}
+{%- endif %}
+{%- if listener.certificates is defined %}
+      Certificates:
+{%- for certificate in listener.certificates %}
+        - {{ certificate }}
+{%- endfor %}
+{%- endif %}
+{%- if listener.port is defined %}
+      Port: {{ listener.port }}
+{%- endif %}
+{%- if listener.protocol is defined %}
+      Protocol: {{ listener.protocol }}
+{%- endif %}
+{%- if listener.ssl_policy is defined %}
+      SslPolicy: {{ listener.ssl_policy }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for listener in sceptre_user_data.listeners %}
+{%- set listener_name = listener.name %}
+  {{ listener_name }}:
+    Description: The ARN of {{ listener_name }}
+    Value:
+      Ref: {{ listener_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ listener_name }}"
+
+{%- endfor %}

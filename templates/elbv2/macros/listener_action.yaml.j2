@@ -1,0 +1,115 @@
+{%- macro prep(actions) %}
+{%- for action in actions %}  {# BEGIN {%- for action in actions %} #}
+        - Type: {{ action.type }}
+{%- if action.authenticate_cognito_config is defined %}  {# BEGIN {%- if action.authenticate_cognito_config is defined %} #}
+          AuthenticateCognitoConfig:
+            UserPoolArn: {{ action.authenticate_cognito_config.user_pool_arn }}
+            UserPoolClientId: {{ action.authenticate_cognito_config.user_pool_client_id }}
+            UserPoolDomain: {{ action.authenticate_cognito_config.user_pool_domain }}
+{%- if action.authenticate_cognito_config.authentication_request_extra_params is defined %}
+            AuthenticationRequestExtraParams:
+{%- for key, value in action.authenticate_cognito_config.authentication_request_extra_params.items() %}
+              {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if action.authenticate_cognito_config.on_unauthenticated_request is defined %}
+            OnUnauthenticatedRequest: {{ action.authenticate_cognito_config.on_unauthenticated_request }}
+{%- endif %}
+{%- if action.authenticate_cognito_config.scope is defined %}
+            Scope: {{ action.authenticate_cognito_config.scope }}
+{%- endif %}
+{%- if action.authenticate_cognito_config.session_cookie_name is defined %}
+            SessionCookieName: {{ action.authenticate_cognito_config.session_cookie_name }}
+{%- endif %}
+{%- if action.authenticate_cognito_config.session_timeout is defined %}
+            SessionTimeout: {{ action.authenticate_cognito_config.session_timeout }}
+{%- endif %}
+{%- endif %}  {# END {%- if action.authenticate_cognito_config is defined %} #}
+{%- if action.authenticate_oidc_config is defined %}  {# BEGIN {%- if action.authenticate_oidc_config is defined %} #}
+          AuthenticateOidcConfig:
+            AuthorizationEndpoint: {{ action.authenticate_oidc_config.authorization_endpoint }}
+            ClientId: {{ action.authenticate_oidc_config.client_id }}
+            ClientSecret: {{ action.authenticate_oidc_config.client_secret }}
+            Issuer: {{ action.authenticate_oidc_config.client_issuer }}
+            TokenEndpoint: {{ action.authenticate_oidc_config.token_endpoint }}
+            UserInfoEndpoint: {{ action.authenticate_oidc_config.user_info_endpoint }}
+{%- if action.authenticate_oidc_config.authentication_request_extra_params %}
+            AuthenticationRequestExtraParams:
+{%- for key, value in action.authenticate_oidc_config.authentication_request_extra_params.items() %}
+              {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if action.authenticate_oidc_config.on_unauthenticated_request %}
+            OnUnauthenticatedRequest: {{ action.authenticate_oidc_config.on_unauthenticated_request }}
+{%- endif %}
+{%- if action.authenticate_oidc_config.scope %}
+            Scope: {{ action.authenticate_oidc_config.scope }}
+{%- endif %}
+{%- if action.authenticate_oidc_config.session_cookie_name %}
+            SessionCookieName: {{ action.authenticate_oidc_config.session_cookie_name }}
+{%- endif %}
+{%- if action.authenticate_oidc_config.session_timeout %}
+            SessionTimeout: {{ action.authenticate_oidc_config.session_timeout }}
+{%- endif %}
+{%- endif %}  {# END {%- if action.authenticate_oidc_config is defined %} #}
+{%- if action.fixed_response_config is defined %}  {# BEGIN {%- if action.fixed_response_config is defined %} #}
+          FixedResponseConfig:
+            StatusCode: {{ action.fixed_response_config.status_code }}
+{%- if action.fixed_response_config.content_type is defined %}
+            ContentType: {{ action.fixed_response_config.content_type }}
+{%- endif %}
+{%- if action.fixed_response_config.message_body is defined %}
+            MessageBody: {{ action.fixed_response_config.message_body }}
+{%- endif %}
+{%- endif %}  {# END {%- if action.fixed_response_config is defined %} #}
+{%- if action.forward_config is defined %}  {# BEGIN {%- if action.forward_config is defined %} #}
+          ForwardConfig:
+{%- if action.forward_config.target_groups is defined %}
+            TargetGroups:
+{%- for target_group in action.forward_config.target_groups %}
+              -
+{%- if target_group.target_group_arn is defined %}
+                TargetGroupArn: {{ target_group.target_group_arn }}
+{%- endif %}
+{%- if target_group.weight is defined %}
+                Weight: {{ target_group.weight }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if action.forward_config.target_group_stickiness_config is defined %}
+            TargetGroupStickinessConfig:
+{%- if action.forward_config.target_group_stickiness_config.duration_seconds is defined %}
+              DurationSeconds: {{ action.forward_config.target_group_stickiness_config.duration_seconds }}
+{%- endif %}
+{%- if action.forward_config.target_group_stickiness_config.enabled is defined %}
+              Enabled: {{ action.forward_config.target_group_stickiness_config.enabled }}
+{%- endif %}
+{%- endif %}
+{%- endif %}  {# END {%- if action.forward_config is defined %} #}
+{%- if action.order is defined %}
+          Order: {{ action.order }}
+{%- endif %}
+{%- if action.redirect_config is defined %}  {# BEGIN {%- if action.redirect_config is defined %} #}
+          RedirectConfig:
+            StatusCode: {{ action.redirect_config.status_code }}
+{%- if action.redirect_config.host is defined %}
+            Host: {{ action.redirect_config.host }}
+{%- endif %}
+{%- if action.redirect_config.path is defined %}
+            Path: {{ action.redirect_config.path }}
+{%- endif %}
+{%- if action.redirect_config.port is defined %}
+            Port: {{ action.redirect_config.port }}
+{%- endif %}
+{%- if action.redirect_config.protocol is defined %}
+            Protocol: {{ action.redirect_config.protocol }}
+{%- endif %}
+{%- if action.redirect_config.query is defined %}
+            Query: {{ action.redirect_config.query }}
+{%- endif %}
+{%- endif %}  {# END {%- if action.redirect_config is defined %} #}
+{%- if action.target_group_arn is defined %}
+          TargetGroupArn: {{ action.target_group_arn }}
+{%- endif %}
+{%- endfor %}  {# END {%- for action in actions %} #}
+{%- endmacro %}
