@@ -1,0 +1,249 @@
+{% import 'macros/launch_template_specification.yaml.j2' as launch_template_specification %}
+Description: AutoScaling Auto Scaling Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %}  {# BEGIN {%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %} #}
+{%- set auto_scaling_group_name = auto_scaling_group.name %}
+  {{ auto_scaling_group_name }}:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    DeletionPolicy: {{ auto_scaling_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ auto_scaling_group.update_replace_policy | default('Delete') }}
+{%- if auto_scaling_group.creation_policy is defined %}  {# BEGIN {%- if auto_scaling_group.creation_policy is defined %} #}
+    CreationPolicy:
+{%- if auto_scaling_group.auto_scaling_creation_policy is defined %}
+      AutoScalingCreationPolicy:
+        MinSuccessfulInstancesPercent: {{ auto_scaling_group.auto_scaling_creation_policy.min_successful_instances_percent }}
+{%- endif %}
+{%- if auto_scaling_group.resource_signal is defined %}
+      ResourceSignal:
+{%- if auto_scaling_group.creation_policy.resource_signal.count is defined %}
+        Count: {{ auto_scaling_group.creation_policy.resource_signal.count }}
+{%- endif %}
+{%- if auto_scaling_group.creation_policy.resource_signal.timeout is defined %}
+        Timeout: {{ auto_scaling_group.creation_policy.resource_signal.timeout }}
+{%- endif %}
+{%- endif %}
+{%- endif %}  {# END {%- if auto_scaling_group.creation_policy is defined %} #}
+{%- if auto_scaling_group.update_policy is defined %}  {# BEGIN {%- if auto_scaling_group.update_policy is defined %} #}
+    UpdatePolicy:
+{%- if auto_scaling_group.update_policy.auto_scaling_replacing_update is defined %}
+      AutoScalingReplacingUpdate:
+        WillReplace: {{ auto_scaling_group.update_policy.auto_scaling_replacing_update.will_replace }}
+{%- endif %}
+{%- if auto_scaling_group.update_policy.auto_scaling_rolling_update is defined %}
+      AutoScalingRollingUpdate:
+{%- if auto_scaling_group.update_policy.auto_scaling_rolling_update.max_batch_size is defined %}
+        MaxBatchSize: {{ auto_scaling_group.update_policy.auto_scaling_rolling_update.max_batch_size }}
+{%- endif %}
+{%- if auto_scaling_group.update_policy.auto_scaling_rolling_update.min_instances_in_service is defined %}
+        MinInstancesInService: {{ auto_scaling_group.update_policy.auto_scaling_rolling_update.min_instances_in_service }}
+{%- endif %}
+{%- if auto_scaling_group.update_policy.auto_scaling_rolling_update.min_successful_instances_percent is defined %}
+        MinSuccessfulInstancesPercent: {{ auto_scaling_group.update_policy.auto_scaling_rolling_update.min_successful_instances_percent }}
+{%- endif %}
+{%- if auto_scaling_group.update_policy.auto_scaling_rolling_update.pause_time is defined %}
+        PauseTime: {{ auto_scaling_group.update_policy.auto_scaling_rolling_update.pause_time }}
+{%- endif %}
+{%- if auto_scaling_group.update_policy.auto_scaling_rolling_update.suspend_processes is defined %}
+        SuspendProcesses:
+{%- for process in auto_scaling_group.update_policy.auto_scaling_rolling_update.suspend_processes %}
+          - {{ process }}
+{%- endfor %}
+{%- endif %}
+{%- if auto_scaling_group.update_policy.auto_scaling_rolling_update.wait_on_resource_signals is defined %}
+        WaitOnResourceSignals: {{ auto_scaling_group.update_policy.auto_scaling_rolling_update.wait_on_resource_signals }}
+{%- endif %}
+{%- endif %}
+{%- if auto_scaling_group.update_policy.auto_scaling_scheduled_action is defined %}
+      AutoScalingScheduledAction:
+        IgnoreUnmodifiedGroupSizeProperties: {{ auto_scaling_group.update_policy.auto_scaling_scheduled_action.ignore_unmodified_group_size_properties }}
+{%- endif %}
+{%- endif %}  {# END {%- if auto_scaling_group.update_policy is defined %} #}
+
+    Properties:
+      MaxSize: {{ auto_scaling_group.max_size }}
+      MinSize: {{ auto_scaling_group.min_size }}
+{%- if auto_scaling_group.auto_scaling_group_name is defined %}
+      AutoScalingGroupName: {{ auto_scaling_group.auto_scaling_group_name }}
+{%- endif %}
+{%- if auto_scaling_group.availability_zones is defined %}
+      AvailabilityZones:
+{%- for availability_zone in auto_scaling_group.availability_zones %}
+        - {{ availability_zone }}
+{%- endfor %}
+{%- endif %}
+{%- if auto_scaling_group.capacity_rebalance is defined %}
+      CapacityRebalance: {{ auto_scaling_group.capacity_rebalance }}
+{%- endif %}
+{%- if auto_scaling_group.context is defined %}
+      Context: {{ auto_scaling_group.context }}
+{%- endif %}
+{%- if auto_scaling_group.cooldown is defined %}
+      Cooldown: {{ auto_scaling_group.cooldown }}
+{%- endif %}
+{%- if auto_scaling_group.desired_capacity is defined %}
+      DesiredCapacity: {{ auto_scaling_group.desired_capacity }}
+{%- endif %}
+{%- if auto_scaling_group.health_check_grace_period is defined %}
+      HealthCheckGracePeriod: {{ auto_scaling_group.health_check_grace_period }}
+{%- endif %}
+{%- if auto_scaling_group.health_check_type is defined %}
+      HealthCheckType: {{ auto_scaling_group.health_check_type }}
+{%- endif %}
+{%- if auto_scaling_group.instance_id is defined %}
+      InstanceId: {{ auto_scaling_group.instance_id }}
+{%- endif %}
+{%- if auto_scaling_group.launch_configuration_name is defined %}
+      LaunchConfigurationName: {{ auto_scaling_group.launch_configuration_name }}
+{%- endif %}
+{%- if auto_scaling_group.launch_template is defined %}
+      LaunchTemplate:
+{{ launch_template_specification.prep(auto_scaling_group.launch_template) | indent(width=8, first=true) }}
+{%- endif %}
+{%- if auto_scaling_group.lifecycle_hook_specification_list is defined %}
+      LifecycleHookSpecificationList:
+{%- for lifecycle_hook_specification in auto_scaling_group.lifecycle_hook_specification_list %}
+        - LifecycleHookName: {{ lifecycle_hook_specification.lifecycle_hook_name }}
+          LifecycleTransition: {{ lifecycle_hook_specification.lifecycle_transition }}
+{%- if lifecycle_hook_specification.default_result is defined %}
+          DefaultResult: {{ lifecycle_hook_specification.default_result }}
+{%- endif %}
+{%- if lifecycle_hook_specification.heartbeat_timeout is defined %}
+          HeartbeatTimeout: {{ lifecycle_hook_specification.heartbeat_timeout }}
+{%- endif %}
+{%- if lifecycle_hook_specification.notification_metadata is defined %}
+          NotificationMetadata: {{ lifecycle_hook_specification.notification_metadata }}
+{%- endif %}
+{%- if lifecycle_hook_specification.notification_target_arn is defined %}
+          NotificationTargetARN: {{ lifecycle_hook_specification.notification_target_arn }}
+{%- endif %}
+{%- if lifecycle_hook_specification.role_arn is defined %}
+          RoleARN: {{ lifecycle_hook_specification.role_arn }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if auto_scaling_group.load_balancer_names is defined %}
+      LoadBalancerNames:
+{%- for load_balancer_name in auto_scaling_group.load_balancer_names %}
+        - {{ load_balancer_name }}
+{%- endfor %}
+{%- endif %}
+{%- if auto_scaling_group.max_instance_lifetime is defined %}
+      MaxInstanceLifetime: {{ auto_scaling_group.max_instance_lifetime }}
+{%- endif %}
+{%- if auto_scaling_group.metrics_collection is defined %}
+      MetricsCollection:
+{%- for collection in auto_scaling_group.metrics_collection %}
+        - Granularity: 1Minute
+{%- if collection.metrics is defined %}
+          Metrics:
+{%- for metric in collection.metrics %}
+            - {{ metric }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if auto_scaling_group.mixed_instances_policy is defined %}
+      MixedInstancesPolicy:
+        LaunchTemplate:
+          LaunchTemplateSpecification:
+{{ launch_template_specification.prep(auto_scaling_group.mixed_instances_policy.launch_template.launch_template_specification) | indent(width=12, first=true) }}
+          Overrides:
+{%- for override in auto_scaling_group.mixed_instances_policy.launch_template.overrides %}
+            -
+{%- if override.instance_type is defined %}
+              InstanceType: {{ override.instance_type }}
+{%- endif %}
+{%- if override.launch_template_specification is defined %}
+              LaunchTemplateSpecification:
+{{ launch_template_specification.prep(override.launch_template_specification) | indent(width=16, first=true) }}
+{%- endif %}
+{%- if override.wieghted_capacity is defined %}
+              WeightedCapacity: {{ override.wieghted_capacity }}
+{%- endif %}
+{%- endfor %}
+{%- if auto_scaling_group.mixed_instances_policy.instances_distribution is defined %}
+        InstancesDistribution:
+{%- if auto_scaling_group.mixed_instances_policy.instances_distribution.on_demand_allocation_strategy is defined %}
+          OnDemandAllocationStrategy: {{ auto_scaling_group.mixed_instances_policy.instances_distribution.on_demand_allocation_strategy }}
+{%- endif %}
+{%- if auto_scaling_group.mixed_instances_policy.instances_distribution.on_demand_base_capacity is defined %}
+          OnDemandBaseCapacity: {{ auto_scaling_group.mixed_instances_policy.instances_distribution.on_demand_base_capacity }}
+{%- endif %}
+{%- if auto_scaling_group.mixed_instances_policy.instances_distribution.on_demand_percentage_above_base_capacity is defined %}
+          OnDemandPercentageAboveBaseCapacity: {{ auto_scaling_group.mixed_instances_policy.instances_distribution.on_demand_percentage_above_base_capacity }}
+{%- endif %}
+{%- if auto_scaling_group.mixed_instances_policy.instances_distribution.spot_allocation_strategy is defined %}
+          SpotAllocationStrategy: {{ auto_scaling_group.mixed_instances_policy.instances_distribution.spot_allocation_strategy }}
+{%- endif %}
+{%- if auto_scaling_group.mixed_instances_policy.instances_distribution.spot_instance_pools is defined %}
+          SpotInstancePools: {{ auto_scaling_group.mixed_instances_policy.instances_distribution.spot_instance_pools }}
+{%- endif %}
+{%- if auto_scaling_group.mixed_instances_policy.instances_distribution.spot_max_price is defined %}
+          SpotMaxPrice: {{ auto_scaling_group.mixed_instances_policy.instances_distribution.spot_max_price }}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- if auto_scaling_group.new_instances_protected_from_scale_in is defined %}
+      NewInstancesProtectedFromScaleIn: {{ auto_scaling_group.new_instances_protected_from_scale_in }}
+{%- endif %}
+{%- if auto_scaling_group.notification_configurations is defined %}
+      NotificationConfigurations:
+{%- for notification_configuration in auto_scaling_group.notification_configurations %}
+        - TopicARN: {{ notification_configuration.topic_arn }}
+          NotificationTypes:
+{%- for notification_type in notification_configuration.notification_types %}
+            - {{ notification_type }}
+{%- endfor %}
+{%- endfor %}
+{%- endif %}
+{%- if auto_scaling_group.placement_group is defined %}
+      PlacementGroup: {{ auto_scaling_group.placement_group }}
+{%- endif %}
+{%- if auto_scaling_group.service_linked_role_arn is defined %}
+      ServiceLinkedRoleARN: {{ auto_scaling_group.service_linked_role_arn }}
+{%- endif %}
+{%- if auto_scaling_group.target_group_arns is defined %}
+      TargetGroupARNs:
+{%- for target_group_arn in auto_scaling_group.target_group_arns %}
+        - {{ target_group_arn }}
+{%- endfor %}
+{%- endif %}
+{%- if auto_scaling_group.termination_policies is defined %}
+      TerminationPolicies:
+{%- for termination_policy in auto_scaling_group.termination_policies %}
+        - {{ termination_policy }}
+{%- endfor %}
+{%- endif %}
+{%- if auto_scaling_group.vpc_zone_identifier is defined %}
+      VPCZoneIdentifier:
+{%- for subnet_id in auto_scaling_group.vpc_zone_identifier %}
+        - {{ subnet_id }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+          PropagateAtLaunch: 'true'
+{%- if auto_scaling_group.tags is defined %}  {## BEGIN {%- if auto_scaling_group.tags is defined %} #}
+{%- for key,value,propagte_at_launch in auto_scaling_group.tags.items() %}  {### BEGIN {%- for key,value in auto_scaling_group.tags.items() %} #}
+        - Key: {{ key }}
+          Value: {{ value }}
+          PropagateAtLaunch: {{ propagte_at_launch }}
+{%- endfor %}  {### END {%- for key,value in auto_scaling_group.tags.items() %} #}
+{%- endif %}  {## END {%- if auto_scaling_group.tags is defined %} #}
+{%- endfor %}  {# END {%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %} #}
+
+Outputs:
+{%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %}
+{% set auto_scaling_group_name = auto_scaling_group.name %}
+  {{ auto_scaling_group_name }}:
+    Description: The ASG name for {{ auto_scaling_group_name }}
+    Value:
+      Ref: {{ auto_scaling_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ auto_scaling_group_name }}"
+{%- endfor %}
