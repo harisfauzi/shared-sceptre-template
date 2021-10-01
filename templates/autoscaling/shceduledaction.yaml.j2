@@ -1,110 +1,47 @@
-Description: CodeCommit Repository for {{ sceptre_user_data.project_code }}
+Description: AutoScaling Scheduled Action(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for repository in sceptre_user_data.repositories %}  {# BEGIN {%- for repository in sceptre_user_data.repositories %} #}
-{%- set repository_name = repository.name %}
-  {{ repository_name }}:
-    Type: AWS::CodeCommit::Repository
-    DeletionPolicy: {{ repository.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ repository.update_replace_policy | default('Delete') }}
+{%- for scheduled_action in sceptre_user_data.scheduled_actions %}  {# BEGIN {%- for scheduled_action in sceptre_user_data.scheduled_actions %} #}
+{%- set scheduled_action_name = scheduled_action.name %}
+  {{ scheduled_action_name }}:
+    Type: AWS::AutoScaling::ScheduledAction
+    DeletionPolicy: {{ scheduled_action.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ scheduled_action.update_replace_policy | default('Delete') }}
     Properties:
-      RepositoryName: {{ repository.repository_name }}
-{%- if repository.code is defined %}  {## BEGIN {%- if repository.code is defined %} #}
-      Code:
-{%- if repository.code.branch_name is defined %}  {### BEGIN {%- if repository.code.branch_name is defined %} #}
-        BranchName: {{ repository.code.branch_name }}
-{%- endif %}  {### END {%- if repository.code.branch_name is defined %} #}
-        S3:
-          Bucket: {{ repository.code.s3.bucket }}
-          Key: {{ repository.code.s3.key }}
-{%- if repository.code.s3.object_version is defined %}  {### BEGIN {%- if repository.code.s3.object_version is defined %} #}
-          ObjectVersion: {{ repository.code.s3.object_version }}
-{%- endif %}  {### END {%- if repository.code.s3.object_version is defined %} #}
-{%- endif %}  {## END {%- if repository.code is defined %} #}
-{%- if repository.repository_description is defined %}  {## BEGIN {%- if repository.repository_description is defined %} #}
-      RepositoryDescription: {{ repository.repository_description }}
-{%- endif %}  {## END {%- if repository.repository_description is defined %} #}
-      Tags:
-        - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if repository.tags is defined %}  {## BEGIN {%- if repository.tags is defined %} #}
-{%- for key,value in repository.tags.items() %}  {### BEGIN {%- for key,value in repository.tags.items() %} #}
-        - Key: {{ key }}
-          Value: {{ value }}
-{%- endfor %}  {### END {%- for key,value in repository.tags.items() %} #}
-{%- endif %}  {## END {%- if repository.tags is defined %} #}
-{%- if repository.triggers is defined %}  {## BEGIN {%- if repository.triggers is defined %} #}
-      Triggers:
-{%- for repository_trigger in repository.triggers %}  {### BEGIN {%- for repository_trigger in repository.triggers %} #}
-        - Name: {{ repository_trigger.name }}
-          DestinationArn: {{ repository_trigger.destination_arn }}
-          Events:
-{%- for event in repository_trigger.events %}  {#### BEGIN {%- for event in repository_trigger.events %} #}
-            - {{ event }}
-{%- endfor %}  {#### END {%- for event in repository_trigger.events %} #}
-{%- if repository_trigger.branches is defined %}   {#### BEGIN {%- if repository_trigger.branches is defined %} #}
-          Branches:
-{%- for branch in repository_trigger.branches %}  {##### BEGIN {%- for branch in repository_trigger.branches %} #}
-            - {{ branch }}
-{%- endfor %}  {##### END {%- for branch in repository_trigger.branches %} #}
-{%- endif %}  {#### END {%- if repository_trigger.branches is defined %} #}
-{%- if repository_trigger.custom_data is defined %}  {#### BEGIN {%- if repository_trigger.custom_data is defined %} #}
-          CustomData: {{ repository_trigger.custom_data }}
-{%- endif %}  {#### END {%- if repository_trigger.custom_data is defined %} #}
-{%- endfor %}  {### END {%- for repository_trigger in repository.triggers %} #}
-{%- endif %}  {## END {%- if repository.triggers is defined %} #}
-{%- endfor %}  {# END {%- for repository in sceptre_user_data.repositories %} #}
+      AutoScalingGroupName: {{ scheduled_action.auto_scaling_group_name }}
+{%- if scheduled_action.desired_capacity is defined %}
+      DesiredCapacity: {{ scheduled_action.desired_capacity }}
+{%- endif %}
+{%- if scheduled_action.end_time is defined %}
+      EndTime: {{ scheduled_action.end_time }}
+{%- endif %}
+{%- if scheduled_action.max_size is defined %}
+      MaxSize: {{ scheduled_action.max_size }}
+{%- endif %}
+{%- if scheduled_action.min_size is defined %}
+      MinSize: {{ scheduled_action.min_size }}
+{%- endif %}
+{%- if scheduled_action.recurrence is defined %}
+      Recurrence: {{ scheduled_action.recurrence }}
+{%- endif %}
+{%- if scheduled_action.start_time is defined %}
+      StartTime: {{ scheduled_action.start_time }}
+{%- endif %}
+{%- if scheduled_action.time_zone is defined %}
+      TimeZone: {{ scheduled_action.time_zone }}
+{%- endif %}
+{%- endfor %}  {# END {%- for scheduled_action in sceptre_user_data.scheduled_actions %} #}
 
 Outputs:
-{%- for repository in sceptre_user_data.repositories %}
-{% set repository_name = repository.name %}
-  {{ repository_name }}:
-    Description: Repository ID for {{ repository_name }}
+{%- for scheduled_action in sceptre_user_data.scheduled_actions %}
+{% set scheduled_action_name = scheduled_action.name %}
+  {{ scheduled_action_name }}:
+    Description: The name of {{ scheduled_action_name }}
     Value:
-      Ref: {{ repository_name }}
+      Ref: {{ scheduled_action_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ repository_name }}"
-
-  {{ repository_name }}Arn:
-    Description: The ARN for {{ repository_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ repository_name }}
-        - Arn
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ repository_name }}-Arn"
-
-  {{ repository_name }}CloneUrlHttp:
-    Description: The URL to clone {{ repository_name }} over HTTPS
-    Value:
-      Fn::GetAtt:
-        - {{ repository_name }}
-        - CloneUrlHttp
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ repository_name }}-CloneUrlHttp"
-
-  {{ repository_name }}CloneUrlSsh:
-    Description: The URL to clone {{ repository_name }} over SSH
-    Value:
-      Fn::GetAtt:
-        - {{ repository_name }}
-        - CloneUrlSsh
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ repository_name }}-CloneUrlSsh"
-
-  {{ repository_name }}Name:
-    Description: The repository name for {{ repository_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ repository_name }}
-        - Name
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ repository_name }}-Name"
+        Fn::Sub: "${AWS::StackName}-{{ scheduled_action_name }}"
 {%- endfor %}
