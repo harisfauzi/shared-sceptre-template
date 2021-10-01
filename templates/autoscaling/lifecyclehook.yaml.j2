@@ -1,0 +1,45 @@
+Description: AutoScaling Lifecycle Hook(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %}  {# BEGIN {%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %} #}
+{%- set lifecycle_hook_name = lifecycle_hook.name %}
+  {{ lifecycle_hook_name }}:
+    Type: AWS::AutoScaling::LifecycleHook
+    DeletionPolicy: {{ lifecycle_hook.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ lifecycle_hook.update_replace_policy | default('Delete') }}
+    Properties:
+      AutoScalingGroupName: {{ lifecycle_hook.auto_scaling_group_name }}
+      LifecycleTransition: {{ lifecycle_hook.lifecycle_transition }}
+{%- if lifecycle_hook.default_result is defined %}
+      DefaultResult: {{ lifecycle_hook.default_result }}
+{%- endif %}
+{%- if lifecycle_hook.heartbeat_timeout is defined %}
+      HeartbeatTimeout: {{ lifecycle_hook.heartbeat_timeout }}
+{%- endif %}
+{%- if lifecycle_hook.lifecycle_hook_name is defined %}
+      LifecycleHookName: {{ lifecycle_hook.lifecycle_hook_name }}
+{%- endif %}
+{%- if lifecycle_hook.notification_metadata is defined %}
+      NotificationMetadata: {{ lifecycle_hook.notification_metadata }}
+{%- endif %}
+{%- if lifecycle_hook.notification_target_arn is defined %}
+      NotificationTargetARN: {{ lifecycle_hook.notification_target_arn }}
+{%- endif %}
+{%- if lifecycle_hook.role_arn is defined %}
+      RoleARN: {{ lifecycle_hook.role_arn }}
+{%- endif %}
+{%- endfor %}  {# END {%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %} #}
+
+Outputs:
+{%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %}
+{% set lifecycle_hook_name = lifecycle_hook.name %}
+  {{ lifecycle_hook_name }}:
+    Description: The name of {{ lifecycle_hook_name }}
+    Value:
+      Ref: {{ lifecycle_hook_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ lifecycle_hook_name }}"
+{%- endfor %}

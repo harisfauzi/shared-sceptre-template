@@ -1,0 +1,47 @@
+Description: AutoScaling Scheduled Action(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for scheduled_action in sceptre_user_data.scheduled_actions %}  {# BEGIN {%- for scheduled_action in sceptre_user_data.scheduled_actions %} #}
+{%- set scheduled_action_name = scheduled_action.name %}
+  {{ scheduled_action_name }}:
+    Type: AWS::AutoScaling::ScheduledAction
+    DeletionPolicy: {{ scheduled_action.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ scheduled_action.update_replace_policy | default('Delete') }}
+    Properties:
+      AutoScalingGroupName: {{ scheduled_action.auto_scaling_group_name }}
+{%- if scheduled_action.desired_capacity is defined %}
+      DesiredCapacity: {{ scheduled_action.desired_capacity }}
+{%- endif %}
+{%- if scheduled_action.end_time is defined %}
+      EndTime: {{ scheduled_action.end_time }}
+{%- endif %}
+{%- if scheduled_action.max_size is defined %}
+      MaxSize: {{ scheduled_action.max_size }}
+{%- endif %}
+{%- if scheduled_action.min_size is defined %}
+      MinSize: {{ scheduled_action.min_size }}
+{%- endif %}
+{%- if scheduled_action.recurrence is defined %}
+      Recurrence: {{ scheduled_action.recurrence }}
+{%- endif %}
+{%- if scheduled_action.start_time is defined %}
+      StartTime: {{ scheduled_action.start_time }}
+{%- endif %}
+{%- if scheduled_action.time_zone is defined %}
+      TimeZone: {{ scheduled_action.time_zone }}
+{%- endif %}
+{%- endfor %}  {# END {%- for scheduled_action in sceptre_user_data.scheduled_actions %} #}
+
+Outputs:
+{%- for scheduled_action in sceptre_user_data.scheduled_actions %}
+{% set scheduled_action_name = scheduled_action.name %}
+  {{ scheduled_action_name }}:
+    Description: The name of {{ scheduled_action_name }}
+    Value:
+      Ref: {{ scheduled_action_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scheduled_action_name }}"
+{%- endfor %}

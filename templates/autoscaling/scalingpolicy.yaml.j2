@@ -1,0 +1,127 @@
+Description: AutoScaling Scaling Policy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for scaling_policy in sceptre_user_data.scaling_policys %}  {# BEGIN {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
+{%- set scaling_policy_name = scaling_policy.name %}
+  {{ scaling_policy_name }}:
+    Type: AWS::AutoScaling::ScalingPolicy
+    DeletionPolicy: {{ scaling_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ scaling_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      AutoScalingGroupName: String
+{%- if scaling_policy.adjustment_type is defined %}
+      AdjustmentType: {{ scaling_policy.adjustment_type }}
+{%- endif %}
+{%- if scaling_policy.cooldown is defined %}
+      Cooldown: {{ scaling_policy.cooldown }}
+{%- endif %}
+{%- if scaling_policy.estimated_instance_warmup is defined %}
+      EstimatedInstanceWarmup: {{ scaling_policy.estimated_instance_warmup }}
+{%- endif %}
+{%- if scaling_policy.metric_aggregation_type is defined %}
+      MetricAggregationType: {{ scaling_policy.metric_aggregation_type }}
+{%- endif %}
+{%- if scaling_policy.min_adjustment_magnitude is defined %}
+      MinAdjustmentMagnitude: {{ scaling_policy.min_adjustment_magnitude }}
+{%- endif %}
+{%- if scaling_policy.policy_type is defined %}
+      PolicyType: {{ scaling_policy.policy_type }}
+{%- endif %}
+{%- if scaling_policy.predictive_scaling_configuration is defined %}  {# BEGIN {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
+      PredictiveScalingConfiguration:
+        MetricSpecifications:
+{%- for metric_specification in scaling_policy.predictive_scaling_configuration.metric_specifications %}
+          - TargetValue: {{ metric_specification.target_value }}
+{%- if metric_specification.predefined_load_metrics_specification is defined %}
+            PredefinedLoadMetricSpecification:
+              PredefinedMetricType: {{ metric_specification.predefined_load_metrics_specification.predefined_metric_type }}
+{%- if metric_specification.predefined_load_metrics_specification.resource_label is defined %}
+              ResourceLabel: {{ metric_specification.predefined_load_metrics_specification.resource_label }}
+{%- endif %}
+{%- endif %}
+{%- if metric_specification.predefined_load_metrics_specification is defined %}
+            PredefinedMetricPairSpecification:
+              PredefinedMetricType: {{ metric_specification.predefined_load_metrics_specification.predefined_metric_type }}
+{%- if metric_specification.predefined_load_metrics_specification.resource_label is defined %}
+              ResourceLabel: {{ metric_specification.predefined_load_metrics_specification.resource_label }}
+{%- endif %}
+{%- endif %}
+{%- if metric_specification.predefined_load_metrics_specification is defined %}
+            PredefinedScalingMetricSpecification:
+              PredefinedMetricType: {{ metric_specification.predefined_load_metrics_specification.predefined_metric_type }}
+{%- if metric_specification.predefined_load_metrics_specification.resource_label is defined %}
+              ResourceLabel: String
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- if scaling_policy.predictive_scaling_configuration.max_capacity_breach_behavior is defined %}
+        MaxCapacityBreachBehavior: {{ scaling_policy.predictive_scaling_configuration.max_capacity_breach_behavior }}
+{%- endif %}
+{%- if scaling_policy.predictive_scaling_configuration.max_capacity_buffer is defined %}
+        MaxCapacityBuffer: {{ scaling_policy.predictive_scaling_configuration.max_capacity_buffer }}
+{%- endif %}
+{%- if scaling_policy.predictive_scaling_configuration.mode is defined %}
+        Mode: {{ scaling_policy.predictive_scaling_configuration.mode }}
+{%- endif %}
+{%- if scaling_policy.predictive_scaling_configuration.scheduling_buffer_time is defined %}
+        SchedulingBufferTime: {{ scaling_policy.predictive_scaling_configuration.scheduling_buffer_time }}
+{%- endif %}
+{%- endif %}  {# END {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
+{%- if scaling_policy.scaling_adjustment is defined %}
+      ScalingAdjustment: {{ scaling_policy.scaling_adjustment }}
+{%- endif %}
+{%- if scaling_policy.step_adjustments is defined %}
+      StepAdjustments:
+{%-for step_adjustment in scaling_policy.step_adjustments %}
+        - ScalingAdjustment: {{ step_adjustment.scaling_adjustment }}
+{%- if step_adjustment.metric_interval_lower_bound is defined %}
+          MetricIntervalLowerBound: {{ step_adjustment.metric_interval_lower_bound }}
+{%- endif %}
+{%- if step_adjustment.metric_interval_upper_bound is defined %}
+          MetricIntervalUpperBound: {{ step_adjustment.metric_interval_upper_bound }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if scaling_policy.target_tracking_configuration is defined %}
+      TargetTrackingConfiguration:
+        TargetValue: {{ scaling_policy.target_tracking_configuration.target_value }}
+{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification is defined %}
+        CustomizedMetricSpecification:
+          MetricName: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.metric_name }}
+          Namespace: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.namespace }}
+          Statistic: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.statistic }}
+          Dimensions:
+{%- for dimension scaling_policy.target_tracking_configuration.customized_metrics_specification.dimensions %}
+            - Name: {{ dimension.name }}
+              Value: {{ dimension.value }}
+{%- endfor %}
+{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification.unit is defined %}
+          Unit: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.unit }}
+{%- endif %}
+{%- endif %}
+{%- if scaling_policy.target_tracking_configuration.disable_scale_in is defined %}
+        DisableScaleIn: {{ scaling_policy.target_tracking_configuration.disable_scale_in }}
+{%- endif %}
+{%- if scaling_policy.target_tracking_configuration.predefined_metric_specification is defined %}
+        PredefinedMetricSpecification:
+          PredefinedMetricType: {{ scaling_policy.target_tracking_configuration.predefined_metric_type }}
+{%- if scaling_policy.target_tracking_configuration.resource_label is defined %}
+          ResourceLabel: {{ scaling_policy.target_tracking_configuration.resource_label }}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}  {# END {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
+
+Outputs:
+{%- for scaling_policy in sceptre_user_data.scaling_policys %}
+{% set scaling_policy_name = scaling_policy.name %}
+  {{ scaling_policy_name }}:
+    Description: The ARN of {{ scaling_policy_name }}
+    Value:
+      Ref: {{ scaling_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scaling_policy_name }}"
+{%- endfor %}
