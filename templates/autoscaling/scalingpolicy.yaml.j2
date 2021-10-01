@@ -1,110 +1,128 @@
-Description: CodeCommit Repository for {{ sceptre_user_data.project_code }}
+Description: AutoScaling Scaling Policy(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for repository in sceptre_user_data.repositories %}  {# BEGIN {%- for repository in sceptre_user_data.repositories %} #}
-{%- set repository_name = repository.name %}
-  {{ repository_name }}:
-    Type: AWS::CodeCommit::Repository
-    DeletionPolicy: {{ repository.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ repository.update_replace_policy | default('Delete') }}
+{%- for scaling_policy in sceptre_user_data.scaling_policys %}  {# BEGIN {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
+{%- set scaling_policy_name = scaling_policy.name %}
+  {{ scaling_policy_name }}:
+    Type: AWS::AutoScaling::ScalingPolicy
+    DeletionPolicy: {{ scaling_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ scaling_policy.update_replace_policy | default('Delete') }}
     Properties:
-      RepositoryName: {{ repository.repository_name }}
-{%- if repository.code is defined %}  {## BEGIN {%- if repository.code is defined %} #}
-      Code:
-{%- if repository.code.branch_name is defined %}  {### BEGIN {%- if repository.code.branch_name is defined %} #}
-        BranchName: {{ repository.code.branch_name }}
-{%- endif %}  {### END {%- if repository.code.branch_name is defined %} #}
-        S3:
-          Bucket: {{ repository.code.s3.bucket }}
-          Key: {{ repository.code.s3.key }}
-{%- if repository.code.s3.object_version is defined %}  {### BEGIN {%- if repository.code.s3.object_version is defined %} #}
-          ObjectVersion: {{ repository.code.s3.object_version }}
-{%- endif %}  {### END {%- if repository.code.s3.object_version is defined %} #}
-{%- endif %}  {## END {%- if repository.code is defined %} #}
-{%- if repository.repository_description is defined %}  {## BEGIN {%- if repository.repository_description is defined %} #}
-      RepositoryDescription: {{ repository.repository_description }}
-{%- endif %}  {## END {%- if repository.repository_description is defined %} #}
-      Tags:
-        - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if repository.tags is defined %}  {## BEGIN {%- if repository.tags is defined %} #}
-{%- for key,value in repository.tags.items() %}  {### BEGIN {%- for key,value in repository.tags.items() %} #}
-        - Key: {{ key }}
-          Value: {{ value }}
-{%- endfor %}  {### END {%- for key,value in repository.tags.items() %} #}
-{%- endif %}  {## END {%- if repository.tags is defined %} #}
-{%- if repository.triggers is defined %}  {## BEGIN {%- if repository.triggers is defined %} #}
-      Triggers:
-{%- for repository_trigger in repository.triggers %}  {### BEGIN {%- for repository_trigger in repository.triggers %} #}
-        - Name: {{ repository_trigger.name }}
-          DestinationArn: {{ repository_trigger.destination_arn }}
-          Events:
-{%- for event in repository_trigger.events %}  {#### BEGIN {%- for event in repository_trigger.events %} #}
-            - {{ event }}
-{%- endfor %}  {#### END {%- for event in repository_trigger.events %} #}
-{%- if repository_trigger.branches is defined %}   {#### BEGIN {%- if repository_trigger.branches is defined %} #}
-          Branches:
-{%- for branch in repository_trigger.branches %}  {##### BEGIN {%- for branch in repository_trigger.branches %} #}
-            - {{ branch }}
-{%- endfor %}  {##### END {%- for branch in repository_trigger.branches %} #}
-{%- endif %}  {#### END {%- if repository_trigger.branches is defined %} #}
-{%- if repository_trigger.custom_data is defined %}  {#### BEGIN {%- if repository_trigger.custom_data is defined %} #}
-          CustomData: {{ repository_trigger.custom_data }}
-{%- endif %}  {#### END {%- if repository_trigger.custom_data is defined %} #}
-{%- endfor %}  {### END {%- for repository_trigger in repository.triggers %} #}
-{%- endif %}  {## END {%- if repository.triggers is defined %} #}
-{%- endfor %}  {# END {%- for repository in sceptre_user_data.repositories %} #}
+      AutoScalingGroupName: String
+{%- if scaling_policy.adjustment_type is defined %}
+      AdjustmentType: {{ scaling_policy.adjustment_type }}
+{%- endif %}
+{%- if scaling_policy.cooldown is defined %}
+      Cooldown: {{ scaling_policy.cooldown }}
+{%- endif %}
+{%- if scaling_policy.estimated_instance_warmup is defined %}
+      EstimatedInstanceWarmup: {{ scaling_policy.estimated_instance_warmup }}
+{%- endif %}
+{%- if scaling_policy.metric_aggregation_type is defined %}
+      MetricAggregationType: {{ scaling_policy.metric_aggregation_type }}
+{%- endif %}
+{%- if scaling_policy.min_adjustment_magnitude is defined %}
+      MinAdjustmentMagnitude: {{ scaling_policy.min_adjustment_magnitude }}
+{%- endif %}
+{%- if scaling_policy.policy_type is defined %}
+      PolicyType: {{ scaling_policy.policy_type }}
+{%- endif %}
+{%- if scaling_policy.predictive_scaling_configuration is defined %}  {# BEGIN {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
+      PredictiveScalingConfiguration:
+        MetricSpecifications:
+{%- for metric_specification in scaling_policy.predictive_scaling_configuration.metric_specifications %}
+          - TargetValue: {{ metric_specification.target_value }}
+{%- if metric_specification.predefined_load_metrics_specification is defined %}
+            PredefinedLoadMetricSpecification:
+              PredefinedMetricType: {{ metric_specification.predefined_load_metrics_specification.predefined_metric_type }}
+{%- if metric_specification.predefined_load_metrics_specification.resource_label is defined %}
+              ResourceLabel: {{ metric_specification.predefined_load_metrics_specification.resource_label }}
+{%- endif %}
+{%- endif %}
+{%- if metric_specification.predefined_load_metrics_specification is defined %}
+            PredefinedMetricPairSpecification:
+              PredefinedMetricType: {{ metric_specification.predefined_load_metrics_specification.predefined_metric_type }}
+{%- if metric_specification.predefined_load_metrics_specification.resource_label is defined %}
+              ResourceLabel: {{ metric_specification.predefined_load_metrics_specification.resource_label }}
+{%- endif %}
+{%- endif %}
+{%- if metric_specification.predefined_load_metrics_specification is defined %}
+            PredefinedScalingMetricSpecification:
+              PredefinedMetricType: {{ metric_specification.predefined_load_metrics_specification.predefined_metric_type }}
+{%- if metric_specification.predefined_load_metrics_specification.resource_label is defined %}
+              ResourceLabel: String
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- if scaling_policy.predictive_scaling_configuration.max_capacity_breach_behavior is defined %}
+        MaxCapacityBreachBehavior: {{ scaling_policy.predictive_scaling_configuration.max_capacity_breach_behavior }}
+{%- endif %}
+{%- if scaling_policy.predictive_scaling_configuration.max_capacity_buffer is defined %}
+        MaxCapacityBuffer: {{ scaling_policy.predictive_scaling_configuration.max_capacity_buffer }}
+{%- endif %}
+{%- if scaling_policy.predictive_scaling_configuration.mode is defined %}
+        Mode: {{ scaling_policy.predictive_scaling_configuration.mode }}
+{%- endif %}
+{%- if scaling_policy.predictive_scaling_configuration.scheduling_buffer_time is defined %}
+        SchedulingBufferTime: {{ scaling_policy.predictive_scaling_configuration.scheduling_buffer_time }}
+{%- endif %}
+{%- endif %}  {# END {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
+{%- if scaling_policy.scaling_adjustment is defined %}
+      ScalingAdjustment: {{ scaling_policy.scaling_adjustment }}
+{%- endif %}
+{%- if scaling_policy.step_adjustments is defined %}
+      StepAdjustments:
+{%-for step_adjustment in scaling_policy.step_adjustments %}
+        - ScalingAdjustment: {{ step_adjustment.scaling_adjustment }}
+{%- if step_adjustment.metric_interval_lower_bound is defined %}
+          MetricIntervalLowerBound: {{ step_adjustment.metric_interval_lower_bound }}
+{%- endif %}
+{%- if step_adjustment.metric_interval_upper_bound is defined %}
+          MetricIntervalUpperBound: {{ step_adjustment.metric_interval_upper_bound }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if scaling_policy.target_tracking_configuration is defined %}
+      TargetTrackingConfiguration:
+        TargetValue: {{ scaling_policy.target_tracking_configuration.target_value }}
+{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification is defined %}
+        CustomizedMetricSpecification:
+          MetricName: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.metric_name }}
+          Namespace: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.namespace }}
+          Statistic: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.statistic }}
+          Dimensions:
+{%- for dimension scaling_policy.target_tracking_configuration.customized_metrics_specification.dimensions %}
+            - Name: {{ dimension.name }}
+              Value: {{ dimension.value }}
+{%- endfor %}
+{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification.unit is defined %}
+          Unit: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.unit }}
+{%- endif %}
+{%- endif %}
+{%- if scaling_policy.target_tracking_configuration.disable_scale_in is defined %}
+        DisableScaleIn: {{ scaling_policy.target_tracking_configuration.disable_scale_in }}
+{%- endif %}
+{%- if scaling_policy.target_tracking_configuration.predefined_metric_specification is defined %}
+        PredefinedMetricSpecification:
+          PredefinedMetricType: {{ scaling_policy.target_tracking_configuration.predefined_metric_type }}
+{%- if scaling_policy.target_tracking_configuration.resource_label is defined %}
+          ResourceLabel: {{ scaling_policy.target_tracking_configuration.resource_label }}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}  {# END {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
 
 Outputs:
-{%- for repository in sceptre_user_data.repositories %}
-{% set repository_name = repository.name %}
-  {{ repository_name }}:
-    Description: Repository ID for {{ repository_name }}
+{%- for scaling_policy in sceptre_user_data.scaling_policys %}
+{% set scaling_policy_name = scaling_policy.name %}
+  {{ scaling_policy_name }}:
+    Description: The ARN of {{ scaling_policy_name }}
     Value:
-      Ref: {{ repository_name }}
+      Ref: {{ scaling_policy_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ repository_name }}"
-
-  {{ repository_name }}Arn:
-    Description: The ARN for {{ repository_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ repository_name }}
-        - Arn
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ repository_name }}-Arn"
-
-  {{ repository_name }}CloneUrlHttp:
-    Description: The URL to clone {{ repository_name }} over HTTPS
-    Value:
-      Fn::GetAtt:
-        - {{ repository_name }}
-        - CloneUrlHttp
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ repository_name }}-CloneUrlHttp"
-
-  {{ repository_name }}CloneUrlSsh:
-    Description: The URL to clone {{ repository_name }} over SSH
-    Value:
-      Fn::GetAtt:
-        - {{ repository_name }}
-        - CloneUrlSsh
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ repository_name }}-CloneUrlSsh"
-
-  {{ repository_name }}Name:
-    Description: The repository name for {{ repository_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ repository_name }}
-        - Name
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ repository_name }}-Name"
+        Fn::Sub: "${AWS::StackName}-{{ scaling_policy_name }}"
 {%- endfor %}
