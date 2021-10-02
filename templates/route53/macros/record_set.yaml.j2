@@ -1,0 +1,60 @@
+{% macro prep(record_set) %}
+Name: {{ record_set.record_set_name }}
+Type: {{ record_set.type }}
+{%- if record_set.alias_target is defined %}
+AliasTarget:
+  DNSName: {{ record_set.alias_target.dns_name }}
+  HostedZoneId: {{ record_set.alias_target.hosted_zone_id }}
+{%- if record_set.alias_target.evaluate_target_health is defined %}
+  EvaluateTargetHealth: {{ record_set.alias_target.evaluate_target_health }}
+{%- endif %}
+{%- endif %}
+{%- if record_set.comment is defined %}
+Comment: {{ record_set.comment }}
+{%- endif %}
+{%- if record_set.failover is defined %}
+Failover: {{ record_set.failover }}
+{%- endif %}
+{%- if record_set.geo_location is defined %}
+GeoLocation:
+{%- if record_set.geo_location.continent_code is defined %}
+  ContinentCode: {{ record_set.geo_location.continent_code }}
+{%- endif %}
+{%- if record_set.geo_location.country_code is defined %}
+  CountryCode: {{ record_set.geo_location.country_code }}
+{%- endif %}
+{%- if record_set.geo_location.subdivision_code is defined %}
+  SubdivisionCode: {{ record_set.geo_location.subdivision_code }}
+{%- endif %}
+{%- endif %}
+{%- if record_set.health_check_id is defined %}
+HealthCheckId: {{ record_set.health_check_id }}
+{%- endif %}
+{%- if record_set.hosted_zone_id is defined %}
+HostedZoneId: {{ record_set.hosted_zone_id }}
+{%- endif %}
+{%- if record_set.hosted_zone_name is defined %}
+HostedZoneName: {{ record_set.hosted_zone_name }}
+{%- endif %}
+{%- if record_set.multi_value_answer is defined %}
+MultiValueAnswer: {{ record_set.multi_value_answer }}
+{%- endif %}
+{%- if record_set.region is defined %}
+Region: {{ record_set.region }}
+{%- endif %}
+{%- if record_set.resource_records is defined %}
+ResourceRecords:
+{%- for resource_record in record_set.resource_records %}
+  - {{ resource_record }}
+{%- endfor %}
+{%- endif %}
+{%- if record_set.set_identifier is defined %}
+SetIdentifier: {{ record_set.set_identifier }}
+{%- endif %}
+{%- if record_set.ttl is defined %}
+TTL: {{ record_set.ttl }}
+{%- endif %}
+{%- if record_set.weight is defined %}
+Weight: {{ record_set.weight }}
+{%- endif %}
+{% endmacro %}

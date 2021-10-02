@@ -1,0 +1,45 @@
+Description: Route53 Health Check(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for health_check in sceptre_user_data.health_checks %}  {# BEGIN {%- for health_check in sceptre_user_data.health_checks %} #}
+{%- set health_check_name = health_check.name %}
+  {{ health_check_name }}:
+    Type: AWS::Route53::HealthCheck
+    DeletionPolicy: {{ health_check.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ health_check.update_replace_policy | default('Delete') }}
+    Properties:
+      HealthCheckConfig:
+{{ health_check.health_check_config | indent(width=8, first=true) }}
+{%- if health_check.health_check_tags is defined %}
+      HealthCheckTags:
+{%- for key, value in health_check.health_check_tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}  {# END {%- for health_check in sceptre_user_data.health_checks %} #}
+
+Outputs:
+{%- for health_check in sceptre_user_data.health_checks %}
+{% set health_check_name = health_check.name %}
+  {{ health_check_name }}:
+    Description: The Health Check ID for {{ health_check_name }}
+    Value:
+      Ref: {{ health_check_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ health_check_name }}"
+
+  {{ health_check_name }}HealthCheckId:
+    Description: The Health Check ID for {{ health_check_name }}
+    Value:
+      Fn::GetAtt: {{ health_check_name }}
+        - {{ health_check_name }}
+        - HealthCheckId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ health_check_name }}-HealthCheckId"
+
+{%- endfor %}
