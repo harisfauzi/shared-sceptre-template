@@ -1,0 +1,52 @@
+Description: IAM Policy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for policy in sceptre_user_data.managed_policies %}
+{%- set policy_name = policy.name %}
+  {{ policy_name }}:
+    Type: AWS::IAM::Policy
+    DeletionPolicy: {{ policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ policy.update_replace_policy | default('Delete') }}
+    Properties:
+      PolicyName: {{ policy.policy_name }}
+{%- if policy.policy_document_json is defined %}
+      PolicyDocument: {{ policy.policy_document_json }}
+{%- else %}
+      PolicyDocument:
+{{ policy.policy_document | indent(width=8, first=true) }}
+{%- endif %}
+{%- if policy.groups is defined %}
+      Groups:
+{%- for group in policy.groups %}
+        - {{ group }}
+{%- endfor %}
+{%- endif %}
+{%- if policy.roles is defined %}
+      Roles:
+{%- for role in policy.roles %}
+        - {{ role }}
+{%- endfor %}
+{%- endif %}
+{%- if policy.users is defined %}
+      Users:
+{%- for user in policy.users %}
+        - {{ user }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for policy in sceptre_user_data.managed_policies %}
+{% set policy_name = policy.name %}
+  {{ policy_name }}:
+    Description: The name of {{ policy_name }}
+    Value:
+      Ref: {{ policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ policy_name }}"
+
+{%- endfor %}

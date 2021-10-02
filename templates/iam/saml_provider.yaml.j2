@@ -1,0 +1,40 @@
+Description: IAM SAML Provider(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for saml_provider in sceptre_user_data.saml_providers %}
+{%- set saml_provider_name = saml_provider.name %}
+  {{ saml_provider_name }}:
+    Type: AWS::IAM::SAMLProvider
+    DeletionPolicy: {{ saml_provider.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ saml_provider.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if saml_provider.saml_provider_name is defined %}
+      Name: {{ saml_provider.saml_provider_name }}
+{%- endif %}
+      SamlMetadataDocument: {{ saml_provider.saml_metadata_document }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if saml_provider.tags is defined %}
+{%- for key,value in saml_provider.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for saml_provider in sceptre_user_data.saml_providers %}
+{% set saml_provider_name = saml_provider.name %}
+  {{ saml_provider_name }}:
+    Description: The ARN of {{ saml_provider_name }}
+    Value:
+      Ref: {{ saml_provider_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ saml_provider_name }}"
+
+{%- endfor %}

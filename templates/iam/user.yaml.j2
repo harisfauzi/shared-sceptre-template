@@ -1,0 +1,169 @@
+Description: IAM User(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password is defined  %}
+Parameters:
+{%- for user in sceptre_user_data.users %}
+{%- set user_name = user.name %}
+  {{ user_name }}password:
+    Type: String
+    Description: Password for {{ user_name }}
+    NoEcho: true
+{%- endfor %}
+{%- endif %}
+
+Resources:
+{%- for user in sceptre_user_data.users %}
+{%- set user_name = user.name %}
+  {{ user_name }}:
+    Type: AWS::IAM::User
+    DeletionPolicy: {{ user.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ user.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if user.groups is defined %}
+      Groups:
+{%- for group in user.groups %}
+        - {{ group }}
+{%- endfor %}
+{%- endif %}
+{%- if user.login_profile is defined %}
+      LoginProfile:
+        Password:
+          Ref: {{ user_name }}password
+{%- if user.groups.login_profile.password_reset_required is defined %}
+        PasswordResetRequired: {{ user.groups.login_profile.password_reset_required }}
+{%- endif %}
+{%- endif %}
+{%- if user.managed_policy_arns is defined %}
+      ManagedPolicyArns:
+{%- for managed_policy_arn in user.managed_policy_arns %}
+        - {{ managed_policy_arn }}
+{%- endfor %}
+{%- endif %}
+{%- if user.path is defined %}
+      Path: {{ user.path }}
+{%- endif %}
+{%- if user.permissions_boundary is defined %}
+      PermissionsBoundary: {{ user.permissions_boundary }}
+{%- endif %}
+{%- if user.policies is defined %}
+      Policies:
+{%- for policy in user.policies %}
+        - PolicyName: {{ policy.policy_name }}
+          PolicyDocument:
+{{ policy.policy_document | indent(width=12, first=true) }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if user.tags is defined %}
+{%- for key,value in user.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if user.user_name is defined %}
+      UserName: {{ user.user_name }}
+{%- endif %}
+
+{%- if user.access_key_1 is defined %}  {# BEGIN {%- if user.access_key_1 is defined %} #}
+  {{ user_name }}accesskey1:
+    Type: AWS::IAM::AccessKey
+    DeletionPolicy: {{ user.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ user.update_replace_policy | default('Delete') }}
+    Properties:
+      UserName:
+        Ref: {{ user_name }}
+{%- if user.access_key_1.serial is defined %}
+      Serial: {{ user.access_key_1.serial }}
+{%- endif %}
+{%- if user.access_key_1.serial is defined %}
+      Status: {{ user.access_key_1.serial }}
+{%- endif %}
+{%- endif %}  {# END {%- if user.access_key_1 is defined %} #}
+
+{%- if user.access_key_2 is defined %}  {# BEGIN {%- if user.access_key_2 is defined %} #}
+  {{ user_name }}accesskey2:
+    Type: AWS::IAM::AccessKey
+    DeletionPolicy: {{ user.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ user.update_replace_policy | default('Delete') }}
+    Properties:
+      UserName:
+        Ref: {{ user_name }}
+{%- if user.access_key_2.serial is defined %}
+      Serial: {{ user.access_key_2.serial }}
+{%- endif %}
+{%- if user.access_key_2.serial is defined %}
+      Status: {{ user.access_key_2.serial }}
+{%- endif %}
+{%- endif %}  {# END {%- if user.access_key_2 is defined %} #}
+{%- endfor %}
+
+Outputs:
+
+{%- for user in sceptre_user_data.users %}
+{% set user_name = user.name %}
+  {{ user_name }}:
+    Description: User Name for {{ user_name }}
+    Value:
+      Ref: {{ user_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ user_name }}"
+
+  {{ user_name }}Arn:
+    Description: The ARN for {{ user_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ user_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ user_name }}-Arn"
+
+{%- if user.access_key_1 is defined %}  {# BEGIN {%- if user.access_key_1 is defined %} #}
+  {{ user_name }}accesskey1AccessKeyId:
+    Description: Access Key Id for {{ user_name }}accesskey1
+    Value:
+      Ref: {{ user_name }}accesskey1
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_key_name }}-accesskey1-AccessKeyId"
+
+{%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %}  {# BEGIN {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %} #}
+  {{ user_name }}accesskey1SecretAccessKey:
+    Description: The ARN for {{ access_key_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_key_name }}accesskey1
+        - SecretAccessKey
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_key_name }}-accesskey1-SecretAccessKey"
+{%- endif %}    {# END {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %} #}
+{%- endif %}  {# END {%- if user.access_key_1 is defined %} #}
+
+{%- if user.access_key_2 is defined %}  {# BEGIN {%- if user.access_key_2 is defined %} #}
+  {{ user_name }}accesskey1AccessKeyId:
+    Description: Access Key Id for {{ user_name }}accesskey1
+    Value:
+      Ref: {{ user_name }}accesskey1
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_key_name }}-accesskey1-AccessKeyId"
+
+{%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %}  {# BEGIN {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %} #}
+  {{ user_name }}accesskey1SecretAccessKey:
+    Description: The ARN for {{ access_key_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_key_name }}accesskey1
+        - SecretAccessKey
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_key_name }}-accesskey1-SecretAccessKey"
+{%- endif %}    {# END {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %} #}
+{%- endif %}  {# END {%- if user.access_key_2 is defined %} #}
+
+{%- endfor %}

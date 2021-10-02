@@ -1,0 +1,63 @@
+Description: IAM Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for group in sceptre_user_data.groups %}
+{%- set group_name = group.name %}
+  {{ group_name }}:
+    Type: AWS::IAM::Role
+    DeletionPolicy: {{ group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ group.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if group.group_name is defined %}
+      GroupName: {{ group.group_name }}
+{%- endif %}
+{%- if group.managed_policy_arns is defined %}
+      ManagedPolicyArns:
+{%- for arn in group.managed_policy_arns %}
+        - {{ arn }}
+{%- endfor %}
+{%- endif %}
+{%- if group.path is defined %}
+      Path: {{ group.path }}
+{%- endif %}
+{%- if group.permissions_boundary is defined %}
+      PermissionsBoundary: {{ group.permissions_boundary }}
+{%- endif %}
+{%- if group.policies is defined %}
+      Policies:
+{%- for policy in group.policies %}
+        - PolicyName: {{ policy.policy_name }}
+{%- if policy.policy_document_json is defined %}
+          PolicyDocument: {{ policy.policy_document_json }}
+{%- else %}
+          PolicyDocument:
+{{ policy.policy_document | indent(width=12, first=true) }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for group in sceptre_user_data.groups %}
+{% set group_name = group.name %}
+  {{ group_name }}:
+    Description: Group Name for {{ group_name }}
+    Value:
+      Ref: {{ group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ group_name }}"
+
+  {{ group_name }}Arn:
+    Description: The ARN for {{ group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ group_name }}-Arn"
+{%- endfor %}

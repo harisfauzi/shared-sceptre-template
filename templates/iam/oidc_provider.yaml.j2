@@ -1,0 +1,49 @@
+Description: IAM OIDC Provider(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for oidc_provider in sceptre_user_data.oidc_providers %}
+{%- set oidc_provider_name = oidc_provider.name %}
+  {{ oidc_provider_name }}:
+    Type: AWS::IAM::OIDCProvider
+    DeletionPolicy: {{ oidc_provider.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ oidc_provider.update_replace_policy | default('Delete') }}
+    Properties:
+      ThumbprintList:
+{%- for thumbprint in oidc_provider.thumbprint_list %}
+        - {{ thumbprint }}
+{%- endfor %}
+{%- if oidc_provider.client_id_list is defined %}
+      ClientIdList:
+{%- for client_id in oidc_provider.client_id_list %}
+        - {{ client_id }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if oidc_provider.tags is defined %}
+{%- for key,value in oidc_provider.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if oidc_provider.url is defined %}
+      Url: {{ oidc_provider.url }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for oidc_provider in sceptre_user_data.oidc_providers %}
+{% set oidc_provider_name = oidc_provider.name %}
+  {{ oidc_provider_name }}:
+    Description: The ARN of {{ oidc_provider_name }}
+    Value:
+      Ref: {{ oidc_provider_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ oidc_provider_name }}"
+
+{%- endfor %}
