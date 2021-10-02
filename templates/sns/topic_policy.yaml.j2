@@ -1,0 +1,23 @@
+Description: SNS Topicy Policy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for topic_policy in sceptre_user_data.topic_policys %}
+{%- set topic_policy_name = topic_policy.name %}
+  {{ topic_policy_name }}:
+    Type: AWS::SNS::TopicPolicy
+    DeletionPolicy: {{ topic_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ topic_policy.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if topic_policy.policy_document_json is defined %}
+      PolicyDocument: {{ topic_policy.policy_document_json }}
+{%- else %}
+      PolicyDocument:
+{{ topic_policy.policy_document | indent(width=12, first=true) }}
+{%- endif %}
+      Topics:
+{%- for topic in topic_policy.topics %}
+        - {{ topic }}
+{%- endfor %}
+{%- endfor %}
