@@ -1,0 +1,64 @@
+Description: IAM Server Certificate(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for server_certificate in sceptre_user_data.server_certificates %}
+{%- set server_certificate_name = server_certificate.name %}
+  {{ server_certificate_name }}:
+    Type: AWS::IAM::ServerCertificate
+    DeletionPolicy: {{ server_certificate.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ server_certificate.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if server_certificate.certificate_body is defined %}
+      CertificateBody: |
+{{ server_certificate.certificate_body | indent(width=8, first=true) }}
+{%- endif %}
+{%- if server_certificate.certificate_chain is defined %}
+      CertificateChain: |
+{{ server_certificate.certificate_chain | indent(width=8, first=true) }}
+{%- endif %}
+{%- if server_certificate.path is defined %}
+      Path: {{ server_certificate.path }}
+{%- endif %}
+{%- if server_certificate.private_key is defined %}
+      PrivateKey: |
+{{ server_certificate.private_key | indent(width=8, first=true) }}
+{%- endif %}
+{%- if server_certificate.server_certificate_name is defined %}
+      ServerCertificateName: {{ server_certificate.server_certificate_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if server_certificate.tags is defined %}
+{%- for key,value in server_certificate.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for server_certificate in sceptre_user_data.server_certificates %}
+{% set server_certificate_name = server_certificate.name %}
+  {{ server_certificate_name }}:
+    Description: ServerCertificateName for {{ server_certificate_name }}
+    Value:
+      Ref: {{ server_certificate_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ server_certificate_name }}"
+
+  {{ server_certificate_name }}Arn:
+    Description: The ARN for {{ server_certificate_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ server_certificate_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ server_certificate_name }}-Arn"
+
+{%- endfor %}

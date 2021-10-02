@@ -1,0 +1,60 @@
+Description: IAM Managed Policy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for managed_policy in sceptre_user_data.managed_policies %}
+{%- set managed_policy_name = managed_policy.name %}
+  {{ managed_policy_name }}:
+    Type: AWS::IAM::ManagedPolicy
+    DeletionPolicy: {{ managed_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ managed_policy.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if managed_policy.policy_document_json is defined %}
+      PolicyDocument: {{ managed_policy.policy_document_json }}
+{%- else %}
+      PolicyDocument:
+{{ managed_policy.policy_document | indent(width=8, first=true) }}
+{%- endif %}
+{%- if managed_policy.description is defined %}
+      Description: {{ managed_policy.description }}
+{%- endif %}
+{%- if managed_policy.groups is defined %}
+      Groups:
+{%- for group in managed_policy.groups %}
+        - {{ group }}
+{%- endfor %}
+{%- endif %}
+{%- if managed_policy.managed_policy_name is defined %}
+      ManagedPolicyName: {{ managed_policy.managed_policy_name }}
+{%- endif %}
+{%- if managed_policy.path is defined %}
+      Path: {{ managed_policy.path }}
+{%- endif %}
+{%- if managed_policy.roles is defined %}
+      Roles:
+{%- for role in managed_policy.roles %}
+        - {{ role }}
+{%- endfor %}
+{%- endif %}
+{%- if managed_policy.users is defined %}
+      Users:
+{%- for user in managed_policy.users %}
+        - {{ user }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for managed_policy in sceptre_user_data.managed_policies %}
+{% set managed_policy_name = managed_policy.name %}
+  {{ managed_policy_name }}:
+    Description: The ARN for {{ managed_policy_name }}
+    Value:
+      Ref: {{ managed_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ managed_policy_name }}"
+
+{%- endfor %}
