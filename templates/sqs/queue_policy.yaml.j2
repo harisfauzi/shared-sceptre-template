@@ -1,0 +1,23 @@
+Description: SQS Queue Policy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for queue_policy in sceptre_user_data.queue_policys %}
+{%- set queue_policy_name = queue_policy.name %}
+  {{ queue_policy_name }}:
+    Type: AWS::SQS::QueuePolicy
+    DeletionPolicy: {{ queue_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ queue_policy.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if queue_policy.policy_document_json is defined %}
+      PolicyDocument: {{ queue_policy.policy_document_json }}
+{%- else %}
+      PolicyDocument:
+{{ queue_policy.policy_document_json | indent(width=8, first=true) }}
+{%- endif %}
+      Queues:
+{%- for queue in queue_policy.queues %}
+        - {{ queue }}
+{%- endif %}
+{%- endfor %}

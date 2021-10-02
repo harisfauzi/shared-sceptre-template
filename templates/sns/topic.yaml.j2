@@ -55,7 +55,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ topic_name }}"
 
   {{ topic_name }}TopicName:
-    Description: The ARN for {{ topic_name }}
+    Description: The Topic Name for {{ topic_name }}
     Value:
       Fn::GetAtt:
         - {{ topic_name }}
