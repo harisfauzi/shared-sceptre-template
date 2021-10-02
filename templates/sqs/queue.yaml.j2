@@ -1,0 +1,100 @@
+Description: SQS Queue(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for queue in sceptre_user_data.queues %}
+{%- set queue_name = queue.name %}
+  {{ queue_name }}:
+    Type: AWS::SQS::Queue
+    DeletionPolicy: {{ queue.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ queue.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if queue.content_based_deduplication is defined %}
+      ContentBasedDeduplication: {{ queue.content_based_deduplication }}
+{%- endif %}
+{%- if queue.deduplication_scope is defined %}
+      DeduplicationScope: {{ queue.deduplication_scope }}
+{%- endif %}
+{%- if queue.delay_seconds is defined %}
+      DelaySeconds: {{ queue.delay_seconds }}
+{%- endif %}
+{%- if queue.fifo_queue is defined %}
+      FifoQueue: {{ queue.fifo_queue }}
+{%- endif %}
+{%- if queue.fifo_throughput_limit is defined %}
+      FifoThroughputLimit: {{ queue.fifo_throughput_limit }}
+{%- endif %}
+{%- if queue.kms_data_key_reuse_period_seconds is defined %}
+      KmsDataKeyReusePeriodSeconds: {{ queue.kms_data_key_reuse_period_seconds }}
+{%- endif %}
+{%- if queue.kms_master_key_id is defined %}
+      KmsMasterKeyId: {{ queue.kms_master_key_id }}
+{%- endif %}
+{%- if queue.maximum_message_size is defined %}
+      MaximumMessageSize: {{ queue.maximum_message_size }}
+{%- endif %}
+{%- if queue.message_retention_period is defined %}
+      MessageRetentionPeriod: {{ queue.message_retention_period }}
+{%- endif %}
+{%- if queue.queue_name is defined %}
+      QueueName: {{ queue.queue_name }}
+{%- endif %}
+{%- if queue.receive_message_time_seconds is defined %}
+      ReceiveMessageWaitTimeSeconds: {{ queue.receive_message_time_seconds }}
+{%- endif %}
+{%- if queue.redrive_allow_policy is defined %}
+      RedriveAllowPolicy:
+{{ queue.redrive_allow_policy | indent(width=8, first=true) }}
+{%- endif %}
+{%- if queue.redrive_policy is defined %}
+      RedrivePolicy:
+{{ queue.redrive_policy | indent(width=8, first=true) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if queue.tags is defined %}
+{%- for key,value in queue.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if queue.visibility_timeout is defined %}
+      VisibilityTimeout: {{ queue.visibility_timeout }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for queue in sceptre_user_data.queues %}
+{% set queue_name = queue.name %}
+  {{ queue_name }}:
+    Description: The queue URL for {{ queue_name }}
+    Value:
+      Ref: {{ queue_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ queue_name }}"
+
+  {{ queue_name }}Arn:
+    Description: The ARN for {{ queue_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ queue_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ queue_name }}-Arn"
+
+  {{ queue_name }}QueueName:
+    Description: The Name for {{ queue_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ queue_name }}
+        - QueueName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ queue_name }}-QueueName"
+
+{%- endfor %}
