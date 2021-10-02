@@ -1,0 +1,42 @@
+{% import 'macros/record_set.yaml.j2' as record_set_macro %}
+Description: Route53 Record Set Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for record_set_group in sceptre_user_data.record_set_groups %}  {# BEGIN {%- for record_set_group in sceptre_user_data.record_set_groups %} #}
+{%- set record_set_group_name = record_set_group.name %}
+  {{ record_set_group_name }}:
+    Type: AWS::Route53::RecordSetGroup
+    DeletionPolicy: {{ record_set_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ record_set_group.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if record_set_group.hosted_zone_id is defined %}
+      HostedZoneId: {{ record_set_group.hosted_zone_id }}
+{%- else %}
+      HostedZoneName: {{ record_set_group.hosted_zone_name }}
+{%- endif %}
+{%- record_set_group.comment  is defined %}
+      Comment: {{ record_set_group.comment }}
+{%- endif %}
+{%- record_set_group.record_sets  is defined %}
+      RecordSets:
+{%- for record_set in record_set_group.record_sets %}
+      -
+{{ record_set_macro.prep(record_set) | indent(width=8, first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}  {# END {%- for record_set_group in sceptre_user_data.record_set_groups %} #}
+
+Outputs:
+{%- for record_set_group in sceptre_user_data.record_set_groups %}
+{% set record_set_group_name = record_set_group.name %}
+  {{ record_set_group_name }}:
+    Description: The name of {{ record_set_group_name }}
+    Value:
+      Ref: {{ record_set_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ record_set_group_name }}"
+
+{%- endfor %}

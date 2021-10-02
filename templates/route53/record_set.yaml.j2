@@ -1,0 +1,28 @@
+{% import 'macros/record_set.yaml.j2' as record_set_macro %}
+Description: Route53 Record Set(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for record_set in sceptre_user_data.record_sets %}  {# BEGIN {%- for record_set in sceptre_user_data.record_sets %} #}
+{%- set record_set_name = record_set.name %}
+  {{ record_set_name }}:
+    Type: AWS::Route53::RecordSet
+    DeletionPolicy: {{ record_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ record_set.update_replace_policy | default('Delete') }}
+    Properties:
+{{ record_set_macro.prep() | indent(width=6, first=true) }}
+{%- endfor %}  {# END {%- for record_set in sceptre_user_data.record_sets %} #}
+
+Outputs:
+{%- for record_set in sceptre_user_data.record_sets %}
+{% set record_set_name = record_set.name %}
+  {{ record_set_name }}:
+    Description: The value of {{ record_set_name }}
+    Value:
+      Ref: {{ record_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ record_set_name }}"
+
+{%- endfor %}

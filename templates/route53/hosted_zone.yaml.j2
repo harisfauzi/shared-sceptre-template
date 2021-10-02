@@ -1,0 +1,118 @@
+Description: Route53 Hosted Zone(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for hosted_zone in sceptre_user_data.hosted_zones %}  {# BEGIN {%- for hosted_zone in sceptre_user_data.hosted_zones %} #}
+{%- set hosted_zone_name = hosted_zone.name %}
+  {{ hosted_zone_name }}:
+    Type: AWS::Route53::HostedZone
+    DeletionPolicy: {{ hosted_zone.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ hosted_zone.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ hosted_zone.hosted_zone_name }}
+{%- if hosted_zone.hosted_zone_config is defined %}
+      HostedZoneConfig:
+        Comment: {{ hosted_zone.hosted_zone_config.comment }}
+{%- endif %}
+{%- if hosted_zone.hosted_zone_config is defined %}
+      HostedZoneTags:
+{%- for key, value in hosted_zone.hosted_zone_tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if hosted_zone.hosted_zone_config is defined %}
+      QueryLoggingConfig:
+        CloudWatchLogsLogGroupArn: {{ hosted_zone.hosted_zone_config.cloud_watch_logs_log_group_arn }}
+{%- endif %}
+{%- if hosted_zone.hosted_zone_config is defined %}
+      VPCs:
+{%- for vpc_id, vpc_region in hosted_zone.hosted_zone_config.vpcs.items() %}
+        - VPCId: {{ vpc_id }}
+          VPCRegion: {{ vpc_region }}
+{%- endfor %}
+{%- endif %}
+
+{%- if hosted_zone.enable_dnssec is defined and hosted_zone.enable_dnssec == '1' %}
+  {{ hosted_zone_name }}DNSSEC:
+    Type: AWS::Route53::DNSSEC
+    DeletionPolicy: {{ hosted_zone.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ hosted_zone.update_replace_policy | default('Delete') }}
+    Properties:
+      HostedZoneId:
+        Ref: {{ hosted_zone_name }}
+{%- endif %}
+
+{%- endfor %}  {# END {%- for hosted_zone in sceptre_user_data.hosted_zones %} #}
+
+Outputs:
+{%- for hosted_zone in sceptre_user_data.hosted_zones %}
+{% set hosted_zone_name = hosted_zone.name %}
+  {{ hosted_zone_name }}:
+    Description: The Hosted Zone ID for {{ hosted_zone_name }}
+    Value:
+      Ref: {{ hosted_zone_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}"
+
+  {{ hosted_zone_name }}Id:
+    Description: The Hosted Zone ID for {{ hosted_zone_name }}
+    Value:
+      Fn::GetAtt: {{ hosted_zone_name }}
+        - {{ hosted_zone_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-Id"
+
+  {{ hosted_zone_name }}NameServer0:
+    Description: The Hosted Zone ID for {{ hosted_zone_name }}
+    Value:
+      Fn::Select:
+        - 0
+        - Fn::GetAtt: {{ hosted_zone_name }}
+            - {{ hosted_zone_name }}
+            - NameServers
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer0"
+
+  {{ hosted_zone_name }}NameServer1:
+    Description: The Hosted Zone ID for {{ hosted_zone_name }}
+    Value:
+      Fn::Select:
+        - 1
+        - Fn::GetAtt: {{ hosted_zone_name }}
+            - {{ hosted_zone_name }}
+            - NameServers
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer1"
+
+  {{ hosted_zone_name }}NameServer2:
+    Description: The Hosted Zone ID for {{ hosted_zone_name }}
+    Value:
+      Fn::Select:
+        - 2
+        - Fn::GetAtt: {{ hosted_zone_name }}
+            - {{ hosted_zone_name }}
+            - NameServers
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer2"
+
+  {{ hosted_zone_name }}NameServer3:
+    Description: The Hosted Zone ID for {{ hosted_zone_name }}
+    Value:
+      Fn::Select:
+        - 3
+        - Fn::GetAtt: {{ hosted_zone_name }}
+            - {{ hosted_zone_name }}
+            - NameServers
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer3"
+
+{%- endfor %}
