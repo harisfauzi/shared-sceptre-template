@@ -37,6 +37,20 @@ Resources:
 {%- endif %}
 {%- endfor %}
 {%- endif %}
+
+{%- if group.users is defined %}  {# BEGIN {%- if group.users is defined %} #}{# Do not use this if you map the user to the group in AWS::IAM::User#}
+  {{ group_name }}UsersAddition:
+    DeletionPolicy: {{ group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ group.update_replace_policy | default('Delete') }}
+    Type: AWS::IAM::UserToGroupAddition
+    Properties:
+      GroupName:
+        Ref: {{ group_name }}
+      Users:
+{%- for user in group.users %}
+        - {{ user }}
+{%- endfor %}
+{%- endif %}  {# END {%- if group.users is defined %} #}
 {%- endfor %}
 
 Outputs:
@@ -60,4 +74,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ group_name }}-Arn"
+
+{%- if group.users is defined %}
+  {{ group_name }}UsersAddition:
+    Description: Users addition resource name for {{ group_name }}
+    Value:
+      Ref: {{ group_name }}UsersAddition
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ group_name }}-UsersAddition"
+{%- endif %}
+
 {%- endfor %}

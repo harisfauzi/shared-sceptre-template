@@ -1,0 +1,20 @@
+Description: IAM Service Linked Role(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for service_linked_role in sceptre_user_data.service_linked_roles %}
+{%- set service_linked_role_name = service_linked_role.name %}
+  {{ service_linked_role_name }}:
+    Type: AWS::IAM::ServiceLinkedRole
+    DeletionPolicy: {{ service_linked_role.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ service_linked_role.update_replace_policy | default('Delete') }}
+    Properties:
+      AWSServiceName: {{ service_linked_role.aws_service_name }}
+{%- if service_linked_role.custom_suffix is defined %}
+      CustomSuffix: {{ service_linked_role.custom_suffix }}
+{%- endif %}
+{%- if service_linked_role.description is defined %}
+      Description: {{ service_linked_role.description }}
+{%- endif %}
+{%- endfor %}

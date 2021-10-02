@@ -1,0 +1,46 @@
+Description: IAM Virtual MFA Device(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for virtual_mfa_device in sceptre_user_data.virtual_mfa_devices %}
+{%- set virtual_mfa_device_name = virtual_mfa_device.name %}
+  {{ virtual_mfa_device_name }}:
+    Type: AWS::IAM::VirtualMFADevice
+    DeletionPolicy: {{ virtual_mfa_device.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ virtual_mfa_device.update_replace_policy | default('Delete') }}
+    Properties:
+      Users:
+{%- for user in virtual_mfa_device.users %}
+        - {{ user }}
+{%- endfor %}
+{%- if virtual_mfa_device.path is defined %}
+      Path: {{ virtual_mfa_device.path }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if virtual_mfa_device.tags is defined %}
+{%- for key,value in virtual_mfa_device.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if virtual_mfa_device.virtual_mfa_device_name is defined %}
+      VirtualMfaDeviceName: {{ virtual_mfa_device.virtual_mfa_device_name }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for virtual_mfa_device in sceptre_user_data.virtual_mfa_devices %}
+{% set virtual_mfa_device_name = virtual_mfa_device.name %}
+  {{ virtual_mfa_device_name }}:
+    Description: Serial Number of {{ virtual_mfa_device_name }}
+    Value:
+      Ref: {{ virtual_mfa_device_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ virtual_mfa_device_name }}"
+
+{%- endfor %}
