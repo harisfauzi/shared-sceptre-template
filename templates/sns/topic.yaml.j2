@@ -1,0 +1,67 @@
+Description: SNS Topic(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for topic in sceptre_user_data.topics %}
+{%- set topic_name = topic.name %}
+  {{ topic_name }}:
+    Type: AWS::SNS::Topic
+    DeletionPolicy: {{ topic.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ topic.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if topic.topic_name is defined %}
+      TopicName: {{ topic.topic_name }}
+{%- endif %}
+{%- if topic.content_base_deduplication is defined %}
+      ContentBasedDeduplication: {{ topic.content_base_deduplication }}
+{%- endif %}
+{%- if topic.display_name is defined %}
+      DisplayName: {{ topic.display_name }}
+{%- endif %}
+{%- if topic.fifo_topic is defined %}
+      FifoTopic: {{ topic.fifo_topic }}
+{%- endif %}
+{%- if topic.kms_master_key_id is defined %}
+      KmsMasterKeyId: {{ topic.kms_master_key_id }}
+{%- endif %}
+{%- if topic.subscription is defined %}
+      Subscription:
+{%- for subscription in topic.subscription %}
+        - {{ subscription }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if topic.tags is defined %}
+{%- for key,value in topic.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for topic in sceptre_user_data.topics %}
+{% set topic_name = topic.name %}
+  {{ topic_name }}:
+    Description: ARN for {{ topic_name }}
+    Value:
+      Ref: {{ topic_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ topic_name }}"
+
+  {{ topic_name }}TopicName:
+    Description: The ARN for {{ topic_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ topic_name }}
+        - TopicName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ topic_name }}-TopicName"
+
+{%- endfor %}

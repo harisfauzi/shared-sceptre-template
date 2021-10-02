@@ -1,0 +1,39 @@
+Description: SNS Subscription(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for subscription in sceptre_user_data.subscriptions %}
+{%- set subscription_name = subscription.name %}
+  {{ subscription_name }}:
+    Type: AWS::SNS::Subscription
+    DeletionPolicy: {{ subscription.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ subscription.update_replace_policy | default('Delete') }}
+    Properties:
+      Protocol: {{ subscription.protocol }}
+      TopicArn: {{ subscription.topic_arn }}
+{%- if subscription.delivery_policy is defined %}
+      DeliveryPolicy:
+{{ subscription.delivery_policy | indent(width=8, first=true) }}
+{%- endif %}
+{%- if subscription.endpoint is defined %}
+      Endpoint: {{ subscription.endpoint }}
+{%- endif %}
+{%- if subscription.filter_policy is defined %}
+      FilterPolicy:
+{{ subscription.filter_policy | indent(width=8, first=true) }}
+{%- endif %}
+{%- if subscription.raw_message_delivery is defined %}
+      RawMessageDelivery: {{ subscription.raw_message_delivery }}
+{%- endif %}
+{%- if subscription.redrive_policy is defined %}
+      RedrivePolicy:
+{{ subscription.redrive_policy | indent(width=8, first=true) }}
+{%- endif %}
+{%- if subscription.region is defined %}
+      Region: {{ subscription.region }}
+{%- endif %}
+{%- if subscription.subscription_role_arn is defined %}
+      SubscriptionRoleArn: {{ subscription.subscription_role_arn }}
+{%- endif %}
+{%- endfor %}
