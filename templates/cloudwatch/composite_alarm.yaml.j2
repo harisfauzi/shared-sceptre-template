@@ -1,0 +1,63 @@
+Description: CloudWatch Composite Alarm(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for composite_alarm in sceptre_user_data.composite_alarms %}
+{%- set composite_alarm_name = composite_alarm.name %}
+  {{ composite_alarm_name }}:
+    Type: AWS::CloudWatch::CompositeAlarm
+    DeletionPolicy: {{ composite_alarm.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ composite_alarm.update_replace_policy | default('Delete') }}
+    Properties:
+      AlarmName: {{ composite_alarm.alarm_name }}
+      AlarmRule: {{ composite_alarm.alarm_rule}}
+{%- if composite_alarm.actions_enabled is defined %}
+      ActionsEnabled: {{ composite_alarm.actions_enabled }}
+{%- endif %}
+{%- if composite_alarm.alarm_actions is defined %}
+      AlarmActions:
+{%- for alarm_action in composite_alarm.alarm_actions %}
+        - {{ alarm_action }}
+{%- endfor %}
+{%- endif %}
+{%- if composite_alarm.alarm_description is defined %}
+      AlarmDescription: {{ composite_alarm.alarm_description }}
+{%- endif %}
+{%- if composite_alarm.insufficient_data_actions is defined %}
+      InsufficientDataActions:
+{%- for insufficient_data_action in composite_alarm.insufficient_data_actions %}
+        - {{ insufficient_data_action }}
+{%- endfor %}
+{%- endif %}
+{%- if composite_alarm.ok_actions is defined %}
+      OKActions:
+{%- for ok_action in composite_alarm.ok_actions %}
+        - {{ ok_action }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for composite_alarm in sceptre_user_data.composite_alarms %}
+{% set composite_alarm_name = composite_alarm.name %}
+  {{ composite_alarm_name }}:
+    Description: Alarm Name for {{ composite_alarm_name }}
+    Value:
+      Ref: {{ composite_alarm_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ composite_alarm_name }}"
+
+  {{ composite_alarm_name }}Arn:
+    Description: The ARN for {{ composite_alarm_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ composite_alarm_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ composite_alarm_name }}-Arn"
+
+{%- endfor %}

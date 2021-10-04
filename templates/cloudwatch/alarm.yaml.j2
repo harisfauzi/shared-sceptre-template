@@ -1,0 +1,149 @@
+Description: CloudWatch Alarm(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for alarm in sceptre_user_data.alarms %}
+{%- set alarm_name = alarm.name %}
+  {{ alarm_name }}:
+    Type: AWS::CloudWatch::Alarm
+    DeletionPolicy: {{ alarm.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ alarm.update_replace_policy | default('Delete') }}
+    Properties:
+      ComparisonOperator: {{ alarm.comparison_operator }}
+      EvaluationPeriods: {{ alarm.evaluation_period }}
+{%- if alarm.actions_enabled is defined %}
+      ActionsEnabled: {{ alarm.actions_enabled }}
+{%- endif %}
+{%- if alarm.alarm_actions is defined %}
+      AlarmActions:
+{%- for alarm_action in alarm.alarm_actions %}
+        - {{ alarm_action }}
+{%- endfor %}
+{%- endif %}
+{%- if alarm.alarm_description is defined %}
+      AlarmDescription: {{ alarm.alarm_description }}
+{%- endif %}
+{%- if alarm.alarm_name is defined %}
+      AlarmName: {{ alarm.alarm_name }}
+{%- endif %}
+{%- if alarm.datapoints_to_alarm is defined %}
+      DatapointsToAlarm: {{ alarm.datapoints_to_alarm }}
+{%- endif %}
+{%- if alarm.dimensions is defined %}
+      Dimensions:
+{%- for name, value in alarm.dimensions.items() %}
+        - Name: {{ name }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if alarm.evaluate_low_sample_count_percentile is defined %}
+      EvaluateLowSampleCountPercentile: {{ alarm.evaluate_low_sample_count_percentile }}
+{%- endif %}
+{%- if alarm.extended_statistic is defined %}
+      ExtendedStatistic: {{ alarm.extended_statistic }}
+{%- endif %}
+{%- if alarm.insufficient_data_actions is defined %}
+      InsufficientDataActions:
+{%- for data_action in alarm.insufficient_data_actions %}
+        - {{ data_action }}
+{%- endfor %}
+{%- endif %}
+{%- if alarm.metric_name is defined %}
+      MetricName: {{ alarm.metric_name }}
+{%- endif %}
+{%- if alarm.metrics is defined %}
+      Metrics:
+{%- for metric in alarm.metrics %}  {# BEGIN {%- for metric in alarm.metrics %} #}
+        - Id: String
+{%- if metric.account_id is defined %}
+          AccountId: {{ metric.account_id }}
+{%- endif %}
+{%- if metric.expression is defined %}
+          Expression: {{ metric.expression }}
+{%- endif %}
+{%- if metric.label is defined %}
+          Label: {{ metric.label }}
+{%- endif %}
+{%- if metric.metric_stat is defined %}
+          MetricStat:
+            Metric:
+{%- if metric.metric_stat.dimensions is defined %}
+              Dimensions:
+{%- for name, value in metric.metric_stat.dimensions.items() %}
+                - Name: {{ name }}
+                  Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if metric.metric_stat.metric_name is defined %}
+              MetricName: {{ metric.metric_stat.metric_name }}
+{%- endif %}
+{%- if metric.metric_stat.namespace is defined %}
+              Namespace: {{ metric.metric_stat.namespace }}
+{%- endif %}
+            Period: {{ metric.metric_stat.period }}
+            Stat: {{ metric.metric_stat.stat }}
+{%- if metric.metric_stat.unit is defined %}
+            Unit: {{ metric.metric_stat.unit }}
+{%- endif %}
+{%- endif %}
+{%- if metric.period is defined %}
+          Period: {{ metric.period }}
+{%- endif %}
+{%- if metric.return_data is defined %}
+          ReturnData: {{ metric.return_data }}
+{%- endif %}
+{%- endfor %}  {# END {%- for metric in alarm.metrics %} #}
+{%- endif %}
+{%- if alarm.namespace is defined %}
+      Namespace: {{ alarm.namespace }}
+{%- endif %}
+{%- if alarm.ok_actions is defined %}
+      OKActions:
+{%- for action in alarm.ok_actions %}
+        - {{ action }}
+{%- endfor %}
+{%- endif %}
+{%- if alarm.period is defined %}
+      Period: {{ alarm.period }}
+{%- endif %}
+{%- if alarm.statistic is defined %}
+      Statistic: {{ alarm.statistic }}
+{%- endif %}
+{%- if alarm.threshold is defined %}
+      Threshold: {{ alarm.threshold }}
+{%- endif %}
+{%- if alarm.threshold_metric_id is defined %}
+      ThresholdMetricId: {{ alarm.threshold_metric_id }}
+{%- endif %}
+{%- if alarm.threat_missing_data is defined %}
+      TreatMissingData: {{ alarm.threat_missing_data }}
+{%- endif %}
+{%- if alarm.unit is defined %}
+      Unit: {{ alarm.unit }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for alarm in sceptre_user_data.alarms %}
+{% set alarm_name = alarm.name %}
+  {{ alarm_name }}:
+    Description: Alarm Name for {{ alarm_name }}
+    Value:
+      Ref: {{ alarm_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ alarm_name }}"
+
+  {{ alarm_name }}Arn:
+    Description: The ARN for {{ alarm_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ alarm_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ alarm_name }}-Arn"
+
+{%- endfor %}

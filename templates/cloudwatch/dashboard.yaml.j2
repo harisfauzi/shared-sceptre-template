@@ -1,0 +1,36 @@
+Description: CloudWatch Dashboard(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for dashboard in sceptre_user_data.dashboards %}
+{%- set dashboard_name = dashboard.name %}
+  {{ dashboard_name }}:
+    Type: AWS::CloudWatch::Dashboard
+    DeletionPolicy: {{ dashboard.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ dashboard.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if dashboard.dashboard_body_json is defined %}
+      DashboardBody: {{ dashboard.dashboard_body_json }}
+{%- else %}
+      DashboardBody:
+{{ dashboard.dashboard_body | indent(width=8, first=true) }}
+{%- endif %}
+{%- if dashboard.dashboard_name is defined %}
+      DashboardName: {{ dashboard.dashboard_name }}
+{%- endiof %}
+{%- endfor %}
+
+Outputs:
+
+{%- for dashboard in sceptre_user_data.dashboards %}
+{% set dashboard_name = dashboard.name %}
+  {{ dashboard_name }}:
+    Description: Dashboard Name for {{ dashboard_name }}
+    Value:
+      Ref: {{ dashboard_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ dashboard_name }}"
+
+{%- endfor %}

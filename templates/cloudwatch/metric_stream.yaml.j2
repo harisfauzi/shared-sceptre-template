@@ -1,0 +1,93 @@
+Description: CloudWatch Metric Stream(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for metric_stream in sceptre_user_data.metric_streams %}
+{%- set metric_stream_name = metric_stream.name %}
+  {{ metric_stream_name }}:
+    Type: AWS::CloudWatch::MetricStream
+    DeletionPolicy: {{ metric_stream.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ metric_stream.update_replace_policy | default('Delete') }}
+    Properties:
+      FirehoseArn: {{ metric_stream.firehose_arn }}
+      OutputFormat: {{ metric_stream.output_format }}
+      RoleArn: {{ metric_stream.role_arn }}
+{%- if metric_stream.exclude_filters is defined %}
+      ExcludeFilters:
+{%- for filter in metric_stream.exclude_filters %}
+        - Namespace: {{ filter.namespace }}
+{%- endfor %}
+{%- endif %}
+{%- if metric_stream.include_filters is defined %}
+      IncludeFilters:
+{%- for filter in metric_stream.include_filters %}
+        - Namespace: {{ filter.namespace }}
+{%- endfor %}
+{%- endif %}
+{%- if metric_stream.metric_stream_name is defined %}
+      Name: {{ metric_stream.metric_stream_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if metric_stream.tags is defined %}
+{%- for key,value in metric_stream.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for metric_stream in sceptre_user_data.metric_streams %}
+{% set metric_stream_name = metric_stream.name %}
+  {{ metric_stream_name }}:
+    Description: The Name of {{ metric_stream_name }}
+    Value:
+      Ref: {{ metric_stream_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ metric_stream_name }}"
+
+  {{ metric_stream_name }}Arn:
+    Description: The ARN of {{ metric_stream_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ metric_stream_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ metric_stream_name }}-Arn"
+
+  {{ metric_stream_name }}CreationDate:
+    Description: The date that the metric stream {{ metric_stream_name }} was originally created.
+    Value:
+      Fn::GetAtt:
+        - {{ metric_stream_name }}
+        - CreationDate
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ metric_stream_name }}-CreationDate"
+
+  {{ metric_stream_name }}LastUpdateDate:
+    Description: The date that the metric stream {{ metric_stream_name }} was most recently updated.
+    Value:
+      Fn::GetAtt:
+        - {{ metric_stream_name }}
+        - LastUpdateDate
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ metric_stream_name }}-LastUpdateDate"
+
+  {{ metric_stream_name }}State:
+    Description: The state of the metric stream {{ metric_stream_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ metric_stream_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ metric_stream_name }}-State"
+{%- endfor %}
