@@ -1,0 +1,36 @@
+Description: CloudWatch Anomaly Detector(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for anomaly_detector in sceptre_user_data.anomaly_detectors %}
+{%- set anomaly_detector_name = anomaly_detector.name %}
+  {{ anomaly_detector_name }}:
+    Type: AWS::CloudWatch::AnomalyDetector
+    DeletionPolicy: {{ anomaly_detector.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ anomaly_detector.update_replace_policy | default('Delete') }}
+    Properties:
+      MetricName: {{ anomaly_detector.metric_name }}
+      Namespace: {{ anomaly_detector.namespace }}
+      Stat: {{ anomaly_detector.stat }}
+{%- if anomaly_detector.configuration is defined %}
+      Configuration:
+{%- if anomaly_detector.configuration.excluded_time_ranges is defined %}
+        ExcludedTimeRanges:
+{%- for excluded_time_range in anomaly_detector.configuration.excluded_time_ranges %}
+          - EndTime: {{ excluded_time_range.end_time }}
+            StartTime: {{ excluded_time_range.start_time }}
+{%- endfor %}
+{%- endif %}
+{%- if anomaly_detector.configuration.metric_time_zone is defined %}
+        MetricTimeZone: {{ anomaly_detector.configuration.metric_time_zone }}
+{%- endif %}
+{%- endif %}
+{%- if anomaly_detector.dimensions is defined %}
+      Dimensions:
+{%- for name, value in anomaly_detector.dimensions.items() %}
+        - Name: {{ name }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}

@@ -1,0 +1,53 @@
+Description: CloudWatch Insight Rule(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for insight_rule in sceptre_user_data.insight_rules %}
+{%- set insight_rule_name = insight_rule.name %}
+  {{ insight_rule_name }}:
+    Type: AWS::CloudWatch::InsightRule
+    DeletionPolicy: {{ insight_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ insight_rule.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if insight_rule.rule_body_json is defined %}
+      RuleBody: {{ insight_rule.rule_body_json }}
+{%- else %}
+      RuleBody: |
+{{ insight_rule.rule_body | indent(width=8, first=true) }}
+{%- endif %}
+      RuleName: {{ insight_rule.rule_name }}
+      RuleState: {{ insight_rule.rule_state }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if insight_rule.tags is defined %}
+{%- for key,value in insight_rule.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for insight_rule in sceptre_user_data.insight_rules %}
+{% set insight_rule_name = insight_rule.name %}
+  {{ insight_rule_name }}:
+    Description: The ARN of {{ insight_rule_name }}
+    Value:
+      Ref: {{ insight_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ insight_rule_name }}"
+
+  {{ insight_rule_name }}RuleName:
+    Description: The Role Id for {{ insight_rule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ insight_rule_name }}
+        - RuleName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ insight_rule_name }}-RuleName"
+{%- endfor %}
