@@ -1,0 +1,33 @@
+Description: Logs Subscription Filter(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for subscription_filter in sceptre_user_data.subscription_filters %}
+{%- set subscription_filter_name = subscription_filter.name %}
+  {{ subscription_filter_name }}:
+    Type: AWS::Logs::SubscriptionFilter
+    DeletionPolicy: {{ subscription_filter.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ subscription_filter.update_replace_policy | default('Delete') }}
+    Properties:
+      DestinationArn: {{ subscription_filter.destination_arn }}
+      FilterPattern: {{ subscription_filter.filter_pattern }}
+      LogGroupName: {{ subscription_filter.log_group_name }}
+{%- if subscription_filter.role_arn is defined %}
+      RoleArn: {{ subscription_filter.role_arn }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for subscription_filter in sceptre_user_data.subscription_filters %}
+{%- set subscription_filter_name = subscription_filter.name %}
+  {{ subscription_filter_name }}:
+    Description: Resource Name for {{ subscription_filter_name }}
+    Value:
+      Ref: {{ subscription_filter_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ subscription_filter_name }}"
+
+{%- endfor %}

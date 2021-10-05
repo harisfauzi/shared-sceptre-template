@@ -1,0 +1,41 @@
+Description: Logs Destination(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for destination in sceptre_user_data.destinations %}
+{%- set destination_name = destination.name %}
+  {{ destination_name }}:
+    Type: AWS::Logs::Destination
+    DeletionPolicy: {{ destination.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ destination.update_replace_policy | default('Delete') }}
+    Properties:
+      DestinationName: {{ destination.destination_name }}
+      DestinationPolicy: {{ destination.destination_policy }}
+      RoleArn: {{ destination.role_arn }}
+      TargetArn: {{ destination.target_arn }}
+{%- endfor %}
+
+Outputs:
+
+{%- for destination in sceptre_user_data.destinations %}
+{%- set destination_name = destination.name %}
+  {{ destination_name }}:
+    Description: Destination Name for {{ destination_name }}
+    Value:
+      Ref: {{ destination_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ destination_name }}"
+
+  {{ destination_name }}Arn:
+    Description: The ARN for {{ destination_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ destination_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ destination_name }}-Arn"
+
+{%- endfor %}
