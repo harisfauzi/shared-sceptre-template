@@ -1,4 +1,4 @@
-{% import 'macros/launch_template_specification.yaml.j2' as launch_template_specification %}
+{%- import 'macros/launch_template_specification.yaml.j2' as launch_template_specification %}
 Description: AutoScaling Auto Scaling Group(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
@@ -238,7 +238,7 @@ Resources:
 
 Outputs:
 {%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %}
-{% set auto_scaling_group_name = auto_scaling_group.name %}
+{%- set auto_scaling_group_name = auto_scaling_group.name %}
   {{ auto_scaling_group_name }}:
     Description: The ASG name for {{ auto_scaling_group_name }}
     Value:

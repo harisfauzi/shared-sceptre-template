@@ -25,8 +25,8 @@ Resources:
 {%- endfor %}
 
 Outputs:
-{% for customer_gateway in sceptre_user_data.customer_gateways %}
-{% set customer_gateway_name = customer_gateway.name %}
+{%- for customer_gateway in sceptre_user_data.customer_gateways %}
+{%- set customer_gateway_name = customer_gateway.name %}
   {{ customer_gateway_name }}:
     Description: The ID of {{ customer_gateway_name }}
     Value:
@@ -34,4 +34,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ customer_gateway_name }}"
-{% endfor %}
+{%- endfor %}

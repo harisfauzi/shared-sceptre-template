@@ -39,7 +39,7 @@ Resources:
 Outputs:
 
 {%- for vpc in sceptre_user_data.vpcs %}
-{% set vpc_name = vpc.name %}
+{%- set vpc_name = vpc.name %}
   {{ vpc_name }}:
     Description: VPC ID for {{ vpc_name }}
     Value:

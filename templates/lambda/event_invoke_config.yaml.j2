@@ -33,7 +33,7 @@ Resources:
 Outputs:
 
 {%- for event_invoke_config in sceptre_user_data.event_invoke_configs %}
-{% set event_invoke_config_name = event_invoke_config.name %}
+{%- set event_invoke_config_name = event_invoke_config.name %}
   {{ event_invoke_config_name }}:
     Description: The identifier for {{ event_invoke_config_name }}
     Value:

@@ -63,8 +63,8 @@ Resources:
 {%- endfor %}
 
 Outputs:
-{% for subnet in sceptre_user_data.subnets %}
-{% set subnet_name = subnet.name %}
+{%- for subnet in sceptre_user_data.subnets %}
+{%- set subnet_name = subnet.name %}
   {{ subnet_name }}:
     Description: Subnet ID for {{ subnet_name }}
     Value:
@@ -93,4 +93,4 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ subnet_name }}-VpcId"
 
-{% endfor %}
+{%- endfor %}

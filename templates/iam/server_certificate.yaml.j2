@@ -42,7 +42,7 @@ Resources:
 Outputs:
 
 {%- for server_certificate in sceptre_user_data.server_certificates %}
-{% set server_certificate_name = server_certificate.name %}
+{%- set server_certificate_name = server_certificate.name %}
   {{ server_certificate_name }}:
     Description: ServerCertificateName for {{ server_certificate_name }}
     Value:

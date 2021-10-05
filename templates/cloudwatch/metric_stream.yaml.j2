@@ -42,7 +42,7 @@ Resources:
 Outputs:
 
 {%- for metric_stream in sceptre_user_data.metric_streams %}
-{% set metric_stream_name = metric_stream.name %}
+{%- set metric_stream_name = metric_stream.name %}
   {{ metric_stream_name }}:
     Description: The Name of {{ metric_stream_name }}
     Value:

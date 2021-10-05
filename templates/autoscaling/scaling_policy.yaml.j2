@@ -116,7 +116,7 @@ Resources:
 
 Outputs:
 {%- for scaling_policy in sceptre_user_data.scaling_policys %}
-{% set scaling_policy_name = scaling_policy.name %}
+{%- set scaling_policy_name = scaling_policy.name %}
   {{ scaling_policy_name }}:
     Description: The ARN of {{ scaling_policy_name }}
     Value:

@@ -48,7 +48,7 @@ Resources:
 
 Outputs:
 {%- for hosted_zone in sceptre_user_data.hosted_zones %}
-{% set hosted_zone_name = hosted_zone.name %}
+{%- set hosted_zone_name = hosted_zone.name %}
   {{ hosted_zone_name }}:
     Description: The Hosted Zone ID for {{ hosted_zone_name }}
     Value:

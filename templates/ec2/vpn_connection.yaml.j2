@@ -56,8 +56,8 @@ Resources:
 {%- endfor %}
 
 Outputs:
-{% for vpn_connection in sceptre_user_data.vpn_connections %}
-{% set vpn_connection_name = vpn_connection.name %}
+{%- for vpn_connection in sceptre_user_data.vpn_connections %}
+{%- set vpn_connection_name = vpn_connection.name %}
   {{ vpn_connection_name }}:
     Description: The ID of {{ vpn_connection_name }}
     Value:
@@ -65,4 +65,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpn_connection_name }}"
-{% endfor %}
+{%- endfor %}

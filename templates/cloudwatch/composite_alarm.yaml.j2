@@ -41,7 +41,7 @@ Resources:
 Outputs:
 
 {%- for composite_alarm in sceptre_user_data.composite_alarms %}
-{% set composite_alarm_name = composite_alarm.name %}
+{%- set composite_alarm_name = composite_alarm.name %}
   {{ composite_alarm_name }}:
     Description: Alarm Name for {{ composite_alarm_name }}
     Value:
