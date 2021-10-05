@@ -1,0 +1,70 @@
+Description: EC2 DHCP Options for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for dhcp_option in sceptre_user_data.dhcp_options %}
+{%- set dhcp_option_name = dhcp_option.name %}
+  {{ dhcp_option_name }}:
+    Type: AWS::EC2::DHCPOptions
+    DeletionPolicy: {{ dhcp_option.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ dhcp_option.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if dhcp_option.domain_name is defined %}
+      DomainName: {{ dhcp_option.domain_name }}
+{%- endif %}
+{%- if dhcp_option.domain_name_servers is defined %}
+      DomainNameServers:
+{%- for domain_name_server in dhcp_option.domain_name_servers %}
+      - {{ domain_name_server }}
+{%- endfor %}
+{%- endif %}
+{%- if dhcp_option.netbios_name_servers is defined %}
+      NetbiosNameServers:
+{%- for netbios_name_server in dhcp_option.netbios_name_servers %}
+      - {{ netbios_name_server }}
+{%- endfor %}
+{%- endif %}
+{%- if dhcp_option.netbios_node_type is defined %}
+      NetbiosNodeType: {{ dhcp_option.netbios_node_type }}
+{%- endif %}
+{%- if dhcp_option.ntp_servers is defined %}
+      NtpServers:
+{%- for ntp_server in dhcp_option.ntp_servers %}
+      - {{ ntp_server }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if dhcp_option.tags is defined %}
+{%- for key,value in dhcp_option.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for dhcp_option in sceptre_user_data.dhcp_options %}
+{%- set dhcp_option_name = dhcp_option.name %}
+  {{ dhcp_option_name }}:
+    Description: The Name for {{ dhcp_option_name }}
+    Value:
+      Ref: {{ dhcp_option_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ dhcp_option_name }}"
+
+  {{ dhcp_option_name }}DhcpOptionsId:
+    Description: The ID of the DHCP options set for {{ dhcp_option_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ dhcp_option_name }}
+        - DhcpOptionsId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ dhcp_option_name }}-DhcpOptionsId"
+
+{%- endfor %}

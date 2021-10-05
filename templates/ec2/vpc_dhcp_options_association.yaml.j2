@@ -1,0 +1,29 @@
+Description: EC2 VPC DHCP Options Assoication(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for association in sceptre_user_data.associations %}
+{%- set association_name = association.name %}
+  {{ association_name }}:
+    Type: AWS::EC2::VPCDHCPOptionsAssociation
+    DeletionPolicy: {{ association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ association.update_replace_policy | default('Delete') }}
+    Properties:
+      DhcpOptionsId: {{ association.dhcp_options_id }}
+      VpcId: {{ association.vpc_id }}
+{%- endfor %}
+
+Outputs:
+
+{%- for association in sceptre_user_data.associations %}
+{%- set association_name = association.name %}
+  {{ association_name }}:
+    Description: The association ID for {{ association_name }}
+    Value:
+      Ref: {{ association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}"
+
+{%- endfor %}

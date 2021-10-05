@@ -1,0 +1,43 @@
+Description: EC2 NAT Gateway(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for nat_gateway in sceptre_user_data.nat_gateways %}
+{%- set nat_gateway_name = nat_gateway.name %}
+  {{ nat_gateway_name }}:
+    Type: AWS::EC2::NatGateway
+    DeletionPolicy: {{ nat_gateway.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ nat_gateway.update_replace_policy | default('Delete') }}
+    Properties:
+      SubnetId: {{ nat_gateway.subnet_id }}
+{%- if nat_gateway.allocation_id is defined %}
+      AllocationId: {{ nat_gateway.allocation_id }}
+{%- endif %}
+{%- if nat_gateway.connectivity_type is defined %}
+      ConnectivityType: {{ nat_gateway.connectivity_type }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if role.tags is defined %}
+{%- for key,value in role.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for nat_gateway in sceptre_user_data.nat_gateways %}
+{%- set nat_gateway_name = nat_gateway.name %}
+  {{ nat_gateway_name }}:
+    Description: The resource name for {{ nat_gateway_name }}
+    Value:
+      Ref: {{ nat_gateway_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nat_gateway_name }}"
+
+{%- endfor %}
