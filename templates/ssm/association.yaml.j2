@@ -1,0 +1,83 @@
+---
+Description: SSM Association(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for association in sceptre_user_data.associations %}
+{%- set association_name = association.name %}
+{%- if association.type != 'SecureString' %}
+  {{ association_name }}:
+    Type: AWS::SSM::Parameter
+    DeletionPolicy: {{ association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ association.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ association.document_name }}
+{%- if association.apply_only_at_cron_interval is defined %}
+      ApplyOnlyAtCronInterval: {{ association.apply_only_at_cron_interval }}
+{%- endif %}
+{%- if association.association_name is defined %}
+      AssociationName: {{ association.association_name }}
+{%- endif %}
+{%- if association.automation_target_parameter_name is defined %}
+      AutomationTargetParameterName: {{ association.automation_target_parameter_name }}
+{%- endif %}
+{%- if association.calendar_names is defined %}
+      CalendarNames:
+{%- for calendar_name in association.calendar_names %}
+        - {{ calendar_name }}
+{%- endfor %}
+{%- endif %}
+{%- if association.compliance_severity is defined %}
+      ComplianceSeverity: {{ association.compliance_severity }}
+{%- endif %}
+{%- if association.document_version is defined %}
+      DocumentVersion: {{ association.document_version }}
+{%- endif %}
+{%- if association.instance_id is defined %}
+      InstanceId: {{ association.instance_id }}
+{%- endif %}
+{%- if association.max_concurrency is defined %}
+      MaxConcurrency: {{ association.max_concurrency }}
+{%- endif %}
+{%- if association.max_errors is defined %}
+      MaxErrors: {{ association.max_errors }}
+{%- endif %}
+{%- if association.output_location is defined %}  {# BEGIN {%- if association.output_location is defined %} #}
+      OutputLocation:
+        S3Location:
+{%- if association.output_location.s3_location.output_s3_bucket_name is defined %}
+          OutputS3BucketName: {{ association.output_location.s3_location.output_s3_bucket_name }}
+{%- endif %}
+{%- if association.output_location.s3_location.output_s3_key_prefix is defined %}
+          OutputS3KeyPrefix: {{ association.output_location.s3_location.output_s3_key_prefix }}
+{%- endif %}
+{%- if association.output_location.s3_location.output_s3_region is defined %}
+          OutputS3Region: {{ association.output_location.s3_location.output_s3_region }}
+{%- endif %}
+{%- endif %}  {# END {%- if association.output_location is defined %} #}
+{%- if association.parameters is defined %}
+      Parameters:
+{%- for key, value in association.parameters.items() %}
+        {{ key }} : {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if association.schedule_expression is defined %}
+      ScheduleExpression: {{ association.schedule_expression }}
+{%- endif %}
+{%- if association.sync_compliance is defined %}
+      SyncCompliance: {{ association.sync_compliance }}
+{%- endif %}
+{%- if association.targets is defined %}
+      Targets:
+{%- for target in association.targets %}
+        - Key: {{ target.key }}
+          Values:
+{%- for value in target.values %}
+            - {{ value }}
+{%- endfor %}
+{%- endfor %}
+{%- endif %}
+{%- if association.wait_for_success_timeout_seconds is defined %}
+      WaitForSuccessTimeoutSeconds: {{ association.wait_for_success_timeout_seconds }}
+{%- endif %}
+{%- endfor %}
