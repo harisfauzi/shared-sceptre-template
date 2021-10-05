@@ -34,8 +34,8 @@ Resources:
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
+{%- if flow_log.tags is defined %}
+{%- for key,value in flow_log.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}

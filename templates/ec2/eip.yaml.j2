@@ -1,0 +1,55 @@
+Description: EC2 Elastic IP(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for eip in sceptre_user_data.eips %}
+{%- set eip_name = eip.name %}
+  {{ eip_name }}:
+    Type: AWS::EC2::EIP
+    DeletionPolicy: {{ eip.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ eip.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if eip.domain is defined %}
+      Domain: {{ eip.domain }}
+{%- endif %}
+{%- if eip.instance_id is defined %}
+      InstanceId: {{ eip.instance_id }}
+{%- endif %}
+{%- if eip.public_ipv4_pool is defined %}
+      PublicIpv4Pool: {{ eip.public_ipv4_pool }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if role.tags is defined %}
+{%- for key,value in role.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for eip in sceptre_user_data.eips %}
+{%- set eip_name = eip.name %}
+  {{ eip_name }}:
+    Description: The Elastic IP address for {{ eip_name }}
+    Value:
+      Ref: {{ eip_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ eip_name }}"
+
+  {{ eip_name }}AllocationId:
+    Description: The Allocation ID for {{ eip_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ eip_name }}
+        - AllocationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ eip_name }}-AllocationId"
+
+{%- endfor %}

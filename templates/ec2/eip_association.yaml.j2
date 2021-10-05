@@ -1,0 +1,42 @@
+Description: EC2 Elastic IP Association(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for eip_association in sceptre_user_data.eip_associations %}
+{%- set eip_association_name = eip_association.name %}
+  {{ eip_association_name }}:
+    Type: AWS::EC2::EIPAssociation
+    DeletionPolicy: {{ eip_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ eip_association.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if eip_association.allocation_id is defined %}
+      AllocationId: {{ eip_association.allocation_id }}
+{%- endif %}
+{%- if eip_association.eip is defined %}
+      EIP: {{ eip_association.eip }}
+{%- endif %}
+{%- if eip_association.instance_id is defined %}
+      InstanceId: {{ eip_association.instance_id }}
+{%- endif %}
+{%- if eip_association.network_interface_id is defined %}
+      NetworkInterfaceId: {{ eip_association.network_interface_id }}
+{%- endif %}
+{%- if eip_association.private_ip_address is defined %}
+      PrivateIpAddress: {{ eip_association.private_ip_address }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for eip_association in sceptre_user_data.eip_associations %}
+{%- set eip_association_name = eip_association.name %}
+  {{ eip_association_name }}:
+    Description: The resource name for {{ eip_association_name }}
+    Value:
+      Ref: {{ eip_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ eip_association_name }}"
+
+{%- endfor %}

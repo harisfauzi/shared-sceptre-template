@@ -64,8 +64,8 @@ Resources:
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if stored_query.tags is defined %}
-{%- for key,value in stored_query.tags.items() %}
+{%- if load_balancer.tags is defined %}
+{%- for key,value in load_balancer.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
