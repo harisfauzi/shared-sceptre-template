@@ -5,7 +5,6 @@ AWSTemplateFormatVersion: "2010-09-09"
 Resources:
 {%- for association in sceptre_user_data.associations %}
 {%- set association_name = association.name %}
-{%- if association.type != 'SecureString' %}
   {{ association_name }}:
     Type: AWS::SSM::Parameter
     DeletionPolicy: {{ association.deletion_policy | default('Delete') }}
