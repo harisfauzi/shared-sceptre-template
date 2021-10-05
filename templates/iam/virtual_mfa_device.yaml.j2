@@ -34,7 +34,7 @@ Resources:
 Outputs:
 
 {%- for virtual_mfa_device in sceptre_user_data.virtual_mfa_devices %}
-{% set virtual_mfa_device_name = virtual_mfa_device.name %}
+{%- set virtual_mfa_device_name = virtual_mfa_device.name %}
   {{ virtual_mfa_device_name }}:
     Description: Serial Number of {{ virtual_mfa_device_name }}
     Value:

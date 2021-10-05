@@ -1,0 +1,77 @@
+Description: Logs LogGroup(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for log_group in sceptre_user_data.log_groups %}
+{%- set log_group_name = log_group.name %}
+  {{ log_group_name }}:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: {{ log_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ log_group.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if log_group.kms_key_id is defined %}
+      KmsKeyId: {{ log_group.kms_key_id }}
+{%- endif %}
+{%- if log_group.log_group_name is defined %}
+      LogGroupName: {{ log_group.log_group_name }}
+{%- endif %}
+{%- if log_group.retention_in_days is defined %}
+      RetentionInDays: {{ log_group.retention_in_days }}
+{%- endif %}
+
+{%- if log_group.streams is defined %}
+{%- set ii = 0 %}
+{%- for stream in log_group.streams %}
+{%- set ii = ii + 1 %}
+{%- set stream_name = log_group_name + ("%03d" % ii) %}
+  {{ stream_name }}:
+    Type: AWS::Logs::LogStream
+    DeletionPolicy: {{ log_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ log_group.update_replace_policy | default('Delete') }}
+    Properties:
+      LogGroupName:
+        Ref: {{ log_group_name }}
+      LogStreamName: {{ stream }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for log_group in sceptre_user_data.log_groups %}
+{%- set log_group_name = log_group.name %}
+  {{ log_group_name }}:
+    Description: Resource Name for {{ log_group_name }}
+    Value:
+      Ref: {{ log_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ log_group_name }}"
+
+  {{ log_group_name }}Arn:
+    Description: The ARN for {{ log_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ log_group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ log_group_name }}-Arn"
+{%- if log_group.streams is defined %}
+{%- set ii = 0 %}
+{%- for stream in log_group.streams %}
+{%- set ii = ii + 1 %}
+{%- set stream_name = log_group_name + ("%03d" % ii) %}
+  {{ stream_name }}:
+    Description: Stream Name for {{ stream_name }}
+    Value:
+      Ref: {{ stream_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ log_group_name }}-stream{{ "%03d" % ii }}"
+
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}

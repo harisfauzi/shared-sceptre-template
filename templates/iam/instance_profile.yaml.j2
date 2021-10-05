@@ -23,7 +23,7 @@ Resources:
 Outputs:
 
 {%- for instance_profile in sceptre_user_data.instance_profiles %}
-{% set instance_profile_name = instance_profile.name %}
+{%- set instance_profile_name = instance_profile.name %}
   {{ instance_profile_name }}:
     Description: Instance Profile Name for {{ instance_profile_name }}
     Value:

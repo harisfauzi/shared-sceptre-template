@@ -98,7 +98,7 @@ Resources:
 
 Outputs:
 {%- for pipeline in sceptre_user_data.pipelines %}
-{% set pipeline_name = pipeline.name %}
+{%- set pipeline_name = pipeline.name %}
   {{ pipeline_name }}:
     Description: Pipeline name for {{ pipeline_name }}
     Value:

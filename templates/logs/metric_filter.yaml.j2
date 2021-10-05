@@ -1,0 +1,22 @@
+Description: Logs Metric Filter(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for metric_filter in sceptre_user_data.metric_filters %}
+{%- set metric_filter_name = metric_filter.name %}
+  {{ metric_filter_name }}:
+    Type: AWS::Logs::MetricFilter
+    DeletionPolicy: {{ metric_filter.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ metric_filter.update_replace_policy | default('Delete') }}
+    Properties:
+      FilterPattern: {{ metric_filter.filter_pattern }}
+      LogGroupName: {{ metric_filter.log_group_name }}
+      MetricTransformations:
+{%- for metric_transformation in metric_filter.metric_transformations %}
+        - MetricName: {{ metric_transformation.metric_name }}
+          MetricNamespace: {{ metric_transformation.metric_namespace }}
+          MetricValue: {{ metric_transformation.metric_value }}
+          DefaultValue: {{ metric_transformation.default_value }}
+{%- endfor %}
+{%- endfor %}

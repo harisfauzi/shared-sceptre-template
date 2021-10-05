@@ -1,4 +1,4 @@
-{% import 'macros/record_set.yaml.j2' as record_set_macro %}
+{%- import 'macros/record_set.yaml.j2' as record_set_macro %}
 Description: Route53 Record Set Group(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
@@ -30,7 +30,7 @@ Resources:
 
 Outputs:
 {%- for record_set_group in sceptre_user_data.record_set_groups %}
-{% set record_set_group_name = record_set_group.name %}
+{%- set record_set_group_name = record_set_group.name %}
   {{ record_set_group_name }}:
     Description: The name of {{ record_set_group_name }}
     Value:

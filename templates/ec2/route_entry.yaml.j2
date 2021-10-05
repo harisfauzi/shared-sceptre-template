@@ -49,7 +49,7 @@ Resources:
 
 Outputs:
 {%- for route_entry in sceptre_user_data.route_entries %}
-{% set route_entry_name = route_entry.name %}
+{%- set route_entry_name = route_entry.name %}
   {{ route_entry_name }}:
     Description: Route Entry ID for {{ route_entry_name }}
     Value:

@@ -1,4 +1,4 @@
-{% import 'macros/record_set.yaml.j2' as record_set_macro %}
+{%- import 'macros/record_set.yaml.j2' as record_set_macro %}
 Description: Route53 Record Set(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
@@ -16,7 +16,7 @@ Resources:
 
 Outputs:
 {%- for record_set in sceptre_user_data.record_sets %}
-{% set record_set_name = record_set.name %}
+{%- set record_set_name = record_set.name %}
   {{ record_set_name }}:
     Description: The value of {{ record_set_name }}
     Value:

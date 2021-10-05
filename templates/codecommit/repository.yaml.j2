@@ -59,7 +59,7 @@ Resources:
 
 Outputs:
 {%- for repository in sceptre_user_data.repositories %}
-{% set repository_name = repository.name %}
+{%- set repository_name = repository.name %}
   {{ repository_name }}:
     Description: Repository ID for {{ repository_name }}
     Value:

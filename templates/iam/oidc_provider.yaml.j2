@@ -37,7 +37,7 @@ Resources:
 Outputs:
 
 {%- for oidc_provider in sceptre_user_data.oidc_providers %}
-{% set oidc_provider_name = oidc_provider.name %}
+{%- set oidc_provider_name = oidc_provider.name %}
   {{ oidc_provider_name }}:
     Description: The ARN of {{ oidc_provider_name }}
     Value:

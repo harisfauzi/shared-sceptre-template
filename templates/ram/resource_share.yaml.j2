@@ -44,8 +44,8 @@ Resources:
 {%- endfor %}
 
 Outputs:
-{% for resource_share in sceptre_user_data.resource_shares %}
-{% set resource_share_name = resource_share.name %}
+{%- for resource_share in sceptre_user_data.resource_shares %}
+{%- set resource_share_name = resource_share.name %}
   {{ resource_share_name }}:
     Description: Subnet ID for {{ resource_share_name }}
     Value:
@@ -64,4 +64,4 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_share_name }}-Arn"
 
-{% endfor %}
+{%- endfor %}

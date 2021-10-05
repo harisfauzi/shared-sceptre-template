@@ -24,14 +24,14 @@ Resources:
 {%- endif %}
       Type: ipsec.1
 
-{% if vpn_gateway.vpc_id is defined %}
+{%- if vpn_gateway.vpc_id is defined %}
   {{ vpn_gateway_name }}VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties: 
       VpnGatewayId:
         Ref: {{ vpn_gateway_name }}
       VpcId: {{ vpn_gateway.vpc_id }}
-{% endif %}
+{%- endif %}
 
 {%- if vpn_gateway.route_table_ids is defined %}
   {{ vpn_gateway_name }}VPNGatewayRoutePropagation:
@@ -48,8 +48,8 @@ Resources:
 {%- endfor %}
 
 Outputs:
-{% for vpn_gateway in sceptre_user_data.vpn_gateways %}
-{% set vpn_gateway_name = vpn_gateway.name %}
+{%- for vpn_gateway in sceptre_user_data.vpn_gateways %}
+{%- set vpn_gateway_name = vpn_gateway.name %}
   {{ vpn_gateway_name }}:
     Description: The ID of {{ vpn_gateway_name }}
     Value:
@@ -57,4 +57,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpn_gateway_name }}"
-{% endfor %}
+{%- endfor %}

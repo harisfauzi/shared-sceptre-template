@@ -5,7 +5,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 {%- for bucket in sceptre_user_data.buckets %}  {# BEGIN {%- for bucket in sceptre_user_data.buckets %} #}
-{% set bucket_name = bucket.name %}
+{%- set bucket_name = bucket.name %}
   {{ bucket_name }}:
     Type: AWS::S3::Bucket
     DeletionPolicy: {{ bucket.deletion_policy | default('Delete') }}
@@ -483,7 +483,7 @@ Resources:
 {%- endif %}
 {%- endif %}  {# if bucket.website_configuration is defined #}
 
-{% if bucket.bucket_policy is defined %}
+{%- if bucket.bucket_policy is defined %}
   {{ bucket_name }}Policy:
     Type: AWS::S3::BucketPolicy
     DeletionPolicy: {{ bucket.deletion_policy | default('Delete') }}
@@ -498,7 +498,7 @@ Resources:
 
 Outputs:
 {%- for bucket in sceptre_user_data.buckets %}
-{% set bucket_name = bucket.name %}
+{%- set bucket_name = bucket.name %}
 
   {{ bucket_name }}:
     Value:

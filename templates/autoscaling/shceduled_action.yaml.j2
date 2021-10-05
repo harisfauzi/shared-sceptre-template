@@ -36,7 +36,7 @@ Resources:
 
 Outputs:
 {%- for scheduled_action in sceptre_user_data.scheduled_actions %}
-{% set scheduled_action_name = scheduled_action.name %}
+{%- set scheduled_action_name = scheduled_action.name %}
   {{ scheduled_action_name }}:
     Description: The name of {{ scheduled_action_name }}
     Value:

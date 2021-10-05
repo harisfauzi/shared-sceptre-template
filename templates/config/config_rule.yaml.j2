@@ -56,7 +56,7 @@ Resources:
 Outputs:
 
 {%- for config_rule in sceptre_user_data.config_rules %}
-{% set config_rule_name = config_rule.name %}
+{%- set config_rule_name = config_rule.name %}
   {{ config_rule_name }}:
     Description: Rule name for {{ config_rule_name }}
     Value:

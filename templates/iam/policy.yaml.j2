@@ -40,7 +40,7 @@ Resources:
 Outputs:
 
 {%- for policy in sceptre_user_data.managed_policies %}
-{% set policy_name = policy.name %}
+{%- set policy_name = policy.name %}
   {{ policy_name }}:
     Description: The name of {{ policy_name }}
     Value:

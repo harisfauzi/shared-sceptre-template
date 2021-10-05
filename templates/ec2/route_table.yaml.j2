@@ -34,7 +34,7 @@ Resources:
       DestinationCidrBlock: {{ route_entry.destination_cidr_block }}
 {%- elif route_entry.destination_ipv6_cidr_block is defined %}
       DestinationIpv6CidrBlock: {{ route_entry.destination_ipv6_cidr_block }}
-{% endif %}
+{%- endif %}
 {%- if route_entry.carrier_gateway_id is defined %}
       CarrierGatewayId: {{ route_entry.carrier_gateway_id }}
 {%- endif %}
@@ -73,7 +73,7 @@ Resources:
 
 Outputs:
 {%- for route_table in sceptre_user_data.route_tables %}
-{% set route_table_name = route_table.name %}
+{%- set route_table_name = route_table.name %}
   {{ route_table_name }}:
     Description: Route Table ID for {{ route_table_name }}
     Value:
