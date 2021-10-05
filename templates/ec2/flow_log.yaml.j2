@@ -1,0 +1,57 @@
+Description: EC2 Flow Log(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for flow_log in sceptre_user_data.flow_logs %}
+{%- set flow_log_name = flow_log.name %}
+  {{ flow_log_name }}:
+    Type: AWS::EC2::FlowLog
+    DeletionPolicy: {{ flow_log.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ flow_log.update_replace_policy | default('Delete') }}
+    Properties:
+      ResourceId: {{ flow_log.resource_id }}
+      ResourceType: {{ flow_log.resource_type }}
+      TrafficType: {{ flow_log.traffic_type }}
+{%- if flow_log.deliver_logs_permission_arn is defined %}
+      DeliverLogsPermissionArn: {{ flow_log.deliver_logs_permission_arn }}
+{%- endif %}
+{%- if flow_log.log_destination is defined %}
+      LogDestination: {{ flow_log.log_destination }}
+{%- endif %}
+{%- if flow_log.log_destination_type is defined %}
+      LogDestinationType: {{ flow_log.log_destination_type }}
+{%- endif %}
+{%- if flow_log.log_format is defined %}
+      LogFormat: {{ flow_log.log_format }}
+{%- endif %}
+{%- if flow_log.log_group_name is defined %}
+      LogGroupName: {{ flow_log.log_group_name }}
+{%- endif %}
+{%- if flow_log.max_aggregation_interval is defined %}
+      MaxAggregationInterval: {{ flow_log.max_aggregation_interval }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if role.tags is defined %}
+{%- for key,value in role.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for flow_log in sceptre_user_data.flow_logs %}
+{%- set flow_log_name = flow_log.name %}
+  {{ flow_log_name }}:
+    Description: Flow Log ID for {{ flow_log_name }}
+    Value:
+      Ref: {{ flow_log_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ flow_log_name }}"
+
+{%- endfor %}
