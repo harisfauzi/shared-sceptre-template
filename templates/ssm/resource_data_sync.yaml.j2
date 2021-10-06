@@ -1,0 +1,78 @@
+---
+Description: SSM Resource Data Sync(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for resource_data_sync in sceptre_user_data.resource_data_syncs %}
+{%- set resource_data_sync_name = resource_data_sync.name %}
+  {{ resource_data_sync_name }}:
+    Type: AWS::SSM::ResourceDataSync
+    DeletionPolicy: {{ resource_data_sync.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resource_data_sync.update_replace_policy | default('Delete') }}
+    Properties:
+      SyncName: {{ resource_data_sync.sync_name }}
+{%- if resource_data_sync.bucket_name is defined %}
+      BucketName: {{ resource_data_sync.bucket_name }}
+{%- endif %}
+{%- if resource_data_sync.bucket_prefix is defined %}
+      BucketPrefix: {{ resource_data_sync.bucket_prefix }}
+{%- endif %}
+{%- if resource_data_sync.bucket_region is defined %}
+      BucketRegion: {{ resource_data_sync.bucket_region }}
+{%- endif %}
+{%- if resource_data_sync.kms_key_arn is defined %}
+      KMSKeyArn: {{ resource_data_sync.kms_key_arn }}
+{%- endif %}
+{%- if resource_data_sync.s3_destination is defined %}
+      S3Destination: 
+        BucketName: {{ resource_data_sync.s3_destination.bucket_name }}
+        BucketRegion: {{ resource_data_sync.s3_destination.bucket_region }}
+        SyncFormat: 'JsonSerDe'
+{%- if resource_data_sync.s3_destination.bucket_prefix is defined %}
+        BucketPrefix: {{ resource_data_sync.s3_destination.bucket_prefix }}
+{%- endif %}
+{%- if resource_data_sync.s3_destination.kms_key_arn is defined %}
+        KMSKeyArn: {{ resource_data_sync.s3_destination.kms_key_arn }}
+{%- endif %}
+{%- endif %}
+{%- if resource_data_sync.sync_format is defined %}
+      SyncFormat: 'JsonSerDe'
+{%- endif %}
+{%- if resource_data_sync.sync_source is defined %}  {# BEGIN {%- if resource_data_sync.sync_source is defined %} #}
+      SyncSource: 
+        SourceRegions:
+{%- for source_region in resource_data_sync.sync_source.source_regions %}
+          - {{ source_region }}
+{%- endfor %}
+        SourceType: {{ resource_data_sync.sync_source.source_type }}
+{%- if resource_data_sync.sync_source.aws_organization_source is defined %}
+        AwsOrganizationsSource: 
+          OrganizationSourceType: {{ resource_data_sync.sync_source.aws_organization_source.organization_source_type }}
+{%- if resource_data_sync.sync_source.aws_organization_source.organizational_units is defined %}
+          OrganizationalUnits: 
+{%- for organization_unit in resource_data_sync.sync_source.aws_organization_source.organizational_units %}
+            - {{ organization_unit }}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- if resource_data_sync.sync_source.include_future_regions is defined %}
+        IncludeFutureRegions: {{ resource_data_sync.sync_source.include_future_regions }}
+{% endif %}
+{%- endif %}  {# END {%- if resource_data_sync.sync_source is defined %} #}
+{%- if resource_data_sync.sync_type is defined %}
+      SyncType: {{ resource_data_sync.sync_type}}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for resource_data_sync in sceptre_user_data.resource_data_syncs %}
+{%- set resource_data_sync_name = resource_data_sync.name %}
+  {{ resource_data_sync_name }}:
+    Description: The resource data sync name of {{ resource_data_sync_name }}
+    Value:
+      Ref: {{ resource_data_sync_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_data_sync_name }}"
+
+{%- endfor %}

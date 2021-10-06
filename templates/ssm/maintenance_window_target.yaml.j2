@@ -1,0 +1,40 @@
+{%- import 'macros/targets.yaml.j2' as targets_macro %}
+---
+Description: SSM Maintenance Window Target(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for maintenance_window_target in sceptre_user_data.maintenance_window_targets %}
+{%- set maintenance_window_target_name = maintenance_window_target.name %}
+  {{ maintenance_window_target_name }}:
+    Type: AWS::SSM::MaintenanceWindowTarget
+    DeletionPolicy: {{ maintenance_window_target.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ maintenance_window_target.update_replace_policy | default('Delete') }}
+    Properties:
+      ResourceType: {{ maintenance_window_target.resource_type }}
+      Targets:
+{{ targets_macro.prep(maintenance_window_target.targets) | indent(width=8, first=true) }}
+      WindowId: {{ maintenance_window_target.window_id }}
+{%- if maintenance_window_target.description is defined %}
+      Description: {{ maintenance_window_target.description }}
+{%- endif %}
+{%- if maintenance_window_target.maintenance_window_target_name is defined %}
+      Name: {{ maintenance_window_target.maintenance_window_target_name }}
+{%- endif %}
+{%- if maintenance_window_target.owner_information is defined %}
+      OwnerInformation: {{ maintenance_window_target.owner_information }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for maintenance_window_target in sceptre_user_data.maintenance_window_targets %}
+{%- set maintenance_window_target_name = maintenance_window_target.name %}
+  {{ maintenance_window_target_name }}:
+    Description: The maintenace window target ID of {{ maintenance_window_target_name }}
+    Value:
+      Ref: {{ maintenance_window_target_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ maintenance_window_target_name }}"
+
+{%- endfor %}

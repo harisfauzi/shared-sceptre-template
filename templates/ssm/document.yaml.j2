@@ -1,0 +1,84 @@
+---
+Description: SSM Document(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for document in sceptre_user_data.documents %}
+{%- set document_name = document.name %}
+  {{ document_name }}:
+    Type: AWS::SSM::Document
+    DeletionPolicy: {{ document.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ document.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if document.content_json is defined %}
+      Content: {{ document.content_json }}
+{%- else %}
+      Content:
+{{ document.content | indent(width=8, first=true) }}
+{%- endif %}
+{%- if document.attachments is defined %}  {# BEGIN {%- if document.attachments is defined %} #}
+      Attachments:
+{%- for attachment in document.attachments %}
+        -
+{%- if attachment.key is defined %}
+          Key: {{ attachment.key }}
+{%- endif %}
+{%- if attachment.name is defined %}
+          Name: {{ attachment.name }}
+{%- endif %}
+{%- if attachment.values is defined %}
+          Values:
+{%- for value in attachment.values %}
+            - {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if document.attachments is defined %} #}
+{%- if document.document_format is defined %}
+      DocumentFormat: {{ document.document_format }}
+{%- endif %}
+{%- if document.document_type is defined %}
+      DocumentType: {{ document.document_type }}
+{%- endif %}
+{%- if document.document_name is defined %}
+      Name: {{ document.document_name }}
+{%- endif %}
+{%- if document.requires is defined %}
+      Requires:
+{%- for document_require in document.requires %}
+        -
+{%- if document_require.name is defined %}
+          Name: {{ document_require.name }}
+{%- endif %}
+{%- if document_require.version is defined %}
+          Version: {{ document_require.version }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if document.tags is defined %}
+{%- for key,value in document.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if document.target_type is defined %}
+      TargetType: {{ document.target_type }}
+{%- endif %}
+{%- if document.version_name is defined %}
+      VersionName: {{ document.version_name }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for document in sceptre_user_data.documents %}
+{%- set document_name = document.name %}
+  {{ document_name }}:
+    Description: The document name of {{ document_name }}
+    Value:
+      Ref: {{ document_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ document_name }}"
+
+{%- endfor %}
