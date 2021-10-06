@@ -1,0 +1,115 @@
+{%- import 'macros/patch_filter_group.yaml.j2' as patch_filter_group_macro %}
+---
+Description: SSM Patch Baseline(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for patch_baseline in sceptre_user_data.patch_baselines %}
+{%- set patch_baseline_name = patch_baseline.name %}
+  {{ patch_baseline_name }}:
+    Type: AWS::SSM::PatchBaseline
+    DeletionPolicy: {{ patch_baseline.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ patch_baseline.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ patch_baseline.patch_baseline_name }}
+{%- if patch_baseline.approval_rules is defined %}  {# BEGIN {%- if patch_baseline.approval_rules is defined %} #}
+      ApprovalRules:
+        PatchRules:
+{%- for patch_rule in patch_baseline.approval_rules.patch_rules %}
+          -
+{%- if patch_rule.approve_after_days is defined %}
+            ApproveAfterDays: {{ patch_rule.approve_after_days }}
+{%- endif %}
+{%- if patch_rule.approve_until_date is defined %}
+            ApproveUntilDate:
+              {{ patch_rule.approve_until_date }}  {#  YYYY-MM-DD #}
+{%- endif %}
+{%- if patch_rule.compliance_level is defined %}
+            ComplianceLevel: {{ patch_rule.compliance_level }}
+{%- endif %}
+{%- if patch_rule.enable_non_security is defined %}
+            EnableNonSecurity: {{ patch_rule.enable_non_security }}
+{%- endif %}
+{%- if patch_rule.patch_filter_group is defined %}
+            PatchFilterGroup:
+{{ patch_filter_group_macro.prep(patch_rule.patch_filter_group) | indent(width=14, first=true) }}}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if patch_baseline.approval_rules is defined %} #}
+{%- if patch_baseline.approved_patches is defined %}
+      ApprovedPatches:
+{%- for approved_patch in patch_baseline.approved_patches %}
+        - {{ approved_patch }}
+{%- endfor %}
+{%- endif %}
+{%- if patch_baseline.approved_patches_compliances_level is defined %}
+      ApprovedPatchesComplianceLevel: {{ patch_baseline.approved_patches_compliances_level }}
+{%- endif %}
+{%- if patch_baseline.approved_patches_enable_non_security is defined %}
+      ApprovedPatchesEnableNonSecurity: {{ patch_baseline.approved_patches_enable_non_security }}
+{%- endif %}
+{%- if patch_baseline.description is defined %}
+      Description: {{ patch_baseline.description }}
+{%- endif %}
+{%- if patch_baseline.global_filters is defined %}
+      GlobalFilters:
+{{ patch_filter_group_macro.prep(patch_baseline.global_filters) | indent(width=8, first=true) }}}
+{%- endif %}
+{%- if patch_baseline.operating_system is defined %}
+      OperatingSystem: {{ patch_baseline.operating_system }}
+{%- endif %}
+{%- if patch_baseline.patch_groups is defined %}
+      PatchGroups:
+{%- for patch_group in patch_baseline.patch_groups %}
+        - {{ patch_group }}
+{%- endfor %}
+{%- endif %}
+{%- if patch_baseline.rejected_patches is defined %}
+      RejectedPatches:
+{%- for rejected_patch in patch_baseline.rejected_patches %}
+        - {{ rejected_patch }}
+{%- endfor %}
+{%- endif %}
+{%- if patch_baseline.rejected_patches_action is defined %}
+      RejectedPatchesAction: {{ patch_baseline.rejected_patches_action }}
+{%- endif %}
+{%- if patch_baseline.sources is defined %}
+      Sources:
+{%- for source in patch_baseline.sources %}
+        -
+{%- if source.configuration is defined %}
+          Configuration: |
+{{ source.configuration | indent(width=12, first=true) }}
+{%- endif %}
+{%- if source.name is defined %}
+          Name: {{ source.name }}
+{%- endif %}
+{%- if source.products is defined %}
+          Products:
+{%- for product in source.products %}
+            - {{ product }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if patch_baseline.tags is defined %}
+{%- for key,value in parameter.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for patch_baseline in sceptre_user_data.patch_baselines %}
+{%- set patch_baseline_name = patch_baseline.name %}
+  {{ patch_baseline_name }}:
+    Description: The patch baseline ID of {{ patch_baseline_name }}
+    Value:
+      Ref: {{ patch_baseline_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ patch_baseline_name }}"
+
+{%- endfor %}

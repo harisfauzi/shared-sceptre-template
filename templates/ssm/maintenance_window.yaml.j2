@@ -1,0 +1,53 @@
+---
+Description: SSM Maintenance Window(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for maintenance_window in sceptre_user_data.maintenance_windows %}
+{%- set maintenance_window_name = maintenance_window.name %}
+  {{ maintenance_window_name }}:
+    Type: AWS::SSM::MaintenanceWindow
+    DeletionPolicy: {{ maintenance_window.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ maintenance_window.update_replace_policy | default('Delete') }}
+    Properties:
+      AllowUnassociatedTargets: {{ maintenance_window.allow_unassociated_targets }}
+      Cutoff: {{ maintenance_window.cutoff }}
+      Duration: {{ maintenance_window.duration }}
+      Name: {{ maintenance_window.maintenance_window_name }}
+      Schedule: {{ maintenance_window.schedule }}
+{%- if maintenance_window.description is defined %}
+      Description: {{ maintenance_window.description }}
+{%- endif %}
+{%- if maintenance_window.end_date is defined %}
+      EndDate: {{ maintenance_window.end_date }}
+{%- endif %}
+{%- if maintenance_window.schedule_offset is defined %}
+      ScheduleOffset: {{ maintenance_window.schedule_offset }}
+{%- endif %}
+{%- if maintenance_window.schedule_timezone is defined %}
+      ScheduleTimezone: {{ maintenance_window.schedule_timezone }}
+{%- endif %}
+{%- if maintenance_window.start_date is defined %}
+      StartDate: {{ maintenance_window.start_date }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if document.tags is defined %}
+{%- for key,value in document.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for maintenance_window in sceptre_user_data.maintenance_windows %}
+{%- set maintenance_window_name = maintenance_window.name %}
+  {{ maintenance_window_name }}:
+    Description: The maintenance_window name of {{ maintenance_window_name }}
+    Value:
+      Ref: {{ maintenance_window_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ maintenance_window_name }}"
+
+{%- endfor %}

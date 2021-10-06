@@ -1,3 +1,4 @@
+{%- import 'macros/targets.yaml.j2' as targets_macro %}
 ---
 Description: SSM Association(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
@@ -67,14 +68,7 @@ Resources:
       SyncCompliance: {{ association.sync_compliance }}
 {%- endif %}
 {%- if association.targets is defined %}
-      Targets:
-{%- for target in association.targets %}
-        - Key: {{ target.key }}
-          Values:
-{%- for value in target.values %}
-            - {{ value }}
-{%- endfor %}
-{%- endfor %}
+{{ targets_macro.prep(association.targets) | indent(width=8, first=true) }}
 {%- endif %}
 {%- if association.wait_for_success_timeout_seconds is defined %}
       WaitForSuccessTimeoutSeconds: {{ association.wait_for_success_timeout_seconds }}
