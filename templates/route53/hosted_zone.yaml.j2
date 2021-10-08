@@ -15,20 +15,20 @@ Resources:
       HostedZoneConfig:
         Comment: {{ hosted_zone.hosted_zone_config.comment }}
 {%- endif %}
-{%- if hosted_zone.hosted_zone_config is defined %}
+{%- if hosted_zone.hosted_zone_tags is defined %}
       HostedZoneTags:
 {%- for key, value in hosted_zone.hosted_zone_tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- if hosted_zone.hosted_zone_config is defined %}
+{%- if hosted_zone.query_logging_config is defined %}
       QueryLoggingConfig:
-        CloudWatchLogsLogGroupArn: {{ hosted_zone.hosted_zone_config.cloud_watch_logs_log_group_arn }}
+        CloudWatchLogsLogGroupArn: {{ hosted_zone.query_logging_config.cloud_watch_logs_log_group_arn }}
 {%- endif %}
-{%- if hosted_zone.hosted_zone_config is defined %}
+{%- if hosted_zone.vpcs is defined %}
       VPCs:
-{%- for vpc_id, vpc_region in hosted_zone.hosted_zone_config.vpcs.items() %}
+{%- for vpc_id, vpc_region in hosted_zone.vpcs.vpcs.items() %}
         - VPCId: {{ vpc_id }}
           VPCRegion: {{ vpc_region }}
 {%- endfor %}
