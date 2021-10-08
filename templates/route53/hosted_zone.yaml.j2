@@ -28,9 +28,9 @@ Resources:
 {%- endif %}
 {%- if hosted_zone.vpcs is defined %}
       VPCs:
-{%- for vpc_id, vpc_region in hosted_zone.vpcs.vpcs.items() %}
-        - VPCId: {{ vpc_id }}
-          VPCRegion: {{ vpc_region }}
+{%- for vpc in hosted_zone.vpcs %}
+        - VPCId: {{ vpc.vpc_id }}
+          VPCRegion: {{ vpc.vpc_region }}
 {%- endfor %}
 {%- endif %}
 
