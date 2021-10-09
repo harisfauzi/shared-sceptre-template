@@ -16,10 +16,10 @@ Resources:
 {%- else %}
       HostedZoneName: {{ record_set_group.hosted_zone_name }}
 {%- endif %}
-{%- record_set_group.comment  is defined %}
+{%- if record_set_group.comment is defined %}
       Comment: {{ record_set_group.comment }}
 {%- endif %}
-{%- record_set_group.record_sets  is defined %}
+{%- if record_set_group.record_sets is defined %}
       RecordSets:
 {%- for record_set in record_set_group.record_sets %}
       -
