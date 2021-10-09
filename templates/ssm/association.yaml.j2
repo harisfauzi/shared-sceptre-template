@@ -34,7 +34,7 @@ Resources:
       DocumentVersion: {{ association.document_version }}
 {%- endif %}
 {%- if association.instance_id is defined %}
-      InstanceId: {{ association.instance_id }}
+      InstanceId: {{ association.instance_id | trim }}
 {%- endif %}
 {%- if association.max_concurrency is defined %}
       MaxConcurrency: {{ association.max_concurrency }}

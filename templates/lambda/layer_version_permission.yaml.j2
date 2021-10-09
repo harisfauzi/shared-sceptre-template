@@ -13,7 +13,7 @@ Resources:
       LayerVersionArn: {{ layer_version_permission.layer_version_arn }}
       Principal: {{ layer_version_permission.principal }}
 {%- if layer_version_permission.organization_id is defind %}
-      OrganizationId: {{ layer_version_permission.organization_id }}
+      OrganizationId: {{ layer_version_permission.organization_id | trim }}
 {%- endif %}
 {%- endfor %}
 

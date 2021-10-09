@@ -4,7 +4,7 @@
 {%- if action.authenticate_cognito_config is defined %}  {# BEGIN {%- if action.authenticate_cognito_config is defined %} #}
           AuthenticateCognitoConfig:
             UserPoolArn: {{ action.authenticate_cognito_config.user_pool_arn }}
-            UserPoolClientId: {{ action.authenticate_cognito_config.user_pool_client_id }}
+            UserPoolClientId: {{ action.authenticate_cognito_config.user_pool_client_id | trim }}
             UserPoolDomain: {{ action.authenticate_cognito_config.user_pool_domain }}
 {%- if action.authenticate_cognito_config.authentication_request_extra_params is defined %}
             AuthenticationRequestExtraParams:
@@ -28,7 +28,7 @@
 {%- if action.authenticate_oidc_config is defined %}  {# BEGIN {%- if action.authenticate_oidc_config is defined %} #}
           AuthenticateOidcConfig:
             AuthorizationEndpoint: {{ action.authenticate_oidc_config.authorization_endpoint }}
-            ClientId: {{ action.authenticate_oidc_config.client_id }}
+            ClientId: {{ action.authenticate_oidc_config.client_id | trim }}
             ClientSecret: {{ action.authenticate_oidc_config.client_secret }}
             Issuer: {{ action.authenticate_oidc_config.client_issuer }}
             TokenEndpoint: {{ action.authenticate_oidc_config.token_endpoint }}

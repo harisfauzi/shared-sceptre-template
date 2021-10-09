@@ -14,10 +14,10 @@
             Iops: {{ mapping.ebs.iops }}
 {%- endif %}
 {%- if mapping.ebs.kms_key_id is defined %}
-            KmsKeyId: {{ mapping.ebs.kms_key_id }}
+            KmsKeyId: {{ mapping.ebs.kms_key_id | trim }}
 {%- endif %}
 {%- if mapping.ebs.snapshot_id is defined %}
-            SnapshotId: {{ mapping.ebs.snapshot_id }}
+            SnapshotId: {{ mapping.ebs.snapshot_id | trim }}
 {%- endif %}
 {%- if mapping.ebs.volume_size is defined %}
             VolumeSize: {{ mapping.ebs.volume_size }}

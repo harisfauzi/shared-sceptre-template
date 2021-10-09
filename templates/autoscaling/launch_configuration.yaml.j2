@@ -10,7 +10,7 @@ Resources:
     DeletionPolicy: {{ launch_configuration.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ launch_configuration.update_replace_policy | default('Delete') }}
     Properties:
-      ImageId: {{ launch_configuration.image_id }}
+      ImageId: {{ launch_configuration.image_id | trim }}
       InstanceType: {{ launch_configuration.instance_type }}
 {%- if launch_configuration.associate_public_ip_address is defined %}
       AssociatePublicIpAddress: {{ launch_configuration.associate_public_ip_address }}
@@ -31,7 +31,7 @@ Resources:
             Iops: {{ mapping.ebs.iops }}
 {%- endif %}
 {%- if mapping.ebs.snapshot_id is defined %}
-            SnapshotId: {{ mapping.ebs.snapshot_id }}
+            SnapshotId: {{ mapping.ebs.snapshot_id | trim }}
 {%- endif %}
 {%- if mapping.ebs.throughput is defined %}
             Throughput: {{ mapping.ebs.throughput }}
@@ -52,12 +52,12 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if launch_configuration.classic_link_vpc_id is defined %}
-      ClassicLinkVPCId: {{ launch_configuration.classic_link_vpc_id }}
+      ClassicLinkVPCId: {{ launch_configuration.classic_link_vpc_id | trim }}
 {%- endif %}
 {%- if launch_configuration.classic_link_vpc_security_groups is defined %}
       ClassicLinkVPCSecurityGroups:
 {%- for security_group_id in launch_configuration.classic_link_vpc_security_groups %}
-        - {{ security_group_id }}
+        - {{ security_group_id | trim }}
 {%- endfor %}
 {%- endif %}
 {%- if launch_configuration.ebs_optimized is defined %}
@@ -67,13 +67,13 @@ Resources:
       IamInstanceProfile: {{ launch_configuration.iam_instance_profile }}
 {%- endif %}
 {%- if launch_configuration.instance_id is defined %}
-      InstanceId: {{ launch_configuration.instance_id }}
+      InstanceId: {{ launch_configuration.instance_id | trim }}
 {%- endif %}
 {%- if launch_configuration.instance_monitoring is defined %}
       InstanceMonitoring: {{ launch_configuration.instance_monitoring }}
 {%- endif %}
 {%- if launch_configuration.kernel_id is defined %}
-      KernelId: {{ launch_configuration.kernel_id }}
+      KernelId: {{ launch_configuration.kernel_id | trim }}
 {%- endif %}
 {%- if launch_configuration.key_name is defined %}
       KeyName: {{ launch_configuration.key_name }}
@@ -97,12 +97,12 @@ Resources:
       PlacementTenancy: {{ launch_configuration.placement_tenancy }}
 {%- endif %}
 {%- if launch_configuration.ram_disk_id is defined %}
-      RamDiskId: {{ launch_configuration.ram_disk_id }}
+      RamDiskId: {{ launch_configuration.ram_disk_id | trim }}
 {%- endif %}
 {%- if launch_configuration.security_groups is defined %}
       SecurityGroups:
 {%- for security_group_id in launch_configuration.security_groups %}
-        - {{ security_group_id }}
+        - {{ security_group_id | trim }}
 {%- endfor %}
 {%- endif %}
 {%- if launch_configuration.spot_price is defined %}

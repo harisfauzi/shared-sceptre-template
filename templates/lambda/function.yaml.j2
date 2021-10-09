@@ -108,13 +108,13 @@ Resources:
 {%- if function.vpc_config.security_group_ids is defined %}
         SecurityGroupIds:
 {%- for security_group_id in function.vpc_config.security_group_ids %}
-          - {{ security_group_id }}
+          - {{ security_group_id | trim }}
 {%- endfor %}
 {%- endif %}
 {%- if function.vpc_config.subnet_ids is defined %}
         SubnetIds:
 {%- for subnet_id in function.vpc_config.subnet_ids %}
-          - {{ subnet_id }}
+          - {{ subnet_id | trim }}
 {%- endfor %}
 {%- endif %}
 {%- endif %}

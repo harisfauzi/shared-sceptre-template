@@ -10,9 +10,9 @@ Resources:
     DeletionPolicy: {{ nat_gateway.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ nat_gateway.update_replace_policy | default('Delete') }}
     Properties:
-      SubnetId: {{ nat_gateway.subnet_id }}
+      SubnetId: {{ nat_gateway.subnet_id | trim }}
 {%- if nat_gateway.allocation_id is defined %}
-      AllocationId: {{ nat_gateway.allocation_id }}
+      AllocationId: {{ nat_gateway.allocation_id | trim }}
 {%- endif %}
 {%- if nat_gateway.connectivity_type is defined %}
       ConnectivityType: {{ nat_gateway.connectivity_type }}

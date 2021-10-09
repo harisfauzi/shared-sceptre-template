@@ -14,7 +14,7 @@ Resources:
       AmazonSideAsn: {{ transit_gateway.amazon_side_asn }}
 {%- endif %}
 {%- if transit_gateway.association_default_route_table_id is defined %}
-      AssociationDefaultRouteTableId: {{ transit_gateway.association_default_route_table_id }}
+      AssociationDefaultRouteTableId: {{ transit_gateway.association_default_route_table_id | trim }}
 {%- endif %}
 {%- if transit_gateway.auto_accept_shared_attachments is defined %}
       AutoAcceptSharedAttachments: {{ transit_gateway.auto_accept_shared_attachments }}
@@ -35,7 +35,7 @@ Resources:
       MulticastSupport: {{ transit_gateway.multicast_support }}
 {%- endif %}
 {%- if transit_gateway.propagation_default_route_table_id is defined %}
-      PropagationDefaultRouteTableId: {{ transit_gateway.propagation_default_route_table_id }}
+      PropagationDefaultRouteTableId: {{ transit_gateway.propagation_default_route_table_id | trim }}
 {%- endif %}
 {%- if transit_gateway.transit_gateway_cidr_blocks is defined %}
       TransitGatewayCidrBlocks:

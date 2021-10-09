@@ -75,7 +75,7 @@ Resources:
         Configured: {{ instance.hibernation_options.Configured }}
 {%- endif %}
 {%- if instance.host_id is defined %}
-      HostId: {{ instance.host_id }}
+      HostId: {{ instance.host_id | trim }}
 {%- endif %}
 {%- if instance.host_resource_group_arn is defined %}
       HostResourceGroupArn: {{ instance.host_resource_group_arn }}
@@ -102,7 +102,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if instance.kernel_id is defined %}
-      KernelId: {{ instance.kernel_id }}
+      KernelId: {{ instance.kernel_id | trim }}
 {%- endif %}
 {%- if instance.key_name is defined %}
       KeyName: {{ instance.key_name }}
@@ -111,7 +111,7 @@ Resources:
       LaunchTemplate: 
         Version: String
 {%- if instance.launch_template.launch_template_id is defined %}
-        LaunchTemplateId: {{ instance.launch_template.launch_template_id }}
+        LaunchTemplateId: {{ instance.launch_template.launch_template_id | trim }}
 {%- elif instance.launch_template.launch_templateName is defined %}
         LaunchTemplateName: {{ instance.launch_template.launch_templateName }}
 {%- endif %}
@@ -135,7 +135,7 @@ Resources:
       PrivateIpAddress: {{ instance.private_ip_address }}
 {%- endif %}
 {%- if instance.ram_disk_id is defined %}
-      RamdiskId: {{ instance.ram_disk_id }}
+      RamdiskId: {{ instance.ram_disk_id | trim }}
 {%- endif %}
 {%- if instance.security_group_ids is defined %}
       SecurityGroupIds:
@@ -170,7 +170,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if instance.subnet_id is defined %}
-      SubnetId: {{ instance.subnet_id }}
+      SubnetId: {{ instance.subnet_id | trim }}
 {%- endif %}
 {%- if instance.tags is defined %}
       Tags:
@@ -190,7 +190,7 @@ Resources:
       Volumes:
 {%- for volume in instance.volumes %}
         - Device: {{ volume.device }}
-          VolumeId: {{ volume.volume_id }}
+          VolumeId: {{ volume.volume_id | trim }}
 {%- endfor %}
 {%- endif %}
 

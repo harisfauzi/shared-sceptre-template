@@ -40,9 +40,9 @@ Resources:
 {%- if load_balancer.subnet_mappings is defined %}
       SubnetMappings:
 {%- for subnet_mapping in load_balancer.subnet_mappings %}
-        - SubnetId: {{ subnet_mapping.subnet_id }}
+        - SubnetId: {{ subnet_mapping.subnet_id | trim }}
 {%- if subnet_mapping.allocation_id is defined %}
-          AllocationId: {{ subnet_mapping.allocation_id }}
+          AllocationId: {{ subnet_mapping.allocation_id | trim }}
 {%- endif %}
 {%- if subnet_mapping.ipv6_address is defined %}
           IPv6Address: {{ subnet_mapping.ipv6_address }}

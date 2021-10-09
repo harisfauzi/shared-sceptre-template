@@ -17,7 +17,7 @@ Resources:
 {%- if oidc_provider.client_id_list is defined %}
       ClientIdList:
 {%- for client_id in oidc_provider.client_id_list %}
-        - {{ client_id }}
+        - {{ client_id | trim }}
 {%- endfor %}
 {%- endif %}
       Tags:

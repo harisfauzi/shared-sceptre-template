@@ -23,7 +23,7 @@ Resources:
       FifoTopic: {{ topic.fifo_topic }}
 {%- endif %}
 {%- if topic.kms_master_key_id is defined %}
-      KmsMasterKeyId: {{ topic.kms_master_key_id }}
+      KmsMasterKeyId: {{ topic.kms_master_key_id | trim }}
 {%- endif %}
 {%- if topic.subscription is defined %}
       Subscription:

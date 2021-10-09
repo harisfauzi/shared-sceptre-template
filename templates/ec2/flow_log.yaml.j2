@@ -10,7 +10,7 @@ Resources:
     DeletionPolicy: {{ flow_log.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ flow_log.update_replace_policy | default('Delete') }}
     Properties:
-      ResourceId: {{ flow_log.resource_id }}
+      ResourceId: {{ flow_log.resource_id | trim }}
       ResourceType: {{ flow_log.resource_type }}
       TrafficType: {{ flow_log.traffic_type }}
 {%- if flow_log.deliver_logs_permission_arn is defined %}

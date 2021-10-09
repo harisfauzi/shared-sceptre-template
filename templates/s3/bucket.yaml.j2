@@ -31,7 +31,7 @@ Resources:
                 BucketArn: {{ analytics_configurations.storage_class_analysis.data_export.destination.bucket_arn }}
                 Format: {{ analytics_configurations.storage_class_analysis.data_export.destination.format }}  {# one of CSV | ORC | Parquet #}
 {%- if analytics_configurations.storage_class_analysis.data_export.destination.bucket_account_id is defined %}
-                BucketAccountId: {{ analytics_configurations.storage_class_analysis.data_export.destination.bucket_account_id }}
+                BucketAccountId: {{ analytics_configurations.storage_class_analysis.data_export.destination.bucket_account_id | trim }}
 {%- endif %}
 {%- if analytics_configurations.storage_class_analysis.data_export.destination.prefix is defined %}
                 Prefix: {{ analytics_configurations.storage_class_analysis.data_export.destination.prefix }}
@@ -129,7 +129,7 @@ Resources:
             BucketArn: {{ inventory_configuration.destination.bucket_arn }}
             Format: {{ inventory_configuration.destination.format }}
 {%- if inventory_configuration.destination.bucket_account_id is defined %}
-            BucketAccountId: {{ inventory_configuration.destination.bucket_account_id }}
+            BucketAccountId: {{ inventory_configuration.destination.bucket_account_id | trim }}
 {%- endif %}
 {%- if inventory_configuration.destination.prefix is defined %}
             Prefix: {{ inventory_configuration.destination.prefix }}
@@ -355,7 +355,7 @@ Resources:
 {%- endif %}
 {%- if rule.destination.encryption_configuration is defined %}
               EncryptionConfiguration:
-                ReplicaKmsKeyID: {{ rule.destination.encryption_configuration.replica_kms_key_id }}
+                ReplicaKmsKeyID: {{ rule.destination.encryption_configuration.replica_kms_key_id | trim }}
 {%- endif %}
 {%- if rule.destination.metrics is defined %}
               Metrics:
