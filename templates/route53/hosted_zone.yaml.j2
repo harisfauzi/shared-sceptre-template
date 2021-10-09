@@ -67,6 +67,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-Id"
 
+{%- if not hosted_zone.vpcs is defined %}
   {{ hosted_zone_name }}NameServer0:
     Description: The Hosted Zone ID for {{ hosted_zone_name }}
     Value:
@@ -115,4 +116,5 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer3"
 
+{%- endif %}
 {%- endfor %}
