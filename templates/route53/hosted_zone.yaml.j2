@@ -60,7 +60,7 @@ Outputs:
   {{ hosted_zone_name }}Id:
     Description: The Hosted Zone ID for {{ hosted_zone_name }}
     Value:
-      Fn::GetAtt: {{ hosted_zone_name }}
+      Fn::GetAtt:
         - {{ hosted_zone_name }}
         - Id
     Export:
@@ -72,7 +72,7 @@ Outputs:
     Value:
       Fn::Select:
         - 0
-        - Fn::GetAtt: {{ hosted_zone_name }}
+        - Fn::GetAtt:
             - {{ hosted_zone_name }}
             - NameServers
     Export:
@@ -84,7 +84,7 @@ Outputs:
     Value:
       Fn::Select:
         - 1
-        - Fn::GetAtt: {{ hosted_zone_name }}
+        - Fn::GetAtt:
             - {{ hosted_zone_name }}
             - NameServers
     Export:
@@ -96,7 +96,7 @@ Outputs:
     Value:
       Fn::Select:
         - 2
-        - Fn::GetAtt: {{ hosted_zone_name }}
+        - Fn::GetAtt:
             - {{ hosted_zone_name }}
             - NameServers
     Export:
@@ -108,7 +108,7 @@ Outputs:
     Value:
       Fn::Select:
         - 3
-        - Fn::GetAtt: {{ hosted_zone_name }}
+        - Fn::GetAtt:
             - {{ hosted_zone_name }}
             - NameServers
     Export:
