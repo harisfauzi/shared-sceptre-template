@@ -9,7 +9,7 @@ Resources:
     DeletionPolicy: {{ nacl.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ nacl.update_replace_policy | default('Delete') }}
     Properties:
-      VpcId: {{ nacl.vpc_id }}
+      VpcId: {{ nacl.vpc_id | trim }}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}

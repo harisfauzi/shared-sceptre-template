@@ -89,7 +89,7 @@ Resources:
           DeviceIndex: "0"
           GroupSet: {{ nat_instance.security_group_ids }}
           Ipv6AddressCount: 1
-          SubnetId: {{ nat_instance.subnet_id }}
+          SubnetId: {{ nat_instance.subnet_id | trim }}
       SourceDestCheck: False
       Tags:
         - Key: SourceRepoURL
@@ -122,7 +122,7 @@ Resources:
   {{ nat_instance_name }}{{ route_table.name }}:
     Type: AWS::EC2::Route
     Properties: 
-      RouteTableId: {{ route_table.route_table_id }}
+      RouteTableId: {{ route_table.route_table_id | trim }}
       DestinationCidrBlock: 0.0.0.0/0
       InstanceId:
         Ref: {{ nat_instance_name }}

@@ -10,7 +10,7 @@ Resources:
     DeletionPolicy: {{ transit_gateway_route_entry.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ transit_gateway_route_entry.update_replace_policy | default('Delete') }}
     Properties:
-      TransitGatewayRouteTableId: {{ transit_gateway_route_entry.transit_gateway_route_table_id }}
+      TransitGatewayRouteTableId: {{ transit_gateway_route_entry.transit_gateway_route_table_id | trim }}
 {%- if route.blackhole is defined %}
       Blackhole: {{ route.blackhole }}
 {%- endif %}
@@ -18,7 +18,7 @@ Resources:
       DestinationCidrBlock: {{ route.destination_cidr_block }}
 {%- endif %}
 {%- if route.transit_gateway_attachment_id is defined %}
-      TransitGatewayAttachmentId: {{ route.transit_gateway_attachment_id }}
+      TransitGatewayAttachmentId: {{ route.transit_gateway_attachment_id | trim }}
 {%- endif %}
 {%- endfor %}
 

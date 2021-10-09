@@ -10,7 +10,7 @@ Resources:
     DeletionPolicy: {{ aggregation_authorization.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ aggregation_authorization.update_replace_policy | default('Delete') }}
     Properties:
-      AuthorizedAccountId: {{ aggregation_authorization.authorized_account_id }}
+      AuthorizedAccountId: {{ aggregation_authorization.authorized_account_id | trim }}
       AuthorizedAwsRegion: {{ aggregation_authorization.authorized_aws_region }}
       Tags:
         - Key: SourceRepoURL

@@ -10,7 +10,7 @@ Resources:
     UpdateReplacePolicy: {{ remediation_configuration.update_replace_policy | default('Delete') }}
     Properties:
       ConfigRuleName: {{ remediation_configuration.config_rule_name }}
-      TargetId: {{ remediation_configuration.target_id }}
+      TargetId: {{ remediation_configuration.target_id | trim }}
       TargetType: {{ remediation_configuration.target_type }}
 {%- if remediation_configuration.automatic is defined %}
       Automatic: {{ remediation_configuration.automatic }}

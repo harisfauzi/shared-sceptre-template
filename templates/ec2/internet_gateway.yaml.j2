@@ -26,7 +26,7 @@ Resources:
     Properties: 
       InternetGatewayId:
         Ref: {{ internet_gateway_name }}
-      VpcId: {{ internet_gateway.vpc_id }}
+      VpcId: {{ internet_gateway.vpc_id | trim }}
 {%- endif %}
 {%- endfor %}
 

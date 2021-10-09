@@ -30,7 +30,7 @@ Resources:
     Properties: 
       VpnGatewayId:
         Ref: {{ vpn_gateway_name }}
-      VpcId: {{ vpn_gateway.vpc_id }}
+      VpcId: {{ vpn_gateway.vpc_id | trim }}
 {%- endif %}
 
 {%- if vpn_gateway.route_table_ids is defined %}
@@ -42,7 +42,7 @@ Resources:
         Ref: {{ vpn_gateway_name }}
       RouteTableIds:
 {%- for route_table_id in vpn_gateway.route_table_ids %}
-        - {{ route_table_id }}
+        - {{ route_table_id | trim }}
 {%- endfor %}
 {%- endif %}
 {%- endfor %}

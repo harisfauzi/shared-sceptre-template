@@ -15,7 +15,7 @@ Resources:
 {%- for account_aggregation_source in configuration_aggregator.account_aggregation_sources %}
         - AccountIds:
 {%- for account_id in account_aggregation_source.account_ids %}
-            - {{ account_id }}
+            - {{ account_id | trim }}
 {%- endfor %}
 {%- if account_aggregation_source.all_aws_regions is defined %}
           AllAwsRegions: {{ account_aggregation_source.all_aws_regions }}

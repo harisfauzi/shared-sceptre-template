@@ -9,7 +9,7 @@ Resources:
     DeletionPolicy: {{ transit_gateway_route_table.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ transit_gateway_route_table.update_replace_policy | default('Delete') }}
     Properties:
-      TransitGatewayId: {{ transit_gateway_route_table.transit_gateway_id }}
+      TransitGatewayId: {{ transit_gateway_route_table.transit_gateway_id | trim }}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url }}
@@ -36,7 +36,7 @@ Resources:
       DestinationCidrBlock: {{ route.destination_cidr_block }}
 {%- endif %}
 {%- if route.transit_gateway_attachment_id is defined %}
-      TransitGatewayAttachmentId: {{ route.transit_gateway_attachment_id }}
+      TransitGatewayAttachmentId: {{ route.transit_gateway_attachment_id | trim }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}

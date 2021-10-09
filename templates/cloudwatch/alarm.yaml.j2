@@ -57,7 +57,7 @@ Resources:
 {%- for metric in alarm.metrics %}  {# BEGIN {%- for metric in alarm.metrics %} #}
         - Id: String
 {%- if metric.account_id is defined %}
-          AccountId: {{ metric.account_id }}
+          AccountId: {{ metric.account_id | trim }}
 {%- endif %}
 {%- if metric.expression is defined %}
           Expression: {{ metric.expression }}
@@ -114,7 +114,7 @@ Resources:
       Threshold: {{ alarm.threshold }}
 {%- endif %}
 {%- if alarm.threshold_metric_id is defined %}
-      ThresholdMetricId: {{ alarm.threshold_metric_id }}
+      ThresholdMetricId: {{ alarm.threshold_metric_id | trim }}
 {%- endif %}
 {%- if alarm.threat_missing_data is defined %}
       TreatMissingData: {{ alarm.threat_missing_data }}

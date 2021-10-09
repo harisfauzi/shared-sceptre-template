@@ -12,10 +12,10 @@ Resources:
     Properties:
       SubnetIds:
 {%- for subnet_id in transit_gateway_attachment.subnet_ids %}
-        - {{ subnet_id }}
+        - {{ subnet_id | trim }}
 {%- endfor %}
-      TransitGatewayId: {{ transit_gateway_attachment.transit_gateway_id }}
-      VpcId: {{ transit_gateway_attachment.vpc_id }}
+      TransitGatewayId: {{ transit_gateway_attachment.transit_gateway_id | trim }}
+      VpcId: {{ transit_gateway_attachment.vpc_id | trim }}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}

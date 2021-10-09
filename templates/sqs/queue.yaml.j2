@@ -29,7 +29,7 @@ Resources:
       KmsDataKeyReusePeriodSeconds: {{ queue.kms_data_key_reuse_period_seconds }}
 {%- endif %}
 {%- if queue.kms_master_key_id is defined %}
-      KmsMasterKeyId: {{ queue.kms_master_key_id }}
+      KmsMasterKeyId: {{ queue.kms_master_key_id | trim }}
 {%- endif %}
 {%- if queue.maximum_message_size is defined %}
       MaximumMessageSize: {{ queue.maximum_message_size }}

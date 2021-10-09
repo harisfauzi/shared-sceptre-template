@@ -14,7 +14,7 @@ Resources:
       Domain: {{ eip.domain }}
 {%- endif %}
 {%- if eip.instance_id is defined %}
-      InstanceId: {{ eip.instance_id }}
+      InstanceId: {{ eip.instance_id | trim }}
 {%- endif %}
 {%- if eip.public_ipv4_pool is defined %}
       PublicIpv4Pool: {{ eip.public_ipv4_pool }}

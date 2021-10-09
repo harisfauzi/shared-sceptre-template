@@ -38,7 +38,7 @@ Resources:
 {%- if config_rule.scope is defined %}
       Scope:
 {%- if config_rule.scope.compliance_resource_id is defined %}
-        ComplianceResourceId: {{ config_rule.scope.compliance_resource_id }}
+        ComplianceResourceId: {{ config_rule.scope.compliance_resource_id | trim }}
 {%- endif %}
 {%- if config_rule.scope.compliance_resource_types is defined %}
         ComplianceResourceTypes:

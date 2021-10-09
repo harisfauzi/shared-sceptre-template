@@ -10,7 +10,7 @@ Resources:
     DeletionPolicy: {{ vpn_connection.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ vpn_connection.update_replace_policy | default('Delete') }}
     Properties:
-      CustomerGatewayId: {{ vpn_connection.customer_gateway_id }}
+      CustomerGatewayId: {{ vpn_connection.customer_gateway_id | trim }}
 {%- if vpn_connection.static_routes_only is defined %}
       StaticRoutesOnly: {{ vpn_connection.static_routes_only }}
 {%- endif %}
@@ -25,9 +25,9 @@ Resources:
 {%- endif %}
       Type: ipsec.1
 {%- if vpn_connection.transit_gateway_id is defined %}
-      TransitGatewayId: {{ vpn_connection.transit_gateway_id }}
+      TransitGatewayId: {{ vpn_connection.transit_gateway_id | trim }}
 {%- elif vpn_connection.vpn_gateway_id is defined %}
-      VpnGatewayId: {{ vpn_connection.vpn_gateway_id }}
+      VpnGatewayId: {{ vpn_connection.vpn_gateway_id | trim }}
 {%- endif %}
 {%- if vpn_connection.vpn_tunnel_option_specifications is defined %}
       VpnTunnelOptionsSpecifications:

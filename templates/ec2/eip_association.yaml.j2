@@ -11,16 +11,16 @@ Resources:
     UpdateReplacePolicy: {{ eip_association.update_replace_policy | default('Delete') }}
     Properties:
 {%- if eip_association.allocation_id is defined %}
-      AllocationId: {{ eip_association.allocation_id }}
+      AllocationId: {{ eip_association.allocation_id | trim }}
 {%- endif %}
 {%- if eip_association.eip is defined %}
       EIP: {{ eip_association.eip }}
 {%- endif %}
 {%- if eip_association.instance_id is defined %}
-      InstanceId: {{ eip_association.instance_id }}
+      InstanceId: {{ eip_association.instance_id | trim }}
 {%- endif %}
 {%- if eip_association.network_interface_id is defined %}
-      NetworkInterfaceId: {{ eip_association.network_interface_id }}
+      NetworkInterfaceId: {{ eip_association.network_interface_id | trim }}
 {%- endif %}
 {%- if eip_association.private_ip_address is defined %}
       PrivateIpAddress: {{ eip_association.private_ip_address }}

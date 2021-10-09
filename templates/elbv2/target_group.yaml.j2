@@ -86,7 +86,7 @@ Resources:
       UnhealthyThresholdCount: {{ target_group.unhealthy_threshold_count }}
 {%- endif %}
 {%- if target_group.vpc_id is defined %}
-      VpcId: {{ target_group.vpc_id }}
+      VpcId: {{ target_group.vpc_id | trim }}
 {%- endif %}
 {%- if target_group.health_check_enabled is defined %}
 {%- endif %}

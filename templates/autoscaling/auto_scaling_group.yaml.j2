@@ -93,7 +93,7 @@ Resources:
       HealthCheckType: {{ auto_scaling_group.health_check_type }}
 {%- endif %}
 {%- if auto_scaling_group.instance_id is defined %}
-      InstanceId: {{ auto_scaling_group.instance_id }}
+      InstanceId: {{ auto_scaling_group.instance_id | trim }}
 {%- endif %}
 {%- if auto_scaling_group.launch_configuration_name is defined %}
       LaunchConfigurationName: {{ auto_scaling_group.launch_configuration_name }}
@@ -220,7 +220,7 @@ Resources:
 {%- if auto_scaling_group.vpc_zone_identifier is defined %}
       VPCZoneIdentifier:
 {%- for subnet_id in auto_scaling_group.vpc_zone_identifier %}
-        - {{ subnet_id }}
+        - {{ subnet_id | trim }}
 {%- endfor %}
 {%- endif %}
       Tags:

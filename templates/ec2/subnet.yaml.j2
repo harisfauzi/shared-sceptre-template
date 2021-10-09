@@ -41,13 +41,13 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-      VpcId: {{ subnet.vpc_id }}
+      VpcId: {{ subnet.vpc_id | trim }}
 
 {%- if subnet.network_acl_id is defined %}
   {{ subnet_name }}SubnetNetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
     Properties: 
-      NetworkAclId: {{ subnet.network_acl_id }}
+      NetworkAclId: {{ subnet.network_acl_id | trim }}
       SubnetId:
         Ref: {{ subnet_name }}
 {%- endif %}
@@ -56,7 +56,7 @@ Resources:
   {{ subnet_name }}SubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties: 
-      RouteTableId: {{ subnet.route_table_id }}
+      RouteTableId: {{ subnet.route_table_id | trim }}
       SubnetId:
         Ref: {{ subnet_name }}
 {%- endif %}

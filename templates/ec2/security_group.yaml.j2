@@ -25,9 +25,9 @@ Resources:
 {%- elif egress.cidr_ipv6 is defined %}
           CidrIpv6: {{ egress.cidr_ipv6 }}
 {%- elif egress.destination_prefix_list_id is defined %}
-          DestinationPrefixListId: {{ egress.destination_prefix_list_id }}
+          DestinationPrefixListId: {{ egress.destination_prefix_list_id | trim }}
 {%- elif egress.destination_security_group_id is defined %}
-          DestinationSecurityGroupId: {{ egress.destination_security_group_id }}
+          DestinationSecurityGroupId: {{ egress.destination_security_group_id | trim }}
 {%- endif %}
 {%- if egress.from_port is defined %}
           FromPort: {{ egress.from_port }}
@@ -49,14 +49,14 @@ Resources:
 {%- elif ingress.cidr_ipv6 is defined %}
           CidrIpv6: {{ ingress.cidr_ipv6 }}
 {%- elif ingress.source_prefix_list_id is defined %}
-          SourcePrefixListId: {{ ingress.source_prefix_list_id }}
+          SourcePrefixListId: {{ ingress.source_prefix_list_id | trim }}
 {%- elif ingress.source_security_group_id is defined %}
-          SourceSecurityGroupId: {{ ingress.source_security_group_id }}
+          SourceSecurityGroupId: {{ ingress.source_security_group_id | trim }}
 {%- elif ingress.source_security_group_name is defined %}
           SourceSecurityGroupName: {{ ingress.source_security_group_name }}
 {%- endif %}
 {%- if ingress.source_security_group_owner_id is defined %}
-          SourceSecurityGroupOwnerId: {{ ingress.source_security_group_owner_id }}
+          SourceSecurityGroupOwnerId: {{ ingress.source_security_group_owner_id | trim }}
 {%- endif %}
 {%- if ingress.from_port is defined %}
           FromPort: {{ ingress.from_port }}
@@ -67,7 +67,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if security_group.vpc_id is defined %}
-      VpcId: {{ security_group.vpc_id }}
+      VpcId: {{ security_group.vpc_id | trim }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL

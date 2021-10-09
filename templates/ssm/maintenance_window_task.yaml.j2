@@ -14,7 +14,7 @@ Resources:
       Priority: {{ maintenance_window_task.priority }}
       TaskArn: {{ maintenance_window_task.task_arn }}
       TaskType: {{ maintenance_window_task.task_type }}
-      WindowId: {{ maintenance_window_task.window_id }}
+      WindowId: {{ maintenance_window_task.window_id | trim }}
 {%- if maintenance_window_task.description is defined %}
       Description: {{ maintenance_window_task.description }}
 {%- endif %}

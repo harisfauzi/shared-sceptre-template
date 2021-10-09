@@ -10,8 +10,8 @@ Resources:
     DeletionPolicy: {{ association.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ association.update_replace_policy | default('Delete') }}
     Properties:
-      DhcpOptionsId: {{ association.dhcp_options_id }}
-      VpcId: {{ association.vpc_id }}
+      DhcpOptionsId: {{ association.dhcp_options_id | trim }}
+      VpcId: {{ association.vpc_id | trim }}
 {%- endfor %}
 
 Outputs:

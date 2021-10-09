@@ -11,7 +11,7 @@ Resources:
     UpdateReplacePolicy: {{ log_group.update_replace_policy | default('Delete') }}
     Properties:
 {%- if log_group.kms_key_id is defined %}
-      KmsKeyId: {{ log_group.kms_key_id }}
+      KmsKeyId: {{ log_group.kms_key_id | trim }}
 {%- endif %}
 {%- if log_group.log_group_name is defined %}
       LogGroupName: {{ log_group.log_group_name }}

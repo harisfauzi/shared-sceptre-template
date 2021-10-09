@@ -30,7 +30,7 @@
 {%- endfor %}
 {%- endif %}
 {%- if networkinterface.network_interface_id is defined %}
-          NetworkInterfaceId: {{ networkinterface.network_interface_id }}
+          NetworkInterfaceId: {{ networkinterface.network_interface_id | trim }}
 {%- endif %}
 {%- if networkinterface.private_ip_address is defined %}
           PrivateIpAddress: {{ networkinterface.private_ip_address }}
@@ -46,7 +46,7 @@
           SecondaryPrivateIpAddressCount: {{ networkinterface.secondary_private_ip_address_count }}
 {%- endif %}
 {%- if networkinterface.subnet_id is defined %}
-          SubnetId: {{ networkinterface.subnet_id }}
+          SubnetId: {{ networkinterface.subnet_id | trim }}
 {%- endif %}
 {%- endfor %}
 {%- endmacro %}
