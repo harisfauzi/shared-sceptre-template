@@ -1,0 +1,29 @@
+Description: CertificateManager Account(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for account in sceptre_user_data.accounts %}
+{%- set account_name = account.name %}
+  {{ account_name }}:
+    Type: AWS::CertificateManager::Account
+    DeletionPolicy: {{ account.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ account.update_replace_policy | default('Delete') }}
+    Properties:
+      ExpiryEventsConfiguration:
+        DaysBeforeExpiry: {{ account.expiry_events_configuration.days_before_expiry }}
+{%- endfor %}
+
+Outputs:
+
+{%- for account in sceptre_user_data.accounts %}
+{%- set account_name = account.name %}
+  {{ account_name }}:
+    Description: AWS Account ID for {{ account_name }}
+    Value:
+      Ref: {{ account_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ account_name }}"
+
+{%- endfor %}
