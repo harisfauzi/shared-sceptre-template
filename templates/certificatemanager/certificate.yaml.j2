@@ -1,0 +1,64 @@
+Description: CertificateManager Certificate(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for certificate in sceptre_user_data.certificates %}
+{%- set certificate_name = certificate.name %}
+  {{ certificate_name }}:
+    Type: AWS::CertificateManager::Certificate
+    DeletionPolicy: {{ certificate.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ certificate.update_replace_policy | default('Delete') }}
+    Properties:
+      DomainName: {{ certificate.domain_name }}
+{%- if certificate.certificate_authority_arn is defined %}
+      CertificateAuthorityArn: {{ certificate.certificate_authority_arn }}
+{%- endif %}
+{%- if certificate.certificate_transparency_logging_preferences is defined %}
+      CertificateTransparencyLoggingPreference: {{ certificate.certificate_transparency_logging_preferences }}
+{%- endif %}
+{%- if certificate.domain_validation_options is defined %}
+      DomainValidationOptions:
+{%- for domain_validation_option in certificate.domain_validation_options %}
+        - DomainName: {{ domain_validation_option.domain_name }}
+{%- if domain_validation_option.hosted_zone_id is defined %}
+          HostedZoneId: {{ domain_validation_option.hosted_zone_id | trim }}
+{%- endif %}
+{%- if domain_validation_option.validation_domain is defined %}
+          ValidationDomain: {{ domain_validation_option.validation_domain }}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- if certificate.subject_alternative_names is defined %}
+      SubjectAlternativeNames:
+{%- for subject_alternative_name in certificate.subject_alternative_names %}
+        - {{ subject_alternative_name }}
+{%- endif %}
+{%- endif %}
+{%- if certificate.validation_method is defined %}
+      ValidationMethod: {{ certificate.validation_method }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if certificate.tags is defined %}
+{%- for key,value in certificate.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for certificate in sceptre_user_data.certificates %}
+{%- set certificate_name = certificate.name %}
+  {{ certificate_name }}:
+    Description: ARN for {{ certificate_name }}
+    Value:
+      Ref: {{ certificate_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ certificate_name }}"
+
+{%- endfor %}
