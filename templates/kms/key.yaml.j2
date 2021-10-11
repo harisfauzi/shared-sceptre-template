@@ -101,7 +101,7 @@ Resources:
     DeletionPolicy: {{ key.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ key.update_replace_policy | default('Delete') }}
     Properties:
-      AliasName: alias/{{ key.alias_name }}
+      AliasName: alias/{{ alias_name }}
       TargetKeyId:
         Ref: {{ key_name }}
 {%- endfor %}
