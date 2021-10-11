@@ -92,8 +92,11 @@ Resources:
 {%- endfor %}
 {%- endif %}
 
-{%- if key.alias_name is defined %}
-  {{ key_name }}Alias:
+{%- if key.alias_names is defined %}
+{%- set ii=0 %}
+{%- for alias_name in key.alias_names %}
+{%- set ii=ii+1 %}
+  {{ key_name ~ "Alias" ~ ii }}:
     Type: AWS::KMS::Alias
     DeletionPolicy: {{ key.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ key.update_replace_policy | default('Delete') }}
@@ -101,6 +104,7 @@ Resources:
       AliasName: alias/{{ key.alias_name }}
       TargetKeyId:
         Ref: {{ key_name }}
+{%- endfor %}
 {%- endif %}
 {%- endfor %}
 
@@ -126,13 +130,17 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ key_name }}-Arn"
 
 {%- if key.alias_name is defined %}
-  {{ key_name }}Alias:
+{%- set ii=0 %}
+{%- for alias_name in key.alias_names %}
+{%- set ii=ii+1 %}
+  {{ key_name ~ "Alias" ~ ii }}:
     Description: The Alias for {{ key_name }}
     Value:
-      Ref: {{ key_name }}Alias
+      Ref: {{ key_name ~ "Alias" ~ ii }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ key_name }}-Alias"
+        Fn::Sub: "${AWS::StackName}-{{ key_name }}-Alias{{ ii }}"
 
+{%- endfor %}
 {%- endif %}
 {%- endfor %}
