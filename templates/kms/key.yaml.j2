@@ -129,7 +129,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ key_name }}-Arn"
 
-{%- if key.alias_name is defined %}
+{%- if key.alias_names is defined %}
 {%- set ii=0 %}
 {%- for alias_name in key.alias_names %}
 {%- set ii=ii+1 %}
