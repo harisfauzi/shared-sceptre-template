@@ -2,15 +2,65 @@ Description: KMS Key(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-{%- for key in sceptre_user_data.keys %}
+{%- for key in sceptre_user_data.kms_keys %}
 {%- set key_name = key.name %}
   {{ key_name }}:
     Type: AWS::KMS::Key
     DeletionPolicy: {{ key.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ key.update_replace_policy | default('Delete') }}
     Properties:
+{%- if key.generic_key_policy is defined %}
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: generic-key-policy
+        Statement:
+        - Sid: Enable IAM User Permissions
+          Effect: Allow
+          Principal:
+            AWS:
+              Fn::Sub: arn:aws:iam::${AWS::AccountId}:root
+          Action: kms:*
+          Resource: '*'
+        - Sid: Allow administration of the key
+          Effect: Allow
+          Principal:
+            AWS:
+{%- for arn in key.generic_key_policy.administrator_arns %}
+              - {{ arn }}
+{%- endfor %}
+          Action:
+          - kms:Create*
+          - kms:Describe*
+          - kms:Enable*
+          - kms:List*
+          - kms:Put*
+          - kms:Update*
+          - kms:Revoke*
+          - kms:Disable*
+          - kms:Get*
+          - kms:Delete*
+          - kms:ScheduleKeyDeletion
+          - kms:CancelKeyDeletion
+          Resource: '*'
+        - Sid: Allow use of the key
+          Effect: Allow
+          Principal:
+            AWS:
+{%- for arn in key.generic_key_policy.user_arns %}
+              - {{ arn }}
+{%- endfor %}
+          Action:
+          - kms:DescribeKey
+          - kms:Encrypt
+          - kms:Decrypt
+          - kms:ReEncrypt*
+          - kms:GenerateDataKey
+          - kms:GenerateDataKeyWithoutPlaintext
+          Resource: '*'
+{%- else %}
       KeyPolicy:
 {{ key.key_policy | indent(width=8, first=true) }}
+{%- endif %}
 {%- if key.description is defined %}
       Description: {{ key.description }}
 {%- endif %}
@@ -35,27 +85,31 @@ Resources:
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if  .tags is defined %}
+{%- if key.tags is defined %}
 {%- for key,value in key.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
 
-{%- if key.alias_name is defined %}
-  {{ key_name }}Alias:
+{%- if key.alias_names is defined %}
+{%- set ii=0 %}
+{%- for alias_name in key.alias_names %}
+{%- set ii=ii+1 %}
+  {{ key_name ~ "Alias" ~ ii }}:
     Type: AWS::KMS::Alias
     DeletionPolicy: {{ key.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ key.update_replace_policy | default('Delete') }}
     Properties:
-      AliasName: alias/{{ key.alias_name }}
+      AliasName: alias/{{ alias_name }}
       TargetKeyId:
         Ref: {{ key_name }}
+{%- endfor %}
 {%- endif %}
 {%- endfor %}
 
 Outputs:
-{%- for key in sceptre_user_data.keys %}
+{%- for key in sceptre_user_data.kms_keys %}
 {%- set key_name = key.name %}
   {{ key_name }}:
     Description: The Key ID for {{ key_name }}
@@ -75,14 +129,18 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ key_name }}-Arn"
 
-{%- if key.alias_name is defined %}
-  {{ key_name }}Alias:
+{%- if key.alias_names is defined %}
+{%- set ii=0 %}
+{%- for alias_name in key.alias_names %}
+{%- set ii=ii+1 %}
+  {{ key_name ~ "Alias" ~ ii }}:
     Description: The Alias for {{ key_name }}
     Value:
-      Ref: {{ key_name }}Alias
+      Ref: {{ key_name ~ "Alias" ~ ii }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ key_name }}-Alias"
+        Fn::Sub: "${AWS::StackName}-{{ key_name }}-Alias{{ ii }}"
 
+{%- endfor %}
 {%- endif %}
 {%- endfor %}
