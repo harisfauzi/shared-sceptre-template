@@ -2,7 +2,7 @@ Description: KMS Key(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-{%- for key in sceptre_user_data.keys %}
+{%- for key in sceptre_user_data.kms_keys %}
 {%- set key_name = key.name %}
   {{ key_name }}:
     Type: AWS::KMS::Key
@@ -105,7 +105,7 @@ Resources:
 {%- endfor %}
 
 Outputs:
-{%- for key in sceptre_user_data.keys %}
+{%- for key in sceptre_user_data.kms_keys %}
 {%- set key_name = key.name %}
   {{ key_name }}:
     Description: The Key ID for {{ key_name }}
