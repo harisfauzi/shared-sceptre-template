@@ -1,0 +1,88 @@
+Description: ECR Repository(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for repository in sceptre_user_data.repositories %}
+{%- set repository_name = repository.name %}
+  {{ repository_name }}:
+    Type: AWS::ECR::Repository
+    DeletionPolicy: {{ repository.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ repository.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if repository.encryption_configuration is defined %}
+      EncryptionConfiguration:
+        EncryptionType: {{ repository.encryption_configuration.encryption_type }}
+{%- if repository.encryption_configuration.kms_key is defind %}
+        KmsKey: {{ repository.encryption_configuration.kms_key }}
+{%- endif %}
+{%- endif %}
+{%- if repository.image_scanning_configuration is defined %}
+      ImageScanningConfiguration:
+        ScanOnPush: {{ repository.image_scanning_configuration.scan_on_push }}
+{%- endif %}
+{%- if repository.image_tag_mutability is defined %}
+      ImageTagMutability: {{ repository.image_tag_mutability }}
+{%- endif %}
+{%- if repository.lifecycle_policy is defined %}
+      LifecyclePolicy:
+{%- if repository.lifecycle_policy.lifecycle_policy_text is defined %}
+        LifecyclePolicyText: {{ repository.lifecycle_policy.lifecycle_policy_text }}
+{%- endif %}
+{%- if repository.lifecycle_policy.registry_id is defined %}
+        RegistryId: {{ repository.lifecycle_policy.registry_id }}
+{%- endif %}
+{%- endif %}
+{%- if repository.repository_name is defined %}
+      RepositoryName: {{ repository.repository_name }}
+{%- endif %}
+{%- if repository.repository_policy_text_json is defined %}
+      RepositoryPolicyText: "{{ repository.repository_policy_text_json }}"
+{%- elif repository.repository_policy_text is defined %}
+      RepositoryPolicyText:
+{{ repository.repository_policy_text | indent(width=8, first=true) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if repository.tags is defined %}
+{%- for key,value in repository.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for repository in sceptre_user_data.repositories %}
+{%- set repository_name = repository.name %}
+  {{ repository_name }}:
+    Description: Resource Name for {{ repository_name }}
+    Value:
+      Ref: {{ repository_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ repository_name }}"
+
+  {{ repository_name }}Arn:
+    Description: The ARN for {{ repository_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ repository_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ repository_name }}-Arn"
+
+  {{ repository_name }}RepositoryUri:
+    Description: Returns the URI for {{ repository_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ repository_name }}
+        - RepositoryUri
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ repository_name }}-RepositoryUri"
+
+{%- endfor %}
