@@ -1,0 +1,47 @@
+Description: ECR Replication Configuration(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for replication_configuration in sceptre_user_data.replication_configurations %}
+{%- set replication_configuration_name = replication_configuration.name %}
+  {{ replication_configuration_name }}:
+    Type: AWS::ECR::ReplicationConfiguration
+    DeletionPolicy: {{ replication_configuration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ replication_configuration.update_replace_policy | default('Delete') }}
+    Properties:
+      ReplicationConfiguration:
+        Rules:
+{%- for rule in replication_configuration.replication_configuration.rules %}
+          - Destinations:
+{%- for destination in rle.destinations %}
+              - Region: {{ destination.region }}
+                RegistryId: {{ destination.registry_id }}
+{%- endfor %}
+{%- if rule.repository_filters is defined %}
+            RepositoryFilters:
+{%- for repository_filter in rule.repository_filters %}
+              - Filter: {{ repository_filter.filter }}
+                FilterType: {{ repository_filter.filter_type }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for replication_configuration in sceptre_user_data.replication_configurations %}
+{%- set replication_configuration_name = replication_configuration.name %}
+
+  {{ replication_configuration_name }}RegistryId:
+    Description: The account ID of the destination registry for {{ replication_configuration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ replication_configuration_name }}
+        - RegistryId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_configuration_name }}-RegistryId"
+
+{%- endfor %}

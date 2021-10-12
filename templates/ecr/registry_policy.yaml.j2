@@ -1,0 +1,36 @@
+Description: ECR Registry Policy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for registry_policy in sceptre_user_data.registry_policies %}
+{%- set registry_policy_name = registry_policy.name %}
+  {{ registry_policy_name }}:
+    Type: AWS::ECR::RegistryPolicy
+    DeletionPolicy: {{ registry_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ registry_policy.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if registry_policy.policy_text_json is defined %}
+      PolicyText: "{{ registry_policy.policy_text_json }}"
+{%- else %}
+      PolicyText:
+{{ registry_policy.policy_text | indent(width=8, first=true) }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for registry_policy in sceptre_user_data.registry_policies %}
+{%- set registry_policy_name = registry_policy.name %}
+  {{ registry_policy_name }}RegistryId:
+    Description: The account ID of the private registry of {{ registry_policy_name }} is associated with.
+    Value:
+      Fn::GetAtt:
+        - {{ registry_policy_name }}
+        - RegistryId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ registry_policy_name }}-RegistryId"
+
+{%- endfor %}

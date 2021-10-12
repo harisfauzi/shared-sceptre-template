@@ -1,0 +1,61 @@
+Description: ECR Public Repository(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for public_repository in sceptre_user_data.public_repositories %}
+{%- set public_repository_name = public_repository.name %}
+  {{ public_repository_name }}:
+    Type: AWS::ECR::PublicRepository
+    DeletionPolicy: {{ public_repository.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ public_repository.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if public_repository.repository_catalog_data_json is defined %}
+      RepositoryCatalogData: "{{ public_repository.repository_catalog_data_json }}"
+{%- elif public_repository.repository_catalog_data is defined %}
+      RepositoryCatalogData:
+{{ public_repository.repository_catalog_data | indent(width=8, first=true) }}
+{%- endif %}
+{%- if public_repository.repository_name is defined %}
+      RepositoryName: String
+{%- endif %}
+{%- if public_repository.repository_policy_text_json is defined %}
+      RepositoryPolicyText: "{{ public_repository.repository_policy_text_json }}"
+{%- elif public_repository.repository_policy_text is defined %}
+      RepositoryPolicyText:
+{{ public_repository.repository_policy_text | indent(width=8, first=true) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if public_repository.tags is defined %}
+{%- for key,value in public_repository.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for public_repository in sceptre_user_data.public_repositories %}
+{%- set public_repository_name = public_repository.name %}
+  {{ public_repository_name }}:
+    Description: Resource Name for {{ public_repository_name }}
+    Value:
+      Ref: {{ public_repository_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ public_repository_name }}"
+
+  {{ public_repository_name }}Arn:
+    Description: The ARN for {{ public_repository_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ public_repository_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ public_repository_name }}-Arn"
+
+{%- endfor %}
