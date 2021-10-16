@@ -1,0 +1,27 @@
+{%- macro prep(artifacts) %}
+Type: {{ artifacts.type }}
+{%- if artifacts.artifact_identifier is defined %}
+ArtifactIdentifier: {{ artifacts.artifact_identifier }}
+{%- endif %}
+{%- if artifacts.encryption_disabled is defined %}
+EncryptionDisabled: {{ artifacts.encryption_disabled }}
+{%- endif %}
+{%- if artifacts.location is defined %}
+Location: {{ artifacts.location }}
+{%- endif %}
+{%- if artifacts.name is defined %}
+Name: {{ artifacts.name }}
+{%- endif %}
+{%- if artifacts.namespace_type is defined %}
+NamespaceType: {{ artifacts.namespace_type }}
+{%- endif %}
+{%- if artifacts.override_artifact_name is defined %}
+OverrideArtifactName: {{ artifacts.override_artifact_name }}
+{%- endif %}
+{%- if artifacts.packaging is defined %}
+Packaging: {{ artifacts.packaging }}
+{%- endif %}
+{%- if artifacts.path is defined %}
+Path: {{ artifacts.path }}
+{%- endif %}
+{%- endmacro %}

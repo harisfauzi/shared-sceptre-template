@@ -1,0 +1,64 @@
+Description: CodeBuild Report Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for report_group in sceptre_user_data.report_groups %}
+{%- set report_group_name = report_group.name %}
+  {{ report_group_name }}:
+    Type: AWS::CodeBuild::ReportGroup
+    DeletionPolicy: {{ report_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ report_group.update_replace_policy | default('Delete') }}
+    Properties:
+      ExportConfig: 
+        ExportConfigType: {{ report_group.export_config.export_config_type }}
+{%- if report_group.export_config.s3_destination is defined %}
+        S3Destination: 
+          Bucket: {{ report_group.export_config.s3_destination.bucket }}
+{%- if report_group.export_config.s3_destination.bucket_owner is defined %}
+          BucketOwner: {{ report_group.export_config.s3_destination.bucket_owner }}
+{%- endif %}
+{%- if report_group.export_config.s3_destination.encryption_disabled is defined %}
+          EncryptionDisabled: {{ report_group.export_config.s3_destination.encryption_disabled }}
+{%- endif %}
+{%- if report_group.export_config.s3_destination.encryption_key is defined %}
+          EncryptionKey: {{ report_group.export_config.s3_destination.encryption_key }}
+{%- endif %}
+{%- if report_group.export_config.s3_destination.packaging is defined %}
+          Packaging: {{ report_group.export_config.s3_destination.packaging }}
+{%- endif %}
+{%- if report_group.export_config.s3_destination.path is defined %}
+          Path: {{ report_group.export_config.s3_destination.path }}
+{%- endif %}
+{%- endif %}
+      Type: {{ report_group.type }}
+{%- if report_group.delete_reports is defined %}
+      DeleteReports: {{ report_group.delete_reports }}
+{%- endif %}
+{%- if report_group.name is defined %}
+      Name: {{ report_group.name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if report_group.tags is defined %}
+{%- for key,value in report_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for report_group in sceptre_user_data.report_groups %}
+{%- set report_group_name = report_group.name %}
+  {{ report_group_name }}:
+    Description: The ARN for {{ report_group_name }}
+    Value:
+      Ref: {{ report_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ report_group_name }}"
+
+{%- endfor %}
