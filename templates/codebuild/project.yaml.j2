@@ -1,0 +1,246 @@
+{%- import 'macros/project_artifacts.yaml.j2' as project_artifacts %}
+{%- import 'macros/project_source.yaml.j2' as project_source %}
+Description: CodeBuild Project(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for project in sceptre_user_data.projects %}
+{%- set project_name = project.name %}
+  {{ project_name }}:
+    Type: AWS::CodeBuild::Project
+    DeletionPolicy: {{ project.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ project.update_replace_policy | default('Delete') }}
+    Properties:
+      Artifacts:
+{{ project_artifacts.prep(project.artifacts) | indent(width=8, first=true) }}
+      Environment:
+        ComputeType: {{ project.environment.compute_type }}
+        Image: {{ project.environment.image }}
+        Type: {{ project.environment.type }}
+{%- if project.environment.certificate is defined %}
+        Certificate: {{ project.environment.certificate }}
+{%- endif %}
+{%- if project.environment.environment_variables is defined %}
+        EnvironmentVariables:
+{%- for environment_variable in project.environment.environment_variables %}
+          - Name: {{ environment_variable.name }}
+            Value: {{ environment_variable.value }}
+{%- if environment_variable.type is defined %}
+            Type: {{ environment_variable.type }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if project.environment.image_pull_credentials_type is defined %}
+        ImagePullCredentialsType: {{ project.environment.image_pull_credentials_type }}
+{%- endif %}
+{%- if project.environment.privileged_mode is defined %}
+        PrivilegedMode: {{ project.environment.privileged_mode }}
+{%- endif %}
+{%- if project.environment.registry_credential is defined %}
+        RegistryCredential:
+          Credential: {{ project.environment.registry_credential.credential }}
+          CredentialProvider: {{ project.environment.registry_credential.credential_provider }}
+{%- endif %}
+      ServiceRole: {{ project.service_role }}
+      Source:
+{{ project_source.prep(project.source) | indent(width=8, first=true) }}
+{%- if project.badge_enabled is defined %}
+      BadgeEnabled: {{ project.badge_enabled }}
+{%- endif %}
+{%- if project.build_batch_config is defined %}  {# BEGIN {%- if project.build_batch_config is defined %} #}
+      BuildBatchConfig:
+{%- if project.build_batch_config.batch_report_mode is defined %}
+        BatchReportMode: {{ project.build_batch_config.batch_report_mode }}
+{%- endif %}
+{%- if project.build_batch_config.combine_artifacts is defined %}
+        CombineArtifacts: {{ project.build_batch_config.combine_artifacts }}
+{%- endif %}
+{%- if project.build_batch_config.restrictions is defined %}  {## BEGIN {%- if project.build_batch_config.restrictions is defined %} #}
+        Restrictions:
+{%- if project.build_batch_config.restrictions.compute_types_allowed is defined %}
+          ComputeTypesAllowed:
+{%- for compute_type in project.build_batch_config.restrictions.compute_types_allowed %}
+            - {{ compute_type }}
+{%- endfor %}
+{%- endif %}
+{%- if project.build_batch_config.restrictions.maximum_builds_allowed is defined %}
+          MaximumBuildsAllowed: {{ project.build_batch_config.restrictions.maximum_builds_allowed }}
+{%- endif %}
+{%- endif %}  {## END {%- if project.build_batch_config.restrictions is defined %} #}
+{%- if project.build_batch_config.service_role is defined %}
+        ServiceRole: {{ project.build_batch_config.service_role }}
+{%- endif %}
+{%- if project.build_batch_config.timeout_in_mins is defined %}
+        TimeoutInMins: {{ project.build_batch_config.timeout_in_mins }}
+{%- endif %}
+{%- endif %}  {# END {%- if project.build_batch_config is defined %} #}
+{%- if project.cache is defined %}
+      Cache:
+        Type: {{ project.cache.type }}
+{%- if project.cache.location is defined %}
+        Location: {{ project.cache.location }}
+{%- endif %}
+{%- if project.cache.modes is defined %}
+        Modes:
+{%- for mode in project.cache.modes %}
+          - {{ mode }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if project.concurrent_build_limit is defined %}
+      ConcurrentBuildLimit: {{ project.concurrent_build_limit }}
+{%- endif %}
+{%- if project.description is defined %}
+      Description: {{ project.description }}
+{%- endif %}
+{%- if project.encryption_key is defined %}
+      EncryptionKey: {{ project.encryption_key }}
+{%- endif %}
+{%- if project.file_system_locations is defined %}
+      FileSystemLocations:
+{%- for location in project.file_system_locations %}
+        - Identifier: {{ location.identifier }}
+          Location: {{ location.location }}
+          MountPoint: {{ location.mount_option }}
+          Type: {{ location.type }}
+{%- if location.mount_options is defined %}
+          MountOptions: {{ location.mount_options }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if project.logs_config is defined %}  {# BEGIN {%- if project.logs_config is defined %} #}
+      LogsConfig:
+{%- if project.logs_config.cloud_watch_logs is defined %}
+        CloudWatchLogs:
+          Status: {{ project.logs_config.cloud_watch_logs.status }}
+{%- if project.logs_config.cloud_watch_logs.group_name is defined %}
+          GroupName: {{ project.logs_config.cloud_watch_logs.group_name }}
+{%- endif %}
+{%- if project.logs_config.cloud_watch_logs.stream_name is defined %}
+          StreamName: {{ project.logs_config.cloud_watch_logs.stream_name }}
+{%- endif %}
+{%- endif %}
+{%- if project.logs_config.s3_logs is defined %}
+        S3Logs:
+          Status: {{ project.logs_config.s3_logs.status }}
+{%- if project.logs_config.s3_logs.encryption_disabled is defined %}
+          EncryptionDisabled: {{ project.logs_config.s3_logs.encryption_disabled }}
+{%- endif %}
+{%- if project.logs_config.s3_logs.location is defined %}
+          Location: {{ project.logs_config.s3_logs.location }}
+{%- endif %}
+{%- endif %}
+{%- endif %}  {# END {%- if project.logs_config is defined %} #}
+{%- if project.name is defined %}
+      Name: {{ project.name }}
+{%- endif %}
+{%- if project.queued_timeout_in_minutes is defined %}
+      QueuedTimeoutInMinutes: {{ project.queued_timeout_in_minutes }}
+{%- endif %}
+{%- if project.resource_access_role is defined %}
+      ResourceAccessRole: {{ project.resource_access_role }}
+{%- endif %}
+{%- if project.secondary_artifacts is defined %}
+      SecondaryArtifacts:
+{%- for secondary_artifacts in project.secondary_artifacts %}
+        -
+{{ project_artifacts.prep(secondary_artifacts) | indent(width=10, first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if project.secondary_sources is defined %}
+      SecondarySources:
+{%- for secondary_source in project.secondary_sources %}
+        -
+{{ project_source.prep(secondary_source) | indent(width=10, first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if project.secondary_source_versions is defined %}
+      SecondarySourceVersions:
+{%- for secondary_source_version in project.secondary_source_versions %}
+        - SourceIdentifier: {{ secondary_source_version.source_identifier }}
+{%- if secondary_source_version.source_version is defined %}
+          SourceVersion: {{ secondary_source_version.source_version }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if project.source_version is defined %}
+      SourceVersion: {{ project.source_version }}
+{%- endif %}
+{%- if project.timeout_in_minutes is defined %}
+      TimeoutInMinutes: {{ project.timeout_in_minutes }}
+{%- endif %}
+{%- if project.triggers is defined %}
+      Triggers:
+{%- if project.triggers.build_type is defined %}
+        BuildType: {{ project.triggers.build_type }}
+{%- endif %}
+{%- if project.triggers.filter_groups is defined %}
+        FilterGroups:
+{%- for filter_group in project.triggers.filter_groups %}
+          - Pattern: {{ filter_group.pattern }}
+            Type: {{ filter_group.type }}
+{%- if filter_group.exclude_matched_pattern is defined %}
+            ExcludeMatchedPattern: {{ filter_group.exclude_matched_pattern }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if project.triggers.webhook is defined %}
+        Webhook: {{ project.triggers.webhook }}
+{%- endif %}
+{%- endif %}
+{%- if project.visibility is defined %}
+      Visibility: {{ project.visibility }}
+{%- endif %}
+{%- if project.vpc_config is defined %}
+      VpcConfig:
+{%- if project.vpc_config.security_group_ids is defined %}
+        SecurityGroupIds:
+{%- for security_group_id in project.vpc_config.security_group_ids %}
+          - {{ security_group_id }}
+{%- endfor %}
+{%- endif %}
+{%- if project.vpc_config.subnets is defined %}
+        Subnets:
+{%- for subnet in project.vpc_config.subnets %}
+          - {{ subnet }}
+{%- endfor %}
+{%- endif %}
+{%- if project.vpc_config.vpc_id is defined %}
+        VpcId: {{ project.vpc_config.vpc_id }}
+{%- endif %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if project.tags is defined %}
+{%- for key,value in project.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for project in sceptre_user_data.projects %}
+{%- set project_name = project.name %}
+  {{ project_name }}:
+    Description: The Project Name for {{ project_name }}
+    Value:
+      Ref: {{ project_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ project_name }}"
+
+  {{ project_name }}Arn:
+    Description: The ARN for {{ project_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ project_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ project_name }}-Arn"
+
+{%- endfor %}
