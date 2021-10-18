@@ -13,7 +13,7 @@ Resources:
 {%- if repository.encryption_configuration is defined %}
       EncryptionConfiguration:
         EncryptionType: {{ repository.encryption_configuration.encryption_type }}
-{%- if repository.encryption_configuration.kms_key is defind %}
+{%- if repository.encryption_configuration.kms_key is defined %}
         KmsKey: {{ repository.encryption_configuration.kms_key }}
 {%- endif %}
 {%- endif %}
