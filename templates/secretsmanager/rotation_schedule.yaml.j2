@@ -1,0 +1,60 @@
+Description: SecretsManager Rotation Schedule(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Transform: AWS::SecretsManager-2020-07-23
+
+Resources:
+
+{%- for rotation_schedule in sceptre_user_data.rotation_schedules %}
+{%- set rotation_schedule_name = rotation_schedule.name %}
+  {{ rotation_schedule_name }}:
+    Type: AWS::SecretsManager::RotationSchedule
+    DeletionPolicy: {{ rotation_schedule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ rotation_schedule.update_replace_policy | default('Delete') }}
+    Properties:
+      SecretId: {{ rotation_schedule.secret_id | trim }}
+{%- if rotation_schedule.hosted_rotation_lambda is defined %}
+      HostedRotationLambda: 
+        RotationType: {{ rotation_schedule.hosted_rotation_lambda.rotation_type }}
+{%- if rotation_schedule.hosted_rotation_lambda.kms_key_arn is defined %}
+        KmsKeyArn: {{ rotation_schedule.hosted_rotation_lambda.kms_key_arn }}
+{%- endif %}
+{%- if rotation_schedule.hosted_rotation_lambda.master_secret_arn is defined %}
+        MasterSecretArn: {{ rotation_schedule.hosted_rotation_lambda.master_secret_arn }}
+{%- endif %}
+{%- if rotation_schedule.hosted_rotation_lambda.master_secret_kms_key_arn is defined %}
+        MasterSecretKmsKeyArn: {{ rotation_schedule.hosted_rotation_lambda.master_secret_kms_key_arn }}
+{%- endif %}
+{%- if rotation_schedule.hosted_rotation_lambda.rotation_lambda_name is defined %}
+        RotationLambdaName: {{ rotation_schedule.hosted_rotation_lambda.rotation_lambda_name }}
+{%- endif %}
+{%- if rotation_schedule.hosted_rotation_lambda.vpc_security_group_ids is defined %}
+        VpcSecurityGroupIds: {{ rotation_schedule.hosted_rotation_lambda.vpc_security_group_ids }}
+{%- endif %}
+{%- if rotation_schedule.hosted_rotation_lambda.vpc_subnet_ids is defined %}
+        VpcSubnetIds: {{ rotation_schedule.hosted_rotation_lambda.vpc_subnet_ids }}
+{%- endif %}
+{%- endif %}
+{%- if rotation_schedule.rotation_lambda_arn is defined %}
+      RotationLambdaARN: {{ rotation_schedule.rotation_lambda_arn }}
+{%- endif %}
+{%- if rotation_schedule.rotation_rules is defined %}
+      RotationRules: 
+        AutomaticallyAfterDays: {{ rotation_schedule.rotation_rules.automatically_after_days }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for rotation_schedule in sceptre_user_data.rotation_schedules %}
+{%- set rotation_schedule_name = rotation_schedule.name %}
+  {{ rotation_schedule_name }}:
+    Description: The Secret ARN for {{ rotation_schedule_name }}
+    Value:
+      Ref: {{ rotation_schedule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ rotation_schedule_name }}"
+
+{%- endfor %}
