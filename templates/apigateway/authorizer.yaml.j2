@@ -1,0 +1,57 @@
+Description: ApiGateway Authorizer(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for authorizer in sceptre_user_data.authorizers %}
+{%- set authorizer_name = authorizer.name %}
+  {{ authorizer_name }}:
+    Type: AWS::ApiGateway::Authorizer
+    DeletionPolicy: {{ authorizer.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ authorizer.update_replace_policy | default('Delete') }}
+    Properties:
+      RestApiId: {{ authorizer.rest_api_id | trim }}
+      Type: {{ authorizer.type }}
+{%- if authorizer.authorizer_credentials is defined %}
+      AuthorizerCredentials: {{ authorizer.authorizer_credentials }}
+{%- endif %}
+{%- if authorizer.authorizer_result_ttl_in_seconds is defined %}
+      AuthorizerResultTtlInSeconds: {{ authorizer.authorizer_result_ttl_in_seconds }}
+{%- endif %}
+{%- if authorizer.authorizer_uri is defined %}
+      AuthorizerUri: {{ authorizer.authorizer_uri }}
+{%- endif %}
+{%- if authorizer.auth_type is defined %}
+      AuthType: {{ authorizer.auth_type }}
+{%- endif %}
+{%- if authorizer.identity_source is defined %}
+      IdentitySource: {{ authorizer.identity_source }}
+{%- endif %}
+{%- if authorizer.identity_validation_expression is defined %}
+      IdentityValidationExpression: {{ authorizer.identity_validation_expression }}
+{%- endif %}
+{%- if authorizer.authorizer_name is defined %}
+      Name: {{ authorizer.authorizer_name }}
+{%- endif %}
+{%- if authorizer.provider_arns is defined %}
+      ProviderARNs:
+{%- for provider_arn in authorizer.provider_arns %}
+        - {{ provider_arn | trim }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for authorizer in sceptre_user_data.authorizers %}
+{%- set authorizer_name = authorizer.name %}
+  {{ authorizer_name }}:
+    Description: The Authorizer Id for {{ authorizer_name }}
+    Value:
+      Ref: {{ authorizer_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ authorizer_name }}"
+
+{%- endfor %}

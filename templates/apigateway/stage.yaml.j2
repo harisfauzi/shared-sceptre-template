@@ -1,0 +1,99 @@
+{%- import 'macros/method_settings.yaml.j2' as macro_method_settings %}
+Description: ApiGateway Stage(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for stage in sceptre_user_data.stages %}
+{%- set stage_name = stage.name %}
+  {{ stage_name }}:
+    Type: AWS::ApiGateway::Stage
+    DeletionPolicy: {{ stage.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ stage.update_replace_policy | default('Delete') }}
+    Properties:
+      RestApiId: {{ stage.rest_api_id }}
+{%- if stage.access_log_setting is defined %}
+      AccessLogSetting:
+{%- if stage.access_log_setting.detination_arn is defined %}
+        DestinationArn: {{ stage.access_log_setting.detination_arn | trim }}
+{%- endif %}
+{%- if stage.access_log_setting.format is defined %}
+        Format: {{ stage.access_log_setting.format }}
+{%- endif %}
+{%- endif %}
+{%- if stage.cache_cluster_enabled is defined %}
+      CacheClusterEnabled: {{ stage.cache_cluster_enabled }}
+{%- endif %}
+{%- if stage.cache_cluster_size is defined %}
+      CacheClusterSize: {{ stage.cache_cluster_size }}
+{%- endif %}
+{%- if stage.canary_setting is defined %}
+      CanarySetting:
+{%- if stage.canary_setting.deployment_id is defined %}
+        DeploymentId: {{ stage.canary_setting.deployment_id | trim }}
+{%- endif %}
+{%- if stage.canary_setting.percent_traffic is defined %}
+        PercentTraffic: {{ stage.canary_setting.percent_traffic }}
+{%- endif %}
+{%- if stage.canary_setting.stage_variable_overrides is defined %}
+        StageVariableOverrides:
+{%- for key, value in stage.canary_setting.stage_variable_overrides.items() %}
+          "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if stage.canary_setting.use_stage_cache is defined %}
+        UseStageCache: {{ stage.canary_setting.use_stage_cache }}
+{%- endif %}
+{%- endif %}
+{%- if stage.client_certificate_id is defined %}
+      ClientCertificateId: {{ stage.client_certificate_id | trim }}
+{%- endif %}
+{%- if stage.deployment_id is defined %}
+      DeploymentId: {{ stage.deployment_id | trim }}
+{%- endif %}
+{%- if stage.description is defined %}
+      Description: {{ stage.description }}
+{%- endif %}
+{%- if stage.documentation_version is defined %}
+      DocumentationVersion: {{ stage.documentation_version | trim }}
+{%- endif %}
+{%- if stage.method_settings is defined %}
+{{ macro_method_settings.prep(stage.method_settings) }}
+{%- endif %}
+{%- if stage.stage_name is defined %}
+      StageName: {{ stage.stage_name }}
+{%- endif %}
+{%- if stage.tracing_enabled is defined %}
+      TracingEnabled: {{ stage.tracing_enabled }}
+{%- endif %}
+{%- if stage.variables is defined %}
+      Variables:
+{%- for key, value in stage.variables.items() %}
+        "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if stage.tags is defined %}
+{%- for key,value in stage.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for stage in sceptre_user_data.stages %}
+{%- set stage_name = stage.name %}
+  {{ stage_name }}:
+    Description: The name of the stage for {{ stage_name }}
+    Value:
+      Ref: {{ stage_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stage_name }}"
+
+{%- endfor %}

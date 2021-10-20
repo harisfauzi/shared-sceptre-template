@@ -1,0 +1,31 @@
+Description: ApiGateway Resource(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for resource in sceptre_user_data.resources %}
+{%- set resource_name = resource.name %}
+  {{ resource_name }}:
+    Type: AWS::ApiGateway::Resource
+    DeletionPolicy: {{ resource.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resource.update_replace_policy | default('Delete') }}
+    Properties:
+      ParentId: {{ resource.parent_id | trim }}
+      PathPart: {{ resource.path_part }}
+      RestApiId: {{ resource.rest_api_id | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for resource in sceptre_user_data.resources %}
+{%- set resource_name = resource.name %}
+  {{ resource_name }}:
+    Description: Resource ID for {{ resource_name }}
+    Value:
+      Ref: {{ resource_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_name }}"
+
+{%- endfor %}

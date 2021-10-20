@@ -1,0 +1,124 @@
+Description: IAM Role for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for domain_name in sceptre_user_data.domain_names %}
+{%- set domain_name_name = domain_name.name %}
+  {{ domain_name_name }}:
+    Type: AWS::ApiGateway::DomainName
+    DeletionPolicy: {{ domain_name.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ domain_name.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if domain_name.certificate_arn is defined %}
+      CertificateArn: {{ domain_name.certificate_arn | trim }}
+{%- endif %}
+{%- if domain_name.domain_name is defined %}
+      DomainName: {{ domain_name.domain_name }}
+{%- endif %}
+{%- if domain_name.endpoint_configuration is defined %}
+      EndpointConfiguration:
+        Types:
+{%- for type in domain_name.endpoint_configuration.types %}
+          - {{ type }}
+{%- endfor %}
+{%- endif %}
+{%- if domain_name.mutual_tls_authentication is defined %}
+      MutualTlsAuthentication:
+{%- if domain_name.mutual_tls_authentication.truststore_uri is defined %}
+        TruststoreUri: {{ domain_name.mutual_tls_authentication.truststore_uri }}
+{%- endif %}
+{%- if domain_name.mutual_tls_authentication.trustore_version is defined %}
+        TruststoreVersion: {{ domain_name.mutual_tls_authentication.trustore_version }}
+{%- endif %}
+{%- endif %}
+{%- if domain_name.ownership_verication_certificate_arn is defined %}
+      OwnershipVerificationCertificateArn: {{ domain_name.ownership_verication_certificate_arn | trim }}
+{%- endif %}
+{%- if domain_name.regional_certificate_arn is defined %}
+      RegionalCertificateArn: {{ domain_name.regional_certificate_arn }}
+{%- endif %}
+{%- if domain_name.security_policy is defined %}
+      SecurityPolicy: {{ domain_name.security_policy }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if domain_name.tags is defined %}
+{%- for key,value in domain_name.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for domain_name in sceptre_user_data.domain_names %}
+  {%- set domain_name_name = domain_name.name %}
+  {%- set isEDGE = false %}
+  {%- set isREGIONAL = false %}
+  {%- if domain_name.endpoint_configuration.types is defined %}
+    {%- for type in domain_name.endpoint_configuration.types %}
+      {%- if type == 'EDGE' %}
+        {%- set isEDGE = true %}
+      {%- endif %}
+      {%- if type == 'REGIONAL' %}
+        {%- set isREGIONAL = true %}
+      {%- endif %}
+    {%- endfor %}
+  {%- endif %}
+  {{ domain_name_name }}:
+    Description: Domain Name for {{ domain_name_name }}
+    Value:
+      Ref: {{ domain_name_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name_name }}"
+
+{%- if isEDGE %}
+  {{ domain_name_name }}DistributionHostedZoneId:
+    Description: DistributionHostedZoneId for {{ domain_name_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name_name }}
+        - DistributionHostedZoneId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name_name }}-DistributionHostedZoneId"
+
+  {{ domain_name_name }}DistributionDomainName:
+    Description: The DistributionDomainName for {{ domain_name_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name_name }}
+        - DistributionDomainName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name_name }}-DistributionDomainName"
+{%- endif %}
+
+{%- if isREGIONAL %}
+  {{ domain_name_name }}RegionalDomainName:
+    Description: The RegionalDomainName for {{ domain_name_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name_name }}
+        - RegionalDomainName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name_name }}-RegionalDomainName"
+
+  {{ domain_name_name }}RegionalHostedZoneId:
+    Description: The RegionalHostedZoneId for {{ domain_name_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name_name }}
+        - RegionalHostedZoneId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name_name }}-RegionalHostedZoneId"
+{%- endif %}
+
+{%- endfor %}

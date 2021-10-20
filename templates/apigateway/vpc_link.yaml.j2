@@ -1,0 +1,37 @@
+Description: ApiGateway VPC Link(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for vpc_link in sceptre_user_data.vpc_links %}
+{%- set vpc_link_name = vpc_link.name %}
+  {{ vpc_link_name }}:
+    Type: AWS::ApiGateway::VpcLink
+    DeletionPolicy: {{ vpc_link.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_link.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ vpc_link.vpc_link_name }}
+      TargetArns:
+{%- for item in vpc_link.target_arns %}
+        - {{ item | trim }}
+{%- endfor %}
+{%- if vpc_link.description is defined %}
+      Description: {{ vpc_link.description }}
+{%- endif %}
+
+
+{%- endfor %}
+
+Outputs:
+
+{%- for vpc_link in sceptre_user_data.vpc_links %}
+{%- set vpc_link_name = vpc_link.name %}
+  {{ vpc_link_name }}:
+    Description: The ID of VpcLink of {{ vpc_link_name }}
+    Value:
+      Ref: {{ vpc_link_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_link_name }}"
+
+{%- endfor %}

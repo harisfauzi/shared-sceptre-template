@@ -1,0 +1,38 @@
+Description: ApiGateway Request Validator(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for request_validator in sceptre_user_data.request_validators %}
+{%- set request_validator_name = request_validator.name %}
+  {{ request_validator_name }}:
+    Type: AWS::ApiGateway::RequestValidator
+    DeletionPolicy: {{ request_validator.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ request_validator.update_replace_policy | default('Delete') }}
+    Properties:
+      RestApiId: {{ request_validator.rest_api_id | trim }}
+{%- if request_validator.request_validator_name is defined %}
+      Name: {{ request_validator.request_validator_name }}
+{%- endif %}
+{%- if request_validator.validate_request_body is defined %}
+      ValidateRequestBody: {{ request_validator.validate_request_body }}
+{%- endif %}
+{%- if request_validator.validate_request_parameters is defined %}
+      ValidateRequestParameters: {{ request_validator.validate_request_parameters }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for request_validator in sceptre_user_data.request_validators %}
+{%- set request_validator_name = request_validator.name %}
+  {{ request_validator_name }}:
+    Description: Request Validator Id for {{ request_validator_name }}
+    Value:
+      Ref: {{ request_validator_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ request_validator_name }}"
+
+{%- endfor %}

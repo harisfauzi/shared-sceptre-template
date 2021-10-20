@@ -1,0 +1,66 @@
+Description: ApiGateway API Key(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for api_key in sceptre_user_data.api_keys %}
+{%- set api_key_name = api_key.name %}
+  {{ api_key_name }}:
+    Type: AWS::ApiGateway::ApiKey
+    DeletionPolicy: {{ api_key.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ api_key.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if api_key.customer_id is defined %}
+      CustomerId: {{ api_key.customer_id | trim }}
+{%- endif %}
+{%- if api_key.description is defined %}
+      Description: {{ api_key.description }}
+{%- endif %}
+{%- if api_key.enabled is defined %}
+      Enabled: {{ api_key.enabled }}
+{%- endif %}
+{%- if api_key.generate_distinct_id is defined %}
+      GenerateDistinctId: {{ api_key.generate_distinct_id }}
+{%- endif %}
+{%- if api_key.api_key_name is defined %}
+      Name: {{ api_key.api_key_name }}
+{%- endif %}
+{%- if api_key.stage_keys is defined %}
+      StageKeys:
+{%- for stage_key in api_key.stage_keys %}
+        -
+{%- if stage_key.rest_api_id is defined %}
+          RestApiId: {{ stage_key.rest_api_id | trim }}
+{%- endif %}
+{%- if stage_key.stage_name is defined %}
+          StageName: {{ stage_key.stage_name }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if api_key.value is defined %}
+      Value: {{ api_key.value }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if api_key.tags is defined %}
+{%- for key,value in api_key.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for api_key in sceptre_user_data.api_keys %}
+{%- set api_key_name = api_key.name %}
+  {{ api_key_name }}:
+    Description: The API Key ID for {{ api_key_name }}
+    Value:
+      Ref: {{ api_key_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ api_key_name }}"
+
+{%- endfor %}
