@@ -1,0 +1,125 @@
+Description: ApiGateway REST API(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for rest_api in sceptre_user_data.rest_apis %}
+{%- set rest_api_name = rest_api.name %}
+  {{ rest_api_name }}:
+    Type: AWS::ApiGateway::RestApi
+    DeletionPolicy: {{ rest_api.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ rest_api.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if rest_api.api_key_source_type is defined %}
+      ApiKeySourceType: {{ rest_api.api_key_source_type }}
+{%- endif %}
+{%- if rest_api.binary_media_types is defined %}
+      BinaryMediaTypes:
+{%- for item in rest_api.binary_media_types %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if rest_api.body_json is defined %}
+      Body: {{ rest_api.body_json }}
+{%- elif rest_api.body is defined %}
+      Body:
+{{ rest_api.body | indent(width=8, first=true )}}
+{%- endif %}
+{%- if rest_api.body_s3_location is defined %}
+      BodyS3Location:
+{%- if rest_api.body_s3_location.bucket is defined %}
+        Bucket: {{ rest_api.body_s3_location.bucket }}
+{%- endif %}
+{%- if rest_api.body_s3_location.e_tag is defined %}
+        ETag: {{ rest_api.body_s3_location.e_tag }}
+{%- endif %}
+{%- if rest_api.body_s3_location.key is defined %}
+        Key: {{ rest_api.body_s3_location.key }}
+{%- endif %}
+{%- if rest_api.body_s3_location.version is defined %}
+        Version: {{ rest_api.body_s3_location.version }}
+{%- endif %}
+{%- endif %}
+{%- if rest_api.clone_from is defined %}
+      CloneFrom: {{ rest_api.clone_from }}
+{%- endif %}
+{%- if rest_api.description is defined %}
+      Description: {{ rest_api.description }}
+{%- endif %}
+{%- if rest_api.disable_execute_api_endpoint is defined %}
+      DisableExecuteApiEndpoint: {{ rest_api.disable_execute_api_endpoint }}
+{%- endif %}
+{%- if rest_api.endpoint_configuration is defined %}
+      EndpointConfiguration:
+{%- if rest_api.endpoint_configuration.types is defined %}
+        Types:
+{%- for item in rest_api.endpoint_configuration.types %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if rest_api.endpoint_configuration.vpc_endpoints is defined %}
+        VpcEndpointIds:
+{%- for item in rest_api.endpoint_configuration.vpc_endpoints %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if rest_api.fail_on_warnings is defined %}
+      FailOnWarnings: {{ rest_api.fail_on_warnings }}
+{%- endif %}
+{%- if rest_api.minimum_compression_size is defined %}
+      MinimumCompressionSize: {{ rest_api.minimum_compression_size }}
+{%- endif %}
+{%- if rest_api.mode is defined %}
+      Mode: {{ rest_api.mode }}
+{%- endif %}
+{%- if rest_api.rest_api_name is defined %}
+      Name: {{ rest_api.rest_api_name }}
+{%- endif %}
+{%- if rest_api.parameters is defined %}
+      Parameters:
+{%- for key, value in rest_api.parameters.items() %}
+        "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if rest_api.policy_json is defined %}
+      Policy: {{ rest_api.policy_json }}
+{%- if rest_api.policy is defined %}
+      Policy:
+{{ rest_api.policy | indent(width=8, first=true) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if rest_api.tags is defined %}
+{%- for key,value in rest_api.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for rest_api in sceptre_user_data.rest_apis %}
+{%- set rest_api_name = rest_api.name %}
+  {{ rest_api_name }}:
+    Description: Rest Api Id for {{ rest_api_name }}
+    Value:
+      Ref: {{ rest_api_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ rest_api_name }}"
+
+  {{ rest_api_name }}RootResourceId:
+    Description: The Root Resource Id for {{ rest_api_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ rest_api_name }}
+        - RootResourceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ rest_api_name }}-RootResourceId"
+
+{%- endfor %}

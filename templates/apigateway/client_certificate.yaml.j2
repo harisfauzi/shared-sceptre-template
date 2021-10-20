@@ -1,0 +1,50 @@
+Description: ApiGateway Client Certificate(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for client_certificate in sceptre_user_data.client_certificates %}
+{%- set client_certificate_name = client_certificate.name %}
+  {{ client_certificate_name }}:
+    Type: AWS::ApiGateway::ClientCertificate
+    DeletionPolicy: {{ client_certificate.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ client_certificate.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if client_certificate.description is defined %}
+      Description: {{ client_certificate.description }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if client_certificate.tags is defined %}
+{%- for key,value in client_certificate.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for client_certificate in sceptre_user_data.client_certificates %}
+{%- set client_certificate_name = client_certificate.name %}
+  {{ client_certificate_name }}:
+    Description: Client Certificate Name for {{ client_certificate_name }}
+    Value:
+      Ref: {{ client_certificate_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ client_certificate_name }}"
+
+  {{ client_certificate_name }}ClientCertificateId:
+    Description: The Client Certificate Id for {{ client_certificate_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ client_certificate_name }}
+        - ClientCertificateId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ client_certificate_name }}-ClientCertificateId"
+
+{%- endfor %}

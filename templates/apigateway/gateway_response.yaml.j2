@@ -1,0 +1,31 @@
+Description: ApiGateway Gateway Response(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for gateway_response in sceptre_user_data.gateway_responses %}
+{%- set gateway_response_name = gateway_response.name %}
+  {{ gateway_response_name }}:
+    Type: AWS::ApiGateway::GatewayResponse
+    DeletionPolicy: {{ gateway_response.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ gateway_response.update_replace_policy | default('Delete') }}
+    Properties:
+      ResponseType: {{ gateway_response.response_type }}
+      RestApiId: {{ gateway_response.rest_api_id | trim }}
+{%- if gateway_response.response_parameters is defined %}
+      ResponseParameters:
+{%- for key, value in gateway_response.response_parameters.items() %}
+        "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if gateway_response.response_templates is defined %}
+      ResponseTemplates:
+{%- for key, value in gateway_response.response_templates.items() %}
+        "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if gateway_response.status_code is defined %}
+      StatusCode: {{ gateway_response.status_code }}
+{%- endif %}
+
+{%- endfor %}

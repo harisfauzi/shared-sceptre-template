@@ -1,0 +1,19 @@
+Description: ApiGateway Documentation Version(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for documentation_version in sceptre_user_data.documentation_versions %}
+{%- set documentation_version_name = documentation_version.name %}
+  {{ documentation_version_name }}:
+    Type: AWS::ApiGateway::DocumentationVersion
+    DeletionPolicy: {{ documentation_version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ documentation_version.update_replace_policy | default('Delete') }}
+    Properties:
+      DocumentationVersion: {{ documentation_version.documentation_version }}
+      RestApiId: {{ documentation_version.rest_api_id | trim }}
+{%- if documentation_version.description is defined %}
+      Description: {{ documentation_version.description }}
+{%- endif %}
+
+{%- endfor %}

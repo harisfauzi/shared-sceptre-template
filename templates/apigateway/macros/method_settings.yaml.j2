@@ -1,0 +1,36 @@
+{%- macro prep(method_settings) %}
+      MethodSettings:
+{%- for setting in method_settings %}
+        -
+{%- if setting.cache_data_encrypted is defined %}
+          CacheDataEncrypted: {{ setting.cache_data_encrypted }}
+{%- endif %}
+{%- if setting.cache_ttl_in_seconds is defined %}
+          CacheTtlInSeconds: {{ setting.cache_ttl_in_seconds }}
+{%- endif %}
+{%- if setting.caching_enabled is defined %}
+          CachingEnabled: {{ setting.caching_enabled }}
+{%- endif %}
+{%- if setting.data_trace_enabled is defined %}
+          DataTraceEnabled: {{ setting.data_trace_enabled }}
+{%- endif %}
+{%- if setting.http_method is defined %}
+          HttpMethod: {{ setting.http_method }}
+{%- endif %}
+{%- if setting.logging_level is defined %}
+          LoggingLevel: {{ setting.logging_level }}
+{%- endif %}
+{%- if setting.metrics_enabled is defined %}
+          MetricsEnabled: {{ setting.metrics_enabled }}
+{%- endif %}
+{%- if setting.resource_path is defined %}
+          ResourcePath: {{ setting.resource_path }}
+{%- endif %}
+{%- if setting.throttling_burst_limit is defined %}
+          ThrottlingBurstLimit: {{ setting.throttling_burst_limit }}
+{%- endif %}
+{%- if setting.throttling_rate_limit is defined %}
+          ThrottlingRateLimit: {{ setting.throttling_rate_limit }}
+{%- endif %}
+{%- endfor %}
+{%- endmacro %}

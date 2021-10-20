@@ -1,0 +1,157 @@
+Description: ApiGateway Method(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for method in sceptre_user_data.methods %}
+{%- set method_name = method.name %}
+  {{ method_name }}:
+    Type: AWS::ApiGateway::Method
+    DeletionPolicy: {{ method.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ method.update_replace_policy | default('Delete') }}
+    Properties:
+      HttpMethod: {{ method.http_method }}
+      ResourceId: {{ method.resource_id | trim }}
+      RestApiId: {{ method.rest_api_id | trim }}
+{%- if method.api_key_required is defined %}
+      ApiKeyRequired: {{ method.api_key_required }}
+{%- endif %}
+{%- if method.authorization_scopes is defined %}
+      AuthorizationScopes:
+{%- for scope in method.authorization_scopes %}
+        - {{ scope }}
+{%- endfor %}
+{%- endif %}
+{%- if method.authorization_type is defined %}
+      AuthorizationType: {{ method.authorization_type }}
+{%- endif %}
+{%- if method.authorizer_id is defined %}
+      AuthorizerId: {{ method.authorizer_id }}
+{%- endif %}
+{%- if method.integration is defined %}  {# BEGIN {%- if method.integration is defined %} #}
+      Integration:
+{%- if method.integration.cache_key_parameters is defined %}
+        CacheKeyParameters:
+{%- for parameter in method.integration.cache_key_parameters %}
+          - {{ parameter }}
+{%- endfor %}
+{%- endif %}
+{%- if method.integration.cache_namespace is defined %}
+        CacheNamespace: {{ method.integration.cache_namespace }}
+{%- endif %}
+{%- if method.integration.connection_id is defined %}
+        ConnectionId: {{ method.integration.connection_id | trim }}
+{%- endif %}
+{%- if method.integration.connection_type is defined %}
+        ConnectionType: {{ method.integration.connection_type }}
+{%- endif %}
+{%- if method.integration.content_handling is defined %}
+        ContentHandling: {{ method.integration.content_handling }}
+{%- endif %}
+{%- if method.integration.credentials is defined %}
+        Credentials: {{ method.integration.credentials | trim }}
+{%- endif %}
+{%- if method.integration.integration_http_method is defined %}
+        IntegrationHttpMethod: {{ method.integration.integration_http_method }}
+{%- endif %}
+{%- if method.integration.integration_responses is defined %}
+        IntegrationResponses:
+{%- for response in method.integration.integration_responses %}
+          - StatusCode: {{ response.status_code }}
+{%- if response.content_halding is defined %}
+            ContentHandling: {{ response.content_halding }}
+{%- endif %}
+{%- if response.response_parameters is defined %}
+            ResponseParameters:
+{%- for key, value in response.response_parameters.items() %}
+              "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if response.response_templates is defined %}
+            ResponseTemplates:
+{%- for key, value in response.response_templates.items() %}
+              "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if response.selection_pattern is defined %}
+            SelectionPattern: {{ response.selection_pattern }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if method.integration.passthrough_behavior is defined %}
+        PassthroughBehavior: {{ method.integration.passthrough_behavior }}
+{%- endif %}
+{%- if method.integration.request_parameters is defined %}
+        RequestParameters:
+{%- for key, value in method.integration.request_parameters.items() %}
+          "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if method.integration.request_templates is defined %}
+        RequestTemplates:
+{%- for key, value in method.integration.request_templates.items() %}
+          "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if method.integration.timeout_in_millis is defined %}
+        TimeoutInMillis: {{ method.integration.timeout_in_millis }}
+{%- endif %}
+{%- if method.integration.type is defined %}
+        Type: {{ method.integration.type }}
+{%- endif %}
+{%- if method.integration.uri is defined %}
+        Uri: {{ method.integration.uri }}
+{%- endif %}
+{%- endif %}  {# END {%- if method.integration is defined %} #}
+{%- if method.method_responses is defined %}  {# BEGIN {%- if method.method_responses is defined %} #}
+      MethodResponses:
+{%- for response in method.method_responses %}
+        - StatusCode: {{ response.status_code }}
+{%- if response.response_models is defined %}
+          ResponseModels:
+{%- for key, value in response.response_models.items() %}
+            "{{ key }}" : "{{ key }}"
+{%- endfor %}
+{%- endif %}
+{%- if response.response_parameters is defined %}
+          ResponseParameters:
+{%- for key, value in response.response_parameters.items() %}
+            "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if method.method_responses is defined %} #}
+{%- if method.operation_name is defined %}
+      OperationName: {{ method.operation_name }}
+{%- endif %}
+{%- if method.request_models is defined %}
+      RequestModels:
+{%- for key, value in method.request_models.items() %}
+        "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if method.request_parameters is defined %}
+      RequestParameters:
+{%- for key, value in method.request_parameters.items() %}
+        "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if method.request_validator_id is defined %}
+      RequestValidatorId: {{ method.request_validator_id }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for method in sceptre_user_data.methods %}
+{%- set method_name = method.name %}
+  {{ method_name }}:
+    Description: Method ID for {{ method_name }}
+    Value:
+      Ref: {{ method_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ method_name }}"
+
+{%- endfor %}

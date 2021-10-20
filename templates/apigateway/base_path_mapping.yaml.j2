@@ -1,0 +1,24 @@
+Description: ApiGateway Base Path Mapping(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for base_path_mapping in sceptre_user_data.base_path_mappings %}
+{%- set base_path_mapping_name = base_path_mapping.name %}
+  {{ base_path_mapping_name }}:
+    Type: AWS::ApiGateway::BasePathMapping
+    DeletionPolicy: {{ base_path_mapping.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ base_path_mapping.update_replace_policy | default('Delete') }}
+    Properties:
+      DomainName: {{ base_path_mapping.domain_name }}
+{%- if base_path_mapping.base_path is defined %}
+      BasePath: {{ base_path_mapping.base_path }}
+{%- endif %}
+{%- if base_path_mapping.rest_api_id is defined %}
+      RestApiId: {{ base_path_mapping.rest_api_id | trim }}
+{%- endif %}
+{%- if base_path_mapping.stage is defined %}
+      Stage: {{ base_path_mapping.stage }}
+{%- endif %}
+
+{%- endfor %}

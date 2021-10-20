@@ -1,0 +1,46 @@
+Description: ApiGateway Documentation Part(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for documentation_part in sceptre_user_data.documentation_parts %}
+{%- set documentation_part_name = documentation_part.name %}
+  {{ documentation_part_name }}:
+    Type: AWS::ApiGateway::DocumentationPart
+    DeletionPolicy: {{ documentation_part.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ documentation_part.update_replace_policy | default('Delete') }}
+    Properties:
+      Location:
+{%- if documentation_part.location.method is defined %}
+        Method: {{ documentation_part.location.method }}
+{%- endif %}
+{%- if documentation_part.location.name is defined %}
+        Name: {{ documentation_part.location.name }}
+{%- endif %}
+{%- if documentation_part.location.path is defined %}
+        Path: {{ documentation_part.location.path }}
+{%- endif %}
+{%- if documentation_part.location.status_code is defined %}
+        StatusCode: {{ documentation_part.location.status_code }}
+{%- endif %}
+{%- if documentation_part.location.type is defined %}
+        Type: {{ documentation_part.location.type }}
+{%- endif %}
+      Properties: {{ documentation_part.properties }}
+      RestApiId: {{ documentation_part.rest_api_id | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for documentation_part in sceptre_user_data.documentation_parts %}
+{%- set documentation_part_name = documentation_part.name %}
+  {{ documentation_part_name }}:
+    Description: The Documentation Part for {{ documentation_part_name }}
+    Value:
+      Ref: {{ documentation_part_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ documentation_part_name }}"
+
+{%- endfor %}

@@ -1,0 +1,81 @@
+Description: ApiGateway Usage Plan(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for usage_plan in sceptre_user_data.usage_plans %}
+{%- set usage_plan_name = usage_plan.name %}
+  {{ usage_plan_name }}:
+    Type: AWS::ApiGateway::UsagePlan
+    DeletionPolicy: {{ usage_plan.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ usage_plan.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if usage_plan.api_stages is defined %}
+      ApiStages:
+{%- for api_stage in usage_plan.api_stages %}
+        -
+{%- if api_stage.api_id is defined %}
+          ApiId: {{ api_stage.api_id | trim }}
+{%- endif %}
+{%- if api_stage.stage is defined %}
+          Stage: {{ api_stage.stage }}
+{%- endif %}
+{%- if api_stage.throttle is defined %}
+          Throttle:
+{%- for key, value in api_stage.throttle.items() %}
+            "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if usage_plan.description is defined %}
+      Description: {{ usage_plan.description }}
+{%- endif %}
+{%- if usage_plan.quota is defined %}
+      Quota:
+{%- if usage_plan.quota.limit is defined %}
+        Limit: {{ usage_plan.quota.limit }}
+{%- endif %}
+{%- if usage_plan.quota.offset is defined %}
+        Offset: {{ usage_plan.quota.offset }}
+{%- endif %}
+{%- if usage_plan.quota.period is defined %}
+        Period: {{ usage_plan.quota.period }}
+{%- endif %}
+{%- endif %}
+{%- if usage_plan.throttle is defined %}
+      Throttle:
+{%- if usage_plan.throttle.burst_limit is defined %}
+        BurstLimit: {{ usage_plan.throttle.burst_limit }}
+{%- endif %}
+{%- if usage_plan.throttle.rate_limit is defined %}
+        RateLimit: {{ usage_plan.throttle.rate_limit }}
+{%- endif %}
+{%- endif %}
+{%- if usage_plan.usage_plan_name is defined %}
+      UsagePlanName: {{ usage_plan.usage_plan_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if usage_plan.tags is defined %}
+{%- for key,value in usage_plan.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for usage_plan in sceptre_user_data.usage_plans %}
+{%- set usage_plan_name = usage_plan.name %}
+  {{ usage_plan_name }}:
+    Description: Usage Plan Id for {{ usage_plan_name }}
+    Value:
+      Ref: {{ usage_plan_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ usage_plan_name }}"
+
+{%- endfor %}

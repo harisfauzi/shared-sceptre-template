@@ -1,0 +1,29 @@
+Description: ApiGateway Account(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for account in sceptre_user_data.accounts %}
+{%- set account_name = account.name %}
+  {{ account_name }}:
+    Type: AWS::ApiGateway::Account
+    DeletionPolicy: {{ account.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ account.update_replace_policy | default('Delete') }}
+    Properties:
+      CloudWatchRoleArn: {{ account_name.cloud_watch_role_arn }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for account in sceptre_user_data.accounts %}
+{%- set account_name = account.name %}
+  {{ account_name }}:
+    Description: The ID of {{ account_name }}
+    Value:
+      Ref: {{ account_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ account_name }}"
+
+{%- endfor %}

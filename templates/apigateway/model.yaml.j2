@@ -1,0 +1,44 @@
+Description: ApiGateway Model(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for model in sceptre_user_data.models %}
+{%- set model_name = model.name %}
+  {{ model_name }}:
+    Type: AWS::ApiGateway::Model
+    DeletionPolicy: {{ model.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ model.update_replace_policy | default('Delete') }}
+    Properties:
+      RestApiId: {{ model.rest_api_id | trim }}
+{%- if model.content_type is defined %}
+      ContentType: {{ model.content_type }}
+{%- endif %}
+{%- if model.description is defined %}
+      Description: {{ model.description }}
+{%- endif %}
+{%- if model.model_name is defined %}
+      Name: {{ model.model_name }}
+{%- endif %}
+{%- if model.schema_json is defined %}
+      Schema: {{ model.schema_json }}
+{%- elif model.schema is defined %}
+      Schema:
+{{ model.schema | indent(width=8, first=true) }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for model in sceptre_user_data.models %}
+{%- set model_name = model.name %}
+  {{ model_name }}:
+    Description: Model Name for {{ model_name }}
+    Value:
+      Ref: {{ model_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ model_name }}"
+
+{%- endfor %}

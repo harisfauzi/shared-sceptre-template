@@ -1,0 +1,31 @@
+Description: ApiGateway Usage Plan Key(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for usage_plan_key in sceptre_user_data.usage_plan_keys %}
+{%- set usage_plan_key_name = usage_plan_key.name %}
+  {{ usage_plan_key_name }}:
+    Type: AWS::ApiGateway::UsagePlanKey
+    DeletionPolicy: {{ usage_plan_key.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ usage_plan_key.update_replace_policy | default('Delete') }}
+    Properties:
+      KeyId: {{ usage_plan_key.key_id | trim }}
+      KeyType: {{ usage_plan_key.key_type }}
+      UsagePlanId: {{ usage_plan_key.usage_plan_id | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for usage_plan_key in sceptre_user_data.usage_plan_keys %}
+{%- set usage_plan_key_name = usage_plan_key.name %}
+  {{ usage_plan_key_name }}:
+    Description: The ID of the key and ID of the usage plan combined with a ":" {{ usage_plan_key_name }}
+    Value:
+      Ref: {{ usage_plan_key_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ usage_plan_key_name }}"
+
+{%- endfor %}

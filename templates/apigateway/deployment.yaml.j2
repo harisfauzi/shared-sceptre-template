@@ -1,0 +1,137 @@
+{%- import 'macros/method_settings.yaml.j2' as macro_method_settings %}
+Description: ApiGateway Deployment(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for deployment in sceptre_user_data.deployments %}
+{%- set deployment_name = deployment.name %}
+  {{ deployment_name }}:
+    Type: AWS::ApiGateway::Deployment
+    DeletionPolicy: {{ deployment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ deployment.update_replace_policy | default('Delete') }}
+    Properties:
+      RestApiId: String
+{%- if deployment.deployment_canary_settings is defined %}  {# BEGIN {%- if deployment.deployment_canary_settings is defined %} #}
+      DeploymentCanarySettings:
+{%- if deployment.deployment_canary_settings.percent_traffic is defined %}
+        PercentTraffic: {{ deployment.deployment_canary_settings.percent_traffic }}
+{%- endif %}
+{%- if deployment.deployment_canary_settings.stage_variable_overrides is defined %}
+        StageVariableOverrides:
+{%- for key, value in deployment.deployment_canary_settings.stage_variable_overrides.items() %}
+          "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if deployment.deployment_canary_settings.use_stage_cache is defined %}
+        UseStageCache: {{ deployment.deployment_canary_settings.use_stage_cache }}
+{%- endif %}
+{%- endif %}  {# END {%- if deployment.deployment_canary_settings is defined %} #}
+{%- if deployment.description is defined %}
+      Description: {{ deployment.description }}
+{%- endif %}
+{%- if deployment.stage_description is defined %}  {# BEGIN {%- if deployment.stage_description is defined %} #}
+      StageDescription:
+{%- if deployment.stage_description.access_log_setting is defined %}
+        AccessLogSetting:
+{%- if deployment.stage_description.access_log_setting.destination_arn is defined %}
+          DestinationArn: {{ deployment.stage_description.access_log_setting.destination_arn | trim }}
+{%- endif %}
+{%- if deployment.stage_description.access_log_setting.format is defined %}
+          Format: {{ deployment.stage_description.access_log_setting.format }}
+{%- endif %}
+{%- endif %}
+{%- if deployment.stage_description.cache_cluster_enabled is defined %}
+        CacheClusterEnabled: {{ deployment.stage_description.cache_cluster_enabled }}
+{%- endif %}
+{%- if deployment.stage_description.cache_cluster_size is defined %}
+        CacheClusterSize: {{ deployment.stage_description.cache_cluster_size }}
+{%- endif %}
+{%- if deployment.stage_description.cache_data_encrypted is defined %}
+        CacheDataEncrypted: {{ deployment.stage_description.cache_data_encrypted }}
+{%- endif %}
+{%- if deployment.stage_description.cache_ttl_in_seconds is defined %}
+        CacheTtlInSeconds: {{ deployment.stage_description.cache_ttl_in_seconds }}
+{%- endif %}
+{%- if deployment.stage_description.caching_enabled is defined %}
+        CachingEnabled: {{ deployment.stage_description.caching_enabled }}
+{%- endif %}
+{%- if deployment.stage_description.canary_setting is defined %}
+        CanarySetting:
+{%- if deployment.stage_description.canary_setting.percent_traffic is defined %}
+          PercentTraffic: {{ deployment.stage_description.canary_setting.percent_traffic }}
+{%- endif %}
+{%- if deployment.stage_description.canary_setting.stage_variable_overrides is defined %}
+          StageVariableOverrides:
+{%- for key, value in deployment.stage_description.canary_setting.stage_variable_overrides.items() %}
+            "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if deployment.stage_description.canary_setting.use_stage_cache is defined %}
+          UseStageCache: {{ deployment.stage_description.canary_setting.use_stage_cache }}
+{%- endif %}
+{%- endif %}
+{%- if deployment.stage_description.client_certificate_id is defined %}
+        ClientCertificateId: {{ deployment.stage_description.client_certificate_id | trim }}
+{%- endif %}
+{%- if deployment.stage_description.data_trace_enabled is defined %}
+        DataTraceEnabled: {{ deployment.stage_description.data_trace_enabled }}
+{%- endif %}
+{%- if deployment.stage_description.description is defined %}
+        Description: {{ deployment.stage_description.description }}
+{%- endif %}
+{%- if deployment.stage_description.documentation_version is defined %}
+        DocumentationVersion: {{ deployment.stage_description.documentation_version }}
+{%- endif %}
+{%- if deployment.stage_description.logging_level is defined %}
+        LoggingLevel: {{ deployment.stage_description.logging_level }}
+{%- endif %}
+{%- if deployment.stage_description.method_settings is defined %}
+{{ macro_method_settings.prep(deployment.stage_description.method_settings) | indent(width=2, first=true) }}
+{%- endif %}
+{%- if deployment.stage_description.metrics_enabled is defined %}
+        MetricsEnabled: {{ deployment.stage_description.metrics_enabled }}
+{%- endif %}
+{%- if deployment.stage_description.tags is defined %}
+        Tags:
+{%- for key, value in deployment.stage_description.tags.items( )%}
+          - Key: {{ key }}
+            Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if deployment.stage_description.throttling_burst_limit is defined %}
+        ThrottlingBurstLimit: {{ deployment.stage_description.throttling_burst_limit }}
+{%- endif %}
+{%- if deployment.stage_description.throttling_rate_limit is defined %}
+        ThrottlingRateLimit: {{ deployment.stage_description.throttling_rate_limit }}
+{%- endif %}
+{%- if deployment.stage_description.tracing_enabled is defined %}
+        TracingEnabled: {{ deployment.stage_description.tracing_enabled }}
+{%- endif %}
+{%- if deployment.stage_description.variables is defined %}
+        Variables:
+{%- for key, value in deployment.stage_description.variables.items() %}
+          "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+
+{%- endif %}  {# END {%- if deployment.stage_description is defined %} #}
+{%- if deployment.stage_name is defined %}
+      StageName: {{ deployment.stage_name }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for deployment in sceptre_user_data.deployments %}
+{%- set deployment_name = deployment.name %}
+  {{ deployment_name }}:
+    Description: Deployment Id for {{ deployment_name }}
+    Value:
+      Ref: {{ deployment_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ deployment_name }}"
+
+{%- endfor %}
