@@ -1,0 +1,58 @@
+Description: EKS Addon(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for addon in sceptre_user_data.addons %}
+{%- set addon_name = addon.name %}
+  {{ addon_name }}:
+    Type: AWS::EKS::Addon
+    DeletionPolicy: {{ addon.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ addon.update_replace_policy | default('Delete') }}
+    Properties:
+      AddonName: {{ addon.addon_name }}
+      ClusterName: {{ addon.cluster_name }}
+{%- if addon.addon_version is defined %}
+      AddonVersion: {{ addon.addon_version }}
+{%- endif %}
+{%- if addon.resolve_conflicts is defined %}
+      ResolveConflicts: {{ addon.resolve_conflicts }}
+{%- endif %}
+{%- if addon.service_account_role_arn is defined %}
+      ServiceAccountRoleArn: {{ addon.service_account_role_arn }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if addon.tags is defined %}
+{%- for key,value in addon.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for addon in sceptre_user_data.addons %}
+{%- set addon_name = addon.name %}
+  {{ addon_name }}:
+    Description: Resource name for {{ addon_name }}
+    Value:
+      Ref: {{ addon_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ addon_name }}"
+
+  {{ addon_name }}Arn:
+    Description: The ARN for {{ addon_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ addon_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ addon_name }}-Arn"
+
+{%- endfor %}

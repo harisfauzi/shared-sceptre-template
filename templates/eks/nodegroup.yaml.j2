@@ -1,0 +1,150 @@
+Description: EKS Nodegroup(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for nodegroup in sceptre_user_data.nodegroups %}
+{%- set nodegroup_name = nodegroup.name %}
+  {{ nodegroup_name }}:
+    Type: AWS::EKS::Nodegroup
+    DeletionPolicy: {{ nodegroup.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ nodegroup.update_replace_policy | default('Delete') }}
+    Properties:
+      ClusterName: {{ nodegroup.cluster_name }}
+      NodeRole: {{ nodegroup.node_role }}
+      Subnets:
+{%- for subnet_id in nodegroup.subnets %}
+        - {{ subnet_id }}
+{%- endfor %}
+{%- if nodegroup.ami_type is defined %}
+      AmiType: {{ nodegroup.ami_type }}
+{%- endif %}
+{%- if nodegroup.capacity_type is defined %}
+      CapacityType: {{ nodegroup.capacity_type }}
+{%- endif %}
+{%- if nodegroup.disk_size is defined %}
+      DiskSize: {{ nodegroup.disk_size }}
+{%- endif %}
+{%- if nodegroup.force_update_enabled is defined %}
+      ForceUpdateEnabled: {{ nodegroup.force_update_enabled }}
+{%- endif %}
+{%- if nodegroup.instance_types is defined %}
+      InstanceTypes:
+{%- for instance_type in nodegroup.instance_types %}
+        - {{ instance_type }}
+{%- endfor %}
+{%- endif %}
+{%- if nodegroup.labels_json is defined %}
+      Labels: {{ nodegroup.labels_json }}
+{%- elif nodegroup.labels is defined %}
+      Labels:
+{{ nodegroup.labels | indent(width=8, first=true) }}
+{%- endif %}
+{%- if nodegroup.launch_template is defined %}
+      LaunchTemplate:
+{%- if nodegroup.launch_template.id is defined %}
+        Id: {{ nodegroup.launch_template.id }}
+{%- else %}
+        Name: {{ nodegroup.launch_template.name }}
+{%- endif %}
+{%- if nodegroup.launch_template.version is defined %}
+        Version: {{ nodegroup.launch_template.version }}
+{%- endif %}
+{%- endif %}
+{%- if nodegroup.nodegroup_name is defined %}
+      NodegroupName: {{ nodegroup.nodegroup_name }}
+{%- endif %}
+{%- if nodegroup.release_version is defined %}
+      ReleaseVersion: {{ nodegroup.release_version }}
+{%- endif %}
+{%- if nodegroup.remote_access is defined %}
+      RemoteAccess:
+        Ec2SshKey: {{ nodegroup.remote_access.ec2_ssh_key }}
+{%- if nodegroup.remote_access.source_security_groups is defined %}
+        SourceSecurityGroups:
+{%- for security_group_id in nodegroup.remote_access.source_security_groups %}
+          - {{ security_group_id }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if nodegroup.scaling_config is defined %}
+      ScalingConfig:
+{%- if nodegroup.scaling_config.desired_size is defined %}
+        DesiredSize: {{ nodegroup.scaling_config.desired_size }}
+{%- endif %}
+{%- if nodegroup.scaling_config.max_size is defined %}
+        MaxSize: {{ nodegroup.scaling_config.max_size }}
+{%- endif %}
+{%- if nodegroup.scaling_config.min_size is defined %}
+        MinSize: {{ nodegroup.scaling_config.min_size }}
+{%- endif %}
+{%- endif %}
+{%- if nodegroup.tags_json is defined %}
+      Tags: {{ nodegroup.tags_json }}
+{%- elif nodegroup.tags is defined %}
+      Tags:
+{{ nodegroup.tags | indent(width=8, first=true) }}
+{%- endif %}
+{%- if nodegroup.taints is defined %}  {# BEGIN {%- if nodegroup.taints is defined %} #}
+      Taints:
+{%- for taint in nodegroup.taints %}
+        -
+{%- if taint.effect is defined %}
+          Effect: {{taint.effect }}
+{%- endif %}
+{%- if taint.key is defined %}
+          Key: {{ taint.key }}
+{%- endif %}
+{%- if taint.value is defined %}
+          Value: {{ taint.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if nodegroup.taints is defined %} #}
+{%- if nodegroup.update_config is defined %}
+      UpdateConfig:
+{%- if nodegroup.update_config.max_unavailable is defined %}
+        MaxUnavailable: {{ nodegroup.update_config.max_unavailable }}
+{%- endif %}
+{%- if nodegroup.update_config.max_unavailable_percentage is defined %}
+        MaxUnavailablePercentage: {{ nodegroup.update_config.max_unavailable_percentage }}
+{%- endif %}
+{%- endif %}
+{%- if nodegroup.version is defined %}
+      Version: {{ nodegroup.version }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for nodegroup in sceptre_user_data.nodegroups %}
+{%- set nodegroup_name = nodegroup.name %}
+  {{ nodegroup_name }}:
+    Description: The Nodegroup Name for {{ nodegroup_name }}
+    Value:
+      Ref: {{ nodegroup_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nodegroup_name }}"
+
+  {{ nodegroup_name }}Arn:
+    Description: The ARN for {{ nodegroup_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ nodegroup_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nodegroup_name }}-Arn"
+
+  {{ nodegroup_name }}ClusterName:
+    Description: The ClusterName for {{ nodegroup_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ nodegroup_name }}
+        - ClusterName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nodegroup_name }}-ClusterName"
+
+{%- endfor %}

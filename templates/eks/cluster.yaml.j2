@@ -1,0 +1,126 @@
+Description: EKS Cluster(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for cluster in sceptre_user_data.clusters %}
+{%- set cluster_name = cluster.name %}
+  {{ cluster_name }}:
+    Type: AWS::EKS::Cluster
+    DeletionPolicy: {{ cluster.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ cluster.update_replace_policy | default('Delete') }}
+    Properties:
+      ResourcesVpcConfig:
+        SubnetIds:
+{%- for subnet_id in cluster.resources_vpc_config.subnet_ids %}
+          - {{ subnet_id }}
+{%- endfor %}
+{%- if cluster.resources_vpc_config.security_group_ids is defined %}
+        SecurityGroupIds:
+{%- for security_group_id in cluster.resources_vpc_config.security_group_ids %}
+          - {{ security_group_id }}
+{%- endfor %}
+{%- endif %}
+      RoleArn: {{ cluster.role_arn }}
+{%- if cluster.encryption_config is defined %}  {# BEGIN {%- if cluster.encryption_config is defined %} #}
+      EncryptionConfig:
+{%- for encryption_config in cluster.encryption_config %}
+        -
+{%- if encryption_config.provider is defined %}
+          Provider:
+            KeyArn: {{ encryption_config.provider.key_arn }}
+{%- endif %}
+{%- if encryption_config.resources is defined %}
+          Resources:
+{%- for resource in encryption_config.resources %}
+            - {{ resource }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if cluster.encryption_config is defined %} #}
+{%- if cluster.kubernetes_network_config is defined %}
+      KubernetesNetworkConfig:
+        ServiceIpv4Cidr: {{ cluster.kubernetes_network_config.service_ipv4_cidr }}
+{%- endif %}
+{%- if cluster.cluster_name is defined %}
+      Name: {{ cluster.cluster_name }}
+{%- endif %}
+{%- if cluster.version is defined %}
+      Version: {{ cluster.version }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for cluster in sceptre_user_data.clusters %}
+{%- set cluster_name = cluster.name %}
+  {{ cluster_name }}:
+    Description: The Name of the cluster for {{ cluster_name }}
+    Value:
+      Ref: {{ cluster_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}"
+
+  {{ cluster_name }}Arn:
+    Description: The ARN of the cluster for {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Arn"
+
+  {{ cluster_name }}CertificateAuthorityData:
+    Description: The certificate-authority-data for {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - CertificateAuthorityData
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-CertificateAuthorityData"
+
+  {{ cluster_name }}ClusterSecurityGroupId:
+    Description: The cluster security group that was created by Amazon EKS for {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - ClusterSecurityGroupId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-ClusterSecurityGroupId"
+
+  {{ cluster_name }}EncryptionConfigKeyArn:
+    Description: The ARN of Customer Master Key (CMK) for {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - EncryptionConfigKeyArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-EncryptionConfigKeyArn"
+
+  {{ cluster_name }}Endpoint:
+    Description: The Endpoint of the cluster for {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - Endpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Endpoint"
+
+  {{ cluster_name }}OpenIdConnectIssuerUrl:
+    Description: The issuer URL for the cluster's OIDC identity provider for {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - OpenIdConnectIssuerUrl
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-OpenIdConnectIssuerUrl"
+
+{%- endfor %}
