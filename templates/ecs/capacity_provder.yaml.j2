@@ -1,0 +1,62 @@
+Description: ECS Capacity Provider(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for capacity_provider in sceptre_user_data.capacity_providers %}
+{%- set capacity_provider_name = capacity_provider.name %}
+  {{ capacity_provider_name }}:
+    Type: AWS::ECS::CapacityProvider
+    DeletionPolicy: {{ capacity_provider.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ capacity_provider.update_replace_policy | default('Delete') }}
+    Properties:
+      AutoScalingGroupProvider:
+        AutoScalingGroupArn: {{ capacity_provider.auto_scaling_group_provider.auto_scaling_group_arn | trim }}
+{%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %}  {# BEGIN {%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %} #}
+        ManagedScaling:
+{%- if capacity_provider.auto_scaling_group_provider.managed_scaling.instance_warmup_period is defined %}
+          InstanceWarmupPeriod: {{ capacity_provider.auto_scaling_group_provider.managed_scaling.instance_warmup_period }}
+{%- endif %}
+{%- if capacity_provider.auto_scaling_group_provider.managed_scaling.maximum_scaling_step_size is defined %}
+          MaximumScalingStepSize: {{ capacity_provider.auto_scaling_group_provider.managed_scaling.maximum_scaling_step_size }}
+{%- endif %}
+{%- if capacity_provider.auto_scaling_group_provider.managed_scaling.minimum_scaling_step_size is defined %}
+          MinimumScalingStepSize: {{ capacity_provider.auto_scaling_group_provider.managed_scaling.minimum_scaling_step_size }}
+{%- endif %}
+{%- if capacity_provider.auto_scaling_group_provider.managed_scaling.status is defined %}
+          Status: {{ capacity_provider.auto_scaling_group_provider.managed_scaling.status }}
+{%- endif %}
+{%- if capacity_provider.auto_scaling_group_provider.managed_scaling.target_capacity is defined %}
+          TargetCapacity: {{ capacity_provider.auto_scaling_group_provider.managed_scaling.target_capacity }}
+{%- endif %}
+{%- endif %}  {# END {%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %} #}
+{%- if capacity_provider.auto_scaling_group_provider.managed_termination_protection is defined %}
+        ManagedTerminationProtection: {{ capacity_provider.auto_scaling_group_provider.managed_termination_protection }}
+{%- endif %}
+{%- if capacity_provider.capacity_provider_name is defined %}
+      Name: {{ capacity_provider.capacity_provider_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if capacity_provider.tags is defined %}
+{%- for key,value in capacity_provider.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for capacity_provider in sceptre_user_data.capacity_providers %}
+{%- set capacity_provider_name = capacity_provider.name %}
+  {{ capacity_provider_name }}:
+    Description: The capacity provider name for {{ capacity_provider_name }}
+    Value:
+      Ref: {{ capacity_provider_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_provider_name }}"
+
+{%- endfor %}

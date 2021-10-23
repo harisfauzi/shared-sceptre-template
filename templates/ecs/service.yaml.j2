@@ -1,0 +1,148 @@
+{%- import 'macros/macro_load_balancer.yaml.j2' as macro_load_balancer %}
+{%- import 'macros/macro_network_configuration.yaml.j2' as macro_network_configuration %}
+{%- import 'macros/macro_service_registry.yaml.j2' as macro_service_registry %}
+Description: ECS Service(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for service in sceptre_user_data.services %}
+{%- set service_name = service.name %}
+  {{ service_name }}:
+    Type: AWS::ECS::Service
+    DeletionPolicy: {{ service.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ service.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if service.capacity_provider_strategy is defined %}  {# BEGIN {%- if service.capacity_provider_strategy is defined %} #}
+      CapacityProviderStrategy:
+{%- for capacity_provider_strategy inservice.capacity_provider_strategy %}
+        -
+{%- if capacity_provider_strategy.base is defined %}
+          Base: {{ capacity_provider_strategy.base }}
+{%- endif %}
+{%- if capacity_provider_strategy.capacity_provider is defined %}
+          CapacityProvider: {{ capacity_provider_strategy.capacity_provider }}
+{%- endif %}
+{%- if capacity_provider_strategy.weight is defined %}
+          Weight: {{ capacity_provider_strategy.weight }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if service.capacity_provider_strategy is defined %} #}
+{%- if service.cluster is defined %}
+      Cluster: {{ service.cluster }}
+{%- endif %}
+{%- if service.deployment_configuration is defined %}  {# BEGIN {%- if service.deployment_configuration is defined %} #}
+      DeploymentConfiguration:
+{%- if service.deployment_configuration.deployment_circuit_breaker is defined %}
+        DeploymentCircuitBreaker:
+          Enable: {{ service.deployment_configuration.deployment_circuit_breaker.enable }}
+          Rollback: {{ service.deployment_configuration.deployment_circuit_breaker.rollback}}
+{%- endif %}
+{%- if service.deployment_configuration.maximum_percent is defined %}
+        MaximumPercent: {{ service.deployment_configuration.maximum_percent }}
+{%- endif %}
+{%- if service.deployment_configuration.minimum_healthy_percent is defined %}
+        MinimumHealthyPercent: {{ service.deployment_configuration.minimum_healthy_percent }}
+{%- endif %}
+{%- endif %}  {# END {%- if service.deployment_configuration is defined %} #}
+{%- if service.deployment_controller is defined %}
+      DeploymentController:
+        Type: {{ service.deployment_controller.type }}
+{%- endif %}
+{%- if service.desired_count is defined %}
+      DesiredCount: {{ service.desired_count }}
+{%- endif %}
+{%- if service.enable_ecs_managed_tags is defined %}
+      EnableECSManagedTags: {{ service.enable_ecs_managed_tags }}
+{%- endif %}
+{%- if service.enable_execute_command is defined %}
+      EnableExecuteCommand: {{ service.enable_execute_command }}
+{%- endif %}
+{%- if service.health_check_grace_period_seconds is defined %}
+      HealthCheckGracePeriodSeconds: {{ service.health_check_grace_period_seconds }}
+{%- endif %}
+{%- if service.launch_type is defined %}
+      LaunchType: {{ service.launch_type }}
+{%- endif %}
+{%- if service.load_balancers is defined %}
+      LoadBalancers:
+{{ macro_load_balancer.prep(service.load_balancers) | indent(width=8, first=true) }}
+{%- endif %}
+{%- if service.network_configuration is defined %}
+{{ macro_network_configuration.prep(service.network_configuration) | indent(width=6, first=True) }}
+{%- endif %}
+{%- if service.placement_constraints is defined %}
+      PlacementConstraints:
+{%- for placement_constraint in service.placement_constraints %}
+        - Type: {{ placement_constraint.type }}
+{%- if placement_constraint.expression is defined %}
+          Expression: {{ placement_constraint.expression }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if service.placement_strategies is defined %}
+      PlacementStrategies:
+{%- for strategy in service.placement_strategies %}
+        - Type: {{ strategy.type }}
+{%- if strategy.field is defined %}
+          Field: {{ strategy.field }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if service.platform_version is defined %}
+      PlatformVersion: {{ service.platform_version }}
+{%- endif %}
+{%- if service.propagate_tags is defined %}
+      PropagateTags: {{ service.propagate_tags }}
+{%- endif %}
+{%- if service.role is defined %}
+      Role: {{ service.role }}
+{%- endif %}
+{%- if service.scheduling_strategy is defined %}
+      SchedulingStrategy: {{ service.scheduling_strategy }}
+{%- endif %}
+{%- if service.service_name is defined %}
+      ServiceName: {{ service.service_name }}
+{%- endif %}
+{%- if service.service_registries is defined %}
+      ServiceRegistries:
+{{ macro_service_registry.prep(service.service_registries) | indent(width=8, first=True) }}
+{%- endif %}
+{%- if service.task_definition is defined %}
+      TaskDefinition: {{ service.service_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if service.tags is defined %}
+{%- for key,value in service.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for service in sceptre_user_data.services %}
+{%- set service_name = service.name %}
+  {{ service_name }}:
+    Description: The service ARN for {{ service_name }}
+    Value:
+      Ref: {{ service_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ service_name }}"
+
+  {{ service_name }}Name:
+    Description: The service name for {{ service_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ service_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ service_name }}-Name"
+
+{%- endfor %}

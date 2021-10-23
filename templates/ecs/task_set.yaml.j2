@@ -1,0 +1,73 @@
+{%- import 'macros/macro_load_balancer.yaml.j2' as macro_load_balancer %}
+{%- import 'macros/macro_network_configuration.yaml.j2' as macro_network_configuration %}
+{%- import 'macros/macro_service_registry.yaml.j2' as macro_service_registry %}
+Description: ECS Task Set(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for task_set in sceptre_user_data.task_sets %}
+{%- set task_set_name = task_set.name %}
+  {{ task_set_name }}:
+    Type: AWS::ECS::TaskSet
+    DeletionPolicy: {{ task_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ task_set.update_replace_policy | default('Delete') }}
+    Properties:
+      Cluster: {{ task_set.cluster }}
+      Service: {{ task_set.service }}
+      TaskDefinition: {{ task_set.task_definition }}
+{%- if task_set.external_id is defined %}
+      ExternalId: {{ task_set.external_id | trim }}
+{%- endif %}
+{%- if task_set.launch_type is defined %}
+      LaunchType: {{task_set.launch_type }}
+{%- endif %}
+{%- if task_set.load_balancers is defined %}
+      LoadBalancers:
+{{ macro_load_balancer.prep(task_set.load_balancers) | indent(width=8, first=true) }}
+{%- endif %}
+{%- if task_set.network_configuration is defined %}
+{{ macro_network_configuration.prep(task_set.network_configuration) | indent(width=6, first=true) }}
+{%- endif %}
+{%- if task_set.platform_version is defined %}
+      PlatformVersion: {{ task_set.platform_version }}
+{%- endif %}
+{%- if task_set.scale is defined %}
+      Scale:
+{%- if task_set.scale.unit is defined %}
+        Unit: {{ task_set.scale.unit }}
+{%- endif %}
+{%- if task_set.scale.value is defined %}
+        Value: {{ task_set.scale.value }}
+{%- endif %}
+{%- endif %}
+{%- if task_set.service_registries is defined %}
+      ServiceRegistries:
+{{ macro_service_registry.prep(task_set.service_registries) | indent(width=8, first=true) }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for task_set in sceptre_user_data.task_sets %}
+{%- set task_set_name = task_set.name %}
+  {{ task_set_name }}:
+    Description: Resource name for {{ task_set_name }}
+    Value:
+      Ref: {{ task_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ task_set_name }}"
+
+  {{ task_set_name }}Id:
+    Description: The ID of the task set for {{ task_set_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ task_set_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ task_set_name }}-Id"
+
+{%- endfor %}

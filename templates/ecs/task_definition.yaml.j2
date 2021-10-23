@@ -1,0 +1,511 @@
+{%- import 'macros/macro_secrets.yaml.j2' as macro_secrets %}
+Description: ECS Task Definition(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for task_definition in sceptre_user_data.task_definitions %}
+{%- set task_definition_name = task_definition.name %}
+  {{ task_definition_name }}:
+    Type: AWS::ECS::TaskDefinition
+    DeletionPolicy: {{ task_definition.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ task_definition.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if task_definition.container_definitions is defined %}  {# BEGIN {%- if task_definition.container_definitions is defined %} #}
+      ContainerDefinitions:
+{%- for container_definition in task_definition.container_definitions %}  {# BEGIN {%- for container_definition in task_definition.container_definitions %} #}
+        -
+{%- if container_definition.command is defined %}
+          Command:
+{%- for command in container_definition.command %}
+            - {{ command }}
+{%- endfor %}
+{%- endif %}
+{%- if container_definition.cpu is defined %}
+          Cpu: {{ container_definition.cpu }}
+{%- endif %}
+{%- if container_definition.depends_on is defined %}  {# BEGIN {%- if container_definition.depends_on is defined %} #}
+          DependsOn:
+{%- for depends_on in container_definition.depends_on %}
+            -
+{%- if depends_on.condition is defined %}
+              Condition: {{ depends_on.condition }}
+{%- endif %}
+{%- if depends_on.container_name is defined %}
+              ContainerName: {{ depends_on.container_name }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if container_definition.depends_on is defined %} #}
+{%- if container_definition.disable_networking is defined %}
+          DisableNetworking: {{ container_definition.disable_networking }}
+{%- endif %}
+{%- if container_definition.dns_search_domains is defined %}
+          DnsSearchDomains:
+{%- for dns_search_domain in container_definition.dns_search_domains %}
+            - {{ dns_search_domain }}
+{%- endfor %}
+{%- endif %}
+{%- if container_definition.dns_servers is defined %}
+          DnsServers:
+{%- for dns_server in container_definition.dns_servers %}
+            - {{ dns_server }}
+{%- endfor %}
+{%- endif %}
+{%- if container_definition.docker_labels is defined %}
+          DockerLabels:
+{%- for key, value in container_definition.docker_labels %}
+            "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if container_definition.docker_security_options is defined %}
+          DockerSecurityOptions:
+{%- for docker_security_option in container_definition.docker_security_options %}
+            - {{ docker_security_option }}
+{%- endfor %}
+{%- endif %}
+{%- if container_definition.entry_point is defined %}
+          EntryPoint:
+{%- for entry_point in container_definition.entry_point %}
+            - {{ entry_point }}
+{%- endfor %}
+{%- endif %}
+{%- if container_definition.environment is defined %}  {# BEGIN {%- if container_definition.environment is defined %} #}
+          Environment:
+{%- for environment in container_definition.environment %}
+            -
+{%- if environment.name is defined %}
+              Name: {{ environment.name }}
+{%- endif %}
+{%- if environment.value is defined %}
+              Value: {{ environment.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if container_definition.environment is defined %} #}
+{%- if container_definition.environment_files is defined %}  {# BEGIN {%- if container_definition.environment_files is defined %} #}
+          EnvironmentFiles:
+{%- for environment_file in container_definition.environment_files %}
+            -
+{%- if environment_file.type is defined %}
+              Type: {{ environment_file.type }}
+{%- endif %}
+{%- if environment_file.value is defined %}
+              Value: {{ environment_file.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if container_definition.environment_files is defined %} #}
+{%- if container_definition.essential is defined %}
+          Essential: {{ container_definition.essential }}
+{%- endif %}
+{%- if container_definition.extra_hosts is defined %}  {# BEGIN container_definition.extra_hosts #}
+          ExtraHosts:
+{%- for extra_host in container_definition.extra_hosts %}
+            -
+{%- if extra_host.hostname is defined %}
+              Hostname: {{ extra_host.hostname }}
+{%- endif %}
+{%- if extra_host.ip_address is defined %}
+              IpAddress: {{ extra_host.ip_address }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END container_definition.extra_hosts #}
+{%- if container_definition.firelens_configuration is defined %}  {# BEGIN {%- if container_definition.firelens_configuration is defined %} #}
+          FirelensConfiguration:
+{%- if container_definition.firelens_configuration.options is defined %}
+            Options:
+{%- for key, value in container_definition.firelens_configuration.options %}
+              "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if container_definition.firelens_configuration.type is defined %}
+            Type: {{ container_definition.firelens_configuration.type }}
+{%- endif %}
+{%- endif %}  {# END {%- if container_definition.firelens_configuration is defined %} #}
+{%- if container_definition.health_check is defined %}  {# BEGIN {%- if container_definition.health_check is defined %} #}
+          HealthCheck:
+{%- if container_definition.health_check.command is defined %}
+            Command:
+{%- for command in container_definition.health_check.command %}
+              - {{ command }}}
+{%- endfor %}
+{%- endif %}
+{%- if container_definition.health_check.interval is defined %}
+            Interval: {{ container_definition.health_check.interval }}
+{%- endif %}
+{%- if container_definition.health_check.retries is defined %}
+            Retries: {{ container_definition.health_check.retries }}
+{%- endif %}
+{%- if container_definition.health_check.start_period is defined %}
+            StartPeriod: {{ container_definition.health_check.start_period }}
+{%- endif %}
+{%- if container_definition.health_check.timeout is defined %}
+            Timeout: {{container_definition.health_check.timeout }}
+{%- endif %}
+{%- endif %}  {# END {%- if container_definition.health_check is defined %} #}
+{%- if container_definition.hostname is defined %}
+          Hostname: {{ container_definition.hostname }}
+{%- endif %}
+{%- if container_definition.image is defined %}
+          Image: {{ container_definition.image }}
+{%- endif %}
+{%- if container_definition.interactive is defined %}
+          Interactive: {{ container_definition.interactive }}
+{%- endif %}
+{%- if container_definition.links is defined %}
+          Links:
+{%- for link incontainer_definition.links %}
+            - {{ link }}
+{%- endfor %}
+{%- endif %}
+{%- if container_definition.linux_parameters is defined %}  {# BEGIN {%- if container_definition.linux_parameters is defined %} #}
+          LinuxParameters:
+{%- if container_definition.linux_parameters.capabilities is defined %}  {# BEGIN {%- if container_definition.linux_parameters.capabilities is defined %} #}
+            Capabilities:
+{%- if container_definition.linux_parameters.capabilities.add is defined %}
+              Add:
+{%- for item in container_definition.linux_parameters.capabilities.add %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if container_definition.linux_parameters.capabilities.drop is defined %}
+              Drop:
+{%- for item incontainer_definition.linux_parameters.capabilities.drop %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}  {# END {%- if container_definition.linux_parameters.capabilities is defined %} #}
+{%- if container_definition.linux_parameters.devices is defined %}  {# BEGIN {%- if container_definition.linux_parameters.devices is defined %} #}
+            Devices:
+{%- for device in container_definition.linux_parameters.devices %}
+              -
+{%- if device.container_path is defined %}
+                ContainerPath: {{ device.container_path }}
+{%- endif %}
+{%- if device.host_path is defined %}
+                HostPath: {{ device.host_path }}
+{%- endif %}
+{%- if device.permissions is defined %}
+                Permissions:
+{%- for permission in device.permissions %}
+                  - {{permission }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if container_definition.linux_parameters.devices is defined %} #}
+{%- if container_definition.linux_parameters.init_process_enabled is defined %}
+            InitProcessEnabled: {{ container_definition.linux_parameters.init_process_enabled }}
+{%- endif %}
+{%- if container_definition.linux_parameters.max_swap is defined %}
+            MaxSwap: {{ container_definition.linux_parameters.max_swap }}
+{%- endif %}
+{%- if container_definition.linux_parameters.shared_memory_size is defined %}
+            SharedMemorySize: {{ container_definition.linux_parameters.shared_memory_size }}
+{%- endif %}
+{%- if container_definition.linux_parameters.swappiness is defined %}
+            Swappiness: {{ container_definition.linux_parameters.swappiness }}
+{%- endif %}
+{%- if container_definition.linux_parameters.tmpfs is defined %}  {# BEGIN {%- if container_definition.linux_parameters.tmpfs is defined %} #}
+            Tmpfs:
+{%- for tmpfs in container_definition.linux_parameters.tmpfs %}  {# BEGIN {%- for tmpfs in container_definition.linux_parameters.tmpfs %} #}
+              - Size: {{ tmpfs.size }}
+{%- if tmpfs.container_path is defined %}
+                ContainerPath: {{ tmpfs.container_path }}
+{%- endif %}
+{%- if tmpfs.mount_options is defined %}
+                MountOptions:
+{%- for mount_option in tmpfs.mount_options %}
+                  - {{ mount_option }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}  {# END {%- for tmpfs in container_definition.linux_parameters.tmpfs %} #}
+{%- endif %}  {# END {%- if container_definition.linux_parameters.tmpfs is defined %} #}
+{%- endif %}  {# END {%- if container_definition.linux_parameters is defined %} #}
+{%- if container_definition.log_configuration is defined %}  {# BEGIN {%- if container_definition.log_configuration is defined %} #}
+          LogConfiguration:
+            LogDriver: {{ container_definition.log_configuration.log_driver }}
+{%- if container_definition.log_configuration.options is defined %}
+            Options:
+{%- for key, value in container_definition.log_configuration.options %}
+              "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if container_definition.log_configuration.secret_options is defined %}
+            SecretOptions:
+{{ macro_secrets.prep(container_definition.log_configuration.secret_options) | indent(width=14, first=True) }}
+{%- endif %}
+{%- endif %}  {# END {%- if container_definition.log_configuration is defined %} #}
+{%- if container_definition.memory is defined %}
+          Memory: {{ container_definition.memory }}
+{%- endif %}
+{%- if container_definition.memory_reservation is defined %}
+          MemoryReservation: {{ container_definition.memory_reservation }}
+{%- endif %}
+{%- if container_definition.mount_points is defined %}  {# BEGIN {%- if container_definition.mount_points is defined %} #}
+          MountPoints:
+{%- for mount_point in container_definition.mount_points %}
+            -
+{%- if mount_point.container_path is defined %}
+              ContainerPath: {{ mount_point.container_path }}
+{%- endif %}
+{%- if mount_point.read_only is defined %}
+              ReadOnly: {{ mount_point.read_only }}
+{%- endif %}
+{%- if mount_point.source_volume is defined %}
+              SourceVolume: {{ mount_point.source_volume }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if container_definition.mount_points is defined %} #}
+{%- if container_definition.name is defined %}
+          Name: {{ container_definition.name }}
+{%- endif %}
+{%- if container_definition.port_mappings is defined %}  {# BEGIN {%- if container_definition.port_mappings is defined %} #}
+          PortMappings:
+{%- for port_mapping in container_definition.port_mappings %}
+            -
+{%- if port_mapping.container_port is defined %}
+              ContainerPort: {{ port_mapping.container_port }}
+{%- endif %}
+{%- if port_mapping.host_port is defined %}
+              HostPort: {{ port_mapping.host_port }}
+{%- endif %}
+{%- if port_mapping.protocol is defined %}
+              Protocol: {{ port_mapping.protocol }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if container_definition.port_mappings is defined %} #}
+{%- if container_definition.privileged is defined %}
+          Privileged: {{ container_definition.privileged }}
+{%- endif %}
+{%- if container_definition.pseudo_terminal is defined %}
+          PseudoTerminal: {{ container_definition.pseudo_terminal }}
+{%- endif %}
+{%- if container_definition.readonly_root_filesystem is defined %}
+          ReadonlyRootFilesystem: {{ container_definition.readonly_root_filesystem }}
+{%- endif %}
+{%- if container_definition.repository_credentials is defined %}
+          RepositoryCredentials:
+            CredentialsParameter: {{ container_definition.repository_credentials.credentials_parameter | trim }}
+{%- endif %}
+{%- if container_definition.resource_requirements is defined %}  {# BEGIN {%- if container_definition.resource_requirements is defined %} #}
+          ResourceRequirements:
+{%- for resource_requirement in container_definition.resource_requirements %}
+            - Type: {{ resource_requirement.type }}
+              Value: {{ resource_requirement.value }}
+{%- endfor %}
+{%- endif %}  {# END {%- if container_definition.resource_requirements is defined %} #}
+{%- if container_definition.secrets is defined %}
+          Secrets:
+{{ macro_secrets.prep(container_definition.secrets) | indent(width=12, first=True) }}
+{%- endif %}
+{%- if container_definition.start_timeout is defined %}
+          StartTimeout: {{ container_definition.start_timeout }}
+{%- endif %}
+{%- if container_definition.stop_timeout is defined %}
+          StopTimeout: {{ container_definition.stop_timeout }}
+{%- endif %}
+{%- if container_definition.system_controls is defined %}  {# BEGIN {%- if container_definition.system_controls is defined %} #}
+          SystemControls:
+{%- for system_control in container_definition.system_controls %}
+            -
+{%- if system_control.namespace is defined %}
+              Namespace: {{ system_control.namespace }}
+{%- endif %}
+{%- if system_control.value is defined %}
+              Value: {{ system_control.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if container_definition.system_controls is defined %} #}
+{%- if container_definition.ulimits is defined %}  {# BEGIN {%- if container_definition.ulimits is defined %} #}
+          Ulimits:
+{%- for ulimit in container_definition.ulimits %}
+            - HardLimit: {{ ulimit.hard_limit }}
+              Name: {{ ulimit.name  }}
+              SoftLimit: {{ ulimit.soft_limit }}
+{%- endfor %}
+{%- endif %}  {# END {%- if container_definition.ulimits is defined %} #}
+{%- if container_definition.user is defined %}
+          User: {{ container_definition.user }}
+{%- endif %}
+{%- if container_definition.volumes_from is defined %}  {# BEGIN {%- if container_definition.volumes_from is defined %} #}
+          VolumesFrom:
+{%- for volume_from in container_definition.volumes_from %}
+            -
+{%- if volume_from.read_only is defined %}
+              ReadOnly: {{ volume_from.read_only }}
+{%- endif %}
+{%- if volume_from.source_container is defined %}
+              SourceContainer: {{ volume_from.source_container }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if container_definition.volumes_from is defined %} #}
+{%- if container_definition.working_directory is defined %}
+          WorkingDirectory: {{ container_definition.working_directory }}
+{%- endif %}
+{%- endfor %}  {# END {%- for container_definition in task_definition.container_definitions %} #}
+{%- endif %}  {# END {%- if task_definition.container_definitions is defined %} #}
+{%- if task_definition.cpu is defined %}
+      Cpu: {{ task_definition.cpu }}
+{%- endif %}
+{%- if task_definition.ephemeral_storage is defined %}
+      EphemeralStorage:
+        SizeInGiB: {{ task_definition.ephemeral_storage.size_in_gb }}
+{%- endif %}
+{%- if task_definition.execute_role_arn is defined %}
+      ExecutionRoleArn: {{ task_definition.execute_role_arn | trim }}
+{%- endif %}
+{%- if task_definition.family is defined %}
+      Family: {{ task_definition.family }}
+{%- endif %}
+{%- if task_definition.inference_accelerators is defined %}  {# BEGIN {%- if task_definition.inference_accelerators is defined %} #}
+      InferenceAccelerators:
+{%- for accelerator in task_definition.inference_accelerators %}
+        -
+{%- if accelerator.device_name is defined %}
+          DeviceName: {{ accelerator.device_name }}
+{%- endif %}
+{%- if accelerator.device_type is defined %}
+          DeviceType: {{ accelerator.device_type }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if task_definition.inference_accelerators is defined %} #}
+{%- if task_definition.ipc_mode is defined %}
+      IpcMode: {{ task_definition.ipc_mode }}
+{%- endif %}
+{%- if task_definition.memory is defined %}
+      Memory: {{ task_definition.memory }}
+{%- endif %}
+{%- if task_definition.network_mode is defined %}
+      NetworkMode: {{ task_definition.network_mode }}
+{%- endif %}
+{%- if task_definition.pid_mode is defined %}
+      PidMode: {{ task_definition.pid_mode }}
+{%- endif %}
+{%- if task_definition.placement_constraints is defined %}
+      PlacementConstraints:
+{%- for placement_constraint in task_definition.placement_constraints %}
+        - Type: {{ placement_constraint.type }}
+{%- if placement_constraint.expression is defined %}
+          Expression: {{ placement_constraint.expression }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if task_definition.proxy_configuration is defined %}
+      ProxyConfiguration:
+        ContainerName: {{ task_definition.proxy_configuration.container_name }}
+{%- if task_definition.proxy_configuration.proxy_configuration_properties is defined %}  {# BEGIN {%- if task_definition.proxy_configuration.proxy_configuration_properties is defined %} #}
+        ProxyConfigurationProperties:
+{%- for property in task_definition.proxy_configuration.proxy_configuration_properties %}
+          -
+{%- if property.name is defined %}
+            Name: {{ property.name }}
+{%- endif %}
+{%- if property.value is defined %}
+            Value: {{ property.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if task_definition.proxy_configuration.proxy_configuration_properties is defined %} #}
+{%- if task_definition.proxy_configuration.type is defined %}
+        Type: {{ task_definition.proxy_configuration.type }}
+{%- endif %}
+{%- endif %}
+{%- if task_definition.requires_compatibilities is defined %}
+      RequiresCompatibilities:
+{%- for requires_compatibility in task_definition.requires_compatibilities %}
+        - {{ requires_compatibility }}
+{%- endfor %}
+{%- endif %}
+{%- if task_definition.runtime_platform is defined %}  {# BEGIN {%- if task_definition.runtime_platform is defined %} #}
+      RuntimePlatform:
+{%- if task_definition.runtime_platform.cpu_architecture is defined %}
+        CpuArchitecture: {{ task_definition.runtime_platform.cpu_architecture }}
+{%- endif %}
+{%- if task_definition.runtime_platform.operating_system_family is defined %}
+        OperatingSystemFamily: {{ task_definition.runtime_platform.operating_system_family }}
+{%- endif %}
+{%- endif %}  {# END {%- if task_definition.runtime_platform is defined %} #}
+{%- if task_definition.task_role_arn is defined %}
+      TaskRoleArn: {{ task_definition.task_role_arn | trim }}
+{%- endif %}
+{%- if task_definition.volumes is defined %}  {# BEGIN {%- if task_definition.volumes is defined %} #}
+      Volumes:
+{%- for volume in task_definition.volumes %}
+        -
+{%- if volume.docker_volume_configuration is defined %}  {# BEGIN {%- if volume.docker_volume_configuration is defined %} #}
+          DockerVolumeConfiguration:
+{%- if volume.docker_volume_configuration.autoprovision is defined %}
+            Autoprovision: {{ volume.docker_volume_configuration.autoprovision }}
+{%- endif %}
+{%- if volume.docker_volume_configuration.driver is defined %}
+            Driver: {{ volume.docker_volume_configuration.driver }}
+{%- endif %}
+{%- if volume.docker_volume_configuration.driver_opts is defined %}
+            DriverOpts:
+{%- for key, value in volume.docker_volume_configuration.driver_opts %}
+              "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if volume.docker_volume_configuration.labels is defined %}
+            Labels:
+{%- for key, value in volume.docker_volume_configuration.labels %}
+              "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if volume.docker_volume_configuration.scope is defined %}
+            Scope: {{ volume.docker_volume_configuration.scope }}
+{%- endif %}
+{%- endif %}  {# END {%- if volume.docker_volume_configuration is defined %} #}
+{%- if volume.efs_volume_configuration is defined %}  {# BEGIN {%- if volume.efs_volume_configuration is defined %} #}
+          EFSVolumeConfiguration:
+            FilesystemId: {{ volume.efs_volume_configuration.filesystem_id | trim }}
+{%- if volume.efs_volume_configuration.authorization_config is defined %}  {# BEGIN {%- if volume.efs_volume_configuration.authorization_config is defined %} #}
+            AuthorizationConfig:
+{%- if volume.efs_volume_configuration.authorization_config.access_point_id is defined %}
+              AccessPointId: {{ volume.efs_volume_configuration.authorization_config.access_point_id | trim }}
+{%- endif %}
+{%- if volume.efs_volume_configuration.authorization_config.iam is defined %}
+              IAM: {{ volume.efs_volume_configuration.authorization_config.iam }}
+{%- endif %}
+{%- endif %}  {# END {%- if volume.efs_volume_configuration.authorization_config is defined %} #}
+{%- if volume.efs_volume_configuration.root_directory is defined %}
+            RootDirectory: {{ volume.efs_volume_configuration.root_directory }}
+{%- endif %}
+{%- if volume.efs_volume_configuration.transit_encryption is defined %}
+            TransitEncryption: {{ volume.efs_volume_configuration.transit_encryption }}
+{%- endif %}
+{%- if volume.efs_volume_configuration.transit_encryption_port is defined %}
+            TransitEncryptionPort: {{ volume.efs_volume_configuration.transit_encryption_port }}
+{%- endif %}
+{%- endif %}  {# END {%- if volume.efs_volume_configuration is defined %} #}
+{%- if volume.host is defined %}
+          Host:
+            SourcePath: {{ volume.host.source_path }}
+{%- endif %}
+{%- if volume.name is defined %}
+          Name: {{ volume.name }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if task_definition.volumes is defined %} #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if task_definition.tags is defined %}
+{%- for key,value in task_definition.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for task_definition in sceptre_user_data.task_definitions %}
+{%- set task_definition_name = task_definition.name %}
+  {{ task_definition_name }}:
+    Description: ARN for {{ task_definition_name }}
+    Value:
+      Ref: {{ task_definition_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ task_definition_name }}"
+
+{%- endfor %}

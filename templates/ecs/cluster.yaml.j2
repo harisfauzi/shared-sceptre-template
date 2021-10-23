@@ -1,0 +1,111 @@
+Description: ECS Cluster(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for cluster in sceptre_user_data.clusters %}
+{%- set cluster_name = cluster.name %}
+  {{ cluster_name }}:
+    Type: AWS::ECS::Cluster
+    DeletionPolicy: {{ cluster.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ cluster.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if cluster.capacity_providers is defined %}
+      CapacityProviders:
+{%- for capacity_provider in cluster.capacity_providers %}
+        - {{ capacity_provider }}
+{%- endfor %}
+{%- endif %}
+{%- if cluster.cluster_name is defined %}
+      ClusterName: {{ cluster.cluster_name }}
+{%- endif %}
+{%- if cluster.cluster_settings is defined %}
+      ClusterSettings:
+{%- for cluster_setting in cluster.cluster_settings %}
+        -
+{%- if cluster_setting.name is defined %}
+          Name: {{ cluster_setting.name }}
+{%- endif %}
+{%- if cluster_setting.value is defined %}
+          Value: {{ cluster_setting.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if cluster.configuration is defined %}  {# BEGIN {%- if cluster.configuration is defined %} #}
+      Configuration:
+        ExecuteCommandConfiguration:
+{%- if cluster.configuration.execute_command_configuration.kms_key_id is defined %}
+          KmsKeyId: {{ cluster.configuration.execute_command_configuration.kms_key_id | trim }}
+{%- endif %}
+{%- if cluster.configuration.execute_command_configuration.log_configuration is defined %}  {# BEGIN {%- if cluster.configuration.execute_command_configuration.log_configuration is defined %} #}
+          LogConfiguration:
+{%- if cluster.configuration.execute_command_configuration.log_configuration.cloud_watch_encryption_enabled is defined %}
+            CloudWatchEncryptionEnabled: {{ cluster.configuration.execute_command_configuration.log_configuration.cloud_watch_encryption_enabled }}
+{%- endif %}
+{%- if cluster.configuration.execute_command_configuration.log_configuration.cloud_watch_log_group_name is defined %}
+            CloudWatchLogGroupName: {{ cluster.configuration.execute_command_configuration.log_configuration.cloud_watch_log_group_name }}
+{%- endif %}
+{%- if cluster.configuration.execute_command_configuration.log_configuration.s3_bucket_name is defined %}
+            S3BucketName: {{ cluster.configuration.execute_command_configuration.log_configuration.s3_bucket_name }}
+{%- endif %}
+{%- if cluster.configuration.execute_command_configuration.log_configuration.s3_encryption_enabled is defined %}
+            S3EncryptionEnabled: {{ cluster.configuration.execute_command_configuration.log_configuration.s3_encryption_enabled }}
+{%- endif %}
+{%- if cluster.configuration.execute_command_configuration.log_configuration.s3_key_prefix is defined %}
+            S3KeyPrefix: {{ cluster.configuration.execute_command_configuration.log_configuration.s3_key_prefix }}
+{%- endif %}
+{%- endif %}  {# END {%- if cluster.configuration.execute_command_configuration.log_configuration is defined %} #}
+{%- if cluster.configuration.execute_command_configuration.logging is defined %}
+          Logging: {{ cluster.configuration.execute_command_configuration.logging }}
+{%- endif %}
+{%- endif %}  {# END {%- if cluster.configuration is defined %} #}
+{%- if cluster.default_capacity_provider_strategy is defined %}  {# BEGIN {%- if cluster.default_capacity_provider_strategy is defined %} #}
+      DefaultCapacityProviderStrategy:
+{%- for strategy in cluster.default_capacity_provider_strategy %}
+        -
+{%- if strategy.base is defined %}
+          Base: {{ strategy.base }}
+{%- endif %}
+{%- if strategy.capacity_provider is defined %}
+          CapacityProvider: {{ strategy.capacity_provider }}
+{%- endif %}
+{%- if strategy.weight is defined %}
+          Weight: {{ strategy.weight }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if cluster.default_capacity_provider_strategy is defined %} #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if cluster.tags is defined %}
+{%- for key,value in cluster.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for cluster in sceptre_user_data.clusters %}
+{%- set cluster_name = cluster.name %}
+  {{ cluster_name }}:
+    Description: The cluster name for {{ cluster_name }}
+    Value:
+      Ref: {{ cluster_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}"
+
+  {{ cluster_name }}Arn:
+    Description: The ARN for {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Arn"
+
+{%- endfor %}

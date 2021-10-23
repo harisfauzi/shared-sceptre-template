@@ -1,0 +1,17 @@
+{%- macro prep(load_balancers) %}
+{%- for load_balancer in load_balancers %}
+-
+{%- if load_balancer.container_name is defined %}
+  ContainerName: {{ load_balancer.container_name }}
+{%- endif %}
+{%- if load_balancer.container_port is defined %}
+  ContainerPort: {{ load_balancer.container_port }}
+{%- endif %}
+{%- if load_balancer.load_balancer_name is defined %}
+  LoadBalancerName: {{ load_balancer.load_balancer_name }}
+{%- endif %}
+{%- if load_balancer.target_group_arn is defined %}
+  TargetGroupArn: {{ load_balancer.target_group_arn | trim }}
+{%- endif %}
+{%- endfor %}
+{%- endmacro %}
