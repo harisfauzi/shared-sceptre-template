@@ -1,0 +1,149 @@
+Description: Synthetics Canary(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for canary in sceptre_user_data.canarys %}
+{%- set canary_name = canary.name %}
+  {{ canary_name }}:
+    Type: AWS::Synthetics::Canary
+    DeletionPolicy: {{ canary.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ canary.update_replace_policy | default('Delete') }}
+    Properties:
+      ArtifactS3Location: {{ canary.artifact_s3_location }}
+      Code:
+{%- if canary.code.handler is defined %}
+        Handler: {{ canary.code.handler }}
+{%- endif %}
+{%- if canary.code.s3_bucket is defined %}
+        S3Bucket: {{ canary.code.s3_bucket }}
+{%- endif %}
+{%- if canary.code.s3_key is defined %}
+        S3Key: {{ canary.code.s3_key }}
+{%- endif %}
+{%- if canary.code.s3_object_version is defined %}
+        S3ObjectVersion: {{ canary.code.s3_object_version }}
+{%- endif %}
+{%- if canary.code.script is defined %}
+        Script: {{ canary.code.script }}
+{%- endif %}
+      ExecutionRoleArn: {{ canary.execution_role_arn }}
+      Name: {{ canary.canary_name }}
+      RuntimeVersion: {{ canary.runtime_version }}
+      Schedule:
+        Expression: {{ canary.schedule.expression }}
+{%- if canary.schedule.duration_in_seconds is defined %}
+        DurationInSeconds: {{ canary.schedule.duration_in_seconds }}
+{%- endif %}
+      StartCanaryAfterCreation: {{ canary.start_canary_after_creation | default('TRUE') }}
+{%- if canary.artifact_config is defined %}
+      ArtifactConfig:
+        S3Encryption:
+{%- if canary.artifact_config.s3_encryption.kms_key_arn is defined %}
+          EncryptionMode: SSE-KMS
+          KmsKeyArn: {{ canary.artifact_config.s3_encryption.kms_key_arn }}
+{%- else %}
+          EncryptionMode: SSE_S3
+{%- endif %}
+{%- endif %}
+{%- if canary.failure_retention_period is defined %}
+      FailureRetentionPeriod: {{ canary.failure_retention_period }}
+{%- endif %}
+{%- if canary.run_config is defined %}  {# BEGIN {%- if canary.run_config is defined %} #}
+      RunConfig:
+{%- if canary.run_config.active_tracing is defined %}
+        ActiveTracing: {{ canary.run_config.active_tracing }}
+{%- endif %}
+{%- if canary.run_config.environment_variables is defined %}
+        EnvironmentVariables:
+{%- for key, value in canary.run_config.environment_variables %}
+          "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if canary.run_config.memory_in_mb is defined %}
+        MemoryInMB: {{ canary.run_config.memory_in_mb }}
+{%- endif %}
+{%- if canary.run_config.timeout_in_seconds is defined %}
+        TimeoutInSeconds: {{ canary.run_config.timeout_in_seconds }}
+{%- endif %}
+{%- endif %}  {# END {%- if canary.run_config is defined %} #}
+{%- if canary.success_retention_period is defined %}
+      SuccessRetentionPeriod: {{ canary.success_retention_period }}
+{%- endif %}
+{%- if canary.visual_reference is defined %}  {# BEGIN {%- if canary.visual_reference is defined %} #}
+      VisualReference:
+{%- if canary.visual_reference.base_canary_run_id is defined %}
+        BaseCanaryRunId: {{ canary.visual_reference.base_canary_run_id }}
+{%- endif %}
+{%- if canary.visual_reference.base_screenshots is defined %}
+        BaseScreenshots:
+{%- for base_screenshot in canary.visual_reference.base_screenshots %}
+          - ScreenshotName: {{ base_screenshot.screenshot_name }}
+{%- if base_screenshot.ignore_coordinates is defined %}
+            IgnoreCoordinates:
+{%- for item in base_screenshot.ignore_coordinates %}
+              - {{ item }}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- endif %}  {# END {%- if canary.visual_reference is defined %} #}
+{%- if canary.vpc_config is defined %}  {# BEGIN {%- if canary.vpc_config is defined %} #}
+      VPCConfig:
+        SecurityGroupIds:
+{%- for security_group_id in canary.vpc_config.security_group_ids %}
+          - {{ security_group_id }}
+{%- endfor %}
+        SubnetIds:
+{%- for subnet_id in canary.vpc_config.subnet_ids %}
+          - {{ subnet_id }}
+{%- endfor %}
+{%- if canary.vpc_config.vpc_id is defined %}
+        VpcId: {{ canary.vpc_config.vpc_id }}
+{%- endif %}
+{%- endif %}  {# END {%- if canary.vpc_config is defined %} #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if canary.tags is defined %}
+{%- for key,value in canary.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for canary in sceptre_user_data.canarys %}
+{%- set canary_name = canary.name %}
+  {{ canary_name }}:
+    Description: The Name of the canary for {{ canary_name }}
+    Value:
+      Ref: {{ canary_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ canary_name }}"
+
+  {{ canary_name }}Id:
+    Description: The Id of canary for {{ canary_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ canary_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ canary_name }}-Id"
+
+  {{ canary_name }}State:
+    Description: The state of the canary for {{ canary_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ canary_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ canary_name }}-State"
+
+{%- endfor %}
