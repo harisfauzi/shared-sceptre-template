@@ -1,0 +1,68 @@
+Description: EKS Fargate Profile(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for fargate_profile in sceptre_user_data.fargate_profiles %}
+{%- set fargate_profile_name = fargate_profile.name %}
+  {{ fargate_profile_name }}:
+    Type: AWS::EKS::FargateProfile
+    DeletionPolicy: {{ fargate_profile.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ fargate_profile.update_replace_policy | default('Delete') }}
+    Properties:
+      ClusterName: {{ fargate_profile.cluster_name }}
+      PodExecutionRoleArn: {{ fargate_profile.pod_execution_role_arn }}
+      Selectors:
+{%- for selector in fargate_profile.selectors %}
+        - Namespace: {{ selector.namespace }}
+{%- if selector.labels is defined %}
+          Labels:
+{%- for key, value in selector.labels %}
+            - Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- if fargate_profile.fargate_profile_name is defined %}
+      FargateProfileName: {{ fargate_profile.fargate_profile_name }}
+{%- endif %}
+{%- if fargate_profile.subnets is defined %}
+      Subnets:
+{%- for subnet_id in fargate_profile.subnets %}
+        - {{ subnet_id }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if fargate_profile.tags is defined %}
+{%- for key,value in fargate_profile.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for fargate_profile in sceptre_user_data.fargate_profiles %}
+{%- set fargate_profile_name = fargate_profile.name %}
+  {{ fargate_profile_name }}:
+    Description: Resource name for {{ fargate_profile_name }}
+    Value:
+      Ref: {{ fargate_profile_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ fargate_profile_name }}"
+
+  {{ fargate_profile_name }}Arn:
+    Description: The ARN for {{ fargate_profile_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ fargate_profile_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ fargate_profile_name }}-Arn"
+
+{%- endfor %}
