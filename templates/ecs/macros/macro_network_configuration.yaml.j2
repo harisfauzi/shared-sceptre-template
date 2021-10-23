@@ -1,0 +1,17 @@
+{%- macro prep(network_configuration) %}
+NetworkConfiguration:
+  AwsVpcConfiguration:
+    Subnets:
+{%- for subnet_id in network_configuration.aws_vpc_configuration.subnets %}
+      - {{ subnet_id | trim }}
+{%- endfor %}
+{%- if network_configuration.aws_vpc_configuration.assign_public_ip is defined %}
+    AssignPublicIp: {{ network_configuration.aws_vpc_configuration.assign_public_ip }}
+{%- endif %}
+{%- if network_configuration.aws_vpc_configuration.security_groups is defined %}
+    SecurityGroups:
+{%- for security_group_id in network_configuration.aws_vpc_configuration.security_groups %}
+      - {{ security_group_id | trim }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}

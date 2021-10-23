@@ -35,7 +35,7 @@ Resources:
       Configuration:
         ExecuteCommandConfiguration:
 {%- if cluster.configuration.execute_command_configuration.kms_key_id is defined %}
-          KmsKeyId: {{ cluster.configuration.execute_command_configuration.kms_key_id }}
+          KmsKeyId: {{ cluster.configuration.execute_command_configuration.kms_key_id | trim }}
 {%- endif %}
 {%- if cluster.configuration.execute_command_configuration.log_configuration is defined %}  {# BEGIN {%- if cluster.configuration.execute_command_configuration.log_configuration is defined %} #}
           LogConfiguration:

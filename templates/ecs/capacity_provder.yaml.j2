@@ -11,7 +11,7 @@ Resources:
     UpdateReplacePolicy: {{ capacity_provider.update_replace_policy | default('Delete') }}
     Properties:
       AutoScalingGroupProvider:
-        AutoScalingGroupArn: {{ capacity_provider.auto_scaling_group_provider.auto_scaling_group_arn }}
+        AutoScalingGroupArn: {{ capacity_provider.auto_scaling_group_provider.auto_scaling_group_arn | trim }}
 {%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %}  {# BEGIN {%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %} #}
         ManagedScaling:
 {%- if capacity_provider.auto_scaling_group_provider.managed_scaling.instance_warmup_period is defined %}

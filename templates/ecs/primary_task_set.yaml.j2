@@ -1,0 +1,31 @@
+Description: ECS Primary Task Set(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for primary_task_set in sceptre_user_data.primary_task_sets %}
+{%- set primary_task_set_name = primary_task_set.name %}
+  {{ primary_task_set_name }}:
+    Type: AWS::ECS::PrimaryTaskSet
+    DeletionPolicy: {{ primary_task_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ primary_task_set.update_replace_policy | default('Delete') }}
+    Properties:
+      Cluster: {{ primary_task_set.cluster | trim }}
+      Service: {{ primary_task_set.service | trim }}
+      TaskSetId: {{ primary_task_set.task_set_id | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for primary_task_set in sceptre_user_data.primary_task_sets %}
+{%- set primary_task_set_name = primary_task_set.name %}
+  {{ primary_task_set_name }}:
+    Description: Resource name for {{ primary_task_set_name }}
+    Value:
+      Ref: {{ primary_task_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ primary_task_set_name }}"
+
+{%- endfor %}

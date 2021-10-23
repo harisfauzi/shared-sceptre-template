@@ -1,0 +1,43 @@
+Description: ECS ClusterCapacityProviderAssociations for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for cluster_capacity_provider_associations in sceptre_user_data.cluster_capacity_provider_associationss %}
+{%- set cluster_capacity_provider_associations_name = cluster_capacity_provider_associations.name %}
+  {{ cluster_capacity_provider_associations_name }}:
+    Type: AWS::ECS::ClusterCapacityProviderAssociations
+    DeletionPolicy: {{ cluster_capacity_provider_associations.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ cluster_capacity_provider_associations.update_replace_policy | default('Delete') }}
+    Properties:
+      CapacityProviders:
+{%- for capacity_provider in cluster_capacity_provider_associations.capacity_providers %}
+        - {{ capacity_provider }}
+{%- endfor %}
+      Cluster: {{ cluster_capacity_provider_associations.cluster | trim }}
+      DefaultCapacityProviderStrategy:
+{%- for default_capacity_provider_strategy in cluster_capacity_provider_associations.default_capacity_provider_strategy %}
+        - CapacityProvider: {{ default_capacity_provider_strategy.capacity_provider }}
+{%- if default_capacity_provider_strategy.base is defined %}
+          Base: {{ default_capacity_provider_strategy.base }}
+{%- endif %}
+{%- if default_capacity_provider_strategy.weight is defined %}
+          Weight: {{ default_capacity_provider_strategy.weight }}
+{%- endif %}
+{%- endfor %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for cluster_capacity_provider_associations in sceptre_user_data.cluster_capacity_provider_associationss %}
+{%- set cluster_capacity_provider_associations_name = cluster_capacity_provider_associations.name %}
+  {{ cluster_capacity_provider_associations_name }}:
+    Description: The cluster name for {{ cluster_capacity_provider_associations_name }}
+    Value:
+      Ref: {{ cluster_capacity_provider_associations_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_capacity_provider_associations_name }}"
+
+{%- endfor %}

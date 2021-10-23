@@ -1,0 +1,17 @@
+{%- macro prep(services_registries) %}
+{%- for service_registry in services_registries %}
+-
+{%- if service_registry.container_name is defined %}
+  ContainerName: {{ service_registry.container_name }}
+{%- endif %}
+{%- if service_registry.container_port is defined %}
+  ContainerPort: {{ service_registry.container_port }}
+{%- endif %}
+{%- if service_registry.port is defined %}
+  Port: {{ service_registry.port }}
+{%- endif %}
+{%- if service_registry.registry_arn is defined %}
+  RegistryArn: {{ service_registry.registry_arn }}
+{%- endif %}
+{%- endfor %}
+{%- endmacro %}
