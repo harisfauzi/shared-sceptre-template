@@ -1,0 +1,126 @@
+{%- import 'macros/macro_encryption_configuration.yaml.j2' as macro_encryption_configuration %}
+{%- import 'macros/macro_engine_version.yaml.j2' as macro_engine_version %}
+Description: Athena Work Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for work_group in sceptre_user_data.work_groups %}
+{%- set work_group_name = work_group.name %}
+  {{ work_group_name }}:
+    Type: AWS::Athena::WorkGroup
+    DeletionPolicy: {{ work_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ work_group.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ work_group.work_group_name }}
+{%- if work_group.description is defined %}
+      Description: {{ work_group.description }}
+{%- endif %}
+{%- if work_group.recursive_delete_option is defined %}
+      RecursiveDeleteOption: {{ work_group.recursive_delete_option }}
+{%- endif %}
+{%- if work_group.state is defined %}
+      State: {{ work_group.state }}
+{%- endif %}
+{%- if work_group.work_group_configuration is defined %}  {# BEGIN {%- if work_group.work_group_configuration is defined %} #}
+      WorkGroupConfiguration:
+{%- if work_group.work_group_configuration.bytes_scanned_cutoff_per_query is defined %}
+        BytesScannedCutoffPerQuery: {{ work_group.work_group_configuration.bytes_scanned_cutoff_per_query }}
+{%- endif %}
+{%- if work_group.work_group_configuration.enforce_work_group_configuration is defined %}
+        EnforceWorkGroupConfiguration: {{ work_group.work_group_configuration.enforce_work_group_configuration }}
+{%- endif %}
+{%- if work_group.work_group_configuration.engine_version is defined %}
+        EngineVersion:
+{{ macro_engine_version.prep(work_group.work_group_configuration.engine_version) | indent(width=10, first=true)}}
+{%- endif %}
+{%- if work_group.work_group_configuration.publish_cloud_watch_metrics_enabled is defined %}
+        PublishCloudWatchMetricsEnabled: {{ work_group.work_group_configuration.publish_cloud_watch_metrics_enabled }}
+{%- endif %}
+{%- if work_group.work_group_configuration.requester_pays_enabled is defined %}
+        RequesterPaysEnabled: {{ work_group.work_group_configuration.requester_pays_enabled }}
+{%- endif %}
+{%- if work_group.work_group_configuration.result_configuration is defined %}  {# BEGIN {%- if work_group.work_group_configuration.result_configuration is defined %} #}
+        ResultConfiguration:
+{%- if work_group.work_group_configuration.result_configuration.encryption_configuration is defined %}
+          EncryptionConfiguration:
+{{ macro_encryption_configuration.prep(work_group.work_group_configuration.result_configuration.encryption_configuration) | indent(width=12, first=true) }}
+{%- endif %}
+{%- if work_group.work_group_configuration.result_configuration.output_location is defined %}
+          OutputLocation: {{ work_group.work_group_configuration.result_configuration.output_location }}
+{%- endif %}
+{%- endif %}  {# END {%- if work_group.work_group_configuration.result_configuration is defined %} #}
+{%- endif %}  {# END {%- if work_group.work_group_configuration is defined %} #}
+{%- if work_group.work_group_configuration_updates is defined %}  {# BEGIN {%- if work_group.work_group_configuration_updates is defined %} #}
+      WorkGroupConfigurationUpdates:
+{%- if work_group.work_group_configuration_updates.bytes_scanned_cutoff_per_query is defined %}
+        BytesScannedCutoffPerQuery: {{ work_group.work_group_configuration_updates.bytes_scanned_cutoff_per_query }}
+{%- endif %}
+{%- if work_group.work_group_configuration_updates.enforce_work_group_configuration is defined %}
+        EnforceWorkGroupConfiguration: {{ work_group.work_group_configuration_updates.enforce_work_group_configuration }}
+{%- endif %}
+{%- if work_group.work_group_configuration_updates.engine_version is defined %}
+        EngineVersion:
+{{ macro_engine_version.prep(work_group.work_group_configuration_updates.engine_version) | indent(width=10, first=true) }}
+{%- endif %}
+{%- if work_group.work_group_configuration_updates.publish_cloud_watch_metrics_enabled is defined %}
+        PublishCloudWatchMetricsEnabled: {{ work_group.work_group_configuration_updates.publish_cloud_watch_metrics_enabled }}
+{%- endif %}
+{%- if work_group.work_group_configuration_updates.remove_bytes_scanned_cutoff_per_query is defined %}
+        RemoveBytesScannedCutoffPerQuery: {{ work_group.work_group_configuration_updates.remove_bytes_scanned_cutoff_per_query }}
+{%- endif %}
+{%- if work_group.work_group_configuration_updates.requester_pays_enabled is defined %}
+        RequesterPaysEnabled: {{ work_group.work_group_configuration_updates.requester_pays_enabled }}
+{%- endif %}
+{%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %}  {# BEGIN {%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %} #}
+        ResultConfigurationUpdates:
+{%- if work_group.work_group_configuration_updates.result_configuration_updates.encryption_configuration is defined %}
+          EncryptionConfiguration:
+{{ macro_encryption_configuration.prep(work_group.work_group_configuration_updates.result_configuration_updates.encryption_configuration) | indent(width=12, first=true) }}
+{%- endif %}
+{%- if work_group.work_group_configuration_updates.result_configuration_updates.output_location is defined %}
+          OutputLocation: {{ work_group.work_group_configuration_updates.result_configuration_updates.output_location }}
+{%- endif %}
+{%- if work_group.work_group_configuration_updates.result_configuration_updates.remove_encryption_configuration is defined %}
+          RemoveEncryptionConfiguration: {{ work_group.work_group_configuration_updates.result_configuration_updates.remove_encryption_configuration }}
+{%- endif %}
+{%- if work_group.work_group_configuration_updates.result_configuration_updates.remove_output_location is defined %}
+          RemoveOutputLocation: {{ work_group.work_group_configuration_updates.result_configuration_updates.remove_output_location }}
+{%- endif %}
+{%- endif %}  {# END {%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %} #}
+{%- endif %}  {# END {%- if work_group.work_group_configuration_updates is defined %} #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if work_group.tags is defined %}
+{%- for key,value in work_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for work_group in sceptre_user_data.work_groups %}
+{%- set work_group_name = work_group.name %}
+  {{ work_group_name }}:
+    Description: The name of the WorkGroup for {{ work_group_name }}
+    Value:
+      Ref: {{ work_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ work_group_name }}"
+
+  {{ work_group_name }}CreationTime:
+    Description: The date and time the workgroup {{ work_group_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ work_group_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ work_group_name }}-CreationTime"
+
+{%- endfor %}

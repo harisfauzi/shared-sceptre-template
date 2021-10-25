@@ -1,0 +1,48 @@
+Description: Athena Data Catalog(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for data_catalog in sceptre_user_data.data_catalogs %}
+{%- set data_catalog_name = data_catalog.name %}
+  {{ data_catalog_name }}:
+    Type: AWS::Athena::DataCatalog
+    DeletionPolicy: {{ data_catalog.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ data_catalog.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ data_catalog.data_catalog_name }}
+      Type: {{ data_catalog.type }}
+{%- if data_catalog.description is defined %}
+      Description: {{ data_catalog.description }}
+{%- endif %}
+{%- if data_catalog.parameters is defined %}
+      Parameters:
+{%- for key, value indata_catalog.parameters.items() %}
+        "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if data_catalog.tags is defined %}
+{%- for key,value in data_catalog.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for data_catalog in sceptre_user_data.data_catalogs %}
+{%- set data_catalog_name = data_catalog.name %}
+  {{ data_catalog_name }}:
+    Description: The name of the data catalog for {{ data_catalog_name }}
+    Value:
+      Ref: {{ data_catalog_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ data_catalog_name }}"
+
+{%- endfor %}
