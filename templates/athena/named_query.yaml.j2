@@ -1,0 +1,50 @@
+Description: Athena Named Query(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for named_query in sceptre_user_data.named_querys %}
+{%- set named_query_name = named_query.name %}
+  {{ named_query_name }}:
+    Type: AWS::Athena::NamedQuery
+    DeletionPolicy: {{ named_query.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ named_query.update_replace_policy | default('Delete') }}
+    Properties:
+      Database: {{ named_query.database }}
+      QueryString:
+{{ named_query.query_string | indent(width=8, first=true ) }}
+{%- if named_query.description is defined %}
+      Description: {{ named_query.description }}
+{%- endif %}
+{%- if named_query.named_query_name is defined %}
+      Name: {{ named_query.named_query_name }}
+{%- endif %}
+{%- if named_query.work_group is defined %}
+      WorkGroup: {{ named_query.work_group }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for named_query in sceptre_user_data.named_querys %}
+{%- set named_query_name = named_query.name %}
+  {{ named_query_name }}:
+    Description: The name for {{ named_query_name }}
+    Value:
+      Ref: {{ named_query_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ named_query_name }}"
+
+  {{ named_query_name }}NamedQueryId:
+    Description: The unique ID of the query for {{ named_query_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ named_query_name }}
+        - NamedQueryId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ named_query_name }}-NamedQueryId"
+
+{%- endfor %}

@@ -1,0 +1,34 @@
+Description: Athena Prepared Statement(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for prepared_statement in sceptre_user_data.prepared_statements %}
+{%- set prepared_statement_name = prepared_statement.name %}
+  {{ prepared_statement_name }}:
+    Type: AWS::Athena::PreparedStatement
+    DeletionPolicy: {{ prepared_statement.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ prepared_statement.update_replace_policy | default('Delete') }}
+    Properties:
+      QueryStatement: {{ prepared_statement.query_statement }}
+      StatementName: {{ prepared_statement.statement_name }}
+      WorkGroup: {{ prepared_statement.work_group }}
+{%- if prepared_statement.description is defined %}
+      Description: {{ prepared_statement.description }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for prepared_statement in sceptre_user_data.prepared_statements %}
+{%- set prepared_statement_name = prepared_statement.name %}
+  {{ prepared_statement_name }}:
+    Description: The name of the prepared statement for {{ prepared_statement_name }}
+    Value:
+      Ref: {{ prepared_statement_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ prepared_statement_name }}"
+
+{%- endfor %}

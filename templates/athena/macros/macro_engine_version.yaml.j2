@@ -1,0 +1,8 @@
+{%- macro prep(engine_version) %}
+{%- if engine_version.effective_engine_version is defined %}
+EffectiveEngineVersion: {{ engine_version.effective_engine_version }}
+{%- endif %}
+{%- if engine_version.selected_engine_version is defined %}
+SelectedEngineVersion: {{ engine_version.selected_engine_version }}
+{%- endif %}
+{%- endmacro %}
