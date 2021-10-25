@@ -1,0 +1,45 @@
+Description: RDS DB Cluster Parameter Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for db_cluster_parameter_group in sceptre_user_data.db_cluster_parameter_groups %}
+{%- set db_cluster_parameter_group_name = db_cluster_parameter_group.name %}
+  {{ db_cluster_parameter_group_name }}:
+    Type: AWS::RDS::DBClusterParameterGroup
+    DeletionPolicy: {{ db_cluster_parameter_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ db_cluster_parameter_group.update_replace_policy | default('Delete') }}
+    Properties:
+      Description: {{ db_cluster_parameter_group.description }}
+      Family: {{ db_cluster_parameter_group.family }}
+{%- if db_cluster_parameter_group.parameters_json is defined %}
+      Parameters: {{ db_cluster_parameter_group.parameters_json }}
+{%- else %}
+      Parameters:
+{{ db_cluster_parameter_group.parameters | indent(width=8, first=true) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if db_cluster_parameter_group.tags is defined %}
+{%- for key,value in db_cluster_parameter_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for db_cluster_parameter_group in sceptre_user_data.db_cluster_parameter_groups %}
+{%- set db_cluster_parameter_group_name = db_cluster_parameter_group.name %}
+  {{ db_cluster_parameter_group_name }}:
+    Description: The name of DB cluster parameter group for {{ db_cluster_parameter_group_name }}
+    Value:
+      Ref: {{ db_cluster_parameter_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_cluster_parameter_group_name }}"
+
+{%- endfor %}

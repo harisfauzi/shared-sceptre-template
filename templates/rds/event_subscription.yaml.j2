@@ -1,0 +1,47 @@
+Description: RDS Event Subscription(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for event_subscription in sceptre_user_data.event_subscriptions %}
+{%- set event_subscription_name = event_subscription.name %}
+  {{ event_subscription_name }}:
+    Type: AWS::RDS::EventSubscription
+    DeletionPolicy: {{ event_subscription.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ event_subscription.update_replace_policy | default('Delete') }}
+    Properties:
+      SnsTopicArn: {{ event_subscription.sns_topic_arn | trim }}
+{%- if event_subscription.enabled is defined %}
+      Enabled: {{ event_subscription.enabled }}
+{%- endif %}
+{%- if event_subscription.event_categories is defined %}
+      EventCategories:
+{%- for event_category in event_subscription.event_categories %}
+        - {{ event_category }}
+{%- endfor %}
+{%- endif %}
+{%- if event_subscription.source_ids is defined %}
+      SourceIds:
+{%- for source_id in event_subscription.source_ids %}
+        - {{ source_id | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if event_subscription.source_type is defined %}
+      SourceType: {{ event_subscription.source_type }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for event_subscription in sceptre_user_data.event_subscriptions %}
+{%- set event_subscription_name = event_subscription.name %}
+  {{ event_subscription_name }}:
+    Description: The name of the RDS event subscription for {{ event_subscription_name }}
+    Value:
+      Ref: {{ event_subscription_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_subscription_name }}"
+
+{%- endfor %}

@@ -1,0 +1,57 @@
+Description: RDS DB Security Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for db_security_group in sceptre_user_data.db_security_groups %}
+{%- set db_security_group_name = db_security_group.name %}
+  {{ db_security_group_name }}:
+    Type: AWS::RDS::DBSecurityGroup
+    DeletionPolicy: {{ db_security_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ db_security_group.update_replace_policy | default('Delete') }}
+    Properties:
+      DBSecurityGroupIngress:
+{%- for ingress in db_security_group.db_security_group_ingress %}
+        -
+{%- if ingress.cidr_ip is defined %}
+          CIDRIP: {{ ingress.cidr_ip }}
+{%- endif %}
+{%- if ingress.ec2_security_group_id is defined %}
+          EC2SecurityGroupId: {{ ingress.ec2_security_group_id }}
+{%- endif %}
+{%- if ingress.ec2_security_group_name is defined %}
+          EC2SecurityGroupName: {{ ingress.ec2_security_group_name }}
+{%- endif %}
+{%- if ingress.ec2_security_group_owner_id is defined %}
+          EC2SecurityGroupOwnerId: {{ ingress.ec2_security_group_owner_id }}
+{%- endif %}
+{%- endfor %}
+      GroupDescription: {{ db_security_group.group_description }}
+{%- if db_security_group.ec2_vpc_id is defined %}
+      EC2VpcId: {{ db_security_group.ec2_vpc_id }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if db_security_group.tags is defined %}
+{%- for key,value in db_security_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for db_security_group in sceptre_user_data.db_security_groups %}
+{%- set db_security_group_name = db_security_group.name %}
+  {{ db_security_group_name }}:
+    Description: The name of the DB security group for {{ db_security_group_name }}
+    Value:
+      Ref: {{ db_security_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_security_group_name }}"
+
+{%- endfor %}

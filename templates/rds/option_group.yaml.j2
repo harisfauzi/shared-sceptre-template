@@ -1,0 +1,76 @@
+Description: RDS Option Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for option_group in sceptre_user_data.option_groups %}
+{%- set option_group_name = option_group.name %}
+  {{ option_group_name }}:
+    Type: AWS::RDS::OptionGroup
+    DeletionPolicy: {{ option_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ option_group.update_replace_policy | default('Delete') }}
+    Properties:
+      EngineName: {{ option_group.engine_name }}
+      MajorEngineVersion: {{ option_group.major_engine_version }}
+      OptionGroupDescription: {{ option_group.option_group_description }}
+{%- if option_group.option_configurations is defined %}
+      OptionConfigurations:
+{%- for option_configuration in option_group.option_configurations %}
+        - OptionName: {{ option_configuration.option_name }}
+{%- if option_configuration.db_security_group_memberships is defined %}
+          DBSecurityGroupMemberships:
+{%- for db_security_group_name in option_configuration.db_security_group_memberships %}
+            - {{ db_security_group_name }}
+{%- endfor %}
+{%- endif %}
+{%- if option_configuration.option_settings is defined %}
+          OptionSettings:
+{%- for option_setting in option_configuration.option_settings %}
+            -
+{%- if option_setting.name is defined %}
+              Name: {{ option_setting.name }}
+{%- endif %}
+{%- if option_setting.value is defined %}
+              Value: {{ option_setting.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if option_configuration.option_version is defined %}
+          OptionVersion: {{ option_configuration.option_version }}
+{%- endif %}
+{%- if option_configuration.port is defined %}
+          Port: {{ option_configuration.port }}
+{%- endif %}
+{%- if option_configuration.vpc_security_group_memberships is defined %}
+          VpcSecurityGroupMemberships:
+{%- for vpc_security_group_name in option_configuration.vpc_security_group_memberships %}
+            - {{ vpc_security_group_name }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if option_group.tags is defined %}
+{%- for key,value in option_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for option_group in sceptre_user_data.option_groups %}
+{%- set option_group_name = option_group.name %}
+  {{ option_group_name }}:
+    Description: The name of the option group for {{ option_group_name }}
+    Value:
+      Ref: {{ option_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ option_group_name }}"
+
+{%- endfor %}

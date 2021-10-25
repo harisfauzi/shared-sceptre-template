@@ -1,0 +1,41 @@
+Description: RDS DB Security Group Ingress for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for db_security_group_ingress in sceptre_user_data.db_security_group_ingresss %}
+{%- set db_security_group_ingress_name = db_security_group_ingress.name %}
+  {{ db_security_group_ingress_name }}:
+    Type: AWS::RDS::DBSecurityGroupIngress
+    DeletionPolicy: {{ db_security_group_ingress.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ db_security_group_ingress.update_replace_policy | default('Delete') }}
+    Properties:
+      DBSecurityGroupName: {{ db_security_group_ingress.db_security_group_name }}
+{%- if db_security_group_ingress.cidr_ip is defined %}
+      CIDRIP: {{ db_security_group_ingress.cidr_ip }}
+{%- endif %}
+{%- if db_security_group_ingress.ec2_security_group_id is defined %}
+      EC2SecurityGroupId: {{ db_security_group_ingress.ec2_security_group_id | trim }}
+{%- endif %}
+{%- if db_security_group_ingress.ec2_security_group_name is defined %}
+      EC2SecurityGroupName: {{ db_security_group_ingress.ec2_security_group_name }}
+{%- endif %}
+{%- if db_security_group_ingress.ec2_security_group_owner_id is defined %}
+      EC2SecurityGroupOwnerId: {{ db_security_group_ingress.ec2_security_group_owner_id | trim }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for db_security_group_ingress in sceptre_user_data.db_security_group_ingresss %}
+{%- set db_security_group_ingress_name = db_security_group_ingress.name %}
+  {{ db_security_group_ingress_name }}:
+    Description: The DB security group that {{ db_security_group_ingress_name }} ingress rule is associated with
+    Value:
+      Ref: {{ db_security_group_ingress_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_security_group_ingress_name }}"
+
+{%- endfor %}

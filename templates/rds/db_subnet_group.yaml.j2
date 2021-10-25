@@ -1,0 +1,42 @@
+Description: RDS DB Subnet Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for db_subnet_group in sceptre_user_data.db_subnet_groups %}
+{%- set db_subnet_group_name = db_subnet_group.name %}
+  {{ db_subnet_group_name }}:
+    Type: AWS::RDS::DBSubnetGroup
+    DeletionPolicy: {{ db_subnet_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ db_subnet_group.update_replace_policy | default('Delete') }}
+    Properties:
+      DBSubnetGroupDescription: {{ db_subnet_group.db_subnet_group_description }}
+      SubnetIds:
+{%- for subnet_id in db_subnet_group.subnet_ids %}
+        - {{ subnet_id | trim }}
+{%- endfor %}
+      DBSubnetGroupName: {{ db_subnet_group.db_subnet_group_name }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if db_subnet_group.tags is defined %}
+{%- for key,value in db_subnet_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for db_subnet_group in sceptre_user_data.db_subnet_groups %}
+{%- set db_subnet_group_name = db_subnet_group.name %}
+  {{ db_subnet_group_name }}:
+    Description: The name of the DB subnet group for {{ db_subnet_group_name }}
+    Value:
+      Ref: {{ db_subnet_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_subnet_group_name }}"
+
+{%- endfor %}

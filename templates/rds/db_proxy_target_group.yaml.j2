@@ -1,0 +1,63 @@
+Description: RDS DB Proxy Target Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for db_proxy_target_group in sceptre_user_data.db_proxy_target_groups %}
+{%- set db_proxy_target_group_name = db_proxy_target_group.name %}
+  {{ db_proxy_target_group_name }}:
+    Type: AWS::RDS::DBProxyTargetGroup
+    DeletionPolicy: {{ db_proxy_target_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ db_proxy_target_group.update_replace_policy | default('Delete') }}
+    Properties:
+      DBProxyName: {{ db_proxy_target_group.db_proxy_name }}
+      TargetGroupName: {{ db_proxy_target_group.target_group_name }}
+{%- if db_proxy_target_group.connection_pool_configuration_info is defined %}  {# BEGIN {%- if db_proxy_target_group.connection_pool_configuration_info is defined %} #}
+      ConnectionPoolConfigurationInfo:
+{%- if db_proxy_target_group.connection_pool_configuration_info.connection_borrow_timeout is defined %}
+        ConnectionBorrowTimeout: {{ db_proxy_target_group.connection_pool_configuration_info.connection_borrow_timeout }}
+{%- endif %}
+{%- if db_proxy_target_group.connection_pool_configuration_info.init_query is defined %}
+        InitQuery: {{ db_proxy_target_group.connection_pool_configuration_info.init_query }}
+{%- endif %}
+{%- if db_proxy_target_group.connection_pool_configuration_info.max_connections_percent is defined %}
+        MaxConnectionsPercent: {{ db_proxy_target_group.connection_pool_configuration_info.max_connections_percent }}
+{%- endif %}
+{%- if db_proxy_target_group.connection_pool_configuration_info.max_idle_connections_percent is defined %}
+        MaxIdleConnectionsPercent: {{ db_proxy_target_group.connection_pool_configuration_info.max_idle_connections_percent }}
+{%- endif %}
+{%- if db_proxy_target_group.connection_pool_configuration_info.session_pinning_filters is defined %}
+        SessionPinningFilters:
+{%- for filter in db_proxy_target_group.connection_pool_configuration_info.session_pinning_filters %}
+          - {{ filter }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}  {# END {%- if db_proxy_target_group.connection_pool_configuration_info is defined %} #}
+{%- if db_proxy_target_group.db_cluster_identifiers is defined %}
+      DBClusterIdentifiers:
+{%- for db_cluster_identifier in db_proxy_target_group.db_cluster_identifiers %}
+        - {{ db_cluster_identifier }}
+{%- endfor %}
+{%- endif %}
+{%- if db_proxy_target_group.db_instance_identifiers is defined %}
+      DBInstanceIdentifiers:
+{%- for db_instance_identifier in db_proxy_target_group.db_instance_identifiers %}
+        - {{ db_instance_identifier }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for db_proxy_target_group in sceptre_user_data.db_proxy_target_groups %}
+{%- set db_proxy_target_group_name = db_proxy_target_group.name %}
+  {{ db_proxy_target_group_name }}:
+    Description: The ARN of the target group for {{ db_proxy_target_group_name }}
+    Value:
+      Ref: {{ db_proxy_target_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_proxy_target_group_name }}"
+
+{%- endfor %}
