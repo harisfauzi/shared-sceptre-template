@@ -1,0 +1,108 @@
+Description: RDS DB Proxy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for db_proxy in sceptre_user_data.db_proxys %}
+{%- set db_proxy_name = db_proxy.name %}
+  {{ db_proxy_name }}:
+    Type: AWS::RDS::DBProxy
+    DeletionPolicy: {{ db_proxy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ db_proxy.update_replace_policy | default('Delete') }}
+    Properties:
+      Auth:
+{%- for auth in db_proxy.auth %}
+        -
+{%- if auth.auth_scheme is defined %}
+          AuthScheme: {{ auth.auth_scheme }}
+{%- endif %}
+{%- if auth.description is defined %}
+          Description: {{ auth.description }}
+{%- endif %}
+{%- if auth.iam_auth is defined %}
+          IAMAuth: {{ auth.iam_auth }}
+{%- endif %}
+{%- if auth.secret_arn is defined %}
+          SecretArn: {{ auth.secret_arn | trim }}
+{%- endif %}
+{%- if auth.user_name is defined %}
+          UserName: {{ auth.user_name }}
+{%- endif %}
+{%- endfor %}
+      DBProxyName: {{ db_proxy.db_proxy_name }}
+      EngineFamily: {{ db_proxy.engine_family }}
+      RoleArn: {{ db_proxy.role_arn | trim }}
+      VpcSubnetIds:
+{%- for subnet_id in db_proxy.vpc_subnet_ids %}
+        - {{ subnet_id | trim }}
+{%- endfor %}
+{%- if db_proxy.debug_logging is defined %}
+      DebugLogging: {{ db_proxy.debug_logging }}
+{%- endif %}
+{%- if db_proxy.idle_client_timeout is defined %}
+      IdleClientTimeout: {{ db_proxy.idle_client_timeout }}
+{%- endif %}
+{%- if db_proxy.require_tls is defined %}
+      RequireTLS: {{ db_proxy.require_tls }}
+{%- endif %}
+{%- if db_proxy.vpc_security_group_ids is defined %}
+      VpcSecurityGroupIds:
+{%- for security_group_id in db_proxy.vpc_security_group_ids %}
+        - {{ security_group_id | trim }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if db_proxy.tags is defined %}
+{%- for key,value in db_proxy.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for db_proxy in sceptre_user_data.db_proxys %}
+{%- set db_proxy_name = db_proxy.name %}
+  {{ db_proxy_name }}:
+    Description: The DB proxy name for {{ db_proxy_name }}
+    Value:
+      Ref: {{ db_proxy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_proxy_name }}"
+
+  {{ db_proxy_name }}DBProxyArn:
+    Description: The ARN for {{ db_proxy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_proxy_name }}
+        - DBProxyArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_proxy_name }}-DBProxyArn"
+
+  {{ db_proxy_name }}Endpoint:
+    Description: The writer endpoint for the RDS DB instance or Aurora DB cluster for {{ db_proxy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_proxy_name }}
+        - Endpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_proxy_name }}-Endpoint"
+
+  {{ db_proxy_name }}VpcId:
+    Description: The VPC ID to associate with the DB proxy for {{ db_proxy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_proxy_name }}
+        - VpcId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_proxy_name }}-VpcId"
+
+{%- endfor %}

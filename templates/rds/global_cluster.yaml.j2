@@ -1,0 +1,46 @@
+Description: RDS Global Cluster(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for global_cluster in sceptre_user_data.global_clusters %}
+{%- set global_cluster_name = global_cluster.name %}
+  {{ global_cluster_name }}:
+    Type: AWS::RDS::GlobalCluster
+    DeletionPolicy: {{ global_cluster.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ global_cluster.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if global_cluster.deletion_protection is defined %}
+      DeletionProtection: {{ global_cluster.deletion_protection }}
+{%- endif %}
+{%- if global_cluster.engine is defined %}
+      Engine: {{ global_cluster.engine }}
+{%- endif %}
+{%- if global_cluster.engine_version is defined %}
+      EngineVersion: {{ global_cluster.engine_version }}
+{%- endif %}
+{%- if global_cluster.global_cluster_identifier is defined %}
+      GlobalClusterIdentifier: {{ global_cluster.global_cluster_identifier }}
+{%- endif %}
+{%- if global_cluster.source_db_cluster_identifier is defined %}
+      SourceDBClusterIdentifier: {{ global_cluster.source_db_cluster_identifier }}
+{%- endif %}
+{%- if global_cluster.storage_encrypted is defined %}
+      StorageEncrypted: {{ global_cluster.storage_encrypted }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for global_cluster in sceptre_user_data.global_clusters %}
+{%- set global_cluster_name = global_cluster.name %}
+  {{ global_cluster_name }}:
+    Description: The name of the global database cluster for {{ global_cluster_name }}
+    Value:
+      Ref: {{ global_cluster_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ global_cluster_name }}"
+
+{%- endfor %}

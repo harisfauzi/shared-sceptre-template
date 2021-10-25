@@ -1,0 +1,92 @@
+Description: RDS DB Proxy Endpoint(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for db_proxy_endpoint in sceptre_user_data.db_proxy_endpoints %}
+{%- set db_proxy_endpoint_name = db_proxy_endpoint.name %}
+  {{ db_proxy_endpoint_name }}:
+    Type: AWS::RDS::DBProxyEndpoint
+    DeletionPolicy: {{ db_proxy_endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ db_proxy_endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      DBProxyEndpointName: {{ db_proxy_endpoint.db_proxy_endpoint_name }}
+      DBProxyName: {{ db_proxy_endpoint.db_proxy_name }}
+      VpcSubnetIds:
+{%- for subnet_id in db_proxy_endpoint.vpc_subnet_ids %}
+        - {{ subnet_id | trim }}
+{%- endfor %}
+{%- if db_proxy_endpoint.target_role is defined %}
+      TargetRole: {{ db_proxy_endpoint.target_role }}
+{%- endif %}
+{%- if db_proxy_endpoint.vpc_security_group_ids is defined %}
+      VpcSecurityGroupIds:
+{%- for security_group_id in db_proxy_endpoint.vpc_security_group_ids %}
+        - {{ security_group_id }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if db_proxy_endpoint.tags is defined %}
+{%- for key,value in db_proxy_endpoint.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for db_proxy_endpoint in sceptre_user_data.db_proxy_endpoints %}
+{%- set db_proxy_endpoint_name = db_proxy_endpoint.name %}
+  {{ db_proxy_endpoint_name }}:
+    Description: The DB proxy endpoint name for {{ db_proxy_endpoint_name }}
+    Value:
+      Ref: {{ db_proxy_endpoint_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_proxy_endpoint_name }}"
+
+  {{ db_proxy_endpoint_name }}DBProxyEndpointArn:
+    Description: The ARN for {{ db_proxy_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_proxy_endpoint_name }}
+        - DBProxyEndpointArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_proxy_endpoint_name }}-DBProxyEndpointArn"
+
+  {{ db_proxy_endpoint_name }}Endpoint:
+    Description: The custom endpoint for the RDS DB instance or Aurora DB cluster for {{ db_proxy_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_proxy_endpoint_name }}
+        - Endpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_proxy_endpoint_name }}-Endpoint"
+
+  {{ db_proxy_endpoint_name }}IsDefault:
+    Description: Whether this endpoint is the default endpoint for the associated DB proxy {{ db_proxy_endpoint.db_proxy_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ db_proxy_endpoint_name }}
+        - IsDefault
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_proxy_endpoint_name }}-IsDefault"
+
+  {{ db_proxy_endpoint_name }}VpcId:
+    Description: The VPC ID of the DB proxy endpoint for {{ db_proxy_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_proxy_endpoint_name }}
+        - VpcId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_proxy_endpoint_name }}-VpcId"
+
+{%- endfor %}

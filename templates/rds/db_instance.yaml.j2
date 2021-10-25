@@ -1,0 +1,243 @@
+Description: RDS DB Instance(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+Parameters:
+{%- for db_instance in sceptre_user_data.db_instances %}
+{%- set db_instance_name = db_instance.name %}
+{%- if db_instance.master_user_password %}
+  {{ db_instance_name }}MasterUserPassword:
+    Type: String
+    Description: Master User Password for {{ db_instance_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endfor %}
+{%- endif %}
+
+Resources:
+
+{%- for db_instance in sceptre_user_data.db_instances %}
+{%- set db_instance_name = db_instance.name %}
+  {{ db_instance_name }}:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: {{ db_instance.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ db_instance.update_replace_policy | default('Delete') }}
+    Properties:
+      DBInstanceClass: {{ db_instance.db_instance_class }}
+      Engine: {{ db_instance.engine }}
+{%- if db_instance.allocated_storage is defined %}
+      AllocatedStorage: {{ db_instance.allocated_storage }}
+{%- endif %}
+{%- if db_instance.allow_major_version_upgrade is defined %}
+      AllowMajorVersionUpgrade: {{ db_instance.allow_major_version_upgrade }}
+{%- endif %}
+{%- if db_instance.associated_roles is defined %}
+      AssociatedRoles:
+{%- for associated_role in db_instance.associated_roles %}
+        - FeatureName: {{ associated_role.feature_name }}
+          RoleArn: {{ associated_role.role_arn }}
+{%- endfor %}
+{%- endif %}
+{%- if db_instance.auto_minor_version_upgrade is defined %}
+      AutoMinorVersionUpgrade: {{ db_instance.auto_minor_version_upgrade }}
+{%- endif %}
+{%- if db_instance.availability_zone is defined %}
+      AvailabilityZone: {{ db_instance.availability_zone }}
+{%- endif %}
+{%- if db_instance.backup_retention_period is defined %}
+      BackupRetentionPeriod: {{ db_instance.backup_retention_period }}
+{%- endif %}
+{%- if db_instance.ca_certificate_identifier is defined %}
+      CACertificateIdentifier: {{ db_instance.ca_certificate_identifier }}
+{%- endif %}
+{%- if db_instance.character_set_name is defined %}
+      CharacterSetName: {{ db_instance.character_set_name }}
+{%- endif %}
+{%- if db_instance.copy_tags_to_snapshot is defined %}
+      CopyTagsToSnapshot: {{ db_instance.copy_tags_to_snapshot }}
+{%- endif %}
+{%- if db_instance.db_cluster_identifier is defined %}
+      DBClusterIdentifier: {{ db_instance.db_cluster_identifier }}
+{%- endif %}
+{%- if db_instance.db_instance_identifier is defined %}
+      DBInstanceIdentifier: {{ db_instance.db_instance_identifier }}
+{%- endif %}
+{%- if db_instance.db_name is defined %}
+      DBName: {{ db_instance.db_name }}
+{%- endif %}
+{%- if db_instance.db_parameter_group_name is defined %}
+      DBParameterGroupName: {{ db_instance.db_parameter_group_name }}
+{%- endif %}
+{%- if db_instance.db_security_groups is defined %}
+      DBSecurityGroups:
+{%- for security_group in db_instance.db_security_groups %}
+        - {{ security_group }}
+{%- endfor %}
+{%- endif %}
+{%- if db_instance.db_snapshot_identifier is defined %}
+      DBSnapshotIdentifier: {{ db_instance.db_snapshot_identifier }}
+{%- endif %}
+{%- if db_instance.db_subnet_group_name is defined %}
+      DBSubnetGroupName: {{ db_instance.db_subnet_group_name }}
+{%- endif %}
+{%- if db_instance.delete_automated_backups is defined %}
+      DeleteAutomatedBackups: {{ db_instance.delete_automated_backups }}
+{%- endif %}
+{%- if db_instance.deletion_protection is defined %}
+      DeletionProtection: {{ db_instance.deletion_protection }}
+{%- endif %}
+{%- if db_instance.domain is defined %}
+      Domain: {{ db_instance.domain }}
+{%- endif %}
+{%- if db_instance.domain_iam_role_name is defined %}
+      DomainIAMRoleName: {{ db_instance.domain_iam_role_name }}
+{%- endif %}
+{%- if db_instance.enable_cloudwatch_logs_exports is defined %}
+      EnableCloudwatchLogsExports:
+{%- for cloudwatch_log_export in db_instance.enable_cloudwatch_logs_exports %}
+        - {{ cloudwatch_log_export }}
+{%- endfor %}
+{%- endif %}
+{%- if db_instance.enable_iam_database_authentication is defined %}
+      EnableIAMDatabaseAuthentication: {{ db_instance.enable_iam_database_authentication }}
+{%- endif %}
+{%- if db_instance.enable_performance_insights is defined %}
+      EnablePerformanceInsights: {{ db_instance.enable_performance_insights }}
+{%- endif %}
+{%- if db_instance.engine_version is defined %}
+      EngineVersion: {{ db_instance.engine_version }}
+{%- endif %}
+{%- if db_instance.iops is defined %}
+      Iops: {{ db_instance.iops }}
+{%- endif %}
+{%- if db_instance.kms_key_id is defined %}
+      KmsKeyId: {{ db_instance.kms_key_id }}
+{%- endif %}
+{%- if db_instance.license_model is defined %}
+      LicenseModel: {{ db_instance.license_model }}
+{%- endif %}
+{%- if db_instance.master_username is defined %}
+      MasterUsername: {{ db_instance.master_username }}
+{%- endif %}
+{%- if db_instance.master_user_password is defined %}
+      MasterUserPassword:
+        Ref: {{ db_instance_name }}MasterUserPassword
+{%- endif %}
+{%- if db_instance.max_allocated_storage is defined %}
+      MaxAllocatedStorage: {{ db_instance.max_allocated_storage }}
+{%- endif %}
+{%- if db_instance.monitoring_interval is defined %}
+      MonitoringInterval: {{ db_instance.monitoring_interval }}
+{%- endif %}
+{%- if db_instance.monitoring_role_arn is defined %}
+      MonitoringRoleArn: {{ db_instance.monitoring_role_arn }}
+{%- endif %}
+{%- if db_instance.multi_az is defined %}
+      MultiAZ: {{ db_instance.multi_az }}
+{%- endif %}
+{%- if db_instance.option_group_name is defined %}
+      OptionGroupName: {{ db_instance.option_group_name }}
+{%- endif %}
+{%- if db_instance.performance_insights_kms_key_id is defined %}
+      PerformanceInsightsKMSKeyId: {{ db_instance.performance_insights_kms_key_id }}
+{%- endif %}
+{%- if db_instance.performance_insights_retention_period is defined %}
+      PerformanceInsightsRetentionPeriod: {{ db_instance.performance_insights_retention_period }}
+{%- endif %}
+{%- if db_instance.port is defined %}
+      Port: {{ db_instance.port }}
+{%- endif %}
+{%- if db_instance.preferred_backup_window is defined %}
+      PreferredBackupWindow: {{ db_instance.preferred_backup_window }}
+{%- endif %}
+{%- if db_instance.preferred_maintenance_window is defined %}
+      PreferredMaintenanceWindow: {{ db_instance.preferred_maintenance_window }}
+{%- endif %}
+{%- if db_instance.processor_features is defined %}
+      ProcessorFeatures:
+{%- for processor_feature in db_instance.processor_features %}
+        -
+{%- if processor_feature.name is defined %}
+          Name: {{ processor_feature.name }}
+{%- endif %}
+{%- if processor_feature.value is defined %}
+          Value: {{ processor_feature.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if db_instance.promotion_tier is defined %}
+      PromotionTier: {{ db_instance.promotion_tier }}
+{%- endif %}
+{%- if db_instance.publicly_accessible is defined %}
+      PubliclyAccessible: {{ db_instance.publicly_accessible }}
+{%- endif %}
+{%- if db_instance.source_db_instance_identifier is defined %}
+      SourceDBInstanceIdentifier: {{ db_instance.source_db_instance_identifier }}
+{%- endif %}
+{%- if db_instance.source_region is defined %}
+      SourceRegion: {{ db_instance.source_region }}
+{%- endif %}
+{%- if db_instance.storage_encrypted is defined %}
+      StorageEncrypted: {{ db_instance.storage_encrypted }}
+{%- endif %}
+{%- if db_instance.storage_type is defined %}
+      StorageType: {{ db_instance.storage_type }}
+{%- endif %}
+{%- if db_instance.timezone is defined %}
+      Timezone: {{ db_instance.timezone }}
+{%- endif %}
+{%- if db_instance.use_default_processor_features is defined %}
+      UseDefaultProcessorFeatures: {{ db_instance.use_default_processor_features }}
+{%- endif %}
+{%- if db_instance.vpc_security_groups is defined %}
+      VPCSecurityGroups:
+{%- for security_group_id in db_instance.vpc_security_groups %}
+        - {{ security_group_id }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if db_instance.tags is defined %}
+{%- for key,value in db_instance.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for db_instance in sceptre_user_data.db_instances %}
+{%- set db_instance_name = db_instance.name %}
+  {{ db_instance_name }}:
+    Description: The DB instance name for {{ db_instance_name }}
+    Value:
+      Ref: {{ db_instance_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}"
+
+  {{ db_instance_name }}EndpointAddress:
+    Description: The connection endpoint for {{ db_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_instance_name }}
+        - Endpoint.Address
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}-Endpoint.Address"
+
+  {{ db_instance_name }}EndpointPort:
+    Description: The port number for {{ db_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_instance_name }}
+        - Endpoint.Port
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}-EndpointPort"
+
+{%- endfor %}
