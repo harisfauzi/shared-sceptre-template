@@ -1,0 +1,11 @@
+{%- macro prep(vpc_configuration) %}
+RoleARN: {{ vpc_configuration.role_arn | trim }}
+SecurityGroupIds:
+{%- for security_group_id in vpc_configuration.security_group_ids %}
+  - {{ security_group_id | trim }}
+{%- endfor %}
+SubnetIds:
+{%- for subnet_id in vpc_configuration.subnet_ids %}
+  - {{ subnet_id | trim }}
+{%- endfor %}
+{%- endmacro %}

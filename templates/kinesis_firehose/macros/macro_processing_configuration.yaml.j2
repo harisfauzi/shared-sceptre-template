@@ -1,0 +1,18 @@
+{%- macro prep(processing_configuration) %}
+{%- if processing_configuration.enabled is defined %}
+Enabled: {{ processing_configuration.enabled }}
+{%- endif %}
+{%- if processing_configuration.processors is defined %}
+Processors:
+{%- for processor in processing_configuration.processors %}
+  - Type: {{ processor.type }}
+{%- if processor.parameters is defined %}
+    Parameters:
+{%- for processor_parameter in processor.parameters %}
+      - ParameterName: {{ processor_parameter.parameter_name }}
+        ParameterValue: {{ processor_parameter.parameter_value }}
+{%- endfor %}
+{%- endif %}
+{% endfor %}
+{%- endif %}
+{%- endmacro %}

@@ -1,0 +1,37 @@
+{%- import 'macros/macro_cloud_watch_logging_options.yaml.j2' as macro_cloud_watch_logging_options1 %}
+{%- macro prep(s3_destination_configuration) %}
+BucketARN: {{ s3_destination_configuration.bucket_arn | trim }}
+RoleARN: {{ s3_destination_configuration.role_arn | trim }}
+{%- if s3_destination_configuration.buffering_hints is defined %}
+BufferingHints:
+{%-if s3_destination_configuration.buffering_hints.interval_in_seconds is defined %}
+  IntervalInSeconds: {{ s3_destination_configuration.buffering_hints.interval_in_seconds }}
+{%- endif %}
+{%-if s3_destination_configuration.buffering_hints.size_in_mbs is defined %}
+  SizeInMBs: {{ s3_destination_configuration.buffering_hints.size_in_mbs }}
+{%- endif %}
+{%- endif %}
+{%- if s3_destination_configuration.cloud_watch_logging_options is defined %}
+CloudWatchLoggingOptions:
+{{ macro_cloud_watch_logging_options1.prep(s3_destination_configuration.cloud_watch_logging_options) | indent(width=2, first=True) }}
+{%- endif %}
+{%- if s3_destination_configuration.compression_format is defined %}
+CompressionFormat: {{ s3_destination_configuration.compression_format }}
+{%- endif %}
+{%- if s3_destination_configuration.encryption_configuration is defined %}
+EncryptionConfiguration:
+{%- if s3_destination_configuration.encryption_configuration.kms_encryption_config is defined %}
+  KMSEncryptionConfig:
+    AWSKMSKeyARN: {{ s3_destination_configuration.encryption_configuration.kms_encryption_config.aws_kms_key_arn }}
+{%- endif %}
+{%- if s3_destination_configuration.encryption_configuration.no_encryption_config is defined %}
+  NoEncryptionConfig: {{ s3_destination_configuration.encryption_configuration.no_encryption_config }}
+{%- endif %}
+{%- endif %}
+{%- if s3_destination_configuration.error_output_prefix is defined %}
+ErrorOutputPrefix: {{ s3_destination_configuration.error_output_prefix }}
+{%- endif %}
+{%- if s3_destination_configuration.prefix is defined %}
+Prefix: {{ s3_destination_configuration.prefix }}
+{%- endif %}
+{%- endmacro %}
