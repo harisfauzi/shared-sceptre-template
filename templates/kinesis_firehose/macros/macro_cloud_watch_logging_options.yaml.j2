@@ -1,0 +1,11 @@
+{%- macro prep(cloud_watch_logging_options) %}
+{%- if cloud_watch_logging_options.enabled is defined %}
+Enabled: {{ cloud_watch_logging_options.enabled }}
+{%- endif %}
+{%- if cloud_watch_logging_options.log_group_name is defined %}
+LogGroupName: {{ cloud_watch_logging_options.log_group_name }}
+{%- endif %}
+{%- if cloud_watch_logging_options.log_stream_name is defined %}
+LogStreamName: {{ cloud_watch_logging_options.log_stream_name }}
+{%- endif %}
+{%- endmacro %}
