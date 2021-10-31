@@ -1,0 +1,80 @@
+Description: Kinesis Stream Consumer(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for stream_consumer in sceptre_user_data.stream_consumers %}
+{%- set stream_consumer_name = stream_consumer.name %}
+  {{ stream_consumer_name }}:
+    Type: AWS::Kinesis::StreamConsumer
+    DeletionPolicy: {{ stream_consumer.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ stream_consumer.update_replace_policy | default('Delete') }}
+    Properties:
+      ConsumerName: {{ stream_consumer.consumer_name }}
+      StreamARN: {{ stream_consumer.stream_arn | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for stream_consumer in sceptre_user_data.stream_consumers %}
+{%- set stream_consumer_name = stream_consumer.name %}
+  {{ stream_consumer_name }}:
+    Description: The consumer ARN for {{ stream_consumer_name }}
+    Value:
+      Ref: {{ stream_consumer_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stream_consumer_name }}"
+
+  {{ stream_consumer_name }}ConsumerARN:
+    Description: The ARN for {{ stream_consumer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ stream_consumer_name }}
+        - ConsumerARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stream_consumer_name }}-ConsumerARN"
+
+  {{ stream_consumer_name }}ConsumerCreationTimestamp:
+    Description: The Consumer ARN for {{ stream_consumer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ stream_consumer_name }}
+        - ConsumerCreationTimestamp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stream_consumer_name }}-ConsumerCreationTimestamp"
+
+  {{ stream_consumer_name }}ConsumerName:
+    Description: The name you gave the consumer when you registered it for {{ stream_consumer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ stream_consumer_name }}
+        - ConsumerName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stream_consumer_name }}-ConsumerName"
+
+  {{ stream_consumer_name }}ConsumerStatus:
+    Description: The Consumer Status for {{ stream_consumer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ stream_consumer_name }}
+        - ConsumerStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stream_consumer_name }}-ConsumerStatus"
+
+  {{ stream_consumer_name }}StreamARN:
+    Description: The ARN of the data stream with which the consumer is registered for {{ stream_consumer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ stream_consumer_name }}
+        - StreamARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stream_consumer_name }}-StreamARN"
+
+{%- endfor %}

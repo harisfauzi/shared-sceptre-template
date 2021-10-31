@@ -1,0 +1,59 @@
+Description: Kinesis Stream(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for stream in sceptre_user_data.streams %}
+{%- set stream_name = stream.name %}
+  {{ stream_name }}:
+    Type: AWS::Kinesis::Stream
+    DeletionPolicy: {{ stream.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ stream.update_replace_policy | default('Delete') }}
+    Properties:
+      ShardCount: {{ stream.shard_count }}
+{%- if stream.stream_name is defined %}
+      Name: {{ stream.stream_name }}
+{%- endif %}
+{%- if stream.retention_period_hours is defined %}
+      RetentionPeriodHours: {{ stream.retention_period_hours }}
+{%- endif %}
+{%- if stream.stream_encryption is defined %}
+      StreamEncryption:
+        EncryptionType: {{ stream.stream_encryption.encryption_type }}
+        KeyId: {{ stream.stream_encryption.key_id | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if stream.tags is defined %}
+{%- for key,value in stream.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for stream in sceptre_user_data.streams %}
+{%- set stream_name = stream.name %}
+  {{ stream_name }}:
+    Description: The stream name (physical ID) for {{ stream_name }}
+    Value:
+      Ref: {{ stream_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stream_name }}"
+
+  {{ stream_name }}Arn:
+    Description: The ARN for {{ stream_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ stream_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stream_name }}-Arn"
+
+{%- endfor %}
