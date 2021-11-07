@@ -21,4 +21,5 @@ These are reusable Jinja2 templates for [sceptre](https://sceptre.cloudreach.com
            Project: {{ stack_group_config.project_code }}
    ```
 
+   For more examples please visit https://github.com/harisfauzi/shared-sceptre-template-examples/
    
