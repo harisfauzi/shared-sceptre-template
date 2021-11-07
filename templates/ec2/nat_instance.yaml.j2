@@ -81,7 +81,9 @@ Resources:
       IamInstanceProfile: {{ nat_instance.instance_profile_name }}
       ImageId: {{ nat_instance.image_id | trim }}
       InstanceType: t3a.nano
+{%- if nat_instance.ec2_key_pair is defined %}
       KeyName: {{ nat_instance.ec2_key_pair }}
+{%- endif %}
       NetworkInterfaces:
         - AssociatePublicIpAddress: True
           DeleteOnTermination: True
