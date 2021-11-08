@@ -94,6 +94,23 @@ Resources:
 {%- if client_vpn_endpoint.vpn_port is defined %}
       VpnPort: {{ client_vpn_endpoint.vpn_port }}
 {%- endif %}
+{%- if client_vpn_endpoint.target_network_associations is defined %}  {# BEGIN {%- if client_vpn_endpoint.target_network_associations is defined %} #}
+{%- set ns1 = namespace() %}
+{%- set ns1.ii = 0 %}
+{%- for subnet_id in client_vpn_endpoint.target_network_associations %}
+{%- set ns1.ii = ns1.ii + 1 %}
+
+  {{ client_vpn_endpoint_name ~ "Target" ~ ("%03d" % ns1.ii) }}:
+    Type: AWS::EC2::ClientVpnTargetNetworkAssociation
+    DeletionPolicy: {{ client_vpn_endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ client_vpn_endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      ClientVpnEndpointId:
+        Ref: {{ client_vpn_endpoint_name }}
+      SubnetId: {{ subnet_id | trim }}
+
+{%- endfor %}
+{%- endif %}  {# END {%- if client_vpn_endpoint.target_network_associations is defined %}#}
 
 {%- endfor %}
 
@@ -108,5 +125,22 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ client_vpn_endpoint_name }}"
+
+{%- if client_vpn_endpoint.target_network_associations is defined %}  {# BEGIN {%- if client_vpn_endpoint.target_network_associations is defined %} #}
+{%- set ns1 = namespace() %}
+{%- set ns1.ii = 0 %}
+{%- for subnet_id in client_vpn_endpoint.target_network_associations %}
+{%- set ns1.ii = ns1.ii + 1 %}
+
+  {{ client_vpn_endpoint_name ~ "Target" ~ ("%03d" % ns1.ii) }}:
+    Description: The association ID for ClientVpnTargetNetworkAssociation {{ client_vpn_endpoint_name }}
+    Value:
+      Ref: {{ client_vpn_endpoint_name ~ "Target" ~ ("%03d" % ns1.ii) }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ client_vpn_endpoint_name ~ "Target" ~ ("%03d" % ns1.ii) }}"
+
+{%- endfor %}
+{%- endif %}  {# END {%- if client_vpn_endpoint.target_network_associations is defined %}#}
 
 {%- endfor %}
