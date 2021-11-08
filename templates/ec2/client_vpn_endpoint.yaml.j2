@@ -1,0 +1,112 @@
+Description: EC2 Client Vpn Endpoint(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for client_vpn_endpoint in sceptre_user_data.client_vpn_endpoints %}
+{%- set client_vpn_endpoint_name = client_vpn_endpoint.name %}
+  {{ client_vpn_endpoint_name }}:
+    Type: AWS::EC2::ClientVpnEndpoint
+    DeletionPolicy: {{ client_vpn_endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ client_vpn_endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      AuthenticationOptions:
+{%- for authentication_option in client_vpn_endpoint.authentication_options %}  {# BEGIN {%- for authentication_option in client_vpn_endpoint.authentication_options %} #}
+        - Type: {{ authentication_option.type }}
+{%- if authentication_option.active_directory is defined %}
+          ActiveDirectory:
+            DirectoryId: {{ authentication_option.active_directory.directory_id | trim }}
+{%- endif %}
+{%- if authentication_option.federated_authentication is defined %}
+          FederatedAuthentication:
+            SAMLProviderArn: {{ authentication_option.federated_authentication.saml_provider_arn | trim }}
+{%- if authentication_option.federated_authentication.self_service_saml_provider_arn is defined %}
+            SelfServiceSAMLProviderArn: {{ authentication_option.federated_authentication.self_service_saml_provider_arn | trim }}
+{%- endif %}
+{%- endif %}
+{%- if authentication_option.mutual_authentication is defined %}
+          MutualAuthentication:
+            ClientRootCertificateChainArn: {{ authentication_option.mutual_authentication.client_root_certificate_chain_arn | trim }}
+{%- endif %}
+{%- endfor %}  {# END {%- for authentication_option in client_vpn_endpoint.authentication_options %} #}
+      ClientCidrBlock: {{ client_vpn_endpoint.client_cidr_block }}
+      ConnectionLogOptions:
+        Enabled: {{ client_vpn_endpoint.connection_log_options.enabled }}
+{%- if client_vpn_endpoint.connection_log_options.cloud_watch_log_group is defined %}
+        CloudwatchLogGroup: {{ client_vpn_endpoint.connection_log_options.cloud_watch_log_group }}
+{%- endif %}
+{%- if client_vpn_endpoint.connection_log_options.cloud_watch_log_stream is defined %}
+        CloudwatchLogStream: {{ client_vpn_endpoint.connection_log_options.cloud_watch_log_stream }}
+{%- endif %}
+      ServerCertificateArn: {{ client_vpn_endpoint.server_certificate_arn | trim }}
+{%- if client_vpn_endpoint.client_connect_options is defined %}  {# BEGIN {%- if client_vpn_endpoint.client_connect_options is defined %} #}
+      ClientConnectOptions:
+{%- if client_vpn_endpoint.client_connect_options.enabled is defined %}
+        Enabled: {{ client_vpn_endpoint.client_connect_options.enabled }}
+{%- endif %}
+{%- if client_vpn_endpoint.client_connect_options.lambda_function_arn is defined %}
+        LambdaFunctionArn: {{ client_vpn_endpoint.client_connect_options.lambda_function_arn | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if client_vpn_endpoint.client_connect_options is defined %} #}
+{%- if client_vpn_endpoint.description is defined %}
+      Description: {{ client_vpn_endpoint.description }}
+{%- endif %}
+{%- if client_vpn_endpoint.dns_servers is defined %}
+      DnsServers:
+{%- for dns_server in client_vpn_endpoint.dns_servers %}
+        - {{ dns_server }}
+{%- endfor %}
+{%- endif %}
+{%- if client_vpn_endpoint.security_group_ids is defined %}
+      SecurityGroupIds:
+{%- for security_group_id in client_vpn_endpoint.security_group_ids %}
+        - {{ security_group_id | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if client_vpn_endpoint.self_service_portal is defined %}
+      SelfServicePortal: {{ client_vpn_endpoint.self_service_portal }}
+{%- endif %}
+{%- if client_vpn_endpoint.split_tunnel is defined %}
+      SplitTunnel: {{ client_vpn_endpoint.split_tunnel }}
+{%- endif %}
+{%- if client_vpn_endpoint.tag_specifications is defined %}  {# BEGIN {%- if client_vpn_endpoint.tag_specifications is defined %} #}
+      TagSpecifications:
+{%- for tag_specification in client_vpn_endpoint.tag_specifications %}
+        -
+{%- if tag_specification.resource_type is defined %}
+          ResourceType: {{ tag_specification.resource_type }}
+{%- endif %}
+{%- if tag_specification.tags is defined %}
+          Tags:
+{%- for key, value in tag_specification.tags.items() %}
+            - Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if client_vpn_endpoint.tag_specifications is defined %} #}
+{%- if client_vpn_endpoint.transport_protocol is defined %}
+      TransportProtocol: {{ client_vpn_endpoint.transport_protocol }}
+{%- endif %}
+{%- if client_vpn_endpoint.vpc_id is defined %}
+      VpcId: {{ client_vpn_endpoint.vpc_id | trim }}
+{%- endif %}
+{%- if client_vpn_endpoint.vpn_port is defined %}
+      VpnPort: {{ client_vpn_endpoint.vpn_port }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for client_vpn_endpoint in sceptre_user_data.client_vpn_endpoints %}
+{%- set client_vpn_endpoint_name = client_vpn_endpoint.name %}
+  {{ client_vpn_endpoint_name }}:
+    Description: The Client VPN endpoint ID for {{ client_vpn_endpoint_name }}
+    Value:
+      Ref: {{ client_vpn_endpoint_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ client_vpn_endpoint_name }}"
+
+{%- endfor %}
