@@ -1,0 +1,20 @@
+Description: EC2 Client VPN Route(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for client_vpn_route in sceptre_user_data.client_vpn_routes %}
+{%- set client_vpn_route_name = client_vpn_route.name %}
+  {{ client_vpn_route_name }}:
+    Type: AWS::EC2::ClientVpnRoute
+    DeletionPolicy: {{ client_vpn_route.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ client_vpn_route.update_replace_policy | default('Delete') }}
+    Properties:
+      ClientVpnEndpointId: {{ client_vpn_route.client_vpn_endpoint_id | trim }}
+      DestinationCidrBlock: {{ client_vpn_route.destination_cidr_block }}
+      TargetVpcSubnetId: {{ client_vpn_route.target_vpc_subnet_id | trim }}
+{%- if client_vpn_route.description is defined %}
+      Description: String
+{%- endif %}
+
+{%- endfor %}
