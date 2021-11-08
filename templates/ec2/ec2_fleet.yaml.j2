@@ -1,0 +1,165 @@
+Description: EC2 EC2Fleet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for role in sceptre_user_data.roles %}
+{%- set role_name = role.name %}
+  {{ role_name }}:
+    Type: AWS::EC2::EC2Fleet
+    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+    Properties:
+      LaunchTemplateConfigs: 
+        -
+          LaunchTemplateSpecification: 
+            LaunchTemplateId: String
+            LaunchTemplateName: String
+            Version: String
+          Overrides: 
+            - FleetLaunchTemplateOverridesRequest
+              AvailabilityZone: String
+              InstanceRequirements: 
+                AcceleratorCount: 
+                  Max: Integer
+                  Min: Integer
+                AcceleratorManufacturers: 
+                  - String
+                AcceleratorNames: 
+                  - String
+                AcceleratorTotalMemoryMiB: 
+                  Max: Integer
+                  Min: Integer
+                AcceleratorTypes: 
+                  - String
+                BareMetal: String
+                BaselineEbsBandwidthMbps: 
+                  Max: Integer
+                  Min: Integer
+                BurstablePerformance: String
+                CpuManufacturers: 
+                  - String
+                ExcludedInstanceTypes: 
+                  - String
+                InstanceGenerations: 
+                  - String
+                LocalStorage: String
+                LocalStorageTypes: 
+                  - String
+                MemoryGiBPerVCpu: 
+                  Max: Double
+                  Min: Double
+                MemoryMiB: 
+                  Max: Integer
+                  Min: Integer
+                NetworkInterfaceCount: 
+                  Max: Integer
+                  Min: Integer
+                OnDemandMaxPricePercentageOverLowestPrice: Integer
+                RequireHibernateSupport: Boolean
+                SpotMaxPricePercentageOverLowestPrice: Integer
+                TotalLocalStorageGB: 
+                  Max: Double
+                  Min: Double
+                VCpuCount: 
+                  Max: Integer
+                  Min: Integer
+              InstanceType: String
+              MaxPrice: String
+              Placement: 
+                Affinity: String
+                AvailabilityZone: String
+                GroupName: String
+                HostId: String
+                HostResourceGroupArn: String
+                PartitionNumber: Integer
+                SpreadDomain: String
+                Tenancy: String
+              Priority: Double
+              SubnetId: String
+              WeightedCapacity: Double
+      TargetCapacitySpecification: 
+        DefaultTargetCapacityType: String
+        OnDemandTargetCapacity: Integer
+        SpotTargetCapacity: Integer
+        TargetCapacityUnitType: String
+        TotalTargetCapacity: Integer
+      Context: String
+      ExcessCapacityTerminationPolicy: String
+      OnDemandOptions: 
+        AllocationStrategy: String
+        CapacityReservationOptions: 
+          UsageStrategy: String
+        MaxTotalPrice: String
+        MinTargetCapacity: Integer
+        SingleAvailabilityZone: Boolean
+        SingleInstanceType: Boolean
+      ReplaceUnhealthyInstances: Boolean
+      SpotOptions: 
+        AllocationStrategy: String
+        InstanceInterruptionBehavior: String
+        InstancePoolsToUseCount: Integer
+        MaintenanceStrategies: 
+          CapacityRebalance: 
+            ReplacementStrategy: String
+            TerminationDelay: Integer
+        MaxTotalPrice: String
+        MinTargetCapacity: Integer
+        SingleAvailabilityZone: Boolean
+        SingleInstanceType: Boolean
+{%- if capacity_reservation_fleet.tag_specifications is defined %}  {# BEGIN {%- if capacity_reservation_fleet.tag_specifications is defined %} #}
+      TagSpecifications:
+{%- for tag_specification in capacity_reservation_fleet.tag_specifications %}
+        -
+{%- if tag_specification.resource_type is defined %}
+          ResourceType: {{ tag_specification.resource_type }}
+{%- endif %}
+{%- if tag_specification.tags is defined %}
+          Tags:
+{%- for key, value in tag_specification.tags.items() %}
+            - Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if capacity_reservation_fleet.tag_specifications is defined %} #}
+      TerminateInstancesWithExpiration: Boolean
+      Type: String
+      ValidFrom: String
+      ValidUntil: String
+
+{%- endfor %}
+
+Outputs:
+
+{%- for role in sceptre_user_data.roles %}
+{%- set role_name = role.name %}
+  {{ role_name }}:
+    Description: Role Name for {{ role_name }}
+    Value:
+      Ref: {{ role_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
+
+  {{ role_name }}Arn:
+    Description: The ARN for {{ role_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ role_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
+
+  {{ role_name }}RoleId:
+    Description: The Role Id for {{ role_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ role_name }}
+        - RoleId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+
+{%- endfor %}
