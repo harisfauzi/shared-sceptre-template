@@ -10,7 +10,7 @@ Resources:
     DeletionPolicy: {{ carrier_gateway.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ carrier_gateway.update_replace_policy | default('Delete') }}
     Properties:
-      VpcId: {{ carrier_gateway.vpc_id }}
+      VpcId: {{ carrier_gateway.vpc_id | trim }}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}

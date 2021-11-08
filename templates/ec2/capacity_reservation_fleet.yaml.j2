@@ -27,7 +27,7 @@ Resources:
           AvailabilityZone: {{ instance_type_specification.availability_zone }}
 {%- endif %}
 {%- if instance_type_specification.availability_zone_id is defined %}
-          AvailabilityZoneId: {{ instance_type_specification.availability_zone_id }}
+          AvailabilityZoneId: {{ instance_type_specification.availability_zone_id | trim }}
 {%- endif %}
 {%- if instance_type_specification.ebs_optimized is defined %}
           EbsOptimized: {{ instance_type_specification.ebs_optimized }}
