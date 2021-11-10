@@ -1,0 +1,62 @@
+---
+Description: Events Connection(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for connection in sceptre_user_data.connections %}
+{%- set connection_name = connection.name %}
+  {{ connection_name }}:
+    Type: AWS::Events::Connection
+    DeletionPolicy: {{ connection.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ connection.update_replace_policy | default('Delete') }}
+    Properties:
+      AuthorizationType: {{ connection.authorization_type }}
+{%- if connection.auth_parameters_json is defined %}
+      AuthParameters: {{ connection.auth_parameters_json }}
+{%- elif connection.auth_parameters is defined %}
+      AuthParameters:
+{{ connection.auth_parameters | indent(width=8, first=true) }}
+{%- endif %}
+{%- if connection.description is defined %}
+      Description: {{ connection.description }}
+{%- endif %}
+{%- if connection.connection_name is defined %}
+      Name: {{ connection.connection_name }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for connection in sceptre_user_data.connections %}
+{%- set connection_name = connection.name %}
+  {{ connection_name }}:
+    Description: Connection name for connection {{ connection_name }}
+    Value:
+      Ref: {{ connection_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_name }}"
+
+  {{ connection_name }}Arn:
+    Description: The ARN for {{ connection_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_name }}-Arn"
+
+  {{ connection_name }}SecretArn:
+    Description: The Sectret ARN for {{ connection_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_name }}
+        - SecretArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_name }}-SecretArn"
+
+{%- endfor %}
