@@ -1,0 +1,29 @@
+Description: EC2 Egress Only Internet Gateway(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for egress_only_internet_gateway in sceptre_user_data.egress_only_internet_gateways %}
+{%- set egress_only_internet_gateway_name = egress_only_internet_gateway.name %}
+  {{ egress_only_internet_gateway_name }}:
+    Type: AWS::EC2::EgressOnlyInternetGateway
+    DeletionPolicy: {{ egress_only_internet_gateway.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ egress_only_internet_gateway.update_replace_policy | default('Delete') }}
+    Properties:
+      VpcId: {{ egress_only_internet_gateway.vpc_id | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for egress_only_internet_gateway in sceptre_user_data.egress_only_internet_gateways %}
+{%- set egress_only_internet_gateway_name = egress_only_internet_gateway.name %}
+  {{ egress_only_internet_gateway_name }}:
+    Description: The ID of the egress-only internet gateway {{ egress_only_internet_gateway_name }}
+    Value:
+      Ref: {{ egress_only_internet_gateway_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ egress_only_internet_gateway_name }}"
+
+{%- endfor %}
