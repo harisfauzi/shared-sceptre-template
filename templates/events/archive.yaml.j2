@@ -1,0 +1,54 @@
+Description: Events Archive(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for archive in sceptre_user_data.archives %}
+{%- set archive_name = archive.name %}
+  {{ archive_name }}:
+    Type: AWS::Events::Archive
+    DeletionPolicy: {{ archive.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ archive.update_replace_policy | default('Delete') }}
+    Properties:
+      SourceArn: {{ archive.source_arn | trim }}
+{%- if archive.archive_name is defined %}
+      ArchiveName: {{ archive.archive_name }}
+{%- endif %}
+{%- if archive.description is defined %}
+      Description: {{ archive.description }}
+{%- endif %}
+{%- if archive.event_pattern_json is defined %}
+      EventPattern: {{ archive.event_pattern_json }}
+{%- elif archive.event_pattern is defined %}
+      EventPattern:
+{{ archive.event_pattern | indent(width=8, first=true) }}
+{%- endif %}
+{%- if archive.retention_days is defined %}
+      RetentionDays: {{ archive.retention_days }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for archive in sceptre_user_data.archives %}
+{%- set archive_name = archive.name %}
+  {{ archive_name }}:
+    Description: Archive name for archive {{ archive_name }}
+    Value:
+      Ref: {{ archive_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ archive_name }}"
+
+  {{ archive_name }}Arn:
+    Description: The ARN for {{ archive_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ archive_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ archive_name }}-Arn"
+
+{%- endfor %}

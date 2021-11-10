@@ -1,0 +1,52 @@
+Description: Events Event Bus(es) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for event_bus in sceptre_user_data.event_buss %}
+{%- set event_bus_name = event_bus.name %}
+  {{ event_bus_name }}:
+    Type: AWS::Events::EventBus
+    DeletionPolicy: {{ event_bus.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ event_bus.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ event_bus.event_bus_name }}
+{%- if event_bus.event_source_name is defined %}
+      EventSourceName: {{ event_bus.event_source_name }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for event_bus in sceptre_user_data.event_buss %}
+{%- set event_bus_name = event_bus.name %}
+  {{ event_bus_name }}:
+    Description: The name of the event bus for {{ event_bus_name }}
+    Value:
+      Ref: {{ event_bus_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_bus_name }}"
+
+  {{ event_bus_name }}Arn:
+    Description: The ARN for event bus {{ event_bus_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ event_bus_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_bus_name }}-Arn"
+
+  {{ event_bus_name }}Policy:
+    Description: The policy for the event bus {{ event_bus_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ event_bus_name }}
+        - Policy
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_bus_name }}-Policy"
+
+{%- endfor %}
