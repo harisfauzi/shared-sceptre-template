@@ -1,0 +1,56 @@
+Description: Events Event Bus Policy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for event_bus_policy in sceptre_user_data.event_bus_policys %}
+{%- set event_bus_policy_name = event_bus_policy.name %}
+  {{ event_bus_policy_name }}:
+    Type: AWS::Events::EventBusPolicy
+    DeletionPolicy: {{ event_bus_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ event_bus_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      StatementId: {{ event_bus_policy.statement_id }}
+{%- if event_bus_policy.action is defined %}
+      Action: {{ event_bus_policy.action }}
+{%- endif %}
+{%- if event_bus_policy.condition is defined %}
+      Condition:
+{%- if event_bus_policy.condition.key is defined %}
+        Key: {{ event_bus_policy.condition.key }}
+{%- endif %}
+{%- if event_bus_policy.condition.type is defined %}
+        Type: {{ event_bus_policy.condition.type }}
+{%- endif %}
+{%- if event_bus_policy.condition.value is defined %}
+        Value: {{ event_bus_policy.condition.value }}
+{%- endif %}
+{%- endif %}
+{%- if event_bus_policy.event_bus_name is defined %}
+      EventBusName: {{ event_bus_policy.event_bus_name }}
+{%- endif %}
+{%- if event_bus_policy.principal is defined %}
+      Principal: {{ event_bus_policy.principal }}
+{%- endif %}
+{%- if event_bus_policy.statement_json is defined %}
+      Statement: {{ event_bus_policy.statement_json }}
+{%- elif event_bus_policy.statement is defined %}
+      Statement:
+{{ event_bus_policy.statement | indent(width=8, first=true) }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for event_bus_policy in sceptre_user_data.event_bus_policys %}
+{%- set event_bus_policy_name = event_bus_policy.name %}
+  {{ event_bus_policy_name }}:
+    Description: Event bus policy ID for event bus policy {{ event_bus_policy_name }}
+    Value:
+      Ref: {{ event_bus_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_bus_policy_name }}"
+
+{%- endfor %}
