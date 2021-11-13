@@ -1,0 +1,68 @@
+---
+Description: EC2 EnclaveCertificateIamRoleAssociation(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for enclave_certificate_iam_role_assocation in sceptre_user_data.enclave_certificate_iam_role_assocations %}
+{%- set enclave_certificate_iam_role_assocation_name = enclave_certificate_iam_role_assocation.name %}
+  {{ enclave_certificate_iam_role_assocation_name }}:
+    Type: AWS::EC2::EnclaveCertificateIamRoleAssociation
+    DeletionPolicy: {{ enclave_certificate_iam_role_assocation.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ enclave_certificate_iam_role_assocation.update_replace_policy | default('Delete') }}
+    Properties:
+      CertificateArn: {{ enclave_certificate_iam_role_assocation.certificate_arn | trim }}
+      RoleArn: {{ enclave_certificate_iam_role_assocation.role_arn | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for enclave_certificate_iam_role_assocation in sceptre_user_data.enclave_certificate_iam_role_assocations %}
+{%- set enclave_certificate_iam_role_assocation_name = enclave_certificate_iam_role_assocation.name %}
+  {{ enclave_certificate_iam_role_assocation_name }}:
+    Description: The association for {{ enclave_certificate_iam_role_assocation_name }}
+    Value:
+      Ref: {{ enclave_certificate_iam_role_assocation_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ enclave_certificate_iam_role_assocation_name }}"
+
+  {{ enclave_certificate_iam_role_assocation_name }}CertificateS3BucketName:
+    Description: >
+      The name of the Amazon S3 bucket to which the certificate
+      was uploaded for {{ enclave_certificate_iam_role_assocation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ enclave_certificate_iam_role_assocation_name }}
+        - CertificateS3BucketName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ enclave_certificate_iam_role_assocation_name }}-CertificateS3BucketName"
+
+  {{ enclave_certificate_iam_role_assocation_name }}CertificateS3ObjectKey:
+    Description: >
+      The Amazon S3 object key where the certificate, certificate chain,
+      and encrypted private key bundle are stored
+      for {{ enclave_certificate_iam_role_assocation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ enclave_certificate_iam_role_assocation_name }}
+        - CertificateS3ObjectKey
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ enclave_certificate_iam_role_assocation_name }}-CertificateS3ObjectKey"
+
+  {{ enclave_certificate_iam_role_assocation_name }}EncryptionKmsKeyId:
+    Description: >
+      The ID of the AWS KMS key used to encrypt the private key
+      of the certificate for {{ enclave_certificate_iam_role_assocation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ enclave_certificate_iam_role_assocation_name }}
+        - EncryptionKmsKeyId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ enclave_certificate_iam_role_assocation_name }}-EncryptionKmsKeyId"
+
+{%- endfor %}
