@@ -1,0 +1,86 @@
+---
+Description: EC2 Network Interface(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for network_interface in sceptre_user_data.network_interfaces %}
+{%- set network_interface_name = network_interface.name %}
+  {{ network_interface_name }}:
+    Type: AWS::EC2::NetworkInterface
+    DeletionPolicy: {{ network_interface.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ network_interface.update_replace_policy | default('Delete') }}
+    Properties:
+      SubnetId: {{ network_interface.subnet_id | trim }}
+{%- if network_interface.description is defined %}
+      Description: {{ network_interface.description }}
+{%- endif %}
+{%- if network_interface.group_set is defined %}
+      GroupSet:
+{%- for group_set in network_interface.group_set %}
+        - {{ group_set }}
+{%- endfor %}
+{%- endif %}
+{%- if network_interface.interface_type is defined %}
+      InterfaceType: {{ network_interface.interface_type }}
+{%- endif %}
+{%- if network_interface.ipv6_address_count is defined %}
+      Ipv6AddressCount: {{ network_interface.ipv6_address_count }}
+{%- endif %}
+{%- if network_interface.ipv6_addresses is defined %}
+      Ipv6Addresses:
+{%- for ipv6_address in network_interface.ipv6_addresses %}
+        - Ipv6Address: {{ ipv6_address.ipv6_address }}
+{%- endfor %}
+{%- endif %}
+{%- if network_interface.private_ip_address is defined %}
+      PrivateIpAddress: {{ network_interface.private_ip_address }}
+{%- endif %}
+{%- if network_interface.private_ip_addresses is defined %}
+      PrivateIpAddresses:
+{%- for private_ip_address in network_interface.private_ip_addresses %}
+        - Primary: {{ private_ip_address.primary }}
+          PrivateIpAddress: {{ private_ip_address.private_ip_address }}
+{%- endfor %}
+{%- endif %}
+{%- if network_interface.secondary_private_ip_address_count is defined %}
+      SecondaryPrivateIpAddressCount: {{ network_interface.secondary_private_ip_address_count }}
+{%- endif %}
+{%- if network_interface.source_dest_check is defined %}
+      SourceDestCheck: {{ network_interface.source_dest_check }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if network_interface.tags is defined %}
+{%- for key,value in network_interface.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for network_interface in sceptre_user_data.network_interfaces %}
+{%- set network_interface_name = network_interface.name %}
+  {{ network_interface_name }}:
+    Description: Network Interface Name for {{ network_interface_name }}
+    Value:
+      Ref: {{ network_interface_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_interface_name }}"
+
+  {{ network_interface_name }}PrimaryPrivateIpAddress:
+    Description: The primary private IP address of the network interface {{ network_interface_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_interface_name }}
+        - PrimaryPrivateIpAddress
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_interface_name }}-PrimaryPrivateIpAddress"
+
+{%- endfor %}

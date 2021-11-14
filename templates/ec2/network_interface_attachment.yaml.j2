@@ -1,0 +1,34 @@
+Description: EC2 Network Interface Attachment(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for network_interface_attachment in sceptre_user_data.network_interface_attachments %}
+{%- set network_interface_attachment_name = network_interface_attachment.name %}
+  {{ network_interface_attachment_name }}:
+    Type: AWS::EC2::NetworkInterfaceAttachment
+    DeletionPolicy: {{ network_interface_attachment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ network_interface_attachment.update_replace_policy | default('Delete') }}
+    Properties:
+      DeviceIndex: {{ network_interface_attachment.device_index }}
+      InstanceId: {{ network_interface_attachment.instance_id | trim }}
+      NetworkInterfaceId: {{ network_interface_attachment.network_interface_id | trim }}
+{%- if network_interface_attachment.delete_on_termination is defined %}
+      DeleteOnTermination: {{ network_interface_attachment.delete_on_termination }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for network_interface_attachment in sceptre_user_data.network_interface_attachments %}
+{%- set network_interface_attachment_name = network_interface_attachment.name %}
+  {{ network_interface_attachment_name }}:
+    Description: The resource name for {{ network_interface_attachment_name }}
+    Value:
+      Ref: {{ network_interface_attachment_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_interface_attachment_name }}"
+
+{%- endfor %}
