@@ -1,0 +1,31 @@
+Description: EC2 Network Interface Permission(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for network_interface_permission in sceptre_user_data.network_interface_permissions %}
+{%- set network_interface_permission_name = network_interface_permission.name %}
+  {{ network_interface_permission_name }}:
+    Type: AWS::EC2::NetworkInterfacePermission
+    DeletionPolicy: {{ network_interface_permission.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ network_interface_permission.update_replace_policy | default('Delete') }}
+    Properties:
+      AwsAccountId: {{ network_interface_permission.aws_account_id | trim }}
+      NetworkInterfaceId: {{ network_interface_permission.network_interface_id | trim }}
+      Permission: {{ network_interface_permission.permission }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for network_interface_permission in sceptre_user_data.network_interface_permissions %}
+{%- set network_interface_permission_name = network_interface_permission.name %}
+  {{ network_interface_permission_name }}:
+    Description: The resource name for {{ network_interface_permission_name }}
+    Value:
+      Ref: {{ network_interface_permission_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_interface_permission_name }}"
+
+{%- endfor %}
