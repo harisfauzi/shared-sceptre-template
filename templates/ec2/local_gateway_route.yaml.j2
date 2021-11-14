@@ -1,0 +1,51 @@
+Description: EC2 Local Gateway Route(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for local_gateway_route in sceptre_user_data.local_gateway_routes %}
+{%- set local_gateway_route_name = local_gateway_route.name %}
+  {{ local_gateway_route_name }}:
+    Type: AWS::EC2::LocalGatewayRoute
+    DeletionPolicy: {{ local_gateway_route.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ local_gateway_route.update_replace_policy | default('Delete') }}
+    Properties:
+      DestinationCidrBlock: {{ local_gateway_route.destination_cidr_block }}
+      LocalGatewayRouteTableId: {{ local_gateway_route.local_gateway_route_table_id | trim }}
+      LocalGatewayVirtualInterfaceGroupId: {{ local_gateway_route.local_gateway_virtual_interface_group_id | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for local_gateway_route in sceptre_user_data.local_gateway_routes %}
+{%- set local_gateway_route_name = local_gateway_route.name %}
+  {{ local_gateway_route_name }}:
+    Description: The ID of local gateway for {{ local_gateway_route_name }}
+    Value:
+      Ref: {{ local_gateway_route_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_name }}"
+
+  {{ local_gateway_route_name }}State:
+    Description: The state of the local gateway route table for {{ local_gateway_route_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_route_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_name }}-Arn"
+
+  {{ local_gateway_route_name }}Type:
+    Description: The type of local gateway route for {{ local_gateway_route_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_route_name }}
+        - Type
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_name }}-Type"
+
+{%- endfor %}
