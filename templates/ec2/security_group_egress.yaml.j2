@@ -1,0 +1,49 @@
+---
+Description: EC2 Security Group Egress(es) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for security_group_egress in sceptre_user_data.security_group_egresss %}
+{%- set security_group_egress_name = security_group_egress.name %}
+  {{ security_group_egress_name }}:
+    Type: AWS::EC2::SecurityGroupEgress
+    DeletionPolicy: {{ security_group_egress.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ security_group_egress.update_replace_policy | default('Delete') }}
+    Properties:
+      GroupId: {{ security_group_egress.group_id | trim }}
+      IpProtocol: {{ security_group_egress.ip_protocol }}
+{%- if security_group_egress.cidr_ip is defined %}
+      CidrIp: {{ security_group_egress.cidr_ip }}
+{%- elif security_group_egress.cidr_ipv6 is defined %}
+      CidrIpv6: {{ security_group_egress.cidr_ipv6 }}
+{%- elif security_group_egress.destination_prefix_list_id is defined %}
+      DestinationPrefixListId: {{ security_group_egress.destination_prefix_list_id }}
+{%- elif security_group_egress.destination_security_group_id is defined %}
+      DestinationSecurityGroupId: {{ security_group_egress.destination_security_group_id }}
+{%- endif %}
+{%- if security_group_egress.description is defined %}
+      Description: {{ security_group_egress.description }}
+{%- endif %}
+{%- if security_group_egress.from_port is defined %}
+      FromPort: {{ security_group_egress.from_port }}
+{%- endif %}
+{%- if security_group_egress.to_port is defined %}
+      ToPort: {{ security_group_egress.to_port }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for security_group_egress in sceptre_user_data.security_group_egresss %}
+{%- set security_group_egress_name = security_group_egress.name %}
+  {{ security_group_egress_name }}:
+    Description: The name of the security egress rule {{ security_group_egress_name }}
+    Value:
+      Ref: {{ security_group_egress_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_group_egress_name }}"
+
+{%- endfor %}

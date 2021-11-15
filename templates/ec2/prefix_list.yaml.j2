@@ -1,0 +1,90 @@
+---
+Description: EC2 Prefix List(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for prefix_list in sceptre_user_data.prefix_lists %}
+{%- set prefix_list_name = prefix_list.name %}
+  {{ prefix_list_name }}:
+    Type: AWS::EC2::PrefixList
+    DeletionPolicy: {{ prefix_list.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ prefix_list.update_replace_policy | default('Delete') }}
+    Properties:
+      AddressFamily: {{ prefix_list.address_family }}
+      MaxEntries: {{ prefix_list.max_entries }}
+      PrefixListName: {{ prefix_list.prefix_list_name }}
+{%- if prefix_list.entries is defined %}
+      Entries:
+{%- for entry in prefix_list.entries %}
+        - Cidr: {{ entry.cidr }}
+{%- if entry.description is defined %}
+          Description: {{ entry.description }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if prefix_list.tags is defined %}
+{%- for key,value in prefix_list.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for prefix_list in sceptre_user_data.prefix_lists %}
+{%- set prefix_list_name = prefix_list.name %}
+  {{ prefix_list_name }}:
+    Description: The ID of the prefix list {{ prefix_list_name }}
+    Value:
+      Ref: {{ prefix_list_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ prefix_list_name }}"
+
+  {{ prefix_list_name }}Arn:
+    Description: The ARN for {{ prefix_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ prefix_list_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ prefix_list_name }}-Arn"
+
+  {{ prefix_list_name }}OwnerId:
+    Description: The ID of the owner of the prefix list {{ prefix_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ prefix_list_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ prefix_list_name }}-OwnerId"
+
+  {{ prefix_list_name }}PrefixListId:
+    Description: The ID of the prefix list {{ prefix_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ prefix_list_name }}
+        - PrefixListId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ prefix_list_name }}-PrefixListId"
+
+  {{ prefix_list_name }}Version:
+    Description: The version of the prefix list {{ prefix_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ prefix_list_name }}
+        - Version
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ prefix_list_name }}-Version"
+
+{%- endfor %}
