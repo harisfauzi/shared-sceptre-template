@@ -1,0 +1,56 @@
+---
+Description: CloudFront Public Key(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for public_key in sceptre_user_data.public_keys %}
+{%- set public_key_name = public_key.name %}
+  {{ public_key_name }}:
+    Type: AWS::CloudFront::PublicKey
+    DeletionPolicy: {{ public_key.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ public_key.update_replace_policy | default('Delete') }}
+    Properties:
+      PublicKeyConfig:
+        CallerReference: {{ public_key.public_key_config.caller_reference }}
+        EncodedKey: {{ public_key.public_key_config.encoded_key }}
+        Name: {{ public_key.public_key_config.name }}
+{%- if public_key.public_key_config.comment is defined %}
+        Comment: {{ public_key.public_key_config.comment }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for public_key in sceptre_user_data.public_keys %}
+{%- set public_key_name = public_key.name %}
+  {{ public_key_name }}:
+    Description: The ID of the public key for {{ public_key_name }}
+    Value:
+      Ref: {{ public_key_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ public_key_name }}"
+
+  {{ public_key_name }}CreatedTime:
+    Description: The date and time when the public key was uploaded for {{ public_key_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ public_key_name }}
+        - CreatedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ public_key_name }}-CreatedTime"
+
+  {{ public_key_name }}Id:
+    Description: The identifier of the public key for {{ public_key_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ public_key_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ public_key_name }}-Id"
+
+{%- endfor %}
