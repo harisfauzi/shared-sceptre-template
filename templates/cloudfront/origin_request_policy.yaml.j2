@@ -1,0 +1,79 @@
+---
+Description: CloudFront Origin Request Policy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for origin_request_policy in sceptre_user_data.origin_request_policys %}
+{%- set origin_request_policy_name = origin_request_policy.name %}
+  {{ origin_request_policy_name }}:
+    Type: AWS::CloudFront::OriginRequestPolicy
+    DeletionPolicy: {{ origin_request_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ origin_request_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      OriginRequestPolicyConfig:
+        CookiesConfig:
+          CookieBehavior: {{ origin_request_policy.origin_request_policy_config.cookies_config.cookie_behavior }}
+{%- if origin_request_policy.origin_request_policy_config.cookies_config.cookies is defined %}
+          Cookies:
+{%- for cookie in origin_request_policy.origin_request_policy_config.cookies_config.cookies %}
+            - {{ cookie }}
+{%- endfor %}
+{%- endif %}
+        HeadersConfig:
+          HeaderBehavior: {{ origin_request_policy.origin_request_policy_config.headers_config.header_behavior }}
+{%- if origin_request_policy.origin_request_policy_config.headers_config.headers is defined %}
+          Headers:
+{%- for header in origin_request_policy.origin_request_policy_config.headers_config.headers %}
+            - {{ header }}
+{%- endfor %}
+{%- endif %}
+        Name: {{ origin_request_policy.origin_request_policy_config.name }}
+        QueryStringsConfig:
+          QueryStringBehavior:
+            {{ origin_request_policy.origin_request_policy_config.query_strings_config.query_string_behavior }}
+{%- if origin_request_policy.origin_request_policy_config.query_strings_config.query_strings is defined %}
+          QueryStrings:
+{%- for query_string in origin_request_policy.origin_request_policy_config.query_strings_config.query_strings %}
+            - {{ query_string }}
+{%- endfor %}
+{%- endif %}
+{%- if origin_request_policy.origin_request_policy_config.comment is defined %}
+        Comment: String
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for origin_request_policy in sceptre_user_data.origin_request_policys %}
+{%- set origin_request_policy_name = origin_request_policy.name %}
+  {{ origin_request_policy_name }}:
+    Description: The origin request policy ID for {{ origin_request_policy_name }}
+    Value:
+      Ref: {{ origin_request_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ origin_request_policy_name }}"
+
+  {{ origin_request_policy_name }}Id:
+    Description: The unique identifier for the origin request policy {{ origin_request_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ origin_request_policy_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ origin_request_policy_name }}-Id"
+
+  {{ origin_request_policy_name }}LastModifiedTime:
+    Description: The date and time when the origin request policy was last modified for {{ origin_request_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ origin_request_policy_name }}
+        - LastModifiedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ origin_request_policy_name }}-LastModifiedTime"
+
+{%- endfor %}

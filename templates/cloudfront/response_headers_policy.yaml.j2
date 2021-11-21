@@ -1,0 +1,137 @@
+---
+Description: CloudFront Response Headers Policy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for response_headers_policy in sceptre_user_data.response_headers_policys %}
+{%- set response_headers_policy_name = response_headers_policy.name %}
+  {{ response_headers_policy_name }}:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    DeletionPolicy: {{ response_headers_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ response_headers_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: {{ response_headers_policy.response_header_policy_config.name }}
+{%- if response_headers_policy.response_header_policy_config.comment is defined %}
+        Comment: {{ response_headers_policy.response_header_policy_config.comment }}
+{%- endif %}
+{%- if response_headers_policy.response_header_policy_config.cors_config is defined %}  {# BEGIN {%- if response_headers_policy.response_header_policy_config.cors_config is defined %} #}
+        CorsConfig:
+          AccessControlAllowCredentials: {{ response_headers_policy.response_header_policy_config.cors_config.access_control_allow_credentials }}
+          AccessControlAllowHeaders:
+            Items:
+{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_allow_headers.items %}
+              - {{ item }}
+{%- endfor %}
+          AccessControlAllowMethods:
+            Items:
+{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_allow_methods.items %}
+              - {{ item }}
+{%- endfor %}
+          AccessControlAllowOrigins:
+            Items:
+{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_allow_origins.items %}
+              - {{ item }}
+{%- endfor %}
+          OriginOverride: {{ response_headers_policy.response_header_policy_config.cors_config.origin_override }}
+{%- if response_headers_policy.response_header_policy_config.cors_config.access_control_expose_headers is defined %}
+          AccessControlExposeHeaders:
+            Items:
+{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_expose_headers.items %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if response_headers_policy.response_header_policy_config.cors_config.access_control_max_age_sec is defined %}
+          AccessControlMaxAgeSec: {{response_headers_policy.response_header_policy_config.cors_config.access_control_max_age_sec }}
+{%- endif %}
+{%- endif %}  {# END {%- if response_headers_policy.response_header_policy_config.cors_config is defined %} #}
+{%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %}  {# BEGIN {%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %} #}
+        CustomHeadersConfig:
+          Items:
+{%- for item in response_headers_policy.response_header_policy_config.custom_header_config.items %}
+            - Header: {{ item.header }}
+              Override: {{ item.override }}
+              Value: {{ item.value }}
+{%- endfor %}
+{%- endif %}  {# END {%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %} #}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %}  {# BEGIN {%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %} #}
+        SecurityHeadersConfig:
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.content_security_policy is defined %}
+          ContentSecurityPolicy:
+            ContentSecurityPolicy: {{ response_headers_policy.response_header_policy_config.security_headers_config.content_security_policy.content_security_policy }}
+            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.content_security_policy.override }}
+{%- endif %}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.content_type_options is defined %}
+          ContentTypeOptions:
+            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.content_type_options.override }}
+{%- endif %}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.frame_options is defined %}
+          FrameOptions:
+            FrameOption: {{ response_headers_policy.response_header_policy_config.security_headers_config.frame_options.frame_option }}
+            Override: {{response_headers_policy.response_header_policy_config.security_headers_config.frame_options.override }}
+{%- endif %}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.referrer_policy is defined %}
+          ReferrerPolicy:
+            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.referrer_policy.override }}
+            ReferrerPolicy: {{ response_headers_policy.response_header_policy_config.security_headers_config.referrer_policy.referrer_policy }}
+{%- endif %}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security is defined %}
+          StrictTransportSecurity:
+            AccessControlMaxAgeSec: {{ response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.access_control_max_age_sec }}
+            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.override }}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.include_subdomains is defined %}
+            IncludeSubdomains: {{ response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.include_subdomains }}
+{%- endif %}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.preload is defined %}
+            Preload: {{ response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.preload }}
+{%- endif %}
+{%- endif %}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.xss_protection is defined %}
+          XSSProtection:
+            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.override }}
+            Protection: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.protection }}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.mode_block is defined %}
+            ModeBlock: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.mode_block }}
+{%- endif %}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.report_uri is defined %}
+            ReportUri: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.report_uri }}
+{%- endif %}
+{%- endif %}
+{%- endif %}  {# END {%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %} #}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for response_headers_policy in sceptre_user_data.response_headers_policys %}
+{%- set response_headers_policy_name = response_headers_policy.name %}
+  {{ response_headers_policy_name }}:
+    Description: The response headers policy ID for {{ response_headers_policy_name }}
+    Value:
+      Ref: {{ response_headers_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ response_headers_policy_name }}"
+
+  {{ response_headers_policy_name }}Id:
+    Description: The unique identifier for the cache policy {{ response_headers_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ response_headers_policy_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ response_headers_policy_name }}-Id"
+
+  {{ response_headers_policy_name }}LastModifiedTime:
+    Description: The date and time when the response headers policy was last modified for {{ response_headers_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ response_headers_policy_name }}
+        - LastModifiedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ response_headers_policy_name }}-LastModifiedTime"
+
+{%- endfor %}

@@ -1,0 +1,249 @@
+---
+{%- import 'macros/distribution_cache_behavior.yaml.j2' as macro_distribution_cache_behavior %}
+Description: CloudFront Distribution(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for distribution in sceptre_user_data.distributions %}
+{%- set distribution_name = distribution.name %}
+  {{ distribution_name }}:
+    Type: AWS::CloudFront::Distribution
+    DeletionPolicy: {{ distribution.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ distribution.update_replace_policy | default('Delete') }}
+    Properties:
+      DistributionConfig:
+        Enabled: {{ distribution.distribution_config.enabled }}
+{%- if distribution.distribution_config.aliases is defined %}
+        Aliases:
+{%- for alias in distribution.distribution_config.aliases %}
+          - {{ alias }}
+{%- endfor %}
+{%- endif %}
+{%- if distribution.distribution_config.cache_behaviors is defined %}  {# BEGIN {%- if distribution.distribution_config.cache_behaviors is defined %} #}
+        CacheBehaviors:
+{%- for cache_behavior in distribution.distribution_config.cache_behaviors %}
+          -
+{{ macro_distribution_cache_behavior.prep(cache_behavior) | indent(width=12, first=true) }}
+{%- endfor %}
+{%- endif %}   {# END {%- if distribution.distribution_config.cache_behaviors is defined %} #}
+{%- if distribution.distribution_config.cnames is defined %}
+        CNAMEs:
+{%- for cname in distribution.distribution_config.cnames %}
+          - {{ cname }}
+{%- endfor %}
+{%- endif %}
+{%- if distribution.distribution_config.comment is defined %}
+        Comment: {{ distribution.distribution_config.comment }}
+{%- endif %}
+{%- if distribution.distribution_config.custom_error_response is defined %}
+        CustomErrorResponses:
+{%- for custom_error_response in distribution.distribution_config.custom_error_response %}
+          - ErrorCode: {{ custom_error_response.error_code }}
+{%- if custom_error_response.error_caching_min_ttl is defined %}
+            ErrorCachingMinTTL: {{ custom_error_response.error_caching_min_ttl }}
+{%- endif %}
+{%- if custom_error_response.response_code is defined %}
+            ResponseCode: {{ custom_error_response.response_code }}
+{%- endif %}
+{%- if custom_error_response.response_page_path is defined %}
+            ResponsePagePath: {{ custom_error_response.response_page_path }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if distribution.distribution_config.custom_origin is defined %}
+        CustomOrigin:
+          DNSName: {{ distribution.distribution_config.custom_origin.dns_name }}
+          OriginProtocolPolicy: {{ distribution.distribution_config.custom_origin.origin_protocol_policy }}
+          OriginSSLProtocols:
+{%- for origin_ssl_protocol in distribution.distribution_config.custom_origin.origin_ssl_protocols %}
+            - {{ origin_ssl_protocol }}
+{%- endfor %}
+{%- if distribution.distribution_config.custom_origin.http_port is defined %}
+          HTTPPort: {{ distribution.distribution_config.custom_origin.http_port }}
+{%- endif %}
+{%- if distribution.distribution_config.custom_origin.https_port is defined %}
+          HTTPSPort: {{ distribution.distribution_config.custom_origin.https_port }}
+{%- endif %}
+{%- endif %}
+{%- if distribution.distribution_config.default_cache_behavior is defined %}
+        DefaultCacheBehavior:
+{{ macro_distribution_cache_behavior.prep(distribution.distribution_config.default_cache_behavior) | indent(width=10, first=true) }}
+{%- endif %}
+{%- if distribution.distribution_config.default_root_object is defined %}
+        DefaultRootObject: {{ distribution.distribution_config.default_root_object }}
+{%- endif %}
+{%- if distribution.distribution_config.http_version is defined %}
+        HttpVersion: {{ distribution.distribution_config.http_version }}
+{%- endif %}
+{%- if distribution.distribution_config.ipv6_enabled is defined %}
+        IPV6Enabled: {{ distribution.distribution_config.ipv6_enabled }}
+{%- endif %}
+{%- if distribution.distribution_config.logging is defined %}
+        Logging:
+          Bucket: {{ distribution.distribution_config.logging.bucket }}
+{%- if distribution.distribution_config.logging.include_cookies is defined %}
+          IncludeCookies: {{ distribution.distribution_config.logging.include_cookies }}
+{%- endif %}
+{%- if distribution.distribution_config.logging.include_cookies is defined %}
+          Prefix: {{ distribution.distribution_config.logging.include_cookies }}
+{%- endif %}
+{%- endif %}
+{%- if distribution.distribution_config.origin_groups is defined %}  {# BEGIN {%- if distribution.distribution_config.origin_groups is defined %} #}
+        OriginGroups:
+          Quantity: {{ distribution.distribution_config.origin_groups.quantity }}
+{%- if distribution.distribution_config.origin_groups.items is defined %}
+          Items:
+{%- for item in distribution.distribution_config.origin_groups.items %}
+            - FailoverCriteria:
+                StatusCodes:
+                  Items:
+{%- for sub_item in item.failover_criteria.status_codes.items %}
+                    - {{ sub_item }}
+{%- endfor %}
+                  Quantity: {{ item.failover_criteria.status_codes.quantity }}
+              Id: {{ item.failover_criteria.id }}
+              Members:
+                Items:
+{%- for sub_item in item.members.items %}
+                  - OriginId: {{ sub_item.origin_id | trim }}
+{%- endfor %}
+                Quantity: {{ item.members.quantity }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}  {# END {%- if distribution.distribution_config.origin_groups is defined %} #}
+{%- if distribution.distribution_config.origins is defined %}  {# {%- if distribution.distribution_config.origins is defined %} #}
+        Origins:
+{%- for origin in distribution.distribution_config.origins %}
+          - DomainName: {{ origin.domain_name }}
+            Id: {{ origin.id }}
+{%- if origin.connection_attempts is defined %}
+            ConnectionAttempts: {{ origin.connection_attempts }}
+{%- endif %}
+{%- if origin.connection_timeout is defined %}
+            ConnectionTimeout: {{ origin.connection_timeout }}
+{%- endif %}
+{%- if origin.custom_origin_config is defined %}
+            CustomOriginConfig:
+              OriginProtocolPolicy: {{ origin.custom_origin_config.origin_protocol_policy }}
+{%- if origin.custom_origin_config.http_port is defined %}
+              HTTPPort: {{ origin.custom_origin_config.http_port }}
+{%- endif %}
+{%- if origin.custom_origin_config.https_port is defined %}
+              HTTPSPort: {{ origin.custom_origin_config.https_port }}
+{%- endif %}
+{%- if origin.custom_origin_config.origin_keepalive_timeout is defined %}
+              OriginKeepaliveTimeout: {{ origin.custom_origin_config.origin_keepalive_timeout }}
+{%- endif %}
+{%- if origin.custom_origin_config.origin_read_timeout is defined %}
+              OriginReadTimeout: {{ origin.custom_origin_config.origin_read_timeout }}
+{%- endif %}
+{%- if origin.custom_origin_config.origin_ssl_protocols is defined %}
+              OriginSSLProtocols:
+{%- for origin_ssl_protocol in origin.custom_origin_config.origin_ssl_protocols %}
+                - {{ origin_ssl_protocol }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if origin.origin_custom_headers is defined %}
+            OriginCustomHeaders:
+{%- for custom_header in origin.origin_custom_headers %}
+              - HeaderName: {{ custom_header.header_name }}
+                HeaderValue: {{ custom_header.header_value }}
+{%- endfor %}
+{%- endif %}
+{%- if origin.origin_path is defined %}
+            OriginPath: {{ origin.origin_path }}
+{%- endif %}
+{%- if origin.origin_shield is defined %}  {## BEGIN {%- if origin.origin_shield is defined %} #}
+            OriginShield:
+{%- if origin.origin_shield.enabled is defined %}
+              Enabled: {{ origin.origin_shield.enabled }}
+{%- endif %}
+{%- if origin.origin_shield.origin_shield_region is defined %}
+              OriginShieldRegion: {{ origin.origin_shield.origin_shield_region }}
+{%- endif %}
+{%- endif %}  {## END {%- if origin.origin_shield is defined %} #}
+{%- if origin.s3_origin_config is defined %}
+            S3OriginConfig:
+              OriginAccessIdentity: {{ origin.s3_origin_config.origin_access_identity }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if distribution.distribution_config.origins is defined %} #}
+{%- if distribution.distribution_config.price_class is defined %}
+        PriceClass: {{ distribution.distribution_config.price_class }}
+{%- endif %}
+{%- if distribution.distribution_config.restrictions is defined %}
+        Restrictions:
+          GeoRestriction:
+            RestrictionType: {{ distribution.distribution_config.restrictions.geo_restriction.restriction_type }}
+{%- if distribution.distribution_config.restrictions.geo_restriction.locations is defined %}
+            Locations:
+{%- for location in distribution.distribution_config.restrictions.geo_restriction.locations %}
+              - {{ location }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if distribution.distribution_config.s3_origin is defined %}
+        S3Origin:
+          DNSName: {{ distribution.distribution_config.s3_origin.dns_name }}
+{%- if distribution.distribution_config.s3_origin.origin_access_identity is defined %}
+          OriginAccessIdentity: {{ distribution.distribution_config.s3_origin.origin_access_identity }}
+{%- endif %}
+{%- endif %}
+{%- if distribution.distribution_config.viewer_certificate is defined %}  {## BEGIN {%- if distribution.distribution_config.viewer_certificate is defined %} #}
+        ViewerCertificate:
+{%- if distribution.distribution_config.viewer_certificate.acm_certificate_arn is defined %}
+          AcmCertificateArn: {{ distribution.distribution_config.viewer_certificate.acm_certificate_arn | trim }}
+{%- endif %}
+{%- if distribution.distribution_config.viewer_certificate.cloud_front_default_certificate is defined %}
+          CloudFrontDefaultCertificate: {{ distribution.distribution_config.viewer_certificate.cloud_front_default_certificate }}
+{%- endif %}
+{%- if distribution.distribution_config.viewer_certificate.iam_certificate_id is defined %}
+          IamCertificateId: {{ distribution.distribution_config.viewer_certificate.iam_certificate_id | trim }}
+{%- endif %}
+{%- if distribution.distribution_config.viewer_certificate.minimum_protocol_version is defined %}
+          MinimumProtocolVersion: {{ distribution.distribution_config.viewer_certificate.minimum_protocol_version }}
+{%- endif %}
+{%- if distribution.distribution_config.viewer_certificate.ssl_support_method is defined %}
+          SslSupportMethod: {{ distribution.distribution_config.viewer_certificate.ssl_support_method }}
+{%- endif %}
+{%- endif %}  {## END {%- if distribution.distribution_config.viewer_certificate is defined %} #}
+{%- if distribution.distribution_config.web_acl_id is defined %}
+        WebACLId: {{ distribution.distribution_config.web_acl_id | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if distribution.tags is defined %}
+{%- for key,value in distribution.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for distribution in sceptre_user_data.distributions %}
+{%- set distribution_name = distribution.name %}
+  {{ distribution_name }}:
+    Description: The CloudFront distribution ID for {{ distribution_name }}
+    Value:
+      Ref: {{ distribution_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_name }}"
+
+  {{ distribution_name }}DomainName:
+    Description: The DomainName for distribution {{ distribution_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ distribution_name }}
+        - DomainName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_name }}-DomainName"
+
+{%- endfor %}
