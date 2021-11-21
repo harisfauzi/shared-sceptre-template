@@ -1,0 +1,42 @@
+---
+Description: CloudFront Function(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for function in sceptre_user_data.functions %}
+{%- set function_name = function.name %}
+  {{ function_name }}:
+    Type: AWS::CloudFront::Function
+    DeletionPolicy: {{ function.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ function.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ function.function_name }}
+{%- if function.auto_publish is defined %}
+      AutoPublish: {{ function.auto_publish }}
+{%- endif %}
+{%- if function.function_code is defined %}
+      FunctionCode: {{ function.function_code }}
+{%- endif %}
+{%- if function.function_config is defined %}
+      FunctionConfig: 
+        Comment: {{ function.function_config.comment }}
+        Runtime: {{ function.function_config.runtime }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for function in sceptre_user_data.functions %}
+  {{ function_name }}FunctionARN:
+    Description: The ARN of the function for {{ function_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ function_name }}
+        - FunctionARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ function_name }}-FunctionARN"
+
+{%- endfor %}
