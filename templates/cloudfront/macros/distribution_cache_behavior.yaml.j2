@@ -1,0 +1,114 @@
+{%- macro prep(cache_behavior) %}
+{%- if cache_behavior.path_pattern is defined %}
+PathPattern: {{ cache_behavior.path_pattern }}
+{%- endif %}
+TargetOriginId: {{ cache_behavior.target_origin_id | trim }}
+ViewerProtocolPolicy: {{ cache_behavior.viewer_protocol_policy }}
+{%- if cache_behavior.allowed_methods is defined %}
+AllowedMethods:
+{%- for allowed_method in cache_behavior.allowed_methods %}
+  - {{ allowed_method }}
+{%- endfor %}
+{%- endif %}
+{%- if cache_behavior.cached_methods is defined %}
+CachedMethods:
+{%- for cached_method in cache_behavior.cached_methods %}
+  - {{ cached_method }}
+{%- endfor %}
+{%- endif %}
+{%- if cache_behavior.cache_policy_id is defined %}
+CachePolicyId: {{ cache_behavior.cache_policy_id | trim }}
+{%- endif %}
+{%- if cache_behavior.compress is defined %}
+Compress: {{ cache_behavior.compress }}
+{%- endif %}
+{%- if cache_behavior.default_ttl is defined %}
+DefaultTTL: {{ cache_behavior.default_ttl }}
+{%- endif %}
+{%- if cache_behavior.field_level_encryption_id is defined %}
+FieldLevelEncryptionId: {{ cache_behavior.field_level_encryption_id }}
+{%- endif %}
+{%- if cache_behavior.forwarded_values is defined %}
+ForwardedValues:
+  QueryString: {{ cache_behavior.forwarded_values.query_string }}
+{%- if cache_behavior.forwarded_values.cookies is defined %}
+  Cookies:
+    Forward: {{ cache_behavior.forwarded_values.cookies.forward }}
+{%- if cache_behavior.forwarded_values.cookies.whitelisted_names is defined %}
+    WhitelistedNames:
+{%- for whitelisted_name in cache_behavior.forwarded_values.cookies.whitelisted_names %}
+      - {{ whitelisted_name }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if cache_behavior.forwarded_values.headers is defined %}
+  Headers:
+{%- for header in cache_behavior.forwarded_values.headers %}
+    - {{ header }}
+{%- endfor %}
+{%- endif %}
+{%- if cache_behavior.forwarded_values.query_string_cache_keys is defined %}
+  QueryStringCacheKeys:
+{%- for query_string_cache_key in cache_behavior.forwarded_values.query_string_cache_keys %}
+    - {{ query_string_cache_key }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if cache_behavior.function_associations is defined %}
+FunctionAssociations:
+{%- for function_association in cache_behavior.function_associations %}
+  -
+{%- if function_association.event_type is defined %}
+    EventType: {{ function_association.event_type }}
+{%- endif %}
+{%- if function_association.function_arn is defined %}
+    FunctionARN: {{ function_association.function_arn | trim }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if cache_behavior.lambda_function_associations is defined %}
+LambdaFunctionAssociations:
+{%- for lambda_function_association in cache_behavior.lambda_function_associations %}
+  -
+{%- if lambda_function_association.event_type is defined %}
+    EventType: {{ lambda_function_association.event_type }}
+{%- endif %}
+{%- if lambda_function_association.include_body is defined %}
+    IncludeBody: {{ lambda_function_association.include_body }}
+{%- endif %}
+{%- if lambda_function_association.lambda_function_arn is defined %}
+    LambdaFunctionARN: {{ lambda_function_association.lambda_function_arn }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if cache_behavior.max_ttl is defined %}
+MaxTTL: {{ cache_behavior.max_ttl }}
+{%- endif %}
+{%- if cache_behavior.min_ttl is defined %}
+MinTTL: {{ cache_behavior.min_ttl }}
+{%- endif %}
+{%- if cache_behavior.origin_request_policy_id is defined %}
+OriginRequestPolicyId: {{ cache_behavior.origin_request_policy_id | trim }}
+{%- endif %}
+{%- if cache_behavior.realtime_log_config_arn is defined %}
+RealtimeLogConfigArn: {{ cache_behavior.realtime_log_config_arn | trim }}
+{%- endif %}
+{%- if cache_behavior.response_headers_policy_id is defined %}
+ResponseHeadersPolicyId: {{ cache_behavior.response_headers_policy_id | trim }}
+{%- endif %}
+{%- if cache_behavior.smooth_stream is defined %}
+SmoothStreaming: {{ cache_behavior.smooth_stream }}
+{%- endif %}
+{%- if cache_behavior.trusted_key_groups is defined %}
+TrustedKeyGroups:
+{%- for trusted_key_group in cache_behavior.trusted_key_groups %}
+  - {{ trusted_key_group }}
+{%- endfor %}
+{%- endif %}
+{%- if cache_behavior.trusted_signers is defined %}
+TrustedSigners:
+{%- for trusted_signer in cache_behavior.trusted_signers %}
+  - {{ trusted_signer }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}
