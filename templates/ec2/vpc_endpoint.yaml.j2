@@ -1,93 +1,71 @@
 ---
-Description: IAM Role(s) for {{ sceptre_user_data.project_code }}
+Description: EC2 VPC Endpoint(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Type: AWS::IAM::Role
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+{%- for vpc_endpoint in sceptre_user_data.vpc_endpoints %}
+{%- set vpc_endpoint_name = vpc_endpoint.name %}
+  {{ vpc_endpoint_name }}:
+    Type: AWS::EC2::VPCEndpoint
+    DeletionPolicy: {{ vpc_endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_endpoint.update_replace_policy | default('Delete') }}
     Properties:
-      AssumeRolePolicyDocument:
-{{ role.assume_role_policy_document | indent(width=8, first=true)}}
-{%- if role.description is defined %}
-      Description: {{ role.description }}
+      ServiceName: {{ vpc_endpoint.service_name }}
+      VpcId: {{ vpc_endpoint.vpc_id | trim }}
+{%- if vpc_endpoint.policy_document_json is defined %}
+      PolicyDocument: {{ vpc_endpoint.policy_document_json }}
+{%- elif vpc_endpoint.policy_document is defined %}
+      PolicyDocument:
+{{ vpc_endpoint.policy_document | indent(width=8, first=true) }}
 {%- endif %}
-{%- if role.managed_policy_arns is defined %}
-      ManagedPolicyArns:
-{%- for arn in role.managed_policy_arns %}
-        - {{ arn }}
+{%- if vpc_endpoint.private_dns_enabled is defined %}
+      PrivateDnsEnabled: {{ vpc_endpoint.private_dns_enabled }}
+{%- endif %}
+{%- if vpc_endpoint.route_table_ids is defined %}
+      RouteTableIds:
+{%- for route_table_id in vpc_endpoint.route_table_ids %}
+        - {{ route_table_id }}
 {%- endfor %}
 {%- endif %}
-{%- if role.max_session_duration is defined %}
-      MaxSessionDuration: {{ role.max_session_duration }}
-{%- endif %}
-{%- if role.path is defined %}
-      Path: {{ role.path }}
-{%- endif %}
-{%- if role.permissions_boundary is defined %}
-      PermissionsBoundary: {{ role.permissions_boundary }}
-{%- endif %}
-{%- if role.policies is defined %}
-      Policies:
-{%- for policy in role.policies %}
-        - PolicyName: {{ policy.policy_name }}
-{%- if policy.policy_document_json is defined %}
-          PolicyDocument: {{ policy.policy_document_json }}
-{%- else %}
-          PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
-{%- endif %}
+{%- if vpc_endpoint.security_group_ids is defined %}
+      SecurityGroupIds:
+{%- for security_group_id in vpc_endpoint.security_group_ids %}
+        - {{ security_group_id }}
 {%- endfor %}
 {%- endif %}
-{%- if role.role_name is defined %}
-      RoleName: {{ role.role_name }}
-{%- endif %}
-      Tags:
-        - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
-        - Key: {{ key }}
-          Value: {{ value }}
+{%- if vpc_endpoint.subnet_ids is defined %}
+      SubnetIds:
+{%- for subnet_id invpc_endpoint.subnet_ids %}
+        - {{ subnet_id }}
 {%- endfor %}
+{%- endif %}
+{%- if vpc_endpoint.vpc_endpoint_type is defined %}
+      VpcEndpointType: {{ vpc_endpoint.vpc_endpoint_type }}
 {%- endif %}
 
 {%- endfor %}
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for vpc_endpoint in sceptre_user_data.vpc_endpoints %}
+{%- set vpc_endpoint_name = vpc_endpoint.name %}
+  {{ vpc_endpoint_name }}:
+    Description: The ID of the VPC endpoint {{ vpc_endpoint_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ vpc_endpoint_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
+        Fn::Sub: "${AWS::StackName}-{{ vpc_endpoint_name }}"
 
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
+  {{ vpc_endpoint_name }}CreationTimestamp:
+    Description: The date and time the VPC endpoint {{ vpc_endpoint_name }} was created.
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
-        - Arn
+        - {{ vpc_endpoint_name }}
+        - CreationTimestamp
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
-
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ role_name }}
-        - RoleId
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ vpc_endpoint_name }}-CreationTimestamp"
 
 {%- endfor %}
