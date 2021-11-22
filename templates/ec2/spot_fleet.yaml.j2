@@ -1,92 +1,146 @@
-Description: IAM Role(s) for {{ sceptre_user_data.project_code }}
+---
+{%- import 'macros/spot_fleet_launch_specification.yaml.j2' as spot_fleet_launch_specification %}
+{%- import 'macros/spot_fleet_launch_template_config.yaml.j2' as spot_fleet_launch_template_config %}
+Description: EC2 Spot Fleet(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Type: AWS::IAM::Role
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+{%- for spot_fleet in sceptre_user_data.spot_fleets %}
+{%- set spot_fleet_name = spot_fleet.name %}
+  {{ spot_fleet_name }}:
+    Type: AWS::EC2::SpotFleet
+{%- if spot_fleet.metadata is defined %}
+    Metadata:
+{{ spot_fleet.metadata | indent(width=6,first=True) }}
+{%- endif %}
+    DeletionPolicy: {{ spot_fleet.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ spot_fleet.update_replace_policy | default('Delete') }}
     Properties:
-      AssumeRolePolicyDocument:
-{{ role.assume_role_policy_document | indent(width=8, first=true)}}
-{%- if role.description is defined %}
-      Description: {{ role.description }}
+      SpotFleetRequestConfigData:
+        IamFleetRole: {{ spot_fleet.spot_fleet_request_config_data.iam_fleet_role | trim }}
+        TargetCapacity: {{ spot_fleet.spot_fleet_request_config_data.target_capacity }}
+{%- if spot_fleet.spot_fleet_request_config_data.allocation_strategy is defined %}
+        AllocationStrategy: {{ spot_fleet.spot_fleet_request_config_data.allocation_strategy }}
 {%- endif %}
-{%- if role.managed_policy_arns is defined %}
-      ManagedPolicyArns:
-{%- for arn in role.managed_policy_arns %}
-        - {{ arn }}
+{%- if spot_fleet.spot_fleet_request_config_data.context is defined %}
+        Context: {{ spot_fleet.spot_fleet_request_config_data.context }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.excess_capacity_termination_policy is defined %}
+        ExcessCapacityTerminationPolicy: {{ spot_fleet.spot_fleet_request_config_data.excess_capacity_termination_policy }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.instance_interruption_behavior is defined %}
+        InstanceInterruptionBehavior: {{ spot_fleet.spot_fleet_request_config_data.instance_interruption_behavior }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.instance_pools_to_use_count is defined %}
+        InstancePoolsToUseCount: {{ spot_fleet.spot_fleet_request_config_data.instance_pools_to_use_count }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %}  {# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %} #}
+        LaunchSpecifications:
+{%- for launch_specification in spot_fleet.spot_fleet_request_config_data.launch_specifications %}
+          -
+{{ spot_fleet_launch_specification.prep(launch_specification) | indent(width=12, first=True) }}
+{%- endfor %}
+{# END {%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %} #}
+{%- elif spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %}  {# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %} #}
+        LaunchTemplateConfigs:
+{%- for launch_template_config in spot_fleet.spot_fleet_request_config_data.launch_template_configs %}
+
+{%- endfor %}
+{%- endif %}  {# END {%- if spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %} #}
+{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %}  {# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %} #}
+        LoadBalancersConfig:
+{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config.classic_load_balancers_config is defined %}
+          ClassicLoadBalancersConfig:
+            ClassicLoadBalancers:
+{%- for load_balancer in spot_fleet.spot_fleet_request_config_data.load_balancers_config.classic_load_balancers_config.classic_load_balancers %}
+              - Name: {{ load_balancer | trim }}
 {%- endfor %}
 {%- endif %}
-{%- if role.max_session_duration is defined %}
-      MaxSessionDuration: {{ role.max_session_duration }}
-{%- endif %}
-{%- if role.path is defined %}
-      Path: {{ role.path }}
-{%- endif %}
-{%- if role.permissions_boundary is defined %}
-      PermissionsBoundary: {{ role.permissions_boundary }}
-{%- endif %}
-{%- if role.policies is defined %}
-      Policies:
-{%- for policy in role.policies %}
-        - PolicyName: {{ policy.policy_name }}
-{%- if policy.policy_document_json is defined %}
-          PolicyDocument: {{ policy.policy_document_json }}
-{%- else %}
-          PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
-{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config.target_groups_config is defined %}
+          TargetGroupsConfig:
+            TargetGroups:
+{%- for target_group in spot_fleet.spot_fleet_request_config_data.load_balancers_config.target_groups_config.target_groups %}
+              - Arn: {{ target_group | trim }}
 {%- endfor %}
 {%- endif %}
-{%- if role.role_name is defined %}
-      RoleName: {{ role.role_name }}
+{%- endif %}  {# END {%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %} #}
+{%- if spot_fleet.spot_fleet_request_config_data.on_demand_allocation_strategy is defined %}
+        OnDemandAllocationStrategy: {{ spot_fleet.spot_fleet_request_config_data.on_demand_allocation_strategy }}
 {%- endif %}
-      Tags:
-        - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
-        - Key: {{ key }}
-          Value: {{ value }}
-{%- endfor %}
+{%- if spot_fleet.spot_fleet_request_config_data.on_demand_max_total_price is defined %}
+        OnDemandMaxTotalPrice: {{ spot_fleet.spot_fleet_request_config_data.on_demand_max_total_price }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.on_demand_target_capacity is defined %}
+        OnDemandTargetCapacity: {{ spot_fleet.spot_fleet_request_config_data.on_demand_target_capacity }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.replace_unhealthy_instances is defined %}
+        ReplaceUnhealthyInstances: {{ spot_fleet.spot_fleet_request_config_data.replace_unhealthy_instances }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %}  {## BEGIN {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %} #}
+        SpotMaintenanceStrategies:
+          CapacityRebalance:
+{%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance.replacement_strategy is defined %}
+            ReplacementStrategy: {{ spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance.replacement_strategy }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance.termination_delay is defined %}
+            TerminationDelay: {{ spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance.termination_delay }}
+{%- endif %}
+{%- endif %}  {## END {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %} #}
+{%- if spot_fleet.spot_fleet_request_config_data.spot_max_total_price is defined %}
+        SpotMaxTotalPrice: {{ spot_fleet.spot_fleet_request_config_data.spot_max_total_price }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.spot_price is defined %}
+        SpotPrice: {{ spot_fleet.spot_fleet_request_config_data.spot_price }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.target_capacity_unit_type is defined %}
+        TargetCapacityUnitType: {{ spot_fleet.spot_fleet_request_config_data.target_capacity_unit_type }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.terminate_instances_with_expiration is defined %}
+        TerminateInstancesWithExpiration: {{ spot_fleet.spot_fleet_request_config_data.terminate_instances_with_expiration }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.type is defined %}
+        Type: {{ spot_fleet.spot_fleet_request_config_data.type }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.valid_from is defined %}
+        ValidFrom: {{ spot_fleet.spot_fleet_request_config_data.valid_from }}
+{%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.valid_until is defined %}
+        ValidUntil: {{ spot_fleet.spot_fleet_request_config_data.valid_until }}
 {%- endif %}
 
 {%- endfor %}
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for spot_fleet in sceptre_user_data.spot_fleets %}
+{%- set spot_fleet_name = spot_fleet.name %}
+  {{ spot_fleet_name }}:
+    Description: Role Name for {{ spot_fleet_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ spot_fleet_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
+        Fn::Sub: "${AWS::StackName}-{{ spot_fleet_name }}"
 
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
+  {{ spot_fleet_name }}Arn:
+    Description: The ARN for {{ spot_fleet_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
+        - {{ spot_fleet_name }}
         - Arn
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
+        Fn::Sub: "${AWS::StackName}-{{ spot_fleet_name }}-Arn"
 
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
+  {{ spot_fleet_name }}RoleId:
+    Description: The Role Id for {{ spot_fleet_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
+        - {{ spot_fleet_name }}
         - RoleId
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ spot_fleet_name }}-RoleId"
 
 {%- endfor %}
