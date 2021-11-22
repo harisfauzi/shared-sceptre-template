@@ -116,31 +116,21 @@ Outputs:
 {%- for spot_fleet in sceptre_user_data.spot_fleets %}
 {%- set spot_fleet_name = spot_fleet.name %}
   {{ spot_fleet_name }}:
-    Description: Role Name for {{ spot_fleet_name }}
+    Description: The ID of the Spot Fleet {{ spot_fleet_name }}
     Value:
       Ref: {{ spot_fleet_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ spot_fleet_name }}"
 
-  {{ spot_fleet_name }}Arn:
-    Description: The ARN for {{ spot_fleet_name }}
+  {{ spot_fleet_name }}Id:
+    Description: The ID of the Spot Fleet {{ spot_fleet_name }}
     Value:
       Fn::GetAtt:
         - {{ spot_fleet_name }}
-        - Arn
+        - Id
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ spot_fleet_name }}-Arn"
-
-  {{ spot_fleet_name }}RoleId:
-    Description: The Role Id for {{ spot_fleet_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ spot_fleet_name }}
-        - RoleId
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ spot_fleet_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ spot_fleet_name }}-Id"
 
 {%- endfor %}
