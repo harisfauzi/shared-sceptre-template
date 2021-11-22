@@ -1,0 +1,58 @@
+---
+Description: CloudFront Key Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for key_group in sceptre_user_data.key_groups %}
+{%- set key_group_name = key_group.name %}
+  {{ key_group_name }}:
+    Type: AWS::CloudFront::KeyGroup
+    DeletionPolicy: {{ key_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ key_group.update_replace_policy | default('Delete') }}
+    Properties:
+      KeyGroupConfig:
+        Items:
+{%- for item in key_group.key_group_config.items %}
+          - {{ item }}
+{%- endfor %}
+        Name: {{ key_group.key_group_config.name }}
+{%- if key_group.key_group_config.comment is defined %}
+        Comment: {{ key_group.key_group_config.comment }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for key_group in sceptre_user_data.key_groups %}
+{%- set key_group_name = key_group.name %}
+  {{ key_group_name }}:
+    Description: The ID of the key group {{ key_group_name }}
+    Value:
+      Ref: {{ key_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_group_name }}"
+
+  {{ key_group_name }}Id:
+    Description: The identifier for the key group {{ key_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ key_group_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_group_name }}-Id"
+
+  {{ key_group_name }}LastModifiedTime:
+    Description: The date and time when the key group was last modified for {{ key_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ key_group_name }}
+        - LastModifiedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_group_name }}-LastModifiedTime"
+
+{%- endfor %}

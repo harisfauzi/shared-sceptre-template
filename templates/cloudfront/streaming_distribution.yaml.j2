@@ -1,0 +1,77 @@
+---
+Description: CloudFront Streaming Distribution(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for streaming_distribution in sceptre_user_data.streaming_distributions %}
+{%- set streaming_distribution_name = streaming_distribution.name %}
+  {{ streaming_distribution_name }}:
+    Type: AWS::CloudFront::StreamingDistribution
+    DeletionPolicy: {{ streaming_distribution.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ streaming_distribution.update_replace_policy | default('Delete') }}
+    Properties:
+      StreamingDistributionConfig:
+        Comment: {{ streaming_distribution.streaming_distribution_config.comment | default('') }}
+        Enabled: {{ streaming_distribution.streaming_distribution_config.enabled }}
+        S3Origin:
+          DomainName: {{ streaming_distribution.streaming_distribution_config.s3_origin.domain_name }}
+          OriginAccessIdentity: {{ streaming_distribution.streaming_distribution_config.s3_origin.origin_access_identity }}
+        TrustedSigners:
+          Enabled: {{ streaming_distribution.streaming_distribution_config.trusted_signers.enabled }}
+{%- if streaming_distribution.streaming_distribution_config.trusted_signers.aws_account_numbers is defined %}
+          AwsAccountNumbers:
+{%- for aws_account_number in streaming_distribution.streaming_distribution_config.trusted_signers.aws_account_numbers %}
+            - {{ aws_account_number }}
+{%- endfor %}
+{%- endif %}
+{%- if streaming_distribution.streaming_distribution_config.aliases is defined %}
+        Aliases:
+{%- for alias in streaming_distribution.streaming_distribution_config.aliases %}
+          - {{ alias }}
+{%- endfor %}
+{%- endif %}
+{%- if streaming_distribution.streaming_distribution_config.logging is defined %}
+        Logging:
+          Bucket: {{ streaming_distribution.streaming_distribution_config.logging.bucket }}
+          Enabled: {{ streaming_distribution.streaming_distribution_config.logging.enabled }}
+          Prefix: {{ streaming_distribution.streaming_distribution_config.logging.prefix }}
+{%- endif %}
+{%- if streaming_distribution.streaming_distribution_config.price_class is defined %}
+        PriceClass: {{ streaming_distribution.streaming_distribution_config.price_class }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if streaming_distribution.tags is defined %}
+{%- for key,value in streaming_distribution.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for streaming_distribution in sceptre_user_data.streaming_distributions %}
+{%- set streaming_distribution_name = streaming_distribution.name %}
+  {{ streaming_distribution_name }}:
+    Description: The streaming distribution ID for {{ streaming_distribution_name }}
+    Value:
+      Ref: {{ streaming_distribution_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ streaming_distribution_name }}"
+
+  {{ streaming_distribution_name }}DomainName:
+    Description: The domain name of the resource for {{ streaming_distribution_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ streaming_distribution_name }}
+        - DomainName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ streaming_distribution_name }}-DomainName"
+
+{%- endfor %}

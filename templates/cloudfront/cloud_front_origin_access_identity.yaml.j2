@@ -1,0 +1,41 @@
+---
+Description: CloudFront CloudFrontOriginAccessIdentity(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for cloud_front_origin_access_identity in sceptre_user_data.cloud_front_origin_access_identitys %}
+{%- set cloud_front_origin_access_identity_name = cloud_front_origin_access_identity.name %}
+  {{ cloud_front_origin_access_identity_name }}:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    DeletionPolicy: {{ cloud_front_origin_access_identity.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ cloud_front_origin_access_identity.update_replace_policy | default('Delete') }}
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: {{ cloud_front_origin_access_identity.cloud_front_origin_access_identity.comment }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for cloud_front_origin_access_identity in sceptre_user_data.cloud_front_origin_access_identitys %}
+{%- set cloud_front_origin_access_identity_name = cloud_front_origin_access_identity.name %}
+  {{ cloud_front_origin_access_identity_name }}:
+    Description: The origin access identity for {{ cloud_front_origin_access_identity_name }}
+    Value:
+      Ref: {{ cloud_front_origin_access_identity_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cloud_front_origin_access_identity_name }}"
+
+  {{ cloud_front_origin_access_identity_name }}S3CanonicalUserId:
+    Description: The Amazon S3 canonical user ID for the origin access identity for {{ cloud_front_origin_access_identity_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cloud_front_origin_access_identity_name }}
+        - S3CanonicalUserId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cloud_front_origin_access_identity_name }}-S3CanonicalUserId"
+
+{%- endfor %}

@@ -1,0 +1,52 @@
+---
+Description: CloudFront Realtime Log Config(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for realtime_log_config in sceptre_user_data.realtime_log_configs %}
+{%- set realtime_log_config_name = realtime_log_config.name %}
+  {{ realtime_log_config_name }}:
+    Type: AWS::CloudFront::RealtimeLogConfig
+    DeletionPolicy: {{ realtime_log_config.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ realtime_log_config.update_replace_policy | default('Delete') }}
+    Properties:
+      EndPoints:
+{%- for end_point in realtime_log_config.end_points %}
+        - KinesisStreamConfig:
+            RoleArn: {{ end_point.kinesis_stream_config.role_arn }}
+            StreamArn: {{ end_point.kinesis_stream_config.stream_arn }}
+          StreamType: {{ end_point.kinesis_stream_config.stream_type }}
+{%- endfor %}
+      Fields:
+{%- for field in realtime_log_config.fields %}
+        - {{ field }}
+{%- endfor %}
+      Name: {{ realtime_log_config.realtime_log_config_name }}
+      SamplingRate: {{ realtime_log_config.sampling_rate }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for realtime_log_config in sceptre_user_data.realtime_log_configs %}
+{%- set realtime_log_config_name = realtime_log_config.name %}
+  {{ realtime_log_config_name }}:
+    Description: The ARN of the real-time log configuration for {{ realtime_log_config_name }}
+    Value:
+      Ref: {{ realtime_log_config_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ realtime_log_config_name }}"
+
+  {{ realtime_log_config_name }}Arn:
+    Description: The ARN) of the real-time log configuration for {{ realtime_log_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ realtime_log_config_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ realtime_log_config_name }}-Arn"
+
+{%- endfor %}

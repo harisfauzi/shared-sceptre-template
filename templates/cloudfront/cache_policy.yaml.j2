@@ -1,0 +1,86 @@
+---
+Description: CloudFront Cache Policy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for cache_policy in sceptre_user_data.cache_policys %}
+{%- set cache_policy_name = cache_policy.name %}
+  {{ cache_policy_name }}:
+    Type: AWS::CloudFront::CachePolicy
+    DeletionPolicy: {{ cache_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ cache_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      CachePolicyConfig:
+        DefaultTTL: {{ cache_policy.cache_policy_config.default_ttl }}
+        MaxTTL: {{ cache_policy.cache_policy_config.max_ttl }}
+        MinTTL: {{ cache_policy.cache_policy_config.min_ttl }}
+        Name: {{ cache_policy.cache_policy_config.name }}
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
+            CookieBehavior: {{ cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.cookies_config.cookie_behavior }}
+{%- if cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.cookies_config.cookies is defined %}
+            Cookies:
+{%- for cookie in cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.cookies_config.cookies %}
+              - {{ cookie }}
+{%- endfor %}
+{%- endif %}
+          EnableAcceptEncodingGzip: {{ cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.enable_accept_encoding_gzip }}
+          HeadersConfig:
+            HeaderBehavior: {{ cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.headers_config.header_behavior }}
+{%- if cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.headers_config.headers is defined %}
+            Headers:
+{%- for header in cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.headers_config.headers %}
+              - {{ header }}
+{%- endfor %}
+{%- endif %}
+          QueryStringsConfig:
+            QueryStringBehavior: {{ cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.query_strings_config.query_strings_behavior }}
+{%- if cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.query_strings_config.query_strings is defined %}
+            QueryStrings:
+{%- for query_string in cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.query_strings_config.query_strings %}
+              - {{ query_string }}
+{%- endfor %}
+{%- endif %}
+{%- if cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.enable_accept_encoding_brotli is defined %}
+          EnableAcceptEncodingBrotli: {{ cache_policy.cache_policy_config.parameters_in_cache_key_and_forwarded_to_origin.enable_accept_encoding_brotli }}
+{%- endif %}
+{%- if cache_policy.cache_policy_config.comment is defined %}
+        Comment: {{ cache_policy.cache_policy_config.comment }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for cache_policy in sceptre_user_data.cache_policys %}
+{%- set cache_policy_name = cache_policy.name %}
+  {{ cache_policy_name }}:
+    Description: ID for Cache Policy {{ cache_policy_name }}
+    Value:
+      Ref: {{ cache_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cache_policy_name }}"
+
+  {{ cache_policy_name }}Id:
+    Description: The unique identifier for the cache policy for {{ cache_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cache_policy_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cache_policy_name }}-Id"
+
+  {{ cache_policy_name }}LastModifiedTime:
+    Description: The date and time when the cache policy was last modified for {{ cache_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cache_policy_name }}
+        - LastModifiedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cache_policy_name }}-LastModifiedTime"
+
+{%- endfor %}
