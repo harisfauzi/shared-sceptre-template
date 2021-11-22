@@ -1,56 +1,29 @@
 ---
-Description: IAM Role(s) for {{ sceptre_user_data.project_code }}
+Description: EC2 Transit Gateway Peering Attachment(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Type: AWS::IAM::Role
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+{%- for transit_gateway_peering_attachment in sceptre_user_data.transit_gateway_peering_attachments %}
+{%- set transit_gateway_peering_attachment_name = transit_gateway_peering_attachment.name %}
+  {{ transit_gateway_peering_attachment_name }}:
+    Type: AWS::EC2::TransitGatewayPeeringAttachment
+    DeletionPolicy: {{ transit_gateway_peering_attachment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_peering_attachment.update_replace_policy | default('Delete') }}
     Properties:
-      AssumeRolePolicyDocument:
-{{ role.assume_role_policy_document | indent(width=8, first=true)}}
-{%- if role.description is defined %}
-      Description: {{ role.description }}
-{%- endif %}
-{%- if role.managed_policy_arns is defined %}
-      ManagedPolicyArns:
-{%- for arn in role.managed_policy_arns %}
-        - {{ arn }}
-{%- endfor %}
-{%- endif %}
-{%- if role.max_session_duration is defined %}
-      MaxSessionDuration: {{ role.max_session_duration }}
-{%- endif %}
-{%- if role.path is defined %}
-      Path: {{ role.path }}
-{%- endif %}
-{%- if role.permissions_boundary is defined %}
-      PermissionsBoundary: {{ role.permissions_boundary }}
-{%- endif %}
-{%- if role.policies is defined %}
-      Policies:
-{%- for policy in role.policies %}
-        - PolicyName: {{ policy.policy_name }}
-{%- if policy.policy_document_json is defined %}
-          PolicyDocument: {{ policy.policy_document_json }}
-{%- else %}
-          PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if role.role_name is defined %}
-      RoleName: {{ role.role_name }}
+      PeerAccountId: {{ transit_gateway_peering_attachment.peer_account_id | trim }}
+      PeerRegion: {{ transit_gateway_peering_attachment.peer_region }}
+      PeerTransitGatewayId: {{ transit_gateway_peering_attachment.peer_transit_gateway_id | trim }}
+      TransitGatewayId: {{ transit_gateway_peering_attachment.transit_gateway_id | trim }}
+{%- if transit_gateway_peering_attachment.options is defined %}
+      Options:
+        DynamicRouting: {{ transit_gateway_peering_attachment.options.dynamic_routing }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
+{%- if transit_gateway_peering_attachment.tags is defined %}
+{%- for key,value in transit_gateway_peering_attachment.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
@@ -60,34 +33,44 @@ Resources:
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for transit_gateway_peering_attachment in sceptre_user_data.transit_gateway_peering_attachments %}
+{%- set transit_gateway_peering_attachment_name = transit_gateway_peering_attachment.name %}
+  {{ transit_gateway_peering_attachment_name }}:
+    Description: The ID of the transit gateway peering attachment {{ transit_gateway_peering_attachment_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ transit_gateway_peering_attachment_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}"
 
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
+  {{ transit_gateway_peering_attachment_name }}CreationTime:
+    Description: The time the transit gateway peering attachment was created for {{ transit_gateway_peering_attachment_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
-        - Arn
+        - {{ transit_gateway_peering_attachment_name }}
+        - CreationTime
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}-CreationTime"
 
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
+  {{ transit_gateway_peering_attachment_name }}State:
+    Description: The state of the transit gateway peering attachment {{ transit_gateway_peering_attachment_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
-        - RoleId
+        - {{ transit_gateway_peering_attachment_name }}
+        - State
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}-State"
+
+  {{ transit_gateway_peering_attachment_name }}TransitGatewayAttachmentId:
+    Description: The ID of the transit gateway peering attachment {{ transit_gateway_peering_attachment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_peering_attachment_name }}
+        - TransitGatewayAttachmentId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}-TransitGatewayAttachmentId"
 
 {%- endfor %}
