@@ -15,7 +15,7 @@ Resources:
       Description: {{ traffic_mirror_filter.description }}
 {%- endif %}
 {%- if traffic_mirror_filter.network_services is defined %}
-      NetworkServices: 
+      NetworkServices:
 {%- for network_service in traffic_mirror_filter.network_services %}
         - {{ network_service }}
 {%- endfor %}
