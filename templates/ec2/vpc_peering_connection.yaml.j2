@@ -1,56 +1,32 @@
 ---
-Description: IAM Role(s) for {{ sceptre_user_data.project_code }}
+Description: EC2 VPC Peering Connection(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Type: AWS::IAM::Role
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+{%- for vpc_peering_connection in sceptre_user_data.vpc_peering_connections %}
+{%- set vpc_peering_connection_name = vpc_peering_connection.name %}
+  {{ vpc_peering_connection_name }}:
+    Type: AWS::EC2::VPCPeeringConnection
+    DeletionPolicy: {{ vpc_peering_connection.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_peering_connection.update_replace_policy | default('Delete') }}
     Properties:
-      AssumeRolePolicyDocument:
-{{ role.assume_role_policy_document | indent(width=8, first=true)}}
-{%- if role.description is defined %}
-      Description: {{ role.description }}
+      PeerVpcId: {{ vpc_peering_connection.peer_vpc_id | trim }}
+      VpcId: {{ vpc_peering_connection.vpc_id | trim }}
+{%- if vpc_peering_connection.peer_owner_id is defined %}
+      PeerOwnerId: {{ vpc_peering_connection.peer_owner_id | trim }}
 {%- endif %}
-{%- if role.managed_policy_arns is defined %}
-      ManagedPolicyArns:
-{%- for arn in role.managed_policy_arns %}
-        - {{ arn }}
-{%- endfor %}
+{%- if vpc_peering_connection.peer_region is defined %}
+      PeerRegion: {{ vpc_peering_connection.peer_region }}
 {%- endif %}
-{%- if role.max_session_duration is defined %}
-      MaxSessionDuration: {{ role.max_session_duration }}
-{%- endif %}
-{%- if role.path is defined %}
-      Path: {{ role.path }}
-{%- endif %}
-{%- if role.permissions_boundary is defined %}
-      PermissionsBoundary: {{ role.permissions_boundary }}
-{%- endif %}
-{%- if role.policies is defined %}
-      Policies:
-{%- for policy in role.policies %}
-        - PolicyName: {{ policy.policy_name }}
-{%- if policy.policy_document_json is defined %}
-          PolicyDocument: {{ policy.policy_document_json }}
-{%- else %}
-          PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if role.role_name is defined %}
-      RoleName: {{ role.role_name }}
+{%- if vpc_peering_connection.peer_role_arn is defined %}
+      PeerRoleArn: {{ vpc_peering_connection.peer_role_arn | trim }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
+{%- if vpc_peering_connection.tags is defined %}
+{%- for key,value in vpc_peering_connection.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
@@ -60,34 +36,14 @@ Resources:
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for vpc_peering_connection in sceptre_user_data.vpc_peering_connections %}
+{%- set vpc_peering_connection_name = vpc_peering_connection.name %}
+  {{ vpc_peering_connection_name }}:
+    Description: The ID of the VPC peering connection for {{ vpc_peering_connection_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ vpc_peering_connection_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
-
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ role_name }}
-        - Arn
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
-
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ role_name }}
-        - RoleId
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ vpc_peering_connection_name }}"
 
 {%- endfor %}
