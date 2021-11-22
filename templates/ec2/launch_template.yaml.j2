@@ -10,6 +10,10 @@ Resources:
 {%- set launch_template_name = launch_template.name %}
   {{ launch_template_name }}:
     Type: AWS::EC2::LaunchTemplate
+{%- if launch_template.metadata is defined %}
+    Metadata:
+{{ launch_template.metadata | indent(width=6,first=True) }}
+{%- endif %}
     DeletionPolicy: {{ launch_template.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ launch_template.update_replace_policy | default('Delete') }}
     Properties:
