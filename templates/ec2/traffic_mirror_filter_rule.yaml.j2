@@ -1,93 +1,51 @@
 ---
-Description: IAM Role(s) for {{ sceptre_user_data.project_code }}
+Description: EC2 Traffic Mirror Filter Rule(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Type: AWS::IAM::Role
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+{%- for traffic_mirror_filter_rule in sceptre_user_data.traffic_mirror_filter_rules %}
+{%- set traffic_mirror_filter_rule_name = traffic_mirror_filter_rule.name %}
+  {{ traffic_mirror_filter_rule_name }}:
+    Type: AWS::EC2::TrafficMirrorFilterRule
+    DeletionPolicy: {{ traffic_mirror_filter_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ traffic_mirror_filter_rule.update_replace_policy | default('Delete') }}
     Properties:
-      AssumeRolePolicyDocument:
-{{ role.assume_role_policy_document | indent(width=8, first=true)}}
-{%- if role.description is defined %}
-      Description: {{ role.description }}
+      DestinationCidrBlock: {{ traffic_mirror_filter_rule.destination_cidr_block }}
+      RuleAction: {{ traffic_mirror_filter_rule.rule_action }}
+      RuleNumber: {{ traffic_mirror_filter_rule.rule_number }}
+      SourceCidrBlock: {{ traffic_mirror_filter_rule.source_cidr_block }}
+      TrafficDirection: {{ traffic_mirror_filter_rule.traffic_direction }}
+      TrafficMirrorFilterId: {{ traffic_mirror_filter_rule.traffic_mirror_filter_id | trim }}
+{%- if traffic_mirror_filter_rule.description is defined %}
+      Description: {{ traffic_mirror_filter_rule.description }}
 {%- endif %}
-{%- if role.managed_policy_arns is defined %}
-      ManagedPolicyArns:
-{%- for arn in role.managed_policy_arns %}
-        - {{ arn }}
-{%- endfor %}
+{%- if traffic_mirror_filter_rule.destination_port_range is defined %}
+      DestinationPortRange:
+        FromPort: {{ traffic_mirror_filter_rule.destination_port_range.from_port }}
+        ToPort: {{ traffic_mirror_filter_rule.destination_port_range.to_port }}
 {%- endif %}
-{%- if role.max_session_duration is defined %}
-      MaxSessionDuration: {{ role.max_session_duration }}
+{%- if traffic_mirror_filter_rule.protocol is defined %}
+      Protocol: {{ traffic_mirror_filter_rule.protocol }}
 {%- endif %}
-{%- if role.path is defined %}
-      Path: {{ role.path }}
-{%- endif %}
-{%- if role.permissions_boundary is defined %}
-      PermissionsBoundary: {{ role.permissions_boundary }}
-{%- endif %}
-{%- if role.policies is defined %}
-      Policies:
-{%- for policy in role.policies %}
-        - PolicyName: {{ policy.policy_name }}
-{%- if policy.policy_document_json is defined %}
-          PolicyDocument: {{ policy.policy_document_json }}
-{%- else %}
-          PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if role.role_name is defined %}
-      RoleName: {{ role.role_name }}
-{%- endif %}
-      Tags:
-        - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
-        - Key: {{ key }}
-          Value: {{ value }}
-{%- endfor %}
+{%- if traffic_mirror_filter_rule.source_port_range is defined %}
+      SourcePortRange:
+        FromPort: {{ traffic_mirror_filter_rule.source_port_range.from_port }}
+        ToPort: {{ traffic_mirror_filter_rule.source_port_range.to_port }}
 {%- endif %}
 
 {%- endfor %}
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for traffic_mirror_filter_rule in sceptre_user_data.traffic_mirror_filter_rules %}
+{%- set traffic_mirror_filter_rule_name = traffic_mirror_filter_rule.name %}
+  {{ traffic_mirror_filter_rule_name }}:
+    Description: The ID of the Traffic Mirror filter rule {{ traffic_mirror_filter_rule_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ traffic_mirror_filter_rule_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
-
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ role_name }}
-        - Arn
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
-
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ role_name }}
-        - RoleId
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_filter_rule_name }}"
 
 {%- endfor %}
