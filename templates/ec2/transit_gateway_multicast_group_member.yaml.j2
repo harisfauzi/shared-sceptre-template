@@ -100,7 +100,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_member_name }}-SubnetId"
 
   {{ transit_gateway_multicast_group_member_name }}TransitGatewayAttachmentId:
-    Description: he ID of the transit gateway attachmen for {{ transit_gateway_multicast_group_member_name }}
+    Description: The ID of the transit gateway attachment for {{ transit_gateway_multicast_group_member_name }}
     Value:
       Fn::GetAtt:
         - {{ transit_gateway_multicast_group_member_name }}
