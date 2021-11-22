@@ -1,56 +1,28 @@
 ---
-Description: IAM Role(s) for {{ sceptre_user_data.project_code }}
+Description: EC2 Transit Gateway Multicast Domain(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Type: AWS::IAM::Role
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+{%- for transit_gateway_multicast_domain in sceptre_user_data.transit_gateway_multicast_domains %}
+{%- set transit_gateway_multicast_domain_name = transit_gateway_multicast_domain.name %}
+  {{ transit_gateway_multicast_domain_name }}:
+    Type: AWS::EC2::TransitGatewayMulticastDomain
+    DeletionPolicy: {{ transit_gateway_multicast_domain.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_multicast_domain.update_replace_policy | default('Delete') }}
     Properties:
-      AssumeRolePolicyDocument:
-{{ role.assume_role_policy_document | indent(width=8, first=true)}}
-{%- if role.description is defined %}
-      Description: {{ role.description }}
-{%- endif %}
-{%- if role.managed_policy_arns is defined %}
-      ManagedPolicyArns:
-{%- for arn in role.managed_policy_arns %}
-        - {{ arn }}
-{%- endfor %}
-{%- endif %}
-{%- if role.max_session_duration is defined %}
-      MaxSessionDuration: {{ role.max_session_duration }}
-{%- endif %}
-{%- if role.path is defined %}
-      Path: {{ role.path }}
-{%- endif %}
-{%- if role.permissions_boundary is defined %}
-      PermissionsBoundary: {{ role.permissions_boundary }}
-{%- endif %}
-{%- if role.policies is defined %}
-      Policies:
-{%- for policy in role.policies %}
-        - PolicyName: {{ policy.policy_name }}
-{%- if policy.policy_document_json is defined %}
-          PolicyDocument: {{ policy.policy_document_json }}
-{%- else %}
-          PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if role.role_name is defined %}
-      RoleName: {{ role.role_name }}
+      TransitGatewayId: {{ transit_gateway_multicast_domain.transit_gateway_id | trim }}
+{%- if transit_gateway_multicast_domain.options_json is defined %}
+      Options: {{ transit_gateway_multicast_domain.options_json }}
+{%- elif transit_gateway_multicast_domain.options is defined %}
+      Options:
+{{ transit_gateway_multicast_domain.options | indent(width=8, first=true) }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
+{%- if transit_gateway_multicast_domain.tags is defined %}
+{%- for key,value in transit_gateway_multicast_domain.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
@@ -60,34 +32,54 @@ Resources:
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for transit_gateway_multicast_domain in sceptre_user_data.transit_gateway_multicast_domains %}
+{%- set transit_gateway_multicast_domain_name = transit_gateway_multicast_domain.name %}
+  {{ transit_gateway_multicast_domain_name }}:
+    Description: The transit gateway multicast domain ID for {{ transit_gateway_multicast_domain_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ transit_gateway_multicast_domain_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}"
 
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
+  {{ transit_gateway_multicast_domain_name }}CreationTime:
+    Description: The time the multicast domain {{ transit_gateway_multicast_domain_name }} was created.
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
-        - Arn
+        - {{ transit_gateway_multicast_domain_name }}
+        - CreationTime
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-CreationTime"
 
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
+  {{ transit_gateway_multicast_domain_name }}State:
+    Description: The state of the multicast domain {{ transit_gateway_multicast_domain_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
-        - RoleId
+        - {{ transit_gateway_multicast_domain_name }}
+        - State
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-State"
+
+  {{ transit_gateway_multicast_domain_name }}TransitGatewayMulticastDomainArn:
+    Description: The ARN of the multicast domain {{ transit_gateway_multicast_domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_domain_name }}
+        - TransitGatewayMulticastDomainArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-TransitGatewayMulticastDomainArn"
+
+  {{ transit_gateway_multicast_domain_name }}TransitGatewayMulticastDomainId:
+    Description: The ID of the multicast domain {{ transit_gateway_multicast_domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_domain_name }}
+        - TransitGatewayMulticastDomainId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-TransitGatewayMulticastDomainId"
 
 {%- endfor %}
