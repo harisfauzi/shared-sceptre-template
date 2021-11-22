@@ -1,56 +1,30 @@
 ---
-Description: IAM Role(s) for {{ sceptre_user_data.project_code }}
+Description: EC2 Traffic Mirror Target(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Type: AWS::IAM::Role
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+{%- for traffic_mirror_target in sceptre_user_data.traffic_mirror_targets %}
+{%- set traffic_mirror_target_name = traffic_mirror_target.name %}
+  {{ traffic_mirror_target_name }}:
+    Type: AWS::EC2::TrafficMirrorTarget
+    DeletionPolicy: {{ traffic_mirror_target.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ traffic_mirror_target.update_replace_policy | default('Delete') }}
     Properties:
-      AssumeRolePolicyDocument:
-{{ role.assume_role_policy_document | indent(width=8, first=true)}}
-{%- if role.description is defined %}
-      Description: {{ role.description }}
+{%- if traffic_mirror_target.description is defined %}
+      Description: {{ traffic_mirror_target.description }}
 {%- endif %}
-{%- if role.managed_policy_arns is defined %}
-      ManagedPolicyArns:
-{%- for arn in role.managed_policy_arns %}
-        - {{ arn }}
-{%- endfor %}
+{%- if traffic_mirror_target.network_interface_id is defined %}
+      NetworkInterfaceId: {{ traffic_mirror_target.network_interface_id | trim }}
 {%- endif %}
-{%- if role.max_session_duration is defined %}
-      MaxSessionDuration: {{ role.max_session_duration }}
-{%- endif %}
-{%- if role.path is defined %}
-      Path: {{ role.path }}
-{%- endif %}
-{%- if role.permissions_boundary is defined %}
-      PermissionsBoundary: {{ role.permissions_boundary }}
-{%- endif %}
-{%- if role.policies is defined %}
-      Policies:
-{%- for policy in role.policies %}
-        - PolicyName: {{ policy.policy_name }}
-{%- if policy.policy_document_json is defined %}
-          PolicyDocument: {{ policy.policy_document_json }}
-{%- else %}
-          PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if role.role_name is defined %}
-      RoleName: {{ role.role_name }}
+{%- if traffic_mirror_target.network_load_balancer_arn is defined %}
+      NetworkLoadBalancerArn: {{ traffic_mirror_target.network_load_balancer_arn | trim }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
+{%- if traffic_mirror_target.tags is defined %}
+{%- for key,value in traffic_mirror_target.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
@@ -60,34 +34,14 @@ Resources:
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for traffic_mirror_target in sceptre_user_data.traffic_mirror_targets %}
+{%- set traffic_mirror_target_name = traffic_mirror_target.name %}
+  {{ traffic_mirror_target_name }}:
+    Description: The ID of the Traffic Mirror target {{ traffic_mirror_target_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ traffic_mirror_target_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
-
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ role_name }}
-        - Arn
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
-
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ role_name }}
-        - RoleId
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_target_name }}"
 
 {%- endfor %}
