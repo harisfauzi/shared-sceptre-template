@@ -1,0 +1,49 @@
+---
+Description: EC2 VPC Peering Connection(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for vpc_peering_connection in sceptre_user_data.vpc_peering_connections %}
+{%- set vpc_peering_connection_name = vpc_peering_connection.name %}
+  {{ vpc_peering_connection_name }}:
+    Type: AWS::EC2::VPCPeeringConnection
+    DeletionPolicy: {{ vpc_peering_connection.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_peering_connection.update_replace_policy | default('Delete') }}
+    Properties:
+      PeerVpcId: {{ vpc_peering_connection.peer_vpc_id | trim }}
+      VpcId: {{ vpc_peering_connection.vpc_id | trim }}
+{%- if vpc_peering_connection.peer_owner_id is defined %}
+      PeerOwnerId: {{ vpc_peering_connection.peer_owner_id | trim }}
+{%- endif %}
+{%- if vpc_peering_connection.peer_region is defined %}
+      PeerRegion: {{ vpc_peering_connection.peer_region }}
+{%- endif %}
+{%- if vpc_peering_connection.peer_role_arn is defined %}
+      PeerRoleArn: {{ vpc_peering_connection.peer_role_arn | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if vpc_peering_connection.tags is defined %}
+{%- for key,value in vpc_peering_connection.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for vpc_peering_connection in sceptre_user_data.vpc_peering_connections %}
+{%- set vpc_peering_connection_name = vpc_peering_connection.name %}
+  {{ vpc_peering_connection_name }}:
+    Description: The ID of the VPC peering connection for {{ vpc_peering_connection_name }}
+    Value:
+      Ref: {{ vpc_peering_connection_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_peering_connection_name }}"
+
+{%- endfor %}

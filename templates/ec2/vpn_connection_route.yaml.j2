@@ -1,0 +1,31 @@
+---
+Description: EC2 VPN Connection Route(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for vpn_connection_route in sceptre_user_data.vpn_connection_routes %}
+{%- set vpn_connection_route_name = vpn_connection_route.name %}
+  {{ vpn_connection_route_name }}:
+    Type: AWS::EC2::VPNConnectionRoute
+    DeletionPolicy: {{ vpn_connection_route.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpn_connection_route.update_replace_policy | default('Delete') }}
+    Properties:
+      DestinationCidrBlock: {{ vpn_connection_route.destination_cidr_block }}
+      VpnConnectionId: {{ vpn_connection_route.vpn_connection_id | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for vpn_connection_route in sceptre_user_data.vpn_connection_routes %}
+{%- set vpn_connection_route_name = vpn_connection_route.name %}
+  {{ vpn_connection_route_name }}:
+    Description: The ID of the VPN connection route for {{ vpn_connection_route_name }}
+    Value:
+      Ref: {{ vpn_connection_route_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpn_connection_route_name }}"
+
+{%- endfor %}

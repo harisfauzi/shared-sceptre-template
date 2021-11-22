@@ -1,0 +1,76 @@
+---
+Description: EC2 Transit Gateway Peering Attachment(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for transit_gateway_peering_attachment in sceptre_user_data.transit_gateway_peering_attachments %}
+{%- set transit_gateway_peering_attachment_name = transit_gateway_peering_attachment.name %}
+  {{ transit_gateway_peering_attachment_name }}:
+    Type: AWS::EC2::TransitGatewayPeeringAttachment
+    DeletionPolicy: {{ transit_gateway_peering_attachment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_peering_attachment.update_replace_policy | default('Delete') }}
+    Properties:
+      PeerAccountId: {{ transit_gateway_peering_attachment.peer_account_id | trim }}
+      PeerRegion: {{ transit_gateway_peering_attachment.peer_region }}
+      PeerTransitGatewayId: {{ transit_gateway_peering_attachment.peer_transit_gateway_id | trim }}
+      TransitGatewayId: {{ transit_gateway_peering_attachment.transit_gateway_id | trim }}
+{%- if transit_gateway_peering_attachment.options is defined %}
+      Options:
+        DynamicRouting: {{ transit_gateway_peering_attachment.options.dynamic_routing }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if transit_gateway_peering_attachment.tags is defined %}
+{%- for key,value in transit_gateway_peering_attachment.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for transit_gateway_peering_attachment in sceptre_user_data.transit_gateway_peering_attachments %}
+{%- set transit_gateway_peering_attachment_name = transit_gateway_peering_attachment.name %}
+  {{ transit_gateway_peering_attachment_name }}:
+    Description: The ID of the transit gateway peering attachment {{ transit_gateway_peering_attachment_name }}
+    Value:
+      Ref: {{ transit_gateway_peering_attachment_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}"
+
+  {{ transit_gateway_peering_attachment_name }}CreationTime:
+    Description: The time the transit gateway peering attachment was created for {{ transit_gateway_peering_attachment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_peering_attachment_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}-CreationTime"
+
+  {{ transit_gateway_peering_attachment_name }}State:
+    Description: The state of the transit gateway peering attachment {{ transit_gateway_peering_attachment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_peering_attachment_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}-State"
+
+  {{ transit_gateway_peering_attachment_name }}TransitGatewayAttachmentId:
+    Description: The ID of the transit gateway peering attachment {{ transit_gateway_peering_attachment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_peering_attachment_name }}
+        - TransitGatewayAttachmentId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}-TransitGatewayAttachmentId"
+
+{%- endfor %}

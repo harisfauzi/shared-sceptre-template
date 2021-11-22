@@ -1,0 +1,47 @@
+---
+Description: EC2 Traffic Mirror Target(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for traffic_mirror_target in sceptre_user_data.traffic_mirror_targets %}
+{%- set traffic_mirror_target_name = traffic_mirror_target.name %}
+  {{ traffic_mirror_target_name }}:
+    Type: AWS::EC2::TrafficMirrorTarget
+    DeletionPolicy: {{ traffic_mirror_target.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ traffic_mirror_target.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if traffic_mirror_target.description is defined %}
+      Description: {{ traffic_mirror_target.description }}
+{%- endif %}
+{%- if traffic_mirror_target.network_interface_id is defined %}
+      NetworkInterfaceId: {{ traffic_mirror_target.network_interface_id | trim }}
+{%- endif %}
+{%- if traffic_mirror_target.network_load_balancer_arn is defined %}
+      NetworkLoadBalancerArn: {{ traffic_mirror_target.network_load_balancer_arn | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if traffic_mirror_target.tags is defined %}
+{%- for key,value in traffic_mirror_target.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for traffic_mirror_target in sceptre_user_data.traffic_mirror_targets %}
+{%- set traffic_mirror_target_name = traffic_mirror_target.name %}
+  {{ traffic_mirror_target_name }}:
+    Description: The ID of the Traffic Mirror target {{ traffic_mirror_target_name }}
+    Value:
+      Ref: {{ traffic_mirror_target_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_target_name }}"
+
+{%- endfor %}

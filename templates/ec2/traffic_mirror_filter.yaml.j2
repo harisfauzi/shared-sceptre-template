@@ -1,0 +1,47 @@
+---
+Description: EC2 Traffic Mirror Filter(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for traffic_mirror_filter in sceptre_user_data.traffic_mirror_filters %}
+{%- set traffic_mirror_filter_name = traffic_mirror_filter.name %}
+  {{ traffic_mirror_filter_name }}:
+    Type: AWS::EC2::TrafficMirrorFilter
+    DeletionPolicy: {{ traffic_mirror_filter.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ traffic_mirror_filter.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if traffic_mirror_filter.description is defined %}
+      Description: {{ traffic_mirror_filter.description }}
+{%- endif %}
+{%- if traffic_mirror_filter.network_services is defined %}
+      NetworkServices:
+{%- for network_service in traffic_mirror_filter.network_services %}
+        - {{ network_service }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if traffic_mirror_filter.tags is defined %}
+{%- for key,value in traffic_mirror_filter.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for traffic_mirror_filter in sceptre_user_data.traffic_mirror_filters %}
+{%- set traffic_mirror_filter_name = traffic_mirror_filter.name %}
+  {{ traffic_mirror_filter_name }}:
+    Description: The ID of the Traffic Mirror filter {{ traffic_mirror_filter_name }}
+    Value:
+      Ref: {{ traffic_mirror_filter_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_filter_name }}"
+
+{%- endfor %}

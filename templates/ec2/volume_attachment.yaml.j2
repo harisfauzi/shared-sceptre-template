@@ -1,0 +1,18 @@
+---
+Description: EC2 VolumeAttachment(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for volume_attachment in sceptre_user_data.volume_attachments %}
+{%- set volume_attachment_name = volume_attachment.name %}
+  {{ volume_attachment_name }}:
+    Type: AWS::EC2::VolumeAttachment
+    DeletionPolicy: {{ volume_attachment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ volume_attachment.update_replace_policy | default('Delete') }}
+    Properties:
+      Device: {{ volume_attachment.device }}
+      InstanceId: {{ volume_attachment.instance_id | trim }}
+      VolumeId: {{ volume_attachment.volume_id | trim }}
+
+{%- endfor %}

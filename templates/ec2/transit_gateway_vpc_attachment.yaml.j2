@@ -1,0 +1,78 @@
+---
+Description: EC2 Transit Gateway Vpc Attachment(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for transit_gateway_vpc_attachment in sceptre_user_data.transit_gateway_vpc_attachments %}
+{%- set transit_gateway_vpc_attachment_name = transit_gateway_vpc_attachment.name %}
+  {{ transit_gateway_vpc_attachment_name }}:
+    Type: AWS::EC2::TransitGatewayVpcAttachment
+    DeletionPolicy: {{ transit_gateway_vpc_attachment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_vpc_attachment.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if transit_gateway_vpc_attachment.add_subnet_ids is defined %}
+      AddSubnetIds:
+{%- for subnet_id intransit_gateway_vpc_attachment.add_subnet_ids %}
+        - {{ subnet_id | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if transit_gateway_vpc_attachment.options_json is defined %}
+      Options: {{ transit_gateway_vpc_attachment.options_json }}
+{%- elif transit_gateway_vpc_attachment.options is defined %}
+      Options:
+{{ transit_gateway_vpc_attachment.options | indent(width=8, first=true) }}
+{%- endif %}
+{%- if transit_gateway_vpc_attachment.remove_subnet_ids is defined %}
+      RemoveSubnetIds:
+{%- for subnet_id in transit_gateway_vpc_attachment.remove_subnet_ids %}
+        - {{ subnet_id | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if transit_gateway_vpc_attachment.subnet_ids is defined %}
+      SubnetIds:
+{%- for subnet_id in transit_gateway_vpc_attachment.subnet_ids %}
+        - {{ subnet_id }}
+{%- endfor %}
+{%- endif %}
+{%- if transit_gateway_vpc_attachment.transit_gateway_id is defined %}
+      TransitGatewayId: {{ transit_gateway_vpc_attachment.transit_gateway_id | trim }}
+{%- endif %}
+{%- if transit_gateway_vpc_attachment.vpc_id is defined %}
+      VpcId: {{ transit_gateway_vpc_attachment.vpc_id | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if transit_gateway_vpc_attachment.tags is defined %}
+{%- for key,value in transit_gateway_vpc_attachment.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for transit_gateway_vpc_attachment in sceptre_user_data.transit_gateway_vpc_attachments %}
+{%- set transit_gateway_vpc_attachment_name = transit_gateway_vpc_attachment.name %}
+  {{ transit_gateway_vpc_attachment_name }}:
+    Description: The ID of the attachment {{ transit_gateway_vpc_attachment_name }}
+    Value:
+      Ref: {{ transit_gateway_vpc_attachment_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_vpc_attachment_name }}"
+
+  {{ transit_gateway_vpc_attachment_name }}Id:
+    Description: The ID of the attachment {{ transit_gateway_vpc_attachment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_vpc_attachment_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_vpc_attachment_name }}-Id"
+
+{%- endfor %}

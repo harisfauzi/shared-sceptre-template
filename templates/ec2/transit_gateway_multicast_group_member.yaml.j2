@@ -1,0 +1,112 @@
+---
+Description: EC2 Transit Gateway Multicast Group Member(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for transit_gateway_multicast_group_member in sceptre_user_data.transit_gateway_multicast_group_members %}
+{%- set transit_gateway_multicast_group_member_name = transit_gateway_multicast_group_member.name %}
+  {{ transit_gateway_multicast_group_member_name }}:
+    Type: AWS::EC2::TransitGatewayMulticastGroupMember
+    DeletionPolicy: {{ transit_gateway_multicast_group_member.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_multicast_group_member.update_replace_policy | default('Delete') }}
+    Properties:
+      GroupIpAddress: {{ transit_gateway_multicast_group_member.group_ip_address }}
+      NetworkInterfaceId: {{ transit_gateway_multicast_group_member.network_interface_id | trim }}
+      TransitGatewayMulticastDomainId: {{ transit_gateway_multicast_group_member.transit_gateway_multicast_domain_id }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for transit_gateway_multicast_group_member in sceptre_user_data.transit_gateway_multicast_group_members %}
+{%- set transit_gateway_multicast_group_member_name = transit_gateway_multicast_group_member.name %}
+  {{ transit_gateway_multicast_group_member_name }}:
+    Description: The transit gateway multicast domain group member ID for {{ transit_gateway_multicast_group_member_name }}
+    Value:
+      Ref: {{ transit_gateway_multicast_group_member_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_member_name }}"
+
+  {{ transit_gateway_multicast_group_member_name }}GroupMember:
+    Description: Information about the registered transit gateway multicast domain group members for {{ transit_gateway_multicast_group_member_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_group_member_name }}
+        - GroupMember
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_member_name }}-GroupMember"
+
+  {{ transit_gateway_multicast_group_member_name }}GroupSource:
+    Description: Indicates that the resource is a transit gateway multicast domain group member for {{ transit_gateway_multicast_group_member_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_group_member_name }}
+        - GroupSource
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_member_name }}-GroupSource"
+
+  {{ transit_gateway_multicast_group_member_name }}MemberType:
+    Description: The type of group member for {{ transit_gateway_multicast_group_member_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_group_member_name }}
+        - MemberType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_member_name }}-MemberType"
+
+  {{ transit_gateway_multicast_group_member_name }}ResourceId:
+    Description: The ID of the resource for {{ transit_gateway_multicast_group_member_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_group_member_name }}
+        - ResourceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_member_name }}-ResourceId"
+
+  {{ transit_gateway_multicast_group_member_name }}ResourceType:
+    Description: The type of resource for {{ transit_gateway_multicast_group_member_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_group_member_name }}
+        - ResourceType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_member_name }}-ResourceType"
+
+  {{ transit_gateway_multicast_group_member_name }}SourceType:
+    Description: The type of source for {{ transit_gateway_multicast_group_member_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_group_member_name }}
+        - SourceType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_member_name }}-SourceType"
+
+  {{ transit_gateway_multicast_group_member_name }}SubnetId:
+    Description: The ID of the subnet for {{ transit_gateway_multicast_group_member_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_group_member_name }}
+        - SubnetId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_member_name }}-SubnetId"
+
+  {{ transit_gateway_multicast_group_member_name }}TransitGatewayAttachmentId:
+    Description: The ID of the transit gateway attachment for {{ transit_gateway_multicast_group_member_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_group_member_name }}
+        - TransitGatewayAttachmentId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_member_name }}-TransitGatewayAttachmentId"
+
+{%- endfor %}

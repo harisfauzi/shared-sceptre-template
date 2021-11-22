@@ -1,0 +1,161 @@
+{%- import 'macros/splot_fleet_instance_requirements.yaml.j2' as splot_fleet_instance_requirements %}
+{%- macro prep(launch_specification) %}
+ImageId: {{ launch_specification.image_id | trim }}
+{%- if launch_specification.block_device_mappings is defined %}  {# BEGIN {%- if launch_specification.block_device_mappings is defined %} #}
+BlockDeviceMappings:
+{%- for block_device_mapping in launch_specification.block_device_mappings %}
+  - DeviceName: {{ block_device_mapping.device_name }}
+{%- if block_device_mapping.ebs is defined %}
+    Ebs:
+{%- if block_device_mapping.ebs.delete_on_termination is defined %}
+      DeleteOnTermination: {{ block_device_mapping.ebs.delete_on_termination }}
+{%- endif %}
+{%- if block_device_mapping.ebs.encrypted is defined %}
+      Encrypted: {{ block_device_mapping.ebs.encrypted }}
+{%- endif %}
+{%- if block_device_mapping.ebs.iops is defined %}
+      Iops: {{ block_device_mapping.ebs.iops }}
+{%- endif %}
+{%- if block_device_mapping.ebs.snapshot_id is defined %}
+      SnapshotId: {{ block_device_mapping.ebs.snapshot_id | trim }}
+{%- endif %}
+{%- if block_device_mapping.ebs.volume_size is defined %}
+      VolumeSize: {{ block_device_mapping.ebs.volume_size }}
+{%- endif %}
+{%- if block_device_mapping.ebs.volume_type is defined %}
+      VolumeType: {{ block_device_mapping.ebs.volume_type }}
+{%- endif %}
+{%- endif %}
+{%- if block_device_mapping.no_device is defined %}
+    NoDevice: {{ block_device_mapping.no_device }}
+{%- endif %}
+{%- if block_device_mapping.virtual_name is defined %}
+    VirtualName: {{ block_device_mapping.virtual_name }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if launch_specification.block_device_mappings is defined %} #}
+{%- if launch_specification.ebs_optimized is defined %}
+EbsOptimized: {{ launch_specification.ebs_optimized }}
+{%- endif %}
+{%- if launch_specification.iam_instance_profile is defined %}
+IamInstanceProfile:
+  Arn: {{ launch_specification.iam_instance_profile.arn | trim }}
+{%- endif %}
+{%- if launch_specification.instance_requirements is defined %}  {## BEGIN {%- if launch_specification.instance_requirements is defined %} #}
+InstanceRequirements:
+{{ splot_fleet_instance_requirements.prep(launch_specification.instance_requirements ) | indent(width=2, first=true) }}
+{%- endif %}  {## END {%- if launch_specification.instance_requirements is defined %} #}
+{%- if launch_specification.instance_type is defined %}
+InstanceType: {{ launch_specification.instance_type }}
+{%- endif %}
+{%- if launch_specification.kernel_id is defined %}
+KernelId: {{ launch_specification.kernel_id | trim }}
+{%- endif %}
+{%- if launch_specification.key_name is defined %}
+KeyName: {{ launch_specification.key_name }}
+{%- endif %}
+{%- if launch_specification.monitoring is defined %}
+Monitoring:
+  Enabled: {{ launch_specification.monitoring.enabled }}
+{%- endif %}
+{%- if launch_specification.network_interfaces is defined %}  {# BEGIN {%- if launch_specification.network_interfaces is defined %} #}
+NetworkInterfaces:
+{%- for network_interface in launch_specification.network_interfaces %}
+  -
+{%- if network_interface.associate_public_ip_address is defined %}
+    AssociatePublicIpAddress: {{ network_interface.associate_public_ip_address }}
+{%- endif %}
+{%- if network_interface.delete_on_termination is defined %}
+    DeleteOnTermination: {{ network_interface.delete_on_termination }}
+{%- endif %}
+{%- if network_interface.description is defined %}
+    Description: {{ network_interface.description }}
+{%- endif %}
+{%- if network_interface.device_index is defined %}
+    DeviceIndex: {{ network_interface.device_index }}
+{%- endif %}
+{%- if network_interface.groups is defined %}
+    Groups:
+{%- for group in network_interface.groups %}
+      - {{ group }}
+{%- endfor %}
+{%- endif %}
+{%- if network_interface.ipv6_address_count is defined %}
+    Ipv6AddressCount: {{ network_interface.ipv6_address_count }}
+{%- endif %}
+{%- if network_interface.ipv6_addresses is defined %}
+    Ipv6Addresses:
+{%- for ipv6_address in network_interface.ipv6_addresses %}
+      - Ipv6Address: {{ ipv6_address.ipv6_address }}
+{%- endfor %}
+{%- endif %}
+{%- if network_interface.network_interface_id is defined %}
+    NetworkInterfaceId: {{ network_interface.network_interface_id | trim }}
+{%- endif %}
+{%- if network_interface.private_ip_addresses is defined %}
+    PrivateIpAddresses:
+{%- for private_ip_address in network_interface.private_ip_addresses %}
+      - PrivateIpAddress: {{ private_ip_address.private_ip_address }}
+{%- if private_ip_address.primary is defined %}
+        Primary: {{ private_ip_address.primary }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if network_interface.secondary_private_ip_address_count is defined %}
+    SecondaryPrivateIpAddressCount: {{ network_interface.secondary_private_ip_address_count }}
+{%- endif %}
+{%- if network_interface.subnet_id is defined %}
+    SubnetId: {{ network_interface.subnet_id | trim }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if launch_specification.network_interfaces is defined %} #}
+{%- if launch_specification.placement is defined %}
+Placement:
+{%- if launch_specification.placement.availability_zone is defined %}
+  AvailabilityZone: {{ launch_specification.placement.availability_zone }}
+{%- endif %}
+{%- if launch_specification.placement.group_name is defined %}
+  GroupName: {{ launch_specification.placement.group_name }}
+{%- endif %}
+{%- if launch_specification.placement.tenancy is defined %}
+  Tenancy: {{ launch_specification.placement.tenancy }}
+{%- endif %}
+{%- endif %}
+{%- if launch_specification.ramdisk_id is defined %}
+RamdiskId: {{ launch_specification.ramdisk_id }}
+{%- endif %}
+{%- if launch_specification.security_groups is defined %}
+SecurityGroups:
+{%- for security_group in launch_specification.security_groups %}
+  - GroupId: {{ security_group.group_id }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_specification.spot_price is defined %}
+SpotPrice: {{ launch_specification.spot_price }}
+{%- endif %}
+{%- if launch_specification.subnet_id is defined %}
+SubnetId: {{ launch_specification.subnet_id | trim }}
+{%- endif %}
+{%- if launch_specification.tag_specifications is defined %}
+TagSpecifications:
+{%- for tag_specification in launch_specification.tag_specifications %}
+  -
+{%- if tag_specification.resource_type is defined %}
+    ResourceType: {{ tag_specification.resource_type }}
+{%- endif %}
+{%- if tag_specification.tags is defined %}
+    Tags:
+{%- for key, value in tag_specification.tags.items() %}
+      - Key: {{ key }}
+        Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if launch_specification.user_data is defined %}
+UserData: {{ launch_specification.user_data }}
+{%- endif %}
+{%- if launch_specification.weighted_capacity is defined %}
+WeightedCapacity: {{ launch_specification.weighted_capacity }}
+{%- endif %}
+{%- endmacro %}

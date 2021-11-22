@@ -1,0 +1,36 @@
+---
+Description: EC2 VPC Endpoint Service Permissions(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for vpc_endpoint_service_permissions in sceptre_user_data.vpc_endpoint_service_permissionss %}
+{%- set vpc_endpoint_service_permissions_name = vpc_endpoint_service_permissions.name %}
+  {{ vpc_endpoint_service_permissions_name }}:
+    Type: AWS::EC2::VPCEndpointServicePermissions
+    DeletionPolicy: {{ vpc_endpoint_service_permissions.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_endpoint_service_permissions.update_replace_policy | default('Delete') }}
+    Properties:
+      ServiceId: {{ vpc_endpoint_service_permissions.service_id | trim }}
+{%- if vpc_endpoint_service_permissions.allowed_principals is defined %}
+      AllowedPrincipals:
+{%- for principal in vpc_endpoint_service_permissions.allowed_principals %}
+        - {{ principal }}}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for vpc_endpoint_service_permissions in sceptre_user_data.vpc_endpoint_service_permissionss %}
+{%- set vpc_endpoint_service_permissions_name = vpc_endpoint_service_permissions.name %}
+  {{ vpc_endpoint_service_permissions_name }}:
+    Description: The ID of the VPC endpoint service permissions {{ vpc_endpoint_service_permissions_name }}
+    Value:
+      Ref: {{ vpc_endpoint_service_permissions_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_endpoint_service_permissions_name }}"
+
+{%- endfor %}

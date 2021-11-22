@@ -1,0 +1,45 @@
+Description: EC2 Security Group Ingress(es) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for security_group_ingress in sceptre_user_data.security_group_ingresss %}
+{%- set security_group_ingress_name = security_group_ingress.name %}
+  {{ security_group_ingress_name }}:
+    Type: AWS::EC2::SecurityGroupIngress
+    DeletionPolicy: {{ security_group_ingress.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ security_group_ingress.update_replace_policy | default('Delete') }}
+    Properties:
+      IpProtocol: {{ security_group_ingress.ip_protocol }}
+{%- if security_group_ingress.cidr_ip is defined %}
+      CidrIp: {{ security_group_ingress.cidr_ip }}
+{%- elif security_group_ingress.cidr_ipv6 is defined %}
+      CidrIpv6: {{ security_group_ingress.cidr_ipv6 }}
+{%- endif %}
+{%- if security_group_ingress.description is defined %}
+      Description: {{ security_group_ingress.description }}
+{%- endif %}
+{%- if security_group_ingress.from_port is defined %}
+      FromPort: {{ security_group_ingress.from_port }}
+{%- endif %}
+{%- if security_group_ingress.group_id is defined %}
+      GroupId: {{ security_group_ingress.group_id }}
+{%- elif security_group_ingress.group_name is defined %}
+      GroupName: {{ security_group_ingress.group_name }}
+{%- endif %}
+{%- if security_group_ingress.source_prefix_list_id is defined %}
+      SourcePrefixListId: {{ security_group_ingress.source_prefix_list_id | trim }}
+{%- endif %}
+{%- if security_group_ingress.source_security_group_id is defined %}
+      SourceSecurityGroupId: {{ security_group_ingress.source_security_group_id | trim }}
+{%- elif security_group_ingress.source_security_group_name is defined %}
+      SourceSecurityGroupName: {{ security_group_ingress.source_security_group_name }}
+{%- endif %}
+{%- if security_group_ingress.source_security_group_owner_id is defined %}
+      SourceSecurityGroupOwnerId: {{ security_group_ingress.source_security_group_owner_id }}
+{%- endif %}
+{%- if security_group_ingress.to_port is defined %}
+      ToPort: {{ security_group_ingress.to_port }}
+{%- endif %}
+
+{%- endfor %}

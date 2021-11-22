@@ -1,0 +1,59 @@
+---
+Description: EC2 Carrier Gateway(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for carrier_gateway in sceptre_user_data.carrier_gateways %}
+{%- set carrier_gateway_name = carrier_gateway.name %}
+  {{ carrier_gateway_name }}:
+    Type: AWS::EC2::CarrierGateway
+    DeletionPolicy: {{ carrier_gateway.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ carrier_gateway.update_replace_policy | default('Delete') }}
+    Properties:
+      VpcId: {{ carrier_gateway.vpc_id | trim }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if carrier_gateway.tags is defined %}
+{%- for key,value in carrier_gateway.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for carrier_gateway in sceptre_user_data.carrier_gateways %}
+{%- set carrier_gateway_name = carrier_gateway.name %}
+  {{ carrier_gateway_name }}:
+    Description: Carrier gateway ID for {{ carrier_gateway_name }}
+    Value:
+      Ref: {{ carrier_gateway_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ carrier_gateway_name }}"
+
+  {{ carrier_gateway_name }}OwnerId:
+    Description: The AWS account ID of the owner of the carrier gateway {{ carrier_gateway_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ carrier_gateway_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ carrier_gateway_name }}-OwnerId"
+
+  {{ carrier_gateway_name }}State:
+    Description: The state of the carrier gateway {{ carrier_gateway_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ carrier_gateway_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ carrier_gateway_name }}-State"
+
+{%- endfor %}

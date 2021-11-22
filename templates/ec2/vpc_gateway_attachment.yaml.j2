@@ -1,0 +1,36 @@
+---
+Description: EC2 VPC Gateway Attachment(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for vpc_gateway_attachment in sceptre_user_data.vpc_gateway_attachments %}
+{%- set vpc_gateway_attachment_name = vpc_gateway_attachment.name %}
+  {{ vpc_gateway_attachment_name }}:
+    Type: AWS::EC2::VPCGatewayAttachment
+    DeletionPolicy: {{ vpc_gateway_attachment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_gateway_attachment.update_replace_policy | default('Delete') }}
+    Properties:
+      VpcId: {{ vpc_gateway_attachment.vpc_id | trim }}
+{%- if vpc_gateway_attachment.internet_gateway_id is defined %}
+      InternetGatewayId: {{ vpc_gateway_attachment.internet_gateway_id | trim }}
+{%- elif vpc_gateway_attachment.vpn_gateway_id is defined %}
+      VpnGatewayId: {{ vpc_gateway_attachment.vpn_gateway_id }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for vpc_gateway_attachment in sceptre_user_data.vpc_gateway_attachments %}
+{%- set vpc_gateway_attachment_name = vpc_gateway_attachment.name %}
+  {{ vpc_gateway_attachment_name }}:
+    Description: The ID of the VPC gateway attachment {{ vpc_gateway_attachment_name }}
+    Value:
+      Ref: {{ vpc_gateway_attachment_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_gateway_attachment_name }}"
+
+
+{%- endfor %}

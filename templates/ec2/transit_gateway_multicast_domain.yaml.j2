@@ -1,0 +1,85 @@
+---
+Description: EC2 Transit Gateway Multicast Domain(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for transit_gateway_multicast_domain in sceptre_user_data.transit_gateway_multicast_domains %}
+{%- set transit_gateway_multicast_domain_name = transit_gateway_multicast_domain.name %}
+  {{ transit_gateway_multicast_domain_name }}:
+    Type: AWS::EC2::TransitGatewayMulticastDomain
+    DeletionPolicy: {{ transit_gateway_multicast_domain.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_multicast_domain.update_replace_policy | default('Delete') }}
+    Properties:
+      TransitGatewayId: {{ transit_gateway_multicast_domain.transit_gateway_id | trim }}
+{%- if transit_gateway_multicast_domain.options_json is defined %}
+      Options: {{ transit_gateway_multicast_domain.options_json }}
+{%- elif transit_gateway_multicast_domain.options is defined %}
+      Options:
+{{ transit_gateway_multicast_domain.options | indent(width=8, first=true) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if transit_gateway_multicast_domain.tags is defined %}
+{%- for key,value in transit_gateway_multicast_domain.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for transit_gateway_multicast_domain in sceptre_user_data.transit_gateway_multicast_domains %}
+{%- set transit_gateway_multicast_domain_name = transit_gateway_multicast_domain.name %}
+  {{ transit_gateway_multicast_domain_name }}:
+    Description: The transit gateway multicast domain ID for {{ transit_gateway_multicast_domain_name }}
+    Value:
+      Ref: {{ transit_gateway_multicast_domain_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}"
+
+  {{ transit_gateway_multicast_domain_name }}CreationTime:
+    Description: The time the multicast domain {{ transit_gateway_multicast_domain_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_domain_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-CreationTime"
+
+  {{ transit_gateway_multicast_domain_name }}State:
+    Description: The state of the multicast domain {{ transit_gateway_multicast_domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_domain_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-State"
+
+  {{ transit_gateway_multicast_domain_name }}TransitGatewayMulticastDomainArn:
+    Description: The ARN of the multicast domain {{ transit_gateway_multicast_domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_domain_name }}
+        - TransitGatewayMulticastDomainArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-TransitGatewayMulticastDomainArn"
+
+  {{ transit_gateway_multicast_domain_name }}TransitGatewayMulticastDomainId:
+    Description: The ID of the multicast domain {{ transit_gateway_multicast_domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_multicast_domain_name }}
+        - TransitGatewayMulticastDomainId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-TransitGatewayMulticastDomainId"
+
+{%- endfor %}

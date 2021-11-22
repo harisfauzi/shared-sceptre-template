@@ -1,0 +1,51 @@
+---
+Description: EC2 Traffic Mirror Filter Rule(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for traffic_mirror_filter_rule in sceptre_user_data.traffic_mirror_filter_rules %}
+{%- set traffic_mirror_filter_rule_name = traffic_mirror_filter_rule.name %}
+  {{ traffic_mirror_filter_rule_name }}:
+    Type: AWS::EC2::TrafficMirrorFilterRule
+    DeletionPolicy: {{ traffic_mirror_filter_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ traffic_mirror_filter_rule.update_replace_policy | default('Delete') }}
+    Properties:
+      DestinationCidrBlock: {{ traffic_mirror_filter_rule.destination_cidr_block }}
+      RuleAction: {{ traffic_mirror_filter_rule.rule_action }}
+      RuleNumber: {{ traffic_mirror_filter_rule.rule_number }}
+      SourceCidrBlock: {{ traffic_mirror_filter_rule.source_cidr_block }}
+      TrafficDirection: {{ traffic_mirror_filter_rule.traffic_direction }}
+      TrafficMirrorFilterId: {{ traffic_mirror_filter_rule.traffic_mirror_filter_id | trim }}
+{%- if traffic_mirror_filter_rule.description is defined %}
+      Description: {{ traffic_mirror_filter_rule.description }}
+{%- endif %}
+{%- if traffic_mirror_filter_rule.destination_port_range is defined %}
+      DestinationPortRange:
+        FromPort: {{ traffic_mirror_filter_rule.destination_port_range.from_port }}
+        ToPort: {{ traffic_mirror_filter_rule.destination_port_range.to_port }}
+{%- endif %}
+{%- if traffic_mirror_filter_rule.protocol is defined %}
+      Protocol: {{ traffic_mirror_filter_rule.protocol }}
+{%- endif %}
+{%- if traffic_mirror_filter_rule.source_port_range is defined %}
+      SourcePortRange:
+        FromPort: {{ traffic_mirror_filter_rule.source_port_range.from_port }}
+        ToPort: {{ traffic_mirror_filter_rule.source_port_range.to_port }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for traffic_mirror_filter_rule in sceptre_user_data.traffic_mirror_filter_rules %}
+{%- set traffic_mirror_filter_rule_name = traffic_mirror_filter_rule.name %}
+  {{ traffic_mirror_filter_rule_name }}:
+    Description: The ID of the Traffic Mirror filter rule {{ traffic_mirror_filter_rule_name }}
+    Value:
+      Ref: {{ traffic_mirror_filter_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_filter_rule_name }}"
+
+{%- endfor %}

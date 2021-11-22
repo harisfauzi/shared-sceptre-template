@@ -1,0 +1,103 @@
+---
+Description: EC2 Capacity Reservation Fleet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for capacity_reservation_fleet in sceptre_user_data.capacity_reservation_fleets %}
+{%- set capacity_reservation_fleet_name = capacity_reservation_fleet.name %}
+  {{ capacity_reservation_fleet_name }}:
+    Type: AWS::EC2::CapacityReservationFleet
+    DeletionPolicy: {{ capacity_reservation_fleet.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ capacity_reservation_fleet.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if capacity_reservation_fleet.allocation_strategy is defined %}
+      AllocationStrategy: {{ capacity_reservation_fleet.allocation_strategy }}
+{%- endif %}
+{%- if capacity_reservation_fleet.end_date is defined %}
+      EndDate: {{ capacity_reservation_fleet.end_date }}
+{%- endif %}
+{%- if capacity_reservation_fleet.instance_match_criteria is defined %}
+      InstanceMatchCriteria: {{ capacity_reservation_fleet.instance_match_criteria }}
+{%- endif %}
+{%- if capacity_reservation_fleet.instance_type_specification is defined %}
+      InstanceTypeSpecifications: 
+{%- for instance_type_specification in capacity_reservation_fleet.instance_type_specification %}
+        -
+{%- if instance_type_specification.availability_zone is defined %}
+          AvailabilityZone: {{ instance_type_specification.availability_zone }}
+{%- endif %}
+{%- if instance_type_specification.availability_zone_id is defined %}
+          AvailabilityZoneId: {{ instance_type_specification.availability_zone_id | trim }}
+{%- endif %}
+{%- if instance_type_specification.ebs_optimized is defined %}
+          EbsOptimized: {{ instance_type_specification.ebs_optimized }}
+{%- endif %}
+{%- if instance_type_specification.instance_platform is defined %}
+          InstancePlatform: {{ instance_type_specification.instance_platform }}
+{%- endif %}
+{%- if instance_type_specification.instance_type is defined %}
+          InstanceType: {{ instance_type_specification.instance_type }}
+{%- endif %}
+{%- if instance_type_specification.priority is defined %}
+          Priority: {{ instance_type_specification.priority }}
+{%- endif %}
+{%- if instance_type_specification.weight is defined %}
+          Weight: {{ instance_type_specification.weight }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if capacity_reservation_fleet.no_remove_end_date is defined %}
+      NoRemoveEndDate: {{ capacity_reservation_fleet.no_remove_end_date }}
+{%- endif %}
+{%- if capacity_reservation_fleet.remove_end_date is defined %}
+      RemoveEndDate: {{ capacity_reservation_fleet.remove_end_date }}
+{%- endif %}
+{%- if capacity_reservation_fleet.tag_specifications is defined %}  {# BEGIN {%- if capacity_reservation_fleet.tag_specifications is defined %} #}
+      TagSpecifications:
+{%- for tag_specification in capacity_reservation_fleet.tag_specifications %}
+        -
+{%- if tag_specification.resource_type is defined %}
+          ResourceType: {{ tag_specification.resource_type }}
+{%- endif %}
+{%- if tag_specification.tags is defined %}
+          Tags:
+{%- for key, value in tag_specification.tags.items() %}
+            - Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if capacity_reservation_fleet.tag_specifications is defined %} #}
+{%- if capacity_reservation_fleet.tenancy is defined %}
+      Tenancy: {{ capacity_reservation_fleet.tenancy }}
+{%- endif %}
+{%- if capacity_reservation_fleet.total_target_capacity is defined %}
+      TotalTargetCapacity: {{ capacity_reservation_fleet.total_target_capacity }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for capacity_reservation_fleet in sceptre_user_data.capacity_reservation_fleets %}
+{%- set capacity_reservation_fleet_name = capacity_reservation_fleet.name %}
+  {{ capacity_reservation_fleet_name }}:
+    Description: Resource ID for Capacity Reservation Fleet {{ capacity_reservation_fleet_name }}
+    Value:
+      Ref: {{ capacity_reservation_fleet_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_fleet_name }}"
+
+  {{ capacity_reservation_fleet_name }}CapacityReservationFleetId:
+    Description: The ID of the Capacity Reservation Fleet. {{ capacity_reservation_fleet_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_reservation_fleet_name }}
+        - CapacityReservationFleetId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_fleet_name }}-CapacityReservationFleetId"
+
+{%- endfor %}

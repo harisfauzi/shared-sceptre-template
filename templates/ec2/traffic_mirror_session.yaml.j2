@@ -1,0 +1,51 @@
+---
+Description: EC2 Traffic Mirror Session(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for traffic_mirror_session in sceptre_user_data.traffic_mirror_sessions %}
+{%- set traffic_mirror_session_name = traffic_mirror_session.name %}
+  {{ traffic_mirror_session_name }}:
+    Type: AWS::EC2::TrafficMirrorSession
+    DeletionPolicy: {{ traffic_mirror_session.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ traffic_mirror_session.update_replace_policy | default('Delete') }}
+    Properties:
+      NetworkInterfaceId: {{ traffic_mirror_session.network_interface_id | trim }}
+      SessionNumber: {{ traffic_mirror_session.session_number }}
+      TrafficMirrorFilterId: {{ traffic_mirror_session.traffic_mirror_filter_id | trim }}
+      TrafficMirrorTargetId: {{ traffic_mirror_session.traffic_mirror_target_id | trim }}
+{%- if traffic_mirror_session.description is defined %}
+      Description: {{ traffic_mirror_session.description }}
+{%- endif %}
+{%- if traffic_mirror_session.packet_length is defined %}
+      PacketLength: {{ traffic_mirror_session.packet_length }}
+{%- endif %}
+{%- if traffic_mirror_session.virtual_network_id is defined %}
+      VirtualNetworkId: {{ traffic_mirror_session.virtual_network_id }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if traffic_mirror_session.tags is defined %}
+{%- for key,value in traffic_mirror_session.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for traffic_mirror_session in sceptre_user_data.traffic_mirror_sessions %}
+{%- set traffic_mirror_session_name = traffic_mirror_session.name %}
+  {{ traffic_mirror_session_name }}:
+    Description: The ID of the Traffic Mirror Session {{ traffic_mirror_session_name }}
+    Value:
+      Ref: {{ traffic_mirror_session_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_session_name }}"
+
+{%- endfor %}

@@ -1,0 +1,80 @@
+---
+Description: EC2 Network Insights Path(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for network_insights_path in sceptre_user_data.network_insights_paths %}
+{%- set network_insights_path_name = network_insights_path.name %}
+  {{ network_insights_path_name }}:
+    Type: AWS::EC2::NetworkInsightsPath
+    DeletionPolicy: {{ network_insights_path.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ network_insights_path.update_replace_policy | default('Delete') }}
+    Properties:
+      Destination: {{ network_insights_path.destination }}
+      Protocol: {{ network_insights_path.protocol }}
+      Source: {{ network_insights_path.source }}
+{%- if network_insights_path.destination_ip is defined %}
+      DestinationIp: {{ network_insights_path.destination_ip }}
+{%- endif %}
+{%- if network_insights_path.destination_port is defined %}
+      DestinationPort: {{ network_insights_path.destination_port }}
+{%- endif %}
+{%- if network_insights_path.source_ip is defined %}
+      SourceIp: {{ network_insights_path.source_ip }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if network_insights_path.tags is defined %}
+{%- for key,value in network_insights_path.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for network_insights_path in sceptre_user_data.network_insights_paths %}
+{%- set network_insights_path_name = network_insights_path.name %}
+  {{ network_insights_path_name }}:
+    Description: The ID of the path for {{ network_insights_path_name }}
+    Value:
+      Ref: {{ network_insights_path_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_path_name }}"
+
+  {{ network_insights_path_name }}CreatedDate:
+    Description: The time stamp when the path was created for {{ network_insights_path_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_path_name }}
+        - CreatedDate
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_path_name }}-CreatedDate"
+
+  {{ network_insights_path_name }}NetworkInsightsPathArn:
+    Description: The ARN for {{ network_insights_path_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_path_name }}
+        - NetworkInsightsPathArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_path_name }}-NetworkInsightsPathArn"
+
+  {{ network_insights_path_name }}NetworkInsightsPathId:
+    Description: The ID of the path Id for {{ network_insights_path_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_path_name }}
+        - NetworkInsightsPathId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_path_name }}-NetworkInsightsPathId"
+
+{%- endfor %}

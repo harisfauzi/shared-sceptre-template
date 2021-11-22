@@ -1,0 +1,81 @@
+---
+Description: EC2 Transit Gateway Connect(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for transit_gateway_connect in sceptre_user_data.transit_gateway_connects %}
+{%- set transit_gateway_connect_name = transit_gateway_connect.name %}
+  {{ transit_gateway_connect_name }}:
+    Type: AWS::EC2::TransitGatewayConnect
+    DeletionPolicy: {{ transit_gateway_connect.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_connect.update_replace_policy | default('Delete') }}
+    Properties:
+      Options:
+        Protocol: {{ transit_gateway_connect.options.protocol }}
+      TransportTransitGatewayAttachmentId: {{ transit_gateway_connect.transport_transit_gateway_attachment_id | trim }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if transit_gateway_connect.tags is defined %}
+{%- for key,value in transit_gateway_connect.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for transit_gateway_connect in sceptre_user_data.transit_gateway_connects %}
+{%- set transit_gateway_connect_name = transit_gateway_connect.name %}
+  {{ transit_gateway_connect_name }}:
+    Description: The transit gateway attachment for {{ transit_gateway_connect_name }}
+    Value:
+      Ref: {{ transit_gateway_connect_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_name }}"
+
+  {{ transit_gateway_connect_name }}CreationTime:
+    Description: The creation time for {{ transit_gateway_connect_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_connect_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_name }}-CreationTime"
+
+  {{ transit_gateway_connect_name }}State:
+    Description: The state of the attachment for {{ transit_gateway_connect_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_connect_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_name }}-State"
+
+  {{ transit_gateway_connect_name }}TransitGatewayAttachmentId:
+    Description: The ID of the transit gateway attachment for {{ transit_gateway_connect_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_connect_name }}
+        - TransitGatewayAttachmentId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_name }}-TransitGatewayAttachmentId"
+
+  {{ transit_gateway_connect_name }}TransitGatewayId:
+    Description: The ID of the transit gateway for {{ transit_gateway_connect_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_connect_name }}
+        - TransitGatewayId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_name }}-TransitGatewayId"
+
+{%- endfor %}

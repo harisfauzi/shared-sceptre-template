@@ -1,0 +1,41 @@
+---
+Description: EC2 Gateway Route Table Association(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for gateway_route_table_association in sceptre_user_data.gateway_route_table_associations %}
+{%- set gateway_route_table_association_name = gateway_route_table_association.name %}
+  {{ gateway_route_table_association_name }}:
+    Type: AWS::EC2::GatewayRouteTableAssociation
+    DeletionPolicy: {{ gateway_route_table_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ gateway_route_table_association.update_replace_policy | default('Delete') }}
+    Properties:
+      GatewayId: {{ gateway_route_table_association.gateway_id | trim }}
+      RouteTableId: {{ gateway_route_table_association.route_table_id | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for gateway_route_table_association in sceptre_user_data.gateway_route_table_associations %}
+{%- set gateway_route_table_association_name = gateway_route_table_association.name %}
+  {{ gateway_route_table_association_name }}:
+    Description: The ID of the gateway for {{ gateway_route_table_association_name }}
+    Value:
+      Ref: {{ gateway_route_table_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ gateway_route_table_association_name }}"
+
+  {{ gateway_route_table_association_name }}AssociationId:
+    Description: The ID of the route table association for {{ gateway_route_table_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ gateway_route_table_association_name }}
+        - AssociationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ gateway_route_table_association_name }}-AssociationId"
+
+{%- endfor %}

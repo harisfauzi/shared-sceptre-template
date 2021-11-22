@@ -1,0 +1,37 @@
+---
+Description: EC2 Host(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for host in sceptre_user_data.hosts %}
+{%- set host_name = host.name %}
+  {{ host_name }}:
+    Type: AWS::EC2::Host
+    DeletionPolicy: {{ host.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ host.update_replace_policy | default('Delete') }}
+    Properties:
+      AvailabilityZone: {{ host.availability_zone }}
+      InstanceType: {{ host.instance_type }}
+{%- if host.auto_placement is defined %}
+      AutoPlacement: {{ host.auto_placement }}
+{%- endif %}
+{%- if host.host_recovery is defined %}
+      HostRecovery: {{ host.host_recovery }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for host in sceptre_user_data.hosts %}
+{%- set host_name = host.name %}
+  {{ host_name }}:
+    Description: The host ID for {{ host_name }}
+    Value:
+      Ref: {{ host_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ host_name }}"
+
+{%- endfor %}

@@ -1,0 +1,117 @@
+---
+Description: EC2 Capacity Reservation(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for capacity_reservation in sceptre_user_data.capacity_reservations %}
+{%- set capacity_reservation_name = capacity_reservation.name %}
+  {{ capacity_reservation_name }}:
+    Type: AWS::EC2::CapacityReservation
+    DeletionPolicy: {{ capacity_reservation.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ capacity_reservation.update_replace_policy | default('Delete') }}
+    Properties:
+      AvailabilityZone: {{ capacity_reservation.availability_zone }}
+      InstanceCount: {{ capacity_reservation.instance_count }}
+      InstancePlatform: {{ capacity_reservation.instance_platform }}
+      InstanceType: {{ capacity_reservation.instance_type }}
+{%- if capacity_reservation.ebs_optimized is defined %}
+      EbsOptimized: {{ capacity_reservation.ebs_optimized }}
+{%- endif %}
+{%- if capacity_reservation.end_date is defined %}
+      EndDate: {{ capacity_reservation.end_date }}
+{%- endif %}
+{%- if capacity_reservation.end_date_type is defined %}
+      EndDateType: {{ capacity_reservation.end_date_type }}
+{%- endif %}
+{%- if capacity_reservation.ephemeral_storage is defined %}
+      EphemeralStorage: {{ capacity_reservation.ephemeral_storage }}
+{%- endif %}
+{%- if capacity_reservation.instance_match_criteria is defined %}
+      InstanceMatchCriteria: {{ capacity_reservation.instance_match_criteria }}
+{%- endif %}
+{%- if capacity_reservation.tag_specifications is defined %}  {# BEGIN {%- if capacity_reservation.tag_specifications is defined %} #}
+      TagSpecifications:
+{%- for tag_specification in capacity_reservation.tag_specifications %}
+        -
+{%- if tag_specification.resource_type is defined %}
+          ResourceType: {{ tag_specification.resource_type }}
+{%- endif %}
+{%- if tag_specification.tags is defined %}
+          Tags:
+{%- for key, value in tag_specification.tags.items() %}
+            - Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if capacity_reservation.tag_specifications is defined %} #}
+{%- if capacity_reservation.tenancy is defined %}
+      Tenancy: {{ capacity_reservation.tenancy }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for capacity_reservation in sceptre_user_data.capacity_reservations %}
+{%- set capacity_reservation_name = capacity_reservation.name %}
+  {{ capacity_reservation_name }}:
+    Description: Resource ID for Capacity Reservation {{ capacity_reservation_name }}
+    Value:
+      Ref: {{ capacity_reservation_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}"
+
+  {{ capacity_reservation_name }}AvailabilityZone:
+    Description: The Availability Zone for {{ capacity_reservation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_reservation_name }}
+        - AvailabilityZone
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-AvailabilityZone"
+
+  {{ capacity_reservation_name }}AvailableInstanceCount:
+    Description: The remaining number of instances that can be launched in the Capacity Reservation {{ capacity_reservation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_reservation_name }}
+        - AvailableInstanceCount
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-AvailableInstanceCount"
+
+  {{ capacity_reservation_name }}InstanceType:
+    Description: The type of instance for Capacity Reservation {{ capacity_reservation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_reservation_name }}
+        - InstanceType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-InstanceType"
+
+  {{ capacity_reservation_name }}Tenancy:
+    Description: The tenancy of the Capacity Reservatio {{ capacity_reservation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_reservation_name }}
+        - Tenancy
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-Tenancy"
+
+  {{ capacity_reservation_name }}TotalInstanceCount:
+    Description: The total number of instances for which the Capacity Reservation reserves capacity for {{ capacity_reservation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_reservation_name }}
+        - TotalInstanceCount
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-TotalInstanceCount"
+
+{%- endfor %}

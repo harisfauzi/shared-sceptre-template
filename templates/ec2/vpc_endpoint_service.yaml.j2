@@ -1,0 +1,44 @@
+---
+Description: EC2 VPC Endpoint Service(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for vpc_endpoint_service in sceptre_user_data.vpc_endpoint_services %}
+{%- set vpc_endpoint_service_name = vpc_endpoint_service.name %}
+  {{ vpc_endpoint_service_name }}:
+    Type: AWS::EC2::VPCEndpointService
+    DeletionPolicy: {{ vpc_endpoint_service.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_endpoint_service.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if vpc_endpoint_service.acceptance_required is defined %}
+      AcceptanceRequired: {{ vpc_endpoint_service.acceptance_required }}
+{%- endif %}
+{%- if vpc_endpoint_service.gateway_load_balancer_arns is defined %}
+      GatewayLoadBalancerArns:
+{%- for gateway_load_balancer_arn in vpc_endpoint_service.gateway_load_balancer_arns %}
+        - {{ gateway_load_balancer_arn | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if vpc_endpoint_service.network_load_balancer_arns is defined %}
+      NetworkLoadBalancerArns:
+{%- for network_load_balancer_arn in vpc_endpoint_service.network_load_balancer_arns %}
+        - {{ network_load_balancer_arn | trim }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for vpc_endpoint_service in sceptre_user_data.vpc_endpoint_services %}
+{%- set vpc_endpoint_service_name = vpc_endpoint_service.name %}
+  {{ vpc_endpoint_service_name }}:
+    Description: The ID of the VPC endpoint service configuration for {{ vpc_endpoint_service_name }}
+    Value:
+      Ref: {{ vpc_endpoint_service_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_endpoint_service_name }}"
+
+{%- endfor %}

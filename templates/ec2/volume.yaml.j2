@@ -1,0 +1,69 @@
+---
+Description: EC2 Volume(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for volume in sceptre_user_data.volumes %}
+{%- set volume_name = volume.name %}
+  {{ volume_name }}:
+    Type: AWS::EC2::Volume
+    DeletionPolicy: {{ volume.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ volume.update_replace_policy | default('Delete') }}
+    Properties:
+      AvailabilityZone: {{ volume.availability_zone }}
+{%- if volume.auto_enable_io is defined %}
+      AutoEnableIO: {{ volume.auto_enable_io }}
+{%- endif %}
+{%- if volume.encrypted is defined %}
+      Encrypted: {{ volume.encrypted }}
+{%- endif %}
+{%- if volume.iops is defined %}
+      Iops: {{ volume.iops }}
+{%- endif %}
+{%- if volume.kms_key_id is defined %}
+      KmsKeyId: {{ volume.kms_key_id | trim }}
+{%- endif %}
+{%- if volume.multi_attach_enabled is defined %}
+      MultiAttachEnabled: {{ volume.multi_attach_enabled }}
+{%- endif %}
+{%- if volume.outpost_arn is defined %}
+      OutpostArn: {{ volume.outpost_arn | trim }}
+{%- endif %}
+{%- if volume.size is defined %}
+      Size: {{ volume.size }}
+{%- endif %}
+{%- if volume.snapshot_id is defined %}
+      SnapshotId: {{ volume.snapshot_id | trim }}
+{%- endif %}
+{%- if volume.throughput is defined %}
+      Throughput: {{ volume.throughput }}
+{%- endif %}
+{%- if volume.volume_type is defined %}
+      VolumeType: {{ volume.volume_type }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if volume.tags is defined %}
+{%- for key,value in volume.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for volume in sceptre_user_data.volumes %}
+{%- set volume_name = volume.name %}
+  {{ volume_name }}:
+    Description: The resource name for {{ volume_name }}
+    Value:
+      Ref: {{ volume_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ volume_name }}"
+
+{%- endfor %}
