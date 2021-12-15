@@ -32,7 +32,7 @@ Resources:
 {%- endif %}
 {%- if patch_rule.patch_filter_group is defined %}
             PatchFilterGroup:
-{{ patch_filter_group_macro.prep(patch_rule.patch_filter_group) | indent(width=14, first=true) }}}
+{{ patch_filter_group_macro.prep(patch_rule.patch_filter_group) | indent(width=14, first=true) }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}  {# END {%- if patch_baseline.approval_rules is defined %} #}
