@@ -93,10 +93,12 @@ Resources:
 {%- endfor %}
 {%- endif %}
       Tags:
-        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if patch_baseline.tags is defined %}
 {%- for key,value in parameter.tags.items() %}
-        {{ key }}: {{ value }}
+        - Key: {{ key }}
+          Value: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
