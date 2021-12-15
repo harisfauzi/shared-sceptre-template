@@ -5,9 +5,9 @@ PatchFilters:
 {%- if patch_filter.key is defined %}
     Key: {{ patch_filter.key }}
 {%- endif %}
-{%- if patch_filter.values is defined %}
+{%- if patch_filter._values is defined %}
     Values: 
-{%- for value in patch_filter.values %}
+{%- for value in patch_filter._values %}
       - {{ value }}
 {%- endfor %}
 {%- endif %}
