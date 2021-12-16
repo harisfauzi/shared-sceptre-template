@@ -33,8 +33,8 @@ Resources:
 {%- endif %}
       Tags:
         SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if document.tags is defined %}
-{%- for key,value in document.tags.items() %}
+{%- if maintenance_window.tags is defined %}
+{%- for key,value in maintenance_window.tags.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
