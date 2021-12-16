@@ -1,5 +1,4 @@
 ---
----
 Description: SSM Maintenance Window(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
@@ -32,10 +31,12 @@ Resources:
       StartDate: {{ maintenance_window.start_date }}
 {%- endif %}
       Tags:
-        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if maintenance_window.tags is defined %}
 {%- for key,value in maintenance_window.tags.items() %}
-        {{ key }}: {{ value }}
+        - Key: {{ key }}
+          Value: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
