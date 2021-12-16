@@ -1,9 +1,9 @@
 {%- macro prep(targets) %}
 {%- for target in targets %}
 - Key: {{ target.key }}
-  Values: 
+  Values:
 {%- for value in target._values %}
-    - {{ value }}
+    - {{ value | trim }}
 {%- endfor %}
 {%- endfor %}
 {%- endmacro %}
