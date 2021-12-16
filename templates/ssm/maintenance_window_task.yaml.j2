@@ -7,7 +7,7 @@ Resources:
 {%- for maintenance_window_task in sceptre_user_data.maintenance_window_tasks %}
 {%- set maintenance_window_task_name = maintenance_window_task.name %}
   {{ maintenance_window_task_name }}:
-    Type: AWS::SSM::MaintenanceWindow
+    Type: AWS::SSM::MaintenanceWindowTask
     DeletionPolicy: {{ maintenance_window_task.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ maintenance_window_task.update_replace_policy | default('Delete') }}
     Properties:
