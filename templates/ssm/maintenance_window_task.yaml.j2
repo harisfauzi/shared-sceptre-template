@@ -39,6 +39,7 @@ Resources:
       ServiceRoleArn: {{ maintenance_window_task.service_role_arn }}
 {%- endif %}
 {%- if maintenance_window_task.targets is defined %}
+      Targets:
 {{ targets_macro.prep(maintenance_window_task.targets) | indent(width=8, first=true) }}
 {%- endif %}
 {%- if maintenance_window_task.task_invocation_parameters is defined %}  {# BEGIN {%- if maintenance_window_task.task_invocation_parameters is defined %} #}
