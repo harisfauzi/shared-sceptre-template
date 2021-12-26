@@ -68,6 +68,7 @@ Resources:
       SyncCompliance: {{ association.sync_compliance }}
 {%- endif %}
 {%- if association.targets is defined %}
+      Targets:
 {{ targets_macro.prep(association.targets) | indent(width=8, first=true) }}
 {%- endif %}
 {%- if association.wait_for_success_timeout_seconds is defined %}
