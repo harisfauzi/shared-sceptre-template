@@ -57,8 +57,11 @@ Resources:
 {%- endif %}  {# END {%- if association.output_location is defined %} #}
 {%- if association.parameters is defined %}
       Parameters:
-{%- for key, value in association.parameters.items() %}
-        {{ key }} : {{ value }}
+{%- for key, _values in association.parameters.items() %}
+        {{ key }}:
+{%- for value in _values %}
+          - {{ value }}
+{%- endfor %}
 {%- endfor %}
 {%- endif %}
 {%- if association.schedule_expression is defined %}
