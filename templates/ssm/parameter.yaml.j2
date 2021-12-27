@@ -59,6 +59,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ parameter_name }}-Type"
 
+{%- if parameter.value | length < 1000 %}
   {{ parameter_name }}Value:
     Description: The parameter value of {{ parameter_name }}
     Value:
@@ -68,5 +69,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ parameter_name }}-Value"
+{%- endif %}
 {%- endif %}
 {%- endfor %}
