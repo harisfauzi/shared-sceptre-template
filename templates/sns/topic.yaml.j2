@@ -29,7 +29,8 @@ Resources:
 {%- if topic.subscription is defined %}
       Subscription:
 {%- for subscription in topic.subscription %}
-        - {{ subscription }}
+        - Endpoint: {{ subscription.endpoint }}
+          Protocol: {{ subscription.protocol }}
 {%- endfor %}
 {%- endif %}
       Tags:
