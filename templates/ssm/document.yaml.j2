@@ -26,9 +26,9 @@ Resources:
 {%- if attachment.name is defined %}
           Name: {{ attachment.name }}
 {%- endif %}
-{%- if attachment.values is defined %}
+{%- if attachment._values is defined %}
           Values:
-{%- for value in attachment.values %}
+{%- for value in attachment._values %}
             - {{ value }}
 {%- endfor %}
 {%- endif %}
