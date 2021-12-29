@@ -56,10 +56,12 @@ Resources:
 {%- endfor %}
 {%- endif %}
       Tags:
-        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if document.tags is defined %}
 {%- for key,value in document.tags.items() %}
-        {{ key }}: {{ value }}
+        - Key: {{ key }}
+          Value: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if document.target_type is defined %}
