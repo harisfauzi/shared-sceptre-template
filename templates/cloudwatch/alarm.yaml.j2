@@ -69,18 +69,18 @@ Resources:
 {%- if metric.metric_stat is defined %}
           MetricStat:
             Metric:
-{%- if metric.metric_stat.dimensions is defined %}
+{%- if metric.metric_stat.metric.dimensions is defined %}
               Dimensions:
-{%- for name, value in metric.metric_stat.dimensions.items() %}
+{%- for name, value in metric.metric_stat.metric.dimensions.items() %}
                 - Name: {{ name }}
                   Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- if metric.metric_stat.metric_name is defined %}
-              MetricName: {{ metric.metric_stat.metric_name }}
+{%- if metric.metric_stat.metric.metric_name is defined %}
+              MetricName: {{ metric.metric_stat.metric.metric_name }}
 {%- endif %}
-{%- if metric.metric_stat.namespace is defined %}
-              Namespace: {{ metric.metric_stat.namespace }}
+{%- if metric.metric_stat.metric.namespace is defined %}
+              Namespace: {{ metric.metric_stat.metric.namespace }}
 {%- endif %}
             Period: {{ metric.metric_stat.period }}
             Stat: {{ metric.metric_stat.stat }}
