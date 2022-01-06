@@ -56,7 +56,7 @@ Resources:
 {%- if alarm.metrics is defined %}
       Metrics:
 {%- for metric in alarm.metrics %}  {# BEGIN {%- for metric in alarm.metrics %} #}
-        - Id: String
+        - Id: {{ metric.id }}
 {%- if metric.account_id is defined %}
           AccountId: {{ metric.account_id | trim }}
 {%- endif %}
