@@ -16,7 +16,9 @@ Resources:
 {%- for subnet_id in db_subnet_group.subnet_ids %}
         - {{ subnet_id | trim }}
 {%- endfor %}
+{%- if db_subnet_group.db_subnet_group_name is defined %}
       DBSubnetGroupName: {{ db_subnet_group.db_subnet_group_name }}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
