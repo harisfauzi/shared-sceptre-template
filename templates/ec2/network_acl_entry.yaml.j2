@@ -38,19 +38,3 @@ Resources:
         To: {{ nacl_entry.port_range.to }}
 {%- endif %}
 {%- endfor %}
-
-Outputs:
-
-{%- for nacl_entry in sceptre_user_data.network_acl_entries %}
-{%- set nacl_entry_name = nacl_entry.name %}
-  {{ nacl_entry_name }}:
-    Description: NetworkAclEntry ID for {{ nacl_entry_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ nacl_entry_name }}
-        - Id
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ nacl_entry_name }}"
-
-{%- endfor %}
