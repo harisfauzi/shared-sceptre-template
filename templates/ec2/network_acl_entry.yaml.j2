@@ -1,0 +1,56 @@
+---
+Description: Network ACL Entry(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for nacl_entry in sceptre_user_data.network_acl_entries %}
+{%- set nacl_entry_name = nacl_entry.name %}
+  {{ nacl_entry_name }}:
+    Type: AWS::EC2::NetworkAclEntry
+    DeletionPolicy: {{ nacl_entry_entry.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ nacl_entry_entry.update_replace_policy | default('Delete') }}
+    Properties:
+      NetworkAclId: {{ nacl_entry_entry.network_acl_id | trim }}
+      Protocol: {{ nacl_entry_entry.protocol }}
+      RuleAction: {{ nacl_entry_entry.rule_action }}
+      RuleNumber: {{ nacl_entry_entry.rule_number }}
+{%- if nacl_entry_entry.direction is defined %}
+      Egress: {{ 'true' if nacl_entry_entry.direction == 'egress' else 'false' }}
+{%- endif %}
+{%- if nacl_entry_entry.cidr_block is defined %}
+      CidrBlock: {{ nacl_entry_entry.cidr_block }}
+{%- endif %}
+{%- if nacl_entry_entry.ipv6_cidr_block is defined %}
+      Ipv6CidrBlock: {{ nacl_entry_entry.ipv6_cidr_block }}
+{%- endif %}
+{%- if nacl_entry_entry.icmp is defined %}
+      Icmp:
+{%- if nacl_entry_entry.icmp.code is defined %}
+        Code: {{ nacl_entry_entry.icmp.code }}
+{%- endif %}
+{%- if nacl_entry_entry.icmp.type is defined %}
+        Type: {{ nacl_entry_entry.icmp.type }}
+{%- endif %}
+{%- endif %}
+{%- if nacl_entry_entry.port_range is defined %}
+      PortRange:
+        From: {{ nacl_entry_entry.port_range.from }}
+        To: {{ nacl_entry_entry.port_range.to }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for nacl_entry in sceptre_user_data.network_acl_entries %}
+{%- set nacl_entry_name = nacl_entry.name %}
+  {{ nacl_entry_name }}:
+    Description: NetworkAclEntry ID for {{ nacl_entry_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ nacl_entry_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nacl_entry_name }}"
+
+{%- endfor %}
