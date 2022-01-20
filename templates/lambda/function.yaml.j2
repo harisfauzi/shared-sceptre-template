@@ -24,7 +24,7 @@ Resources:
         S3ObjectVersion: {{ function.code.s3_object_version }}
 {%- endif %}
 {%- if function.code.zip_file is defined %}
-        ZipFile:
+        ZipFile: |
 {{ function.code.zip_file | indent(width=10, first=true) }}
 {%- endif %}
       Role: {{ function.role }}
