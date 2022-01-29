@@ -1,0 +1,81 @@
+---
+Description: Glue Classifier(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for classifier in sceptre_user_data.classifiers %}
+{%- set classifier_name = classifier.name %}
+  {{ classifier_name }}:
+    Type: AWS::Glue::Classifier
+    DeletionPolicy: {{ classifier.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ classifier.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if classifier.csv_classifier is defined %}
+      CsvClassifier:
+{%- if classifier.csv_classifier.allow_single_column is defined %}
+        AllowSingleColumn: {{ classifier.csv_classifier.allow_single_column }}
+{%- endif %}
+{%- if classifier.csv_classifier.contains_header is defined %}
+        ContainsHeader: {{ classifier.csv_classifier.contains_header }}
+{%- endif %}
+{%- if classifier.csv_classifier.delimiter is defined %}
+        Delimiter: {{ classifier.csv_classifier.delimiter }}
+{%- endif %}
+{%- if classifier.csv_classifier.disable_value_trimming is defined %}
+        DisableValueTrimming: {{ classifier.csv_classifier.disable_value_trimming }}
+{%- endif %}
+{%- if classifier.csv_classifier.header is defined %}
+        Header:
+{%- for header in classifier.csv_classifier.header %}
+          - {{ header }}
+{%- endfor %}
+{%- endif %}
+{%- if classifier.csv_classifier.name is defined %}
+        Name: {{ classifier.csv_classifier.name }}
+{%- endif %}
+{%- if classifier.csv_classifier.quote_symbol is defined %}
+        QuoteSymbol: {{ classifier.csv_classifier.quote_symbol }}
+{%- endif %}
+{%- endif %}
+{%- if classifier.grok_classifier is defined %}
+      GrokClassifier:
+        Classification: {{ classifier.grok_classifier.classification }}
+        GrokPattern: {{ classifier.grok_classifier.grok_pattern }}
+{%- if classifier.grok_classifier.custom_patterns is defined %}
+        CustomPatterns: {{ classifier.grok_classifier.custom_patterns }}
+{%- endif %}
+{%- if classifier.grok_classifier.name is defined %}
+        Name: {{ classifier.grok_classifier.name }}
+{%- endif %}
+{%- endif %}
+{%- if classifier.json_classifier is defined %}
+      JsonClassifier:
+        JsonPath: {{ classifier.json_classifier.json_path }}
+{%- if classifier.json_classifier.name is defined %}
+        Name: {{ classifier.json_classifier.name }}
+{%- endif %}
+{%- endif %}
+{%- if classifier.xml_classifier is defined %}
+      XMLClassifier:
+        Classification: {{ classifier.xml_classifier.classification }}
+        RowTag: {{ classifier.xml_classifier.row_tag }}
+{%- if classifier.xml_classifier.name is defined %}
+        Name: {{ classifier.xml_classifier.name }}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for classifier in sceptre_user_data.classifiers %}
+{%- set classifier_name = classifier.name %}
+  {{ classifier_name }}:
+    Description: Classifier Name for {{ classifier_name }}
+    Value:
+      Ref: {{ classifier_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ classifier_name }}"
+
+{%- endfor %}

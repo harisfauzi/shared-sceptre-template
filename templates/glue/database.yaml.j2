@@ -1,0 +1,70 @@
+---
+Description: Glue Database(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for database in sceptre_user_data.databases %}
+{%- set database_name = database.name %}
+  {{ database_name }}:
+    Type: AWS::Glue::Database
+    DeletionPolicy: {{ database.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ database.update_replace_policy | default('Delete') }}
+    Properties:
+      CatalogId: {{ database.catalog_id | trim }}
+      DatabaseInput:
+{%- if database.database_input.create_table_default_permissions is defined %}
+        CreateTableDefaultPermissions:
+{%- for create_table_default_permission in database.database_input.create_table_default_permissions %}
+          -
+{%- if create_table_default_permission.permissions is defined %}
+            Permissions:
+{%- for permission in create_table_default_permission.permissions %}
+              - {{ permission }}
+{%- endfor %}
+{%- endif %}
+{%- if create_table_default_permission.principal is defined %}
+            Principal:
+              DataLakePrincipalIdentifier: {{ create_table_default_permission.principal.data_lake_principal_identifier | trim }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if database.database_input.description is defined %}
+        Description: {{ database.database_input.description }}
+{%- endif %}
+{%- if database.database_input.location_url is defined %}
+        LocationUri: {{ database.database_input.location_url }}
+{%- endif %}
+{%- if database.database_input.name is defined %}
+        Name: {{ database.database_input.name }}
+{%- endif %}
+{%- if database.database_input.parameters_json is defined %}
+        Parameters: '{{ database.database_input.parameters_json }}'
+{%- elif database.database_input.parameters is defined %}
+        Parameters:
+{{ database.database_input.parameters | indent(width=10, first=true) }}
+{%- endif %}
+{%- if database.database_input.target_database is defined %}
+        TargetDatabase:
+{%- if database.database_input.target_database.catalog_id is defined %}
+          CatalogId: {{ database.database_input.target_database.catalog_id | trim }}
+{%- endif %}
+{%- if database.database_input.target_database.database_name is defined %}
+          DatabaseName: {{ database.database_input.target_database.database_name }}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for database in sceptre_user_data.databases %}
+{%- set database_name = database.name %}
+  {{ database_name }}:
+    Description: Database Name for {{ database_name }}
+    Value:
+      Ref: {{ database_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_name }}"
+
+{%- endfor %}

@@ -1,0 +1,158 @@
+---
+Description: Glue Crawler(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for crawler in sceptre_user_data.crawlers %}
+{%- set crawler_name = crawler.name %}
+  {{ crawler_name }}:
+    Type: AWS::Glue::Crawler
+    DeletionPolicy: {{ crawler.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ crawler.update_replace_policy | default('Delete') }}
+    Properties:
+      Role: {{ crawler.role }}
+      Targets:
+{%- if crawler.targets.catalog_targets is defined %}
+        CatalogTargets:
+{%- for catalog_target in crawler.targets.catalog_targets %}
+          -
+{%- if catalog_target.database_name is defined %}
+            DatabaseName: {{ catalog_target.database_name }}
+{%- endif %}
+{%- if catalog_target.tables is defined %}
+            Tables:
+{%- for table in catalog_target.tables %}
+              - {{ table }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if crawler.targets.dynamo_db_targets is defined %}
+        DynamoDBTargets:
+{%- for dynamo_db_target in crawler.targets.dynamo_db_targets %}
+          - Path: {{ dynamo_db_target }}
+{%- endfor %}
+{%- endif %}
+{%- if crawler.targets.jdbc_targets is defined %}
+        JdbcTargets:
+{%- for jdbc_target in crawler.targets.jdbc_targets %}
+          -
+{%- if jdbc_target.connection_name is defined %}
+            ConnectionName: {{ jdbc_target.connection_name }}
+{%- endif %}
+{%- if jdbc_target.exclusions is defined %}
+            Exclusions:
+{%- for exclusion in jdbc_target.exclusions %}
+              - {{ exclusion }}
+{%- endfor %}
+{%- endif %}
+{%- if jdbc_target.path is defined %}
+            Path: {{ jdbc_target.path }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if crawler.targets.mongo_db_targets is defined %}
+        MongoDBTargets:
+{%- for mongo_db_target in crawler.targets.mongo_db_targets %}
+          -
+{%- if mongo_db_target.connection_name is defined %}
+            ConnectionName: {{ mongo_db_target.connection_name }}
+{%- endif %}
+{%- if mongo_db_target.path is defined %}
+            Path: {{ mongo_db_target.path }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if crawler.targets.s3_targets is defined %}
+        S3Targets:
+{%- for s3_target in crawler.targets.s3_targets %}
+          -
+{%- if s3_target.connection_name is defined %}
+            ConnectionName: {{ s3_target.connection_name }}
+{%- endif %}
+{%- if s3_target.dlq_event_queue_arn is defined %}
+            DlqEventQueueArn: {{ s3_target.dlq_event_queue_arn | trim }}
+{%- endif %}
+{%- if s3_target.event_queue_arn is defined %}
+            EventQueueArn: {{ s3_target.event_queue_arn | trim }}
+{%- endif %}
+{%- if s3_target.exclusions is defined %}
+            Exclusions:
+{%- for exclusion in s3_target.exclusions %}
+              - {{ exclusion }}
+{%- endfor %}
+{%- endif %}
+{%- if s3_target.path is defined %}
+            Path: {{ s3_target.path }}
+{%- endif %}
+{%- if s3_target.sample_size is defined %}
+            SampleSize: {{ s3_target.sample_size }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if crawler.classifiers is defined %}
+      Classifiers:
+{%- for classifier in crawler.classifiers %}
+        - {{ classifier }}
+{%- endfor %}
+{%- endif %}
+{%- if crawler.configuration is defined %}
+      Configuration: {{ crawler.configuration }}
+{%- endif %}
+{%- if crawler.crawler_security_configuration is defined %}
+      CrawlerSecurityConfiguration: {{ crawler.crawler_security_configuration }}
+{%- endif %}
+{%- if crawler.database_name is defined %}
+      DatabaseName: {{ crawler.database_name }}
+{%- endif %}
+{%- if crawler.description is defined %}
+      Description: {{ crawler.description }}
+{%- endif %}
+{%- if crawler.name is defined %}
+      Name: {{ crawler.name }}
+{%- endif %}
+{%- if crawler.recrawl_policy is defined %}
+      RecrawlPolicy:
+        RecrawlBehavior: {{ crawler.recrawl_policy.recrawl_behavior }}
+{%- endif %}
+{%- if crawler.schedule is defined %}
+      Schedule:
+        ScheduleExpression: {{ crawler.schedule.schedule_expression }}
+{%- endif %}
+{%- if crawler.schema_change_policy is defined %}
+      SchemaChangePolicy:
+{%- if crawler.schema_change_policy.delete_behaviour is defined %}
+        DeleteBehavior: {{ crawler.schema_change_policy.delete_behaviour }}
+{%- endif %}
+{%- if crawler.schema_change_policy.update_behavior is defined %}
+        UpdateBehavior: {{ crawler.schema_change_policy.update_behavior }}
+{%- endif %}
+{%- endif %}
+{%- if crawler.table_prefix is defined %}
+      TablePrefix: {{ crawler.table_prefix }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if crawler.tags is defined %}
+{%- for key,value in crawler.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for crawler in sceptre_user_data.crawlers %}
+{%- set crawler_name = crawler.name %}
+  {{ crawler_name }}:
+    Description: Crawler Name for {{ crawler_name }}
+    Value:
+      Ref: {{ crawler_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ crawler_name }}"
+
+{%- endfor %}

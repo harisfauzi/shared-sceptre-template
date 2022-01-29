@@ -1,0 +1,64 @@
+---
+Description: Glue Connection(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for connection in sceptre_user_data.connections %}
+{%- set connection_name = connection.name %}
+  {{ connection_name }}:
+    Type: AWS::Glue::Connection
+    DeletionPolicy: {{ connection.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ connection.update_replace_policy | default('Delete') }}
+    Properties:
+      CatalogId: {{ connection.catalog_id | trim }}
+      ConnectionInput:
+        ConnectionType: {{ connection.connection_input.connection_type }}
+{%- if connection.connection_input.connection_properties_json is defined %}
+        ConnectionProperties: '{{ connection.connection_input.connection_properties_json }}'
+{%- elif connection.connection_input.connection_properties is defined %}
+        ConnectionProperties:
+{{ connection.connection_input.connection_properties | indent(width=10, first=true) }}
+{%- endif %}
+{%- if connection.connection_input.description is defined %}
+        Description: {{ connection.connection_input.description }}
+{%- endif %}
+{%- if connection.connection_input.match_criteria is defined %}
+        MatchCriteria:
+{%- for match_criteria in connection.connection_input.match_criteria %}
+          - {{ match_criteria }}
+{%- endfor %}
+{%- endif %}
+{%- if connection.connection_input.name is defined %}
+        Name: {{ connection.connection_input.name }}
+{%- endif %}
+{%- if connection.connection_input.physical_connection_requirements is defined %}
+        PhysicalConnectionRequirements:
+{%- if connection.connection_input.physical_connection_requirements.availability_zone is defined %}
+          AvailabilityZone: {{ connection.connection_input.physical_connection_requirements.availability_zone }}
+{%- endif %}
+{%- if connection.connection_input.physical_connection_requirements.security_group_id_list is defined %}
+          SecurityGroupIdList:
+{%- for security_group in connection.connection_input.physical_connection_requirements.security_group_id_list %}
+            - {{ security_group | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if connection.connection_input.physical_connection_requirements.subnet_id is defined %}
+          SubnetId: {{ connection.connection_input.physical_connection_requirements.subnet_id | trim }}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for connection in sceptre_user_data.connections %}
+{%- set connection_name = connection.name %}
+  {{ connection_name }}:
+    Description: Connection Name for {{ connection_name }}
+    Value:
+      Ref: {{ connection_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_name }}"
+
+{%- endfor %}
