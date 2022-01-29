@@ -1,0 +1,86 @@
+---
+Description: Glue DevEndpoint(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for dev_endpoint in sceptre_user_data.dev_endpoints %}
+{%- set dev_endpoint_name = dev_endpoint.name %}
+  {{ dev_endpoint_name }}:
+    Type: AWS::Glue::DevEndpoint
+    DeletionPolicy: {{ dev_endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ dev_endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      RoleArn: {{ dev_endpoint.role_arn | trim }}
+{%- if dev_endpoint.arguments_json is defined %}
+      Arguments: '{{ dev_endpoint.arguments_json }}'
+{%- elif dev_endpoint.arguments is defined %}
+      Arguments:
+{{ dev_endpoint.arguments_json | indent(width=8, first=true) }}
+{%- endif %}
+{%- if dev_endpoint.endpoint_name is defined %}
+      EndpointName: {{ dev_endpoint.endpoint_name }}
+{%- endif %}
+{%- if dev_endpoint.extra_jars_s3_path is defined %}
+      ExtraJarsS3Path: {{ dev_endpoint.extra_jars_s3_path }}
+{%- endif %}
+{%- if dev_endpoint.extra_python_libs_s3_path is defined %}
+      ExtraPythonLibsS3Path: {{ dev_endpoint.extra_python_libs_s3_path }}
+{%- endif %}
+{%- if dev_endpoint.glue_version is defined %}
+      GlueVersion: {{ dev_endpoint.glue_version }}
+{%- endif %}
+{%- if dev_endpoint.number_of_nodes is defined %}
+      NumberOfNodes: {{ dev_endpoint.number_of_nodes }}
+{%- endif %}
+{%- if dev_endpoint.number_of_workers is defined %}
+      NumberOfWorkers: {{ dev_endpoint.number_of_workers }}
+{%- endif %}
+{%- if dev_endpoint.public_key is defined %}
+      PublicKey: {{ dev_endpoint.public_key }}
+{%- endif %}
+{%- if dev_endpoint.public_keys is defined %}
+      PublicKeys:
+{%- for public_key in dev_endpoint.public_keys %}
+        - {{ public_key }}
+{%- endfor %}
+{%- endif %}
+{%- if dev_endpoint.security_configuration is defined %}
+      SecurityConfiguration: {{ dev_endpoint.security_configuration }}
+{%- endif %}
+{%- if dev_endpoint.security_group_ids is defined %}
+      SecurityGroupIds:
+{%- for security_group_id dev_endpoint.security_group_ids %}
+        - {{ security_group_id | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if dev_endpoint.subnet_id is defined %}
+      SubnetId: {{ dev_endpoint.subnet_id | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if dev_endpoint.tags is defined %}
+{%- for key,value in dev_endpoint.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if dev_endpoint.worker_type is defined %}
+      WorkerType: {{ dev_endpoint.worker_type }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for dev_endpoint in sceptre_user_data.dev_endpoints %}
+{%- set dev_endpoint_name = dev_endpoint.name %}
+  {{ dev_endpoint_name }}:
+    Description: DevEndpoint Name for {{ dev_endpoint_name }}
+    Value:
+      Ref: {{ dev_endpoint_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ dev_endpoint_name }}"
+
+{%- endfor %}

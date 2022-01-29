@@ -1,0 +1,102 @@
+---
+Description: Glue Job(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for job in sceptre_user_data.jobs %}
+{%- set job_name = job.name %}
+  {{ job_name }}:
+    Type: AWS::Glue::Job
+    DeletionPolicy: {{ job.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ job.update_replace_policy | default('Delete') }}
+    Properties:
+      Command:
+{%- if job.command.name is defined %}
+        Name: {{ job.command.name }}
+{%- endif %}
+{%- if job.command.python_version is defined %}
+        PythonVersion: {{ job.command.python_version }}
+{%- endif %}
+{%- if job.command.script_location is defined %}
+        ScriptLocation: {{ job.command.script_location }}
+{%- endif %}
+      Role: {{ job.role | trim }}
+{%- if job.allocated_capacity is defined %}
+      AllocatedCapacity: {{ job.allocated_capacity }}
+{%- endif %}
+{%- if job.connections is defined %}
+      Connections:
+        Connections:
+{%- for connection in job.connections.connections %}
+          - {{ connection | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if job.default_arguments_json is defined %}
+      DefaultArguments: '{{ job.arguments_json }}'
+{%- elif job.default_arguments is defined %}
+      DefaultArguments:
+{{ job.default_arguments_json | indent(width=8, first=true) }}
+{%- endif %}
+{%- if job.description is defined %}
+      Description: {{ job.description }}
+{%- endif %}
+{%- if job.execution_property is defined %}
+      ExecutionProperty:
+        MaxConcurrentRuns: {{ job.execution_property.max_concurrent_runs }}
+{%- endif %}
+{%- if job.glue_version is defined %}
+      GlueVersion: {{ job.glue_version }}
+{%- endif %}
+{%- if job.log_uri is defined %}
+      LogUri: {{ job.log_uri }}
+{%- endif %}
+{%- if job.max_capacity is defined %}
+      MaxCapacity: {{ job.max_capacity }}
+{%- endif %}
+{%- if job.max_retries is defined %}
+      MaxRetries: {{ job.max_retries }}
+{%- endif %}
+{%- if job.name is defined %}
+      Name: {{ job.name }}
+{%- endif %}
+{%- if job.notification_property is defined %}
+      NotificationProperty:
+        NotifyDelayAfter: {{ job.notification_property.notify_delay_after }}
+{%- endif %}
+{%- if job.number_of_workers is defined %}
+      NumberOfWorkers: {{ job.number_of_workers }}
+{%- endif %}
+{%- if job.security_configuration is defined %}
+      SecurityConfiguration: {{ job.security_configuration }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if job.tags is defined %}
+{%- for key,value in job.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if job.timeout is defined %}
+      Timeout: {{ job.timeout }}
+{%- endif %}
+{%- if job.worker_type is defined %}
+      WorkerType: {{ job.worker_type }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for job in sceptre_user_data.jobs %}
+{%- set job_name = job.name %}
+  {{ job_name }}:
+    Description: Job Name for {{ job_name }}
+    Value:
+      Ref: {{ job_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ job_name }}"
+
+{%- endfor %}
