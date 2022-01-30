@@ -26,7 +26,7 @@ Resources:
         Parameters: '{{ table.table_input.parameters_json }}'
 {%- elif table.table_input.parameters is defined %}
         Parameters:
-{{ elif table.table_input.parameters | indent(width=10, first=true) }}
+{{ table.table_input.parameters | indent(width=10, first=true) }}
 {%- endif %}
 {%- if table.table_input.partition_keys is defined %}
         PartitionKeys:
