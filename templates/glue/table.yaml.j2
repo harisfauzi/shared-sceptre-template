@@ -25,7 +25,7 @@ Resources:
 {%- if table.table_input.parameters_json is defined %}
         Parameters: '{{ table.table_input.parameters_json }}'
 {%- elif table.table_input.parameters is defined %}
-        Parameters: |
+        Parameters:
 {{ elif table.table_input.parameters | indent(width=10, first=true) }}
 {%- endif %}
 {%- if table.table_input.partition_keys is defined %}
@@ -81,7 +81,7 @@ Resources:
 {%- if table.table_input.storage_descriptor.parameters_json is defined %}
           Parameters: '{{ table.table_input.storage_descriptor.parameters_json }}'
 {%- elif table.table_input.storage_descriptor.parameters is defined %}
-          Parameters: |
+          Parameters:
 {{ table.table_input.storage_descriptor.parameters | indent(width=12, first=true) }}
 {%- endif %}
 {%- if table.table_input.storage_descriptor.schema_reference is defined %}  {# BEGIN {%- if table.table_input.storage_descriptor.schema_reference is defined %} #}
@@ -113,7 +113,7 @@ Resources:
 {%- if table.table_input.storage_descriptor.serde_info.parameters_json is defined %}
             Parameters: '{{ table.table_input.storage_descriptor.serde_info.parameters_json }}'
 {%- elif table.table_input.storage_descriptor.serde_info.parameters is defined %}
-            Parameters: |
+            Parameters:
 {{ table.table_input.storage_descriptor.serde_info.parameters | indent(width=14, first=true) }}
 {%- endif %}
 {%- if table.table_input.storage_descriptor.serde_info.serialization_library is defined %}
