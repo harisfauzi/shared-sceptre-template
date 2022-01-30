@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for named_query in sceptre_user_data.named_querys %}
+{%- for named_query in sceptre_user_data.named_queries %}
 {%- set named_query_name = named_query.name %}
   {{ named_query_name }}:
     Type: AWS::Athena::NamedQuery
@@ -28,7 +28,7 @@ Resources:
 
 Outputs:
 
-{%- for named_query in sceptre_user_data.named_querys %}
+{%- for named_query in sceptre_user_data.named_queries %}
 {%- set named_query_name = named_query.name %}
   {{ named_query_name }}:
     Description: The name for {{ named_query_name }}
