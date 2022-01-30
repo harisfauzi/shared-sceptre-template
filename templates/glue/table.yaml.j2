@@ -1,0 +1,191 @@
+---
+Description: Glue Table(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for table in sceptre_user_data.tables %}
+{%- set table_name = table.name %}
+  {{ table_name }}:
+    Type: AWS::Glue::Table
+    DeletionPolicy: {{ table.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ table.update_replace_policy | default('Delete') }}
+    Properties:
+      CatalogId: {{ table.catalog_id | trim }}
+      DatabaseName: {{ table.database_name }}
+      TableInput:
+{%- if table.table_input.description is defined %}
+        Description: {{ table.table_input.description }}
+{%- endif %}
+{%- if table.table_input.name is defined %}
+        Name: {{ table.table_input.name }}
+{%- endif %}
+{%- if table.table_input.owner is defined %}
+        Owner: {{ table.table_input.owner }}
+{%- endif %}
+{%- if table.table_input.parameters_json is defined %}
+        Parameters: '{{ table.table_input.parameters_json }}'
+{%- elif table.table_input.parameters is defined %}
+        Parameters: |
+{{ elif table.table_input.parameters | indent(width=10, first=true) }}
+{%- endif %}
+{%- if table.table_input.partition_keys is defined %}
+        PartitionKeys:
+{%- for partition_key in table.table_input.partition_keys %}
+          - Name: {{ partition_key.name }}
+{%- if partition_key.comment is defined %}
+            Comment: {{ partition_key.comment }}
+{%- endif %}
+{%- if partition_key.type is defined %}
+            Type: {{ partition_key.type }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if table.table_input.retention is defined %}
+        Retention: {{ table.table_input.retention }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor is defined %}  {# BEGIN {%- if table.table_input.storage_descriptor is defined %} #}
+        StorageDescriptor:
+{%- if table.table_input.storage_descriptor.bucket_columns is defined %}
+          BucketColumns:
+{%- for bucket_column in table.table_input.storage_descriptor.bucket_columns %}
+            - {{ bucket_column }}
+{%- endfor %}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.columns is defined %}
+          Columns:
+{%- for column in table.table_input.storage_descriptor.columns %}
+            - Name: {{ column.name }}
+{%- if column.comment is defined %}
+              Comment: {{ column.comment }}
+{%- endif %}
+{%- if column.type is defined %}
+              Type: {{ column.type }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.compressed is defined %}
+          Compressed: {{ table.table_input.storage_descriptor.compressed }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.input_format is defined %}
+          InputFormat: {{ table.table_input.storage_descriptor.input_format }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.location is defined %}
+          Location: {{ table.table_input.storage_descriptor.location }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.number_of_buckets is defined %}
+          NumberOfBuckets: {{ table.table_input.storage_descriptor.number_of_buckets }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.output_format is defined %}
+          OutputFormat: {{ table.table_input.storage_descriptor.output_format }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.parameters_json is defined %}
+          Parameters: '{{ table.table_input.storage_descriptor.parameters_json }}'
+{%- elif table.table_input.storage_descriptor.parameters is defined %}
+          Parameters: |
+{{ table.table_input.storage_descriptor.parameters | indent(width=12, first=true) }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.schema_reference is defined %}  {# BEGIN {%- if table.table_input.storage_descriptor.schema_reference is defined %} #}
+          SchemaReference:
+{%- if table.table_input.storage_descriptor.schema_reference.schema_id is defined %}
+            SchemaId:
+{%- if table.table_input.storage_descriptor.schema_reference.schema_id.registry_name is defined %}
+              RegistryName: {{ table.table_input.storage_descriptor.schema_reference.schema_id.registry_name }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.schema_reference.schema_id.schema_arn is defined %}
+              SchemaArn: {{ table.table_input.storage_descriptor.schema_reference.schema_id.schema_arn | trim }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.schema_reference.schema_id.schema_name is defined %}
+              SchemaName: {{ table.table_input.storage_descriptor.schema_reference.schema_id.schema_name }}
+{%- endif %}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.schema_reference.schema_version_id is defined %}
+            SchemaVersionId: {{ table.table_input.storage_descriptor.schema_reference.schema_version_id }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.schema_reference.schema_version_number is defined %}
+            SchemaVersionNumber: {{ table.table_input.storage_descriptor.schema_reference.schema_version_number }}
+{%- endif %}
+{%- endif %}  {# END {%- if table.table_input.storage_descriptor.schema_reference is defined %} #}
+{%- if table.table_input.storage_descriptor.serde_info is defined %}  {# BEGIN {%- if table.table_input.storage_descriptor.serde_info is defined %} #}
+          SerdeInfo:
+{%- if table.table_input.storage_descriptor.serde_info.name is defined %}
+            Name: {{ table.table_input.storage_descriptor.serde_info.name }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.serde_info.parameters_json is defined %}
+            Parameters: '{{ table.table_input.storage_descriptor.serde_info.parameters_json }}'
+{%- elif table.table_input.storage_descriptor.serde_info.parameters is defined %}
+            Parameters: |
+{{ table.table_input.storage_descriptor.serde_info.parameters | indent(width=14, first=true) }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.serde_info.serialization_library is defined %}
+            SerializationLibrary: {{ table.table_input.storage_descriptor.serde_info.serialization_library }}
+{%- endif %}
+{%- endif %}  {# END {%- if table.table_input.storage_descriptor.serde_info is defined %} #}
+{%- if table.table_input.storage_descriptor.skewed_info is defined %}  {# BEGIN {%- if table.table_input.storage_descriptor.skewed_info is defined %} #}
+          SkewedInfo:
+{%- if table.table_input.storage_descriptor.skewed_info.skewed_column_names is defined %}
+            SkewedColumnNames:
+{%- for column_name in table.table_input.storage_descriptor.skewed_info.skewed_column_names %}
+              - {{ column_name }}
+{%- endfor %}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.skewed_info.skewed_column_value_location_maps_json is defined %}
+            SkewedColumnValueLocationMaps: '{{ table.table_input.storage_descriptor.skewed_info.skewed_column_value_location_maps_json }}'
+{%- elif table.table_input.storage_descriptor.skewed_info.skewed_column_value_location_maps is defined %}
+            SkewedColumnValueLocationMaps: |
+{{ table.table_input.storage_descriptor.skewed_info.skewed_column_value_location_maps | indent(width=14, first=true) }}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.skewed_info.skewed_column_values is defined %}
+            SkewedColumnValues:
+{%- for skewed_column_value in table.table_input.storage_descriptor.skewed_info.skewed_column_values %}
+              - {{ skewed_column_value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}  {# END {%- if table.table_input.storage_descriptor.skewed_info is defined %} #}
+{%- if table.table_input.storage_descriptor.sort_columns is defined %}
+          SortColumns:
+{%- for sort_column in table.table_input.storage_descriptor.sort_columns %}
+            - Column: {{ sort_column.column }}
+              SortOrder: {{ sort_column.sort_order }}
+{%- endfor %}
+{%- endif %}
+{%- if table.table_input.storage_descriptor.stored_as_sub_directories is defined %}
+          StoredAsSubDirectories: {{ table.table_input.storage_descriptor.stored_as_sub_directories }}
+{%- endif %}
+{%- endif %}  {# END {%- if table.table_input.storage_descriptor is defined %} #}
+{%- if table.table_input.table_type is defined %}
+        TableType: {{ table.table_input.table_type }}
+{%- endif %}
+{%- if table.table_input.target_table is defined %}  {# BEGIN {%- if table.table_input.target_table is defined %} #}
+        TargetTable:
+{%- if table.table_input.target_table.catalog_id is defined %}
+          CatalogId: {{ table.table_input.target_table.catalog_id }}
+{%- endif %}
+{%- if table.table_input.target_table.database_name is defined %}
+          DatabaseName: {{ table.table_input.target_table.database_name }}
+{%- endif %}
+{%- if table.table_input.target_table.name is defined %}
+          Name: {{ table.table_input.target_table.name }}
+{%- endif %}
+{%- endif %}  {# END {%- if table.table_input.target_table is defined %} #}
+{%- if table.table_input.view_expanded_text is defined %}
+        ViewExpandedText: {{ table.table_input.view_expanded_text }}
+{%- endif %}
+{%- if table.table_input.view_original_text is defined %}
+        ViewOriginalText: {{ table.table_input.view_original_text }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for table in sceptre_user_data.tables %}
+{%- set table_name = table.name %}
+  {{ table_name }}:
+    Description: Table Name for {{ table_name }}
+    Value:
+      Ref: {{ table_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ table_name }}"
+
+{%- endfor %}
