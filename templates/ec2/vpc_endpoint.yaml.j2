@@ -36,7 +36,7 @@ Resources:
 {%- endif %}
 {%- if vpc_endpoint.subnet_ids is defined %}
       SubnetIds:
-{%- for subnet_id invpc_endpoint.subnet_ids %}
+{%- for subnet_id in vpc_endpoint.subnet_ids %}
         - {{ subnet_id }}
 {%- endfor %}
 {%- endif %}
