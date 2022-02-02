@@ -90,7 +90,9 @@ Resources:
           Description: "Primary network interface"
           DeviceIndex: "0"
           GroupSet: {{ nat_instance.security_group_ids }}
+{%- if nat_instance.use_ipv6 is defined %}
           Ipv6AddressCount: 1
+{%- endif %}
           SubnetId: {{ nat_instance.subnet_id | trim }}
       SourceDestCheck: False
       Tags:
