@@ -1,0 +1,115 @@
+---
+Description: ResourceGroups Group(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for group in sceptre_user_data.groups %}
+{%- set group_name = group.name %}
+  {{ group_name }}:
+    Type: AWS::ResourceGroups::Group
+    DeletionPolicy: {{ group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ group.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ group.group_name }}
+{%- if group.configuration is defined %}  {# BEGIN {%- if group.configuration is defined %} #}
+      Configuration:
+{%- for configuration_item in group.configuration %}
+        -
+{%- if configuration_item.parameters is defined %}
+          Parameters:
+{%- for parameter in configuration_item.parameters %}
+            -
+{%- if parameter.name is defined %}
+              Name: {{ parameter.name }}
+{%- endif %}
+{%- if parameter._values is defined %}
+              Values:
+{%- for _value in parameter._values %}
+                - {{ _value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if configuration_item.type is defined %}
+          Type: {{ configuration_item.type }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if group.configuration is defined %} #}
+{%- if group.description is defined %}
+      Description: {{ group.description }}
+{%- endif %}
+{%- if group.resource_query is defined %}  {# BEGIN {%- if group.resource_query is defined %} #}
+      ResourceQuery:
+{%- if group.resource_query.query is defined %}
+        Query:
+{%- if group.resource_query.query.resource_type_filters is defined %}
+          ResourceTypeFilters:
+{%- for _filter in group.resource_query.query.resource_type_filters %}
+            - {{ _filter }}
+{%- endfor %}
+{%- endif %}
+{%- if group.resource_query.query.stack_identifier is defined %}
+          StackIdentifier: {{ group.resource_query.query.stack_identifier }}
+{%- endif %}
+{%- if group.resource_query.query.tag_filters is defined %}
+          TagFilters:
+{%- for tag_filter in group.resource_query.query.tag_filters %}
+            -
+{%- if tag_filter.key is defined %}
+              Key: {{ tag_filter.key }}
+{%- endif %}
+{%- if tag_filter._values is defined %}
+              Values:
+{%- for _value in tag_filter._values %}
+                - {{ _value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if group.resource_query.type is defined %}
+        Type: {{ group.resource_query.type }}
+{%- endif %}
+{%- endif %}  {# END {%- if group.resource_query is defined %} #}
+{%- if group.resources is defined %}
+      Resources:
+{%- for resource in group.resources %}
+        - {{ resource }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if group.tags is defined %}
+{%- for key,value in group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for group in sceptre_user_data.groups %}
+{%- set group_name = group.name %}
+  {{ group_name }}:
+    Description: Resource Group Name for {{ group_name }}
+    Value:
+      Ref: {{ group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ group_name }}"
+
+  {{ group_name }}Arn:
+    Description: The ARN for {{ group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ group_name }}-Arn"
+
+{%- endfor %}
