@@ -133,40 +133,40 @@ Outputs:
       Ref: {{ user_name }}accesskey1
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ access_key_name }}-accesskey1-AccessKeyId"
+        Fn::Sub: "${AWS::StackName}-{{ user_name }}-accesskey1-AccessKeyId"
 
 {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %}  {# BEGIN {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %} #}
   {{ user_name }}accesskey1SecretAccessKey:
-    Description: The ARN for {{ access_key_name }}
+    Description: The Secret Access Key for {{ user_name }} accesskey1
     Value:
       Fn::GetAtt:
-        - {{ access_key_name }}accesskey1
+        - {{ user_name }}accesskey1
         - SecretAccessKey
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ access_key_name }}-accesskey1-SecretAccessKey"
+        Fn::Sub: "${AWS::StackName}-{{ user_name }}-accesskey1-SecretAccessKey"
 {%- endif %}    {# END {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %} #}
 {%- endif %}  {# END {%- if user.access_key_1 is defined %} #}
 
 {%- if user.access_key_2 is defined %}  {# BEGIN {%- if user.access_key_2 is defined %} #}
-  {{ user_name }}accesskey1AccessKeyId:
-    Description: Access Key Id for {{ user_name }}accesskey1
+  {{ user_name }}accesskey2AccessKeyId:
+    Description: Access Key Id for {{ user_name }}accesskey2
     Value:
-      Ref: {{ user_name }}accesskey1
+      Ref: {{ user_name }}accesskey2
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ access_key_name }}-accesskey1-AccessKeyId"
+        Fn::Sub: "${AWS::StackName}-{{ user_name }}-accessaccesskey2key1-AccessKeyId"
 
 {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %}  {# BEGIN {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %} #}
   {{ user_name }}accesskey1SecretAccessKey:
-    Description: The ARN for {{ access_key_name }}
+    Description: The Secret Access Key for {{ user_name }} accesskey2
     Value:
       Fn::GetAtt:
-        - {{ access_key_name }}accesskey1
+        - {{ user_name }}accesskey2
         - SecretAccessKey
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ access_key_name }}-accesskey1-SecretAccessKey"
+        Fn::Sub: "${AWS::StackName}-{{ user_name }}-accesskey1-SecretAccessKey"
 {%- endif %}    {# END {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %} #}
 {%- endif %}  {# END {%- if user.access_key_2 is defined %} #}
 
