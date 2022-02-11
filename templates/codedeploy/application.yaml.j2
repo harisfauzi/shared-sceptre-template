@@ -1,0 +1,44 @@
+---
+Description: CodeDeploy Application(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Type: AWS::CodeDeploy::Application
+    DeletionPolicy: {{ application.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ application.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if application.application_name is defined %}
+      ApplicationName: {{ application.application_name }}
+{%- endif %}
+{%- if application.compute_platform is defined %}
+      ComputePlatform: {{ application.compute_platform }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if application.tags is defined %}
+{%- for key,value in application.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Description: Application Name for {{ application_name }}
+    Value:
+      Ref: {{ application_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}"
+
+{%- endfor %}
