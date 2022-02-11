@@ -1,0 +1,54 @@
+---
+Description: CodeDeploy DeploymentConfig(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for deployment_config in sceptre_user_data.deployment_configs %}
+{%- set deployment_config_name = deployment_config.name %}
+  {{ deployment_config_name }}:
+    Type: AWS::CodeDeploy::DeploymentConfig
+    DeletionPolicy: {{ deployment_config.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ deployment_config.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if deployment_config.compute_platform is defined %}
+      ComputePlatform: {{ deployment_config.compute_platform }}
+{%- endif %}
+{%- if deployment_config.deployment_config_name is defined %}
+      DeploymentConfigName: {{ deployment_config.deployment_config_name }}
+{%- endif %}
+{%- if deployment_config.minimum_healthy_hosts is defined %}
+      MinimumHealthyHosts:
+        Type: {{ deployment_config.minimum_healthy_hosts.type }}
+        Value: {{ deployment_config.minimum_healthy_hosts.value }}
+{%- endif %}
+{%- if deployment_config.traffic_routing_config is defined %}
+      TrafficRoutingConfig:
+        Type: {{ deployment_config.traffic_routing_config.type }}
+{%- if deployment_config.traffic_routing_config.time_based_canary is defined %}
+        TimeBasedCanary:
+          CanaryInterval: {{ deployment_config.traffic_routing_config.time_based_canary.canary_interval }}
+          CanaryPercentage: {{ deployment_config.traffic_routing_config.time_based_canary.canary_percentage }}
+{%- endif %}
+{%- if deployment_config.traffic_routing_config.time_based_linear is defined %}
+        TimeBasedLinear:
+          LinearInterval: {{ deployment_config.traffic_routing_config.time_based_linear.linear_interval }}
+          LinearPercentage: {{ deployment_config.traffic_routing_config.time_based_linear.linear_percentage }}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for deployment_config in sceptre_user_data.deployment_configs %}
+{%- set deployment_config_name = deployment_config.name %}
+  {{ deployment_config_name }}:
+    Description: Deployment configuration name for {{ deployment_config_name }}
+    Value:
+      Ref: {{ deployment_config_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ deployment_config_name }}"
+
+{%- endfor %}

@@ -1,0 +1,201 @@
+---
+{%- import 'macros/tag_filter.yaml' as tag_filter_macro %}
+Description: CodeDeploy DeploymentGroup(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for deployment_group in sceptre_user_data.deployment_groups %}
+{%- set deployment_group_name = deployment_group.name %}
+  {{ deployment_group_name }}:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    DeletionPolicy: {{ deployment_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ deployment_group.update_replace_policy | default('Delete') }}
+    Properties:
+      ApplicationName: {{ deployment_group.application_name }}
+      ServiceDeploymentGroupArn: {{ deployment_group.service_deployment_group_arn | trim }}
+{%- if deployment_group.alarm_configuration is defined %}
+      AlarmConfiguration:
+{%- if deployment_group.alarm_configuration.alarms is defined %}
+        Alarms:
+{%- for alarm in deployment_group.alarm_configuration.alarms %}
+          - Name: {{ alarm | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if deployment_group.alarm_configuration.enabled is defined %}
+        Enabled: {{ deployment_group.alarm_configuration.enabled }}
+{%- endif %}
+{%- if deployment_group.alarm_configuration.ignore_poll_alarm_failure is defined %}
+        IgnorePollAlarmFailure: {{ deployment_group.alarm_configuration.ignore_poll_alarm_failure }}
+{%- endif %}
+{%- endif %}
+{%- if deployment_group.auto_rollback_configuration is defined %}
+      AutoRollbackConfiguration:
+{%- if deployment_group.auto_rollback_configuration.enabled is defined %}
+        Enabled: {{ deployment_group.auto_rollback_configuration.enabled }}
+{%- endif %}
+{%- if deployment_group.auto_rollback_configuration.events is defined %}
+        Events:
+{%- for event in deployment_group.auto_rollback_configuration.events %}
+          - {{ event }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if deployment_group.auto_scaling_groups is defined %}
+      AutoScalingGroups:
+{%- for auto_scaling_group deployment_group.auto_scaling_groups %}
+        - {{ auto_scaling_group }}
+{%- endfor %}
+{%- endif %}
+{%- if deployment_group.blue_green_deployment_configuration is defined %}
+      BlueGreenDeploymentConfiguration:
+{%- if deployment_group.blue_green_deployment_configuration.deployment_ready_option is defined %}
+        DeploymentReadyOption:
+{%- if deployment_group.blue_green_deployment_configuration.deployment_ready_option.action_on_timeout is defined %}
+          ActionOnTimeout: {{ deployment_group.blue_green_deployment_configuration.deployment_ready_option.action_on_timeout }}
+{%- endif %}
+{%- if deployment_group.blue_green_deployment_configuration.deployment_ready_option.wait_time_in_minutes is defined %}
+          WaitTimeInMinutes: {{ deployment_group.blue_green_deployment_configuration.deployment_ready_option.wait_time_in_minutes }}
+{%- endif %}
+{%- endif %}
+{%- if deployment_group.blue_green_deployment_configuration.green_fleet_provisioning_option is defined %}
+        GreenFleetProvisioningOption:
+          Action: {{ deployment_group.blue_green_deployment_configuration.green_fleet_provisioning_option.action }}
+{%- endif %}
+{%- if deployment_group.blue_green_deployment_configuration.terminate_blue_instances_on_deployment_success is defined %}
+        TerminateBlueInstancesOnDeploymentSuccess:
+{%- if deployment_group.blue_green_deployment_configuration.terminate_blue_instances_on_deployment_success.action is defined %}
+          Action: {{ deployment_group.blue_green_deployment_configuration.terminate_blue_instances_on_deployment_success.action }}
+{%- endif %}
+{%- if deployment_group.blue_green_deployment_configuration.terminate_blue_instances_on_deployment_success.termination_wait_time_in_minutes is defined %}
+          TerminationWaitTimeInMinutes: {{ deployment_group.blue_green_deployment_configuration.terminate_blue_instances_on_deployment_success.termination_wait_time_in_minutes }}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- if deployment_group.deployment is defined %}
+      Deployment:
+        Revision:
+{%- if deployment_group.deployment.git_hub_location is defined %}
+          GitHubLocation:
+            CommitId: {{ deployment_group.deployment.git_hub_location.commit_id }}
+            Repository: {{ deployment_group.deployment.git_hub_location.repository }}
+{%- endif %}
+{%- if deployment_group.deployment.revision_type is defined %}
+          RevisionType: {{ deployment_group.deployment.revision_type }}
+{%- endif %}
+{%- if deployment_group.deployment.s3_location is defined %}
+          S3Location:
+            Bucket: {{ deployment_group.deployment.s3_location.bucket }}
+            Key: {{ deployment_group.deployment.s3_location.key }}
+{%- if deployment_group.deployment.s3_location.bundle_type is defined %}
+            BundleType: {{ deployment_group.deployment.s3_location.bundle_type }}
+{%- endif %}
+{%- if deployment_group.deployment.s3_location.e_tag is defined %}
+            ETag: {{ deployment_group.deployment.s3_location.e_tag }}
+{%- endif %}
+{%- if deployment_group.deployment.s3_location.version is defined %}
+            Version: {{ deployment_group.deployment.s3_location.version }}
+{%- endif %}
+{%- endif %}
+{%- if deployment_group.deployment.description is defined %}
+        Description: {{ deployment_group.deployment.description }}
+{%- endif %}
+{%- if deployment_group.deployment.ignore_application_stop_failures is defined %}
+        IgnoreApplicationStopFailures: {{ deployment_group.deployment.ignore_application_stop_failures }}
+{%- endif %}
+{%- endif %}
+{%- if deployment_group.deployment_config_name is defined %}
+      DeploymentConfigName: {{ deployment_group.deployment_config_name }}
+{%- endif %}
+{%- if deployment_group.deployment_group_name is defined %}
+      DeploymentGroupName: {{ deployment_group.deployment_group_name }}
+{%- endif %}
+{%- if deployment_group.deployment_style is defined %}
+      DeploymentStyle:
+{%- if deployment_group.deployment_style.deployment_option is defined %}
+        DeploymentOption: {{ deployment_group.deployment_style.deployment_option }}
+{%- endif %}
+{%- if deployment_group.deployment_style.deployment_type is defined %}
+        DeploymentType: {{ deployment_group.deployment_style.deployment_type }}
+{%- endif %}
+{%- endif %}
+{%- if deployment_group.ec2_tag_filters is defined %}
+      Ec2TagFilters:
+{{ tag_filter_macro.prep(deployment_group.ec2_tag_filters) | indent(width=8, first=True) }}
+{%- endif %}
+{%- if deployment_group.ec2_tag_set is defined %}
+      Ec2TagSet:
+        Ec2TagSetList:
+{%- for ec2_tag_set_list_object in deployment_group.ec2_tag_set.ec2_tag_set_list %}
+          - Ec2TagGroup:
+{{ tag_filter_macro.prep(ec2_tag_set_list_object.ec2_tag_group) | indent(width=14, first=True) }}
+{%- endfor %}
+{%- endif %}
+{%- if deployment_group.ecs_services is defined %}
+      ECSServices:
+{%- for ecs_service in deployment_group.ecs_services %}
+        - ClusterName: {{ ecs_service.cluster_name }}
+          ServiceName: {{ ecs_service.service_name }}
+{%- endfor %}
+{%- endif %}
+{%- if deployment_group.load_balancer_info is defined %}
+      LoadBalancerInfo:
+{%- if deployment_group.load_balancer_info.elb_info_list is defined %}
+        ElbInfoList:
+{%- for elb_info in deployment_group.load_balancer_info.elb_info_list %}
+          - Name: {{ elb_info.name }}
+{%- endfor %}
+{%- endif %}
+{%- if deployment_group.load_balancer_info.target_group_info_list is defined %}
+        TargetGroupInfoList:
+{%- for target_group_info in deployment_group.load_balancer_info.target_group_info_list %}
+          - Name: {{ target_group_info.name }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if deployment_group.on_premises_instance_tag_filters is defined %}
+      OnPremisesInstanceTagFilters:
+{{ tag_filter_macro.prep(deployment_group.on_premises_instance_tag_filters) | indent(width=8, first=True) }}
+{%- endif %}
+{%- if deployment_group.on_premises_tag_set is defined %}
+      OnPremisesTagSet:
+        OnPremisesTagSetList:
+{%- for on_premises_tag_set in deployment_group.on_premises_tag_set.on_premises_tag_set_list %}
+          - OnPremisesTagGroup:
+{{ tag_filter_macro.prep(on_premises_tag_set) | indent(width=12, first=True) }}
+{%- endfor %}
+{%- endif %}
+{%- if deployment_group.trigger_configurations is defined %}
+      TriggerConfigurations:
+{%- for trigger_configuration in deployment_group.trigger_configurations %}
+        -
+{%- if trigger_configuration.trigger_events is defined %}
+          TriggerEvents:
+{%- for trigger_event in trigger_configuration.trigger_events %}
+            - {{ trigger_event | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if trigger_configuration.trigger_name is defined %}
+          TriggerName: {{ trigger_configuration.trigger_name | trim }}
+{%- endif %}
+{%- if trigger_configuration.trigger_target_arn is defined %}
+          TriggerTargetArn: {{ trigger_configuration.trigger_target_arn | trim }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for deployment_group in sceptre_user_data.deployment_groups %}
+{%- set deployment_group_name = deployment_group.name %}
+  {{ deployment_group_name }}:
+    Description: Deployment Group Name for {{ deployment_group_name }}
+    Value:
+      Ref: {{ deployment_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ deployment_group_name }}"
+
+{%- endfor %}
