@@ -1,0 +1,70 @@
+---
+Description: S3 MultiRegionAccessPoint(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %}  {# BEGIN {%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %} #}
+{%- set multi_region_access_point_name = multi_region_access_point.name %}
+  {{ multi_region_access_point_name }}:
+    Type: AWS::S3::MultiRegionAccessPoint
+    DeletionPolicy: {{ multi_region_access_point.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ multi_region_access_point.update_replace_policy | default('Delete') }}
+    Properties:
+      Regions:
+{%- for region in multi_region_access_point.regions %}
+        - Bucket: {{ region.bucket }}
+{%- endfor %}
+{%- if multi_region_access_point.name is defined %}
+      Name: {{ multi_region_access_point.name }}
+{%- endif %}
+{%- if multi_region_access_point.public_access_block_configuration is defined %}
+      PublicAccessBlockConfiguration:
+{%- if multi_region_access_point.public_access_block_configuration.block_publi_acls is defined %}
+        BlockPublicAcls: {{ multi_region_access_point.public_access_block_configuration.block_publi_acls }}
+{%- endif %}
+{%- if multi_region_access_point.public_access_block_configuration.block_public_policy is defined %}
+        BlockPublicPolicy: {{ multi_region_access_point.public_access_block_configuration.block_public_policy }}
+{%- endif %}
+{%- if multi_region_access_point.public_access_block_configuration.ignore_public_acls is defined %}
+        IgnorePublicAcls: {{ multi_region_access_point.public_access_block_configuration.ignore_public_acls }}
+{%- endif %}
+{%- if multi_region_access_point.public_access_block_configuration.restrict_public_buckets is defined %}
+        RestrictPublicBuckets: {{ multi_region_access_point.public_access_block_configuration.restrict_public_buckets }}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}  {# END {%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %} #}
+
+Outputs:
+{%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %}
+{%- set multi_region_access_point_name = multi_region_access_point.name %}
+
+  {{ multi_region_access_point_name }}:
+    Description: The name of Multi Region Access Point for {{ multi_region_access_point_name }}
+    Value:
+      Ref: {{ multi_region_access_point_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ multi_region_access_point_name }}"
+
+  {{ multi_region_access_point_name }}Alias:
+    Description: The alias for {{ multi_region_access_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ multi_region_access_point_name }}
+        - Alias
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ multi_region_access_point_name }}-Alias"
+
+  {{ multi_region_access_point_name }}CreatedAt:
+    Description: The timestamp of when the Multi-Region Access Point {{ multi_region_access_point_name }} is created.
+    Value:
+      Fn::GetAtt:
+        - {{ multi_region_access_point_name }}
+        - CreatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ multi_region_access_point_name }}-CreatedAt"
+
+{%- endfor %}

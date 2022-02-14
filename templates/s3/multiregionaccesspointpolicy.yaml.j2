@@ -1,0 +1,35 @@
+---
+Description: S3 MultiRegionAccessPointPolicy(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policys %}  {# BEGIN {%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policys %} #}
+{%- set multi_region_access_point_policy_name = multi_region_access_point_policy.name %}
+  {{ multi_region_access_point_policy_name }}:
+    Type: AWS::S3::MultiRegionAccessPointPolicy
+    DeletionPolicy: {{ multi_region_access_point_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ multi_region_access_point_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      MrapName: {{ multi_region_access_point_policy.mrap_name }}
+{%- if multi_region_access_point_policy.policy_json is defined %}
+      Policy: '{{ multi_region_access_point_policy.policy_json }}'
+{%- else %}
+      Policy: |
+{{ multi_region_access_point_policy.policy | indent(width=8, first=True) }}
+{%- endif %}
+
+{%- endfor %}  {# END {%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policys %} #}
+
+Outputs:
+{%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policys %}
+{%- set multi_region_access_point_policy_name = multi_region_access_point_policy.name %}
+
+  {{ multi_region_access_point_policy_name }}:
+    Description: The name of Multi Region Access Point for {{ multi_region_access_point_policy_name }}
+    Value:
+      Ref: {{ multi_region_access_point_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ multi_region_access_point_policy_name }}"
+
+{%- endfor %}
