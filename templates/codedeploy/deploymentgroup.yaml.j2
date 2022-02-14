@@ -13,7 +13,7 @@ Resources:
     UpdateReplacePolicy: {{ deployment_group.update_replace_policy | default('Delete') }}
     Properties:
       ApplicationName: {{ deployment_group.application_name }}
-      ServiceDeploymentGroupArn: {{ deployment_group.service_deployment_group_arn | trim }}
+      ServiceRoleArn: {{ deployment_group.service_role_arn | trim }}
 {%- if deployment_group.alarm_configuration is defined %}
       AlarmConfiguration:
 {%- if deployment_group.alarm_configuration.alarms is defined %}
@@ -43,7 +43,7 @@ Resources:
 {%- endif %}
 {%- if deployment_group.auto_scaling_groups is defined %}
       AutoScalingGroups:
-{%- for auto_scaling_group deployment_group.auto_scaling_groups %}
+{%- for auto_scaling_group in deployment_group.auto_scaling_groups %}
         - {{ auto_scaling_group }}
 {%- endfor %}
 {%- endif %}
