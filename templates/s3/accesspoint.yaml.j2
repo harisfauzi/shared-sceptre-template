@@ -1,0 +1,93 @@
+---
+Description: S3 AccessPoint(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for access_point in sceptre_user_data.access_points %}  {# BEGIN {%- for access_point in sceptre_user_data.access_points %} #}
+{%- set access_point_name = access_point.name %}
+  {{ access_point_name }}:
+    Type: AWS::S3::AccessPoint
+    DeletionPolicy: {{ access_point.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ access_point.update_replace_policy | default('Delete') }}
+    Properties:
+      Bucket: {{ access_point.bucket | trim }}
+{%- if access_point.access_point_name is defined %}
+      Name: {{ access_point.access_point_name }}
+{%- endif %}
+{%- if access_point.policy_json is defined %}
+      Policy: '{{ access_point.policy_json }}'
+{%- elif access_point.policy is defined %}
+      Policy: |
+{{ access_point.policy | indent(width=8, first=True) }}
+{%- endif %}
+{%- if access_point.policy_status_json is defined %}
+      PolicyStatus: '{{ access_point.policy_status_json }}'
+{%- elif access_point.policy_status is defined %}
+      PolicyStatus: |
+{{ access_point.policy_status | indent(width=8, first=True) }}
+{%- endif %}
+{%- if access_point.public_access_block_configuration is defined %}
+      PublicAccessBlockConfiguration:
+{%- if access_point.public_access_block_configuration.block_public_acls is defined %}
+        BlockPublicAcls: {{ access_point.public_access_block_configuration.block_public_acls }}
+{%- endif %}
+{%- if access_point.public_access_block_configuration.block_public_policy is defined %}
+        BlockPublicPolicy: {{ access_point.public_access_block_configuration.block_public_policy }}
+{%- endif %}
+{%- if access_point.public_access_block_configuration.ignore_public_acls is defined %}
+        IgnorePublicAcls: {{ access_point.public_access_block_configuration.ignore_public_acls }}
+{%- endif %}
+{%- if access_point.public_access_block_configuration.restrict_public_buckets is defined %}
+        RestrictPublicBuckets: {{ access_point.public_access_block_configuration.restrict_public_buckets }}
+{%- endif %}
+{%- endif %}
+{%- if access_point.vpc_configuration is defined %}
+      VpcConfiguration:
+        VpcId: {{ access_point.vpc_configuration.vpc_id | trim }}
+{%- endif %}
+
+{%- endfor %}  {# END {%- for access_point in sceptre_user_data.access_points %} #}
+
+Outputs:
+{%- for access_point in sceptre_user_data.access_points %}
+{%- set access_point_name = access_point.name %}
+
+  {{ access_point_name }}:
+    Description: Access Point Name for {{ access_point_name }}
+    Value:
+      Ref: {{ access_point_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}"
+
+  {{ access_point_name }}Alias:
+    Description: The alias for {{ access_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_point_name }}
+        - Alias
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-Alias"
+
+  {{ access_point_name }}Arn:
+    Description: The ARN for {{ access_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_point_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-Arn"
+
+  {{ access_point_name }}NetworkOrigin:
+    Description: Indicates whether the access point {{ access_point_name }} allows access from the internet.
+    Value:
+      Fn::GetAtt:
+        - {{ access_point_name }}
+        - NetworkOrigin
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-NetworkOrigin"
+
+{%- endfor %}
