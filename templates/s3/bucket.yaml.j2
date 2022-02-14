@@ -169,19 +169,26 @@ Resources:
 {%- if rule.id is defined %}
               Id: {{ rule.id }}
 {%- endif %}
-{%- if rule.non_current_version_expiraration_in_days is defined %}
-              NoncurrentVersionExpirationInDays: {{ rule.non_current_version_expiraration_in_days }}
+{%- if rule.noncurrent_version_expiration is defined %}
+              NoncurrentVersionExpiration:
+                NoncurrentDays: {{ rule.noncurrent_version_expiration.noncurrent_days }}
+{%- if rule.noncurrent_version_expiration.noncurrent_days.newer_noncurrent_versions is defined %}
+                NewerNoncurrentVersions: {{ rule.noncurrent_version_expiration.noncurrent_days.newer_noncurrent_versions }}
 {%- endif %}
-{%- if rule.non_current_version_transitions is defined %}
+{%- endif %}
+{%- if rule.noncurrent_version_expiration_in_days is defined %}
+              NoncurrentVersionExpirationInDays: {{ rule.noncurrent_version_expiration_in_days }}
+{%- endif %}
+{%- if rule.noncurrent_version_transitions is defined %}
               NoncurrentVersionTransition:
-                StorageClass: {{ rule.non_current_version_transitions.storage_class }}
-                TransitionInDays: {{ rule.non_current_version_transitions.transition_in_days }}
+                StorageClass: {{ rule.noncurrent_version_transitions.storage_class }}
+                TransitionInDays: {{ rule.noncurrent_version_transitions.transition_in_days }}
 {%- endif %}
-{%- if rule.non_current_version_transitionss is defined %}
+{%- if rule.noncurrent_version_transitions is defined %}
               NoncurrentVersionTransitions:
-{%- for non_current_version_transition in rule.non_current_version_transitionss %}
-                - StorageClass: {{ non_current_version_transition.storage_class }}
-                  TransitionInDays: {{ non_current_version_transition.transition_in_days }}
+{%- for noncurrent_version_transition in rule.noncurrent_version_transitions %}
+                - StorageClass: {{ noncurrent_version_transition.storage_class }}
+                  TransitionInDays: {{ noncurrent_version_transition.transition_in_days }}
 {%- endfor %}
 {%- endif %}
 {%- if rule.prefix is defined %}
