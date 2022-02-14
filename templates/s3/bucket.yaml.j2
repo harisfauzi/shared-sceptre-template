@@ -172,8 +172,8 @@ Resources:
 {%- if rule.noncurrent_version_expiration is defined %}
               NoncurrentVersionExpiration:
                 NoncurrentDays: {{ rule.noncurrent_version_expiration.noncurrent_days }}
-{%- if rule.noncurrent_version_expiration.noncurrent_days.newer_noncurrent_versions is defined %}
-                NewerNoncurrentVersions: {{ rule.noncurrent_version_expiration.noncurrent_days.newer_noncurrent_versions }}
+{%- if rule.noncurrent_version_expiration.newer_noncurrent_versions is defined %}
+                NewerNoncurrentVersions: {{ rule.noncurrent_version_expiration.newer_noncurrent_versions }}
 {%- endif %}
 {%- endif %}
 {%- if rule.noncurrent_version_expiration_in_days is defined %}
