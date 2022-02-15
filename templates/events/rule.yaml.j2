@@ -16,6 +16,7 @@ Resources:
 {%- if rule.event_pattern_json is defined %}
       EventPattern: {{ rule.event_pattern_json }}
 {%- elif rule.event_pattern is defined %}
+      EventPattern:
 {{ rule.event_pattern | indent(width=8, first=true) }}
 {%- else %}
       ScheduleExpression: {{ rule.schedule_expression }}
