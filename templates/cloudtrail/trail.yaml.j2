@@ -30,9 +30,9 @@ Resources:
           DataResources:
 {%- for data_resource in event_selector.data_resources %}
             - Type: {{ data_resource.type }}
-{%- if data_resource.values is defined %}
+{%- if data_resource._values is defined %}
               Values:
-{%- for item in data_resource.values %}
+{%- for item in data_resource._values %}
                 - {{ item }}
 {%- endfor %}
 {%- endif %}
