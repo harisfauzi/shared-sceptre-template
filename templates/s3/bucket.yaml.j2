@@ -252,6 +252,10 @@ Resources:
 {%- endif %}  {# if bucket.metrics_configuration is defined #}
 {%- if bucket.notification_configuration is defined %}
       NotificationConfiguration:
+{%- if bucket.notification_configuration.event_bridge_configuration is defined %}
+        EventBridgeConfiguration:
+          EventBridgeEnabled: {{ bucket.notification_configuration.event_bridge_configuration.event_bridge_enabled }}
+{%- endif %}
 {%- if bucket.notification_configuration.lambda_configurations is defined %}
         LambdaConfigurations:
 {%- for lambda_configuration in bucket.notification_configuration.lambda_configurations %}

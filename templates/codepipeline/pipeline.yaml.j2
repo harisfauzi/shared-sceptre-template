@@ -117,4 +117,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ pipeline_name }}-Version"
+
+
+  {{ pipeline_name }}Arn:
+    Description: The ARN for {{ pipeline_name }}
+    Value:
+      Fn::Join:
+        - ''
+        - - Fn::Sub: "arn:${AWS::Partition}:codepipeline:${AWS::Region}:${AWS::AccountId}:"
+          - Ref: {{ pipeline_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ pipeline_name }}-Arn"
+
 {%- endfor %}
