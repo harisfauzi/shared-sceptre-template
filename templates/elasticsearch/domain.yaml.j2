@@ -1,0 +1,237 @@
+---
+Description: Elasticsearch Domain(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+Parameters:
+{%- for domain in sceptre_user_data.domains %}
+{%- set domain_name = domain.name %}
+{%- if domain.master_user_password is defined %}
+  {{ domain_name }}MasterUserPassword:
+    Type: String
+    Description: Password for {{ user_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+Resources:
+
+{%- for domain in sceptre_user_data.domains %}
+{%- set domain_name = domain.name %}
+  {{ domain_name }}:
+    Type: AWS::Elasticsearch::Domain
+    DeletionPolicy: {{ domain.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ domain.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if domain.access_policies_json is defined %}
+      AccessPolicies: {{ access_policies_json }}
+{%- elif domain.access_policies is defined %}
+      AccessPolicies:
+{{ domain.access_policies | indent(width=8, first=True) }}
+{%- endif %}
+{%- if domain.advanced_options is defined %}
+      AdvancedOptions:
+{%- for key,value in domain.advanced_options.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if domain.advanced_security_options is defined %}  {# BEGIN {%- if domain.advanced_security_options is defined %} #}
+      AdvancedSecurityOptions:
+{%- if domain.advanced_security_options.enabled is defined %}
+        Enabled: {{ domain.advanced_security_options.enabled }}
+{%- endif %}
+{%- if domain.advanced_security_options.internal_user_database_enabled is defined %}
+        InternalUserDatabaseEnabled: {{ domain.advanced_security_options.internal_user_database_enabled }}
+{%- endif %}
+{%- if domain.advanced_security_options.master_user_options is defined %}
+        MasterUserOptions:
+{%- if domain.advanced_security_options.master_user_options.master_user_arn is defined %}
+          MasterUserARN: {{ domain.advanced_security_options.master_user_options.master_user_arn | trim }}
+{%- endif %}
+{%- if domain.advanced_security_options.master_user_options.master_user_name is defined %}
+          MasterUserName: {{ domain.advanced_security_options.master_user_options.master_user_name }}
+{%- endif %}
+{%- if domain.advanced_security_options.master_user_options.master_user_password is defined %}
+          MasterUserPassword: {{ domain.advanced_security_options.master_user_options.master_user_password }}
+            Ref: {{ domain_name }}MasterUserPassword
+{%- endif %}
+{%- endif %}
+{%- endif %}  {# END {%- if domain.advanced_security_options is defined %} #}
+{%- if domain.cognito_options is defined %}  {# BEGIN {%- if domain.cognito_options is defined %} #}
+      CognitoOptions:
+{%- if domain.cognito_options.enabled is defined %}
+        Enabled: {{ domain.cognito_options.enabled }}
+{%- endif %}
+{%- if domain.cognito_options.identity_pool_id is defined %}
+        IdentityPoolId: {{ domain.cognito_options.identity_pool_id | trim }}
+{%- endif %}
+{%- if domain.cognito_options.role_arn is defined %}
+        RoleArn: {{ domain.cognito_options.role_arn | trim }}
+{%- endif %}
+{%- if domain.cognito_options.user_pool_id is defined %}
+        UserPoolId: {{ domain.cognito_options.user_pool_id | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if domain.cognito_options is defined %} #}
+{%- if domain.domain_endpoint_options is defined %}  {# BEGIN {%- if domain.domain_endpoint_options is defined %} #}
+      DomainEndpointOptions:
+{%- if domain.domain_endpoint_options.custom_endpoint is defined %}
+        CustomEndpoint: {{ domain.domain_endpoint_options.custom_endpoint }}
+{%- endif %}
+{%- if domain.domain_endpoint_options.custom_endpoint_certificate_arn is defined %}
+        CustomEndpointCertificateArn: {{ domain.domain_endpoint_options.custom_endpoint_certificate_arn | trim }}
+{%- endif %}
+{%- if domain.domain_endpoint_options.custom_endpoint_enabled is defined %}
+        CustomEndpointEnabled: {{ domain.domain_endpoint_options.custom_endpoint_enabled }}
+{%- endif %}
+{%- if domain.domain_endpoint_options.enforce_https is defined %}
+        EnforceHTTPS: {{ domain.domain_endpoint_options.enforce_https }}
+{%- endif %}
+{%- if domain.domain_endpoint_options.tls_security_policy is defined %}
+        TLSSecurityPolicy: {{ domain.domain_endpoint_options.tls_security_policy }}
+{%- endif %}
+{%- endif %}  {# END {%- if domain.domain_endpoint_options is defined %} #}
+{%- if domain.domain_name is defined %}
+      DomainName: {{ domain.domain_name }}
+{%- endif %}
+{%- if domain.ebs_options is defined %}  {# BEGIN {%- if domain.ebs_options is defined %} #}
+      EBSOptions:
+{%- if domain.ebs_options.ebs_enabled is defined %}
+        EBSEnabled: {{ domain.ebs_options.ebs_enabled }}
+{%- endif %}
+{%- if domain.ebs_options.iops is defined %}
+        Iops: {{ domain.ebs_options.iops }}
+{%- endif %}
+{%- if domain.ebs_options.volume_size is defined %}
+        VolumeSize: {{ domain.ebs_options.volume_size }}
+{%- endif %}
+{%- if domain.ebs_options.volume_type is defined %}
+        VolumeType: {{ domain.ebs_options.volume_type }}
+{%- endif %}
+{%- endif %}  {# END {%- if domain.ebs_options is defined %} #}
+{%- if domain.elasticsearch_cluster_config is defined %}  {# BEGIN {%- if domain.elasticsearch_cluster_config is defined %} #}
+      ElasticsearchClusterConfig:
+{%- if domain.elasticsearch_cluster_config.cold_storage_options is defined %}
+        ColdStorageOptions:
+          Enabled: {{ domain.elasticsearch_cluster_config.cold_storage_options.enabled }}
+{%- endif %}
+{%- if domain.elasticsearch_cluster_config.dedicated_master_count is defined %}
+        DedicatedMasterCount: {{ domain.elasticsearch_cluster_config.dedicated_master_count }}
+{%- endif %}
+{%- if domain.elasticsearch_cluster_config.dedicated_master_enabled is defined %}
+        DedicatedMasterEnabled: {{ domain.elasticsearch_cluster_config.dedicated_master_enabled }}
+{%- endif %}
+{%- if domain.elasticsearch_cluster_config.dedicated_master_type is defined %}
+        DedicatedMasterType: {{ domain.elasticsearch_cluster_config.dedicated_master_type }}
+{%- endif %}
+{%- if domain.elasticsearch_cluster_config.instance_count is defined %}
+        InstanceCount: {{ domain.elasticsearch_cluster_config.instance_count }}
+{%- endif %}
+{%- if domain.elasticsearch_cluster_config.instance_type is defined %}
+        InstanceType: {{ domain.elasticsearch_cluster_config.instance_type }}
+{%- endif %}
+{%- if domain.elasticsearch_cluster_config.warm_count is defined %}
+        WarmCount: {{ domain.elasticsearch_cluster_config.warm_count }}
+{%- endif %}
+{%- if domain.elasticsearch_cluster_config.warm_enabled is defined %}
+        WarmEnabled: {{ domain.elasticsearch_cluster_config.warm_enabled }}
+{%- endif %}
+{%- if domain.elasticsearch_cluster_config.warm_type is defined %}
+        WarmType: {{ domain.elasticsearch_cluster_config.warm_type }}
+{%- endif %}
+{%- if domain.elasticsearch_cluster_config.zone_awareness_config is defined %}
+        ZoneAwarenessConfig:
+          AvailabilityZoneCount: {{ domain.elasticsearch_cluster_config.zone_awareness_config.availability_zone_count }}
+{%- endif %}
+{%- if domain.elasticsearch_cluster_config.zone_awareness_enabled is defined %}
+        ZoneAwarenessEnabled: {{ domain.elasticsearch_cluster_config.zone_awareness_enabled }}
+{%- endif %}
+{%- endif %}  {# END {%- if domain.elasticsearch_cluster_config is defined %} #}
+{%- if domain.elasticsearch_version is defined %}
+      ElasticsearchVersion: {{ domain.elasticsearch_version }}
+{%- endif %}
+{%- if domain.encryption_at_rest_options is defined %}  {# BEGIN {%- if domain.encryption_at_rest_options is defined %} #}
+      EncryptionAtRestOptions:
+{%- if domain.encryption_at_rest_options.enabled is defined %}
+        Enabled: {{ domain.encryption_at_rest_options.enabled }}
+{%- endif %}
+{%- if domain.encryption_at_rest_options.kms_key_id is defined %}
+        KmsKeyId: {{ domain.encryption_at_rest_options.kms_key_id | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if domain.encryption_at_rest_options is defined %} #}
+{%- if domain.log_publishing_options is defined %}
+      LogPublishingOptions:
+{%- for key, value in domain.log_publishing_options.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if domain.node_to_node_encryption_options is defined %}
+      NodeToNodeEncryptionOptions:
+        Enabled: {{ domain.node_to_node_encryption_options.enabled }}
+{%- endif %}
+{%- if domain.snapshot_options is defined %}
+      SnapshotOptions:
+        AutomatedSnapshotStartHour: {{ domain.snapshot_options.automated_snapshot_start_hour }}
+{%- endif %}
+{%- if domain.vpc_options is defined %}  {# BEGIN {%- if domain.vpc_options is defined %} #}
+      VPCOptions:
+{%- if domain.vpc_options.security_group_ids is defined %}
+        SecurityGroupIds:
+{%- for security_group_id in domain.vpc_options.security_group_ids %}
+          - {{ security_group_id | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if domain.vpc_options.subnet_ids is defined %}
+        SubnetIds:
+{%- for subnet_id in domain.vpc_options.subnet_ids %}
+          - {{ subnet_id | trim }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}  {# END {%- if domain.vpc_options is defined %} #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if domain.tags is defined %}
+{%- for key,value in domain.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for domain in sceptre_user_data.domains %}
+{%- set domain_name = domain.name %}
+  {{ domain_name }}:
+    Description: Resource Name for {{ domain_name }}
+    Value:
+      Ref: {{ domain_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}"
+
+  {{ domain_name }}Arn:
+    Description: The ARN for for the domain {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-Arn"
+
+  {{ domain_name }}DomainEndpoint:
+    Description: The domain-specific endpoint that's used for requests to the OpenSearch APIs for {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - DomainEndpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-DomainEndpoint"
+
+{%- endfor %}
