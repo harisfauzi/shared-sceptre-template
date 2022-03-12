@@ -1,0 +1,104 @@
+---
+Description: DMS ReplicationInstance(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for replication_instance in sceptre_user_data.replication_instances %}
+{%- set replication_instance_name = replication_instance.name %}
+  {{ replication_instance_name }}:
+    Type: AWS::DMS::ReplicationInstance
+    DeletionPolicy: {{ replication_instance.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ replication_instance.update_replace_policy | default('Delete') }}
+    Properties:
+      ReplicationInstanceClass: {{ replication_instance.replication_instance_class }}
+{%- if replication_instance.allocated_storage is defined %}
+      AllocatedStorage: {{ replication_instance.allocated_storage }}
+{%- endif %}
+{%- if replication_instance.allow_major_version_upgrade is defined %}
+      AllowMajorVersionUpgrade: {{ replication_instance.allow_major_version_upgrade }}
+{%- endif %}
+{%- if replication_instance.auto_minor_version_upgrade is defined %}
+      AutoMinorVersionUpgrade: {{ replication_instance.auto_minor_version_upgrade }}
+{%- endif %}
+{%- if replication_instance.availability_zone is defined %}
+      AvailabilityZone: {{ replication_instance.availability_zone }}
+{%- endif %}
+{%- if replication_instance.engine_version is defined %}
+      EngineVersion: {{ replication_instance.engine_version }}
+{%- endif %}
+{%- if replication_instance.kms_key_id is defined %}
+      KmsKeyId: {{ replication_instance.kms_key_id | trim }}
+{%- endif %}
+{%- if replication_instance.multi_az is defined %}
+      MultiAZ: {{ replication_instance.multi_az }}
+{%- endif %}
+{%- if replication_instance.preferred_maintenace_window is defined %}
+      PreferredMaintenanceWindow: {{ replication_instance.preferred_maintenace_window }}
+{%- endif %}
+{%- if replication_instance.publicly_accessible is defined %}
+      PubliclyAccessible: {{ replication_instance.publicly_accessible }}
+{%- endif %}
+{%- if replication_instance.replication_instance_identifier is defined %}
+      ReplicationInstanceIdentifier: {{ replication_instance.replication_instance_identifier | trim }}
+{%- endif %}
+{%- if replication_instance.replication_subnet_group_identifier is defined %}
+      ReplicationSubnetGroupIdentifier: {{ replication_instance.replication_subnet_group_identifier | trim }}
+{%- endif %}
+{%- if replication_instance.resource_identifier is defined %}
+      ResourceIdentifier: {{ replication_instance.resource_identifier | trim }}
+{%- endif %}
+{%- if replication_instance.vpc_security_group_ids is defined %}
+      VpcSecurityGroupIds:
+{%- for vpc_security_group_id in replication_instance.vpc_security_group_ids %}
+        - {{ vpc_security_group_id }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if replication_instance.tags is defined %}
+{%- for key,value in replication_instance.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for replication_instance in sceptre_user_data.replication_instances %}
+{%- set replication_instance_name = replication_instance.name %}
+  {{ replication_instance_name }}:
+    Description: ARN for {{ replication_instance_name }}
+    Value:
+      Ref: {{ replication_instance_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_instance_name }}"
+
+  {{ replication_instance_name }}ReplicationInstancePrivateIpAddress0:
+    Description: The first private IP addresses for {{ replication_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ replication_instance_name }}
+        - ReplicationInstancePrivateIpAddresses[0]
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_instance_name }}-ReplicationInstancePrivateIpAddress0"
+
+{%- if replication_instance.publicly_accessible is defined and replication_instance.publicly_accessible %}
+  {{ replication_instance_name }}ReplicationInstancePublicIpAddress0:
+    Description: The first public IP addresses for {{ replication_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ replication_instance_name }}
+        - ReplicationInstancePublicIpAddresses[0]
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_instance_name }}-ReplicationInstancePublicIpAddress0"
+
+{%- endif %}
+
+{%- endfor %}
