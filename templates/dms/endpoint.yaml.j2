@@ -1,0 +1,577 @@
+---
+Description: DMS Endpoint(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+Parameters:
+{%- for endpoint in sceptre_user_data.endpoints %}
+{%- set endpoint_name = endpoint.name %}
+{%- if endpoint.password is defined %}
+  {{ endpoint_name }}Password:
+    Type: String
+    Description: Password for {{ endpoint_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.password is defined %}
+  {{ endpoint }}GcpMySQLSettingsPassword:
+    Type: String
+    Description: GcpMySQLSettings Password for {{ endpoint_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- if endpoint.kafka_settings.sasl_password is defined %}
+  {{ endpoint_name }}KafkaSettingsSaslPassword:
+    Type: String
+    Description: KafkaSettings SaslPassword for {{ endpoint_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- if endpoint.kafka_settings.ssl_client_key_password is defined %}
+  {{ endpoint_name }}KafkaSettingsSslClientKeyPassword:
+    Type: String
+    Description: KafkaSettings SslClientKeyPassword for {{ endpoint_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- if endpoint.mongo_db_settings.password is defined %}
+  {{ endpoint_name }}MongoDbSettingsPassword:
+    Type: String
+    Description: MongoDbSettings Password for {{ endpoint_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- if endpoint.redis_settings.auth_password is defined %}
+  {{ endpoint_name }}RedisSettingsAuthPassword:
+    Type: String
+    Description: RedisSettings AuthPassword for {{ endpoint_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- if endpoint.password is defined %}
+  {{ endpoint_name }}Password:
+    Type: String
+    Description: Password for {{ endpoint_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+Resources:
+
+{%- for endpoint in sceptre_user_data.endpoints %}
+{%- set endpoint_name = endpoint.name %}
+  {{ endpoint_name }}:
+    Type: AWS::DMS::Endpoint
+    DeletionPolicy: {{ endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      EndpointType: {{ endpoint.endpoint_type }}
+      EngineName: {{ endpoint.engine_name }}
+{%- if endpoint.certificate_arn is defined %}
+      CertificateArn: {{ endpoint.certificate_arn | trim }}
+{%- endif %}
+{%- if endpoint.database_name is defined %}
+      DatabaseName: {{ endpoint.database_name }}
+{%- endif %}
+{%- if endpoint.endpoint_identifier is defined %}
+      EndpointIdentifier: {{ endpoint.endpoint_identifier | trim }}
+{%- endif %}
+{%- if endpoint.extra_connection_attributes is defined %}
+      ExtraConnectionAttributes: {{ endpoint.extra_connection_attributes }}
+{%- endif %}
+{%- if endpoint.kms_key_id is defined %}
+      KmsKeyId: {{ endpoint.kms_key_id | trim }}
+{%- endif %}
+{%- if endpoint.password is defined %}
+      Password:
+        Ref: {{ endpoint_name }}Password
+{%- endif %}
+{%- if endpoint.port is defined %}
+      Port: {{ endpoint.port }}
+{%- endif %}
+{%- if endpoint.resource_identifier is defined %}
+      ResourceIdentifier: {{ endpoint.resource_identifier | trim }}
+{%- endif %}
+{%- if endpoint.server_name is defined %}
+      ServerName: {{ endpoint.server_name }}
+{%- endif %}
+{%- if endpoint.ssl_mode is defined %}
+      SslMode: {{ endpoint.ssl_mode }}
+{%- endif %}
+{%- if endpoint.username is defined %}
+      Username: {{ endpoint.username }}
+{%- endif %}
+{%- if endpoint.doc_db_settings is defined %}  {# BEGIN {%- if endpoint.doc_db_settings is defined %} #}
+      DocDbSettings:
+{%- if endpoint.doc_db_settings.secrets_manager_access_role_arn is defined %}
+        SecretsManagerAccessRoleArn: {{ endpoint.doc_db_settings.secrets_manager_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.doc_db_settings.secrets_manager_secret_id is defined %}
+        SecretsManagerSecretId: {{ endpoint.doc_db_settings.secrets_manager_secret_id | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.doc_db_settings is defined %} #}
+{%- if endpoint.dynamo_db_settings is defined %}
+      DynamoDbSettings:
+        ServiceAccessRoleArn: {{ endpoint.dynamo_db_settings.service_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.elasticsearch_settings is defined %}  {# BEGIN {%- if endpoint.elasticsearch_settings is defined %} #}
+      ElasticsearchSettings:
+{%- if endpoint.elasticsearch_settings.endpoint_uri is defined %}
+        EndpointUri: {{ endpoint.elasticsearch_settings.endpoint_uri }}
+{%- endif %}
+{%- if endpoint.elasticsearch_settings.error_retry_duration is defined %}
+        ErrorRetryDuration: {{ endpoint.elasticsearch_settings.error_retry_duration }}
+{%- endif %}
+{%- if endpoint.elasticsearch_settings.full_load_error_percentage is defined %}
+        FullLoadErrorPercentage: {{ endpoint.elasticsearch_settings.full_load_error_percentage }}
+{%- endif %}
+{%- if endpoint.elasticsearch_settings.service_access_role_arn is defined %}
+        ServiceAccessRoleArn: {{ endpoint.elasticsearch_settings.service_access_role_arn | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.elasticsearch_settings is defined %} #}
+{%- if endpoint.gcp_mysql_settings is defined %}  {# BEGIN {%- if endpoint.gcp_mysql_settings is defined %} #}
+      GcpMySQLSettings:
+{%- if endpoint.gcp_mysql_settings.after_connect_script is defined %}
+        AfterConnectScript: |-
+{{ endpoint.gcp_mysql_settings.after_connect_script | indent(width=10,first=True) }}
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.clean_source_metadata_on_mismatch is defined %}
+        CleanSourceMetadataOnMismatch: {{ endpoint.gcp_mysql_settings.clean_source_metadata_on_mismatch }}
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.database_name is defined %}
+        DatabaseName: {{ endpoint.gcp_mysql_settings.database_name }}
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.events_poll_interval is defined %}
+        EventsPollInterval: {{ endpoint.gcp_mysql_settings.events_poll_interval }}
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.max_file_size is defined %}
+        MaxFileSize: {{ endpoint.gcp_mysql_settings.max_file_size }}
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.parallel_load_threads is defined %}
+        ParallelLoadThreads: {{ endpoint.gcp_mysql_settings.parallel_load_threads }}
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.password is defined %}
+        Password:
+          Ref: {{ endpoint }}GcpMySQLSettingsPassword
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.port is defined %}
+        Port: {{ endpoint.gcp_mysql_settings.port }}
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.secrets_manager_access_role_arn is defined %}
+        SecretsManagerAccessRoleArn: {{ endpoint.gcp_mysql_settings.secrets_manager_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.secrets_manager_secret_id is defined %}
+        SecretsManagerSecretId: {{ endpoint.gcp_mysql_settings.secrets_manager_secret_id | trim }}
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.server_name is defined %}
+        ServerName: {{ endpoint.gcp_mysql_settings.server_name }}
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.server_timezone is defined %}
+        ServerTimezone: {{ endpoint.gcp_mysql_settings.server_timezone }}
+{%- endif %}
+{%- if endpoint.gcp_mysql_settings.username is defined %}
+        Username: {{ endpoint.gcp_mysql_settings.username }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.gcp_mysql_settings is defined %} #}
+{%- if endpoint.ibm_db2_settings is defined %}  {# BEGIN {%- if endpoint.ibm_db2_settings is defined %} #}
+      IbmDb2Settings:
+{%- if endpoint.ibm_db2_settings.secrets_manager_access_role_arn is defined %}
+        SecretsManagerAccessRoleArn: {{ endpoint.ibm_db2_settings.secrets_manager_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.ibm_db2_settings.secrets_manager_secret_id is defined %}
+        SecretsManagerSecretId: {{ endpoint.ibm_db2_settings.secrets_manager_secret_id | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.ibm_db2_settings is defined %} #}
+{%- if endpoint.kafka_settings is defined %}  {# BEGIN {%- if endpoint.kafka_settings is defined %} #}
+      KafkaSettings:
+{%- if endpoint.kafka_settings.broker is defined %}
+        Broker: {{ endpoint.kafka_settings.broker }}
+{%- endif %}
+{%- if endpoint.kafka_settings.include_control_details is defined %}
+        IncludeControlDetails: {{ endpoint.kafka_settings.include_control_details }}
+{%- endif %}
+{%- if endpoint.kafka_settings.include_null_and_empty is defined %}
+        IncludeNullAndEmpty: {{ endpoint.kafka_settings.include_null_and_empty }}
+{%- endif %}
+{%- if endpoint.kafka_settings.include_table_alter_operations is defined %}
+        IncludeTableAlterOperations: {{ endpoint.kafka_settings.include_table_alter_operations }}
+{%- endif %}
+{%- if endpoint.kafka_settings.include_transaction_details is defined %}
+        IncludeTransactionDetails: {{ endpoint.kafka_settings.include_transaction_details }}
+{%- endif %}
+{%- if endpoint.kafka_settings.no_hex_prefix is defined %}
+        NoHexPrefix: {{ endpoint.kafka_settings.no_hex_prefix }}
+{%- endif %}
+{%- if endpoint.kafka_settings.partition_include_schema_table is defined %}
+        PartitionIncludeSchemaTable: {{ endpoint.kafka_settings.partition_include_schema_table }}
+{%- endif %}
+{%- if endpoint.kafka_settings.sasl_password is defined %}
+        SaslPassword:
+          Ref: {{ endpoint_name }}KafkaSettingsSaslPassword
+{%- endif %}
+{%- if endpoint.kafka_settings.sasl_user_name is defined %}
+        SaslUserName: {{ endpoint.kafka_settings.sasl_user_name }}
+{%- endif %}
+{%- if endpoint.kafka_settings.security_protocol is defined %}
+        SecurityProtocol: {{ endpoint.kafka_settings.security_protocol }}
+{%- endif %}
+{%- if endpoint.kafka_settings.ssl_ca_certificate_arn is defined %}
+        SslCaCertificateArn: {{ endpoint.kafka_settings.ssl_ca_certificate_arn | trim }}
+{%- endif %}
+{%- if endpoint.kafka_settings.ssl_client_certificate_arn is defined %}
+        SslClientCertificateArn: {{ endpoint.kafka_settings.ssl_client_certificate_arn | trim }}
+{%- endif %}
+{%- if endpoint.kafka_settings.ssl_client_key_arn is defined %}
+        SslClientKeyArn: {{ endpoint.kafka_settings.ssl_client_key_arn | trim }}
+{%- endif %}
+{%- if endpoint.kafka_settings.ssl_client_key_password is defined %}
+        SslClientKeyPassword:
+          Ref: {{ endpoint_name }}KafkaSettingsSslClientKeyPassword
+{%- endif %}
+{%- if endpoint.kafka_settings.topic is defined %}
+        Topic: {{ endpoint.kafka_settings.topic }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.kafka_settings is defined %} #}
+{%- if endpoint.kinesis_settings is defined %}  {# BEGIN {%- if endpoint.kinesis_settings is defined %} #}
+      KinesisSettings:
+{%- if endpoint.kinesis_settings.include_control_details is defined %}
+        IncludeControlDetails: {{ endpoint.kinesis_settings.include_control_details }}
+{%- endif %}
+{%- if endpoint.kinesis_settings.include_null_and_empty is defined %}
+        IncludeNullAndEmpty: {{ endpoint.kinesis_settings.include_null_and_empty }}
+{%- endif %}
+{%- if endpoint.kinesis_settings.include_table_alter_operations is defined %}
+        IncludeTableAlterOperations: {{ endpoint.kinesis_settings.include_table_alter_operations }}
+{%- endif %}
+{%- if endpoint.kinesis_settings.include_transaction_details is defined %}
+        IncludeTransactionDetails: {{ endpoint.kinesis_settings.include_transaction_details }}
+{%- endif %}
+{%- if endpoint.kinesis_settings.message_format is defined %}
+        MessageFormat: {{ endpoint.kinesis_settings.message_format }}
+{%- endif %}
+{%- if endpoint.kinesis_settings.no_hex_prefix is defined %}
+        NoHexPrefix: {{ endpoint.kinesis_settings.no_hex_prefix }}
+{%- endif %}
+{%- if endpoint.kinesis_settings.partition_include_schema_table is defined %}
+        PartitionIncludeSchemaTable: {{ endpoint.kinesis_settings.partition_include_schema_table }}
+{%- endif %}
+{%- if endpoint.kinesis_settings.service_access_role_arn is defined %}
+        ServiceAccessRoleArn: {{ endpoint.kinesis_settings.service_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.kinesis_settings.stream_arn is defined %}
+        StreamArn: {{ endpoint.kinesis_settings.stream_arn | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.kinesis_settings is defined %} #}
+{%- if endpoint.microsoft_sql_server_settings is defined %}  {# BEGIN {%- if endpoint.microsoft_sql_server_settings is defined %} #}
+      MicrosoftSqlServerSettings:
+{%- if endpoint.microsoft_sql_server_settings.secrets_manager_access_role_arn is defined %}
+        SecretsManagerAccessRoleArn: {{ endpoint.microsoft_sql_server_settings.secrets_manager_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.microsoft_sql_server_settings.secrets_manager_secret_id is defined %}
+        SecretsManagerSecretId: {{ endpoint.microsoft_sql_server_settings.secrets_manager_secret_id | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.microsoft_sql_server_settings is defined %} #}
+{%- if endpoint.mongo_db_settings is defined %}  {# BEGIN {%- if endpoint.mongo_db_settings is defined %} #}
+      MongoDbSettings:
+{%- if endpoint.mongo_db_settings.auth_mechanism is defined %}
+        AuthMechanism: {{ endpoint.mongo_db_settings.auth_mechanism }}
+{%- endif %}
+{%- if endpoint.mongo_db_settings.auth_source is defined %}
+        AuthSource: {{ endpoint.mongo_db_settings.auth_source }}
+{%- endif %}
+{%- if endpoint.mongo_db_settings.auth_type is defined %}
+        AuthType: {{ endpoint.mongo_db_settings.auth_type }}
+{%- endif %}
+{%- if endpoint.mongo_db_settings.database_name is defined %}
+        DatabaseName: {{ endpoint.mongo_db_settings.database_name }}
+{%- endif %}
+{%- if endpoint.mongo_db_settings.docs_to_investigate is defined %}
+        DocsToInvestigate: {{ endpoint.mongo_db_settings.docs_to_investigate }}
+{%- endif %}
+{%- if endpoint.mongo_db_settings.extract_doc_id is defined %}
+        ExtractDocId: {{ endpoint.mongo_db_settings.extract_doc_id }}
+{%- endif %}
+{%- if endpoint.mongo_db_settings.nesting_level is defined %}
+        NestingLevel: {{ endpoint.mongo_db_settings.nesting_level }}
+{%- endif %}
+{%- if endpoint.mongo_db_settings.password is defined %}
+        Password:
+          Ref: {{ endpoint_name }}MongoDbSettingsPassword
+{%- endif %}
+{%- if endpoint.mongo_db_settings.port is defined %}
+        Port: {{ endpoint.mongo_db_settings.port }}
+{%- endif %}
+{%- if endpoint.mongo_db_settings.secrets_manager_access_role_arn is defined %}
+        SecretsManagerAccessRoleArn: {{ endpoint.mongo_db_settings.secrets_manager_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.mongo_db_settings.secrets_manager_secret_id is defined %}
+        SecretsManagerSecretId: {{ endpoint.mongo_db_settings.secrets_manager_secret_id | trim }}
+{%- endif %}
+{%- if endpoint.mongo_db_settings.server_name is defined %}
+        ServerName: {{ endpoint.mongo_db_settings.server_name }}
+{%- endif %}
+{%- if endpoint.mongo_db_settings.username is defined %}
+        Username: {{ endpoint.mongo_db_settings.username }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.mongo_db_settings is defined %} #}
+{%- if endpoint.mysql_settings is defined %}  {# BEGIN {%- if endpoint.mysql_settings is defined %} #}
+      MySqlSettings:
+{%- if endpoint.mysql_settings.secrets_manager_access_role_arn is defined %}
+        SecretsManagerAccessRoleArn: {{ endpoint.mysql_settings.secrets_manager_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.mysql_settings.secrets_manager_secret_id is defined %}
+        SecretsManagerSecretId: {{ endpoint.mysql_settings.secrets_manager_secret_id | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.mysql_settings is defined %} #}
+{%- if endpoint.neptune_settings is defined %}  {# BEGIN {%- if endpoint.neptune_settings is defined %} #}
+      NeptuneSettings:
+{%- if endpoint.neptune_settings.error_retry_duration is defined %}
+        ErrorRetryDuration: {{ endpoint.neptune_settings.error_retry_duration }}
+{%- endif %}
+{%- if endpoint.neptune_settings.iam_auth_enabled is defined %}
+        IamAuthEnabled: {{ endpoint.neptune_settings.iam_auth_enabled }}
+{%- endif %}
+{%- if endpoint.neptune_settings.max_file_size is defined %}
+        MaxFileSize: {{ endpoint.neptune_settings.max_file_size }}
+{%- endif %}
+{%- if endpoint.neptune_settings.max_retry_count is defined %}
+        MaxRetryCount: {{ endpoint.neptune_settings.max_retry_count }}
+{%- endif %}
+{%- if endpoint.neptune_settings.s3_bucket_folder is defined %}
+        S3BucketFolder: {{ endpoint.neptune_settings.s3_bucket_folder }}
+{%- endif %}
+{%- if endpoint.neptune_settings.s3_bucket_name is defined %}
+        S3BucketName: {{ endpoint.neptune_settings.s3_bucket_name }}
+{%- endif %}
+{%- if endpoint.neptune_settings.service_access_role_arn is defined %}
+        ServiceAccessRoleArn: {{ endpoint.neptune_settings.service_access_role_arn | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.neptune_settings is defined %} #}
+{%- if endpoint.oracle_settings is defined %}  {# BEGIN {%- if endpoint.oracle_settings is defined %} #}
+      OracleSettings:
+{%- if endpoint.oracle_settings.secrets_manager_access_role_arn is defined %}
+        SecretsManagerAccessRoleArn: {{ endpoint.oracle_settings.secrets_manager_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.oracle_settings.secrets_manager_oracle_asm_access_role_arn is defined %}
+        SecretsManagerOracleAsmAccessRoleArn: {{ endpoint.oracle_settings.secrets_manager_oracle_asm_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.oracle_settings.secrets_manager_oracle_asm_secret_id is defined %}
+        SecretsManagerOracleAsmSecretId: {{ endpoint.oracle_settings.secrets_manager_oracle_asm_secret_id | trim }}
+{%- endif %}
+{%- if endpoint.oracle_settings.secrets_manager_secret_id is defined %}
+        SecretsManagerSecretId: {{ endpoint.oracle_settings.secrets_manager_secret_id | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.oracle_settings is defined %} #}
+{%- if endpoint.postgresql_settings is defined %}  {# BEGIN {%- if endpoint.postgresql_settings is defined %} #}
+      PostgreSqlSettings:
+{%- if endpoint.postgresql_settings.secrets_manager_access_role_arn is defined %}
+        SecretsManagerAccessRoleArn: {{ endpoint.postgresql_settings.secrets_manager_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.postgresql_settings.secrets_manager_secret_id is defined %}
+        SecretsManagerSecretId: {{ endpoint.postgresql_settings.secrets_manager_secret_id | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.postgresql_settings is defined %} #}
+{%- if endpoint.redis_settings is defined %}  {# BEGIN {%- if endpoint.redis_settings is defined %} #}
+      RedisSettings:
+{%- if endpoint.redis_settings.auth_password is defined %}
+        AuthPassword:
+          Ref: {{ endpoint_name }}RedisSettingsAuthPassword
+{%- endif %}
+{%- if endpoint.redis_settings.auth_type is defined %}
+        AuthType: {{ endpoint.redis_settings.auth_type }}
+{%- endif %}
+{%- if endpoint.redis_settings.auth_user_name is defined %}
+        AuthUserName: {{ endpoint.redis_settings.auth_user_name }}
+{%- endif %}
+{%- if endpoint.redis_settings.port is defined %}
+        Port: {{ endpoint.redis_settings.port }}
+{%- endif %}
+{%- if endpoint.redis_settings.server_name is defined %}
+        ServerName: {{ endpoint.redis_settings.server_name }}
+{%- endif %}
+{%- if endpoint.redis_settings.ssl_ca_certificate_arn is defined %}
+        SslCaCertificateArn: {{ endpoint.redis_settings.ssl_ca_certificate_arn | trim }}
+{%- endif %}
+{%- if endpoint.redis_settings.ssl_security_protocol is defined %}
+        SslSecurityProtocol: {{ endpoint.redis_settings.ssl_security_protocol }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.redis_settings is defined %} #}
+{%- if endpoint.redshift_settings is defined %}  {# BEGIN {%- if endpoint.redshift_settings is defined %} #}
+      RedshiftSettings:
+{%- if endpoint.redshift_settings.secrets_manager_access_role_arn is defined %}
+        SecretsManagerAccessRoleArn: {{ endpoint.redshift_settings.secrets_manager_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.redshift_settings.secrets_manager_secret_id is defined %}
+        SecretsManagerSecretId: {{ endpoint.redshift_settings.secrets_manager_secret_id | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.redshift_settings is defined %} #}
+{%- if endpoint.s3_settings is defined %}  {# BEGIN {%- if endpoint.s3_settings is defined %} #}
+      S3Settings:
+{%- if endpoint.s3_settings.add_column_name is defined %}
+        AddColumnName: {{ endpoint.s3_settings.add_column_name }}
+{%- endif %}
+{%- if endpoint.s3_settings.bucket_folder is defined %}
+        BucketFolder: {{ endpoint.s3_settings.bucket_folder }}
+{%- endif %}
+{%- if endpoint.s3_settings.bucket_name is defined %}
+        BucketName: {{ endpoint.s3_settings.bucket_name }}
+{%- endif %}
+{%- if endpoint.s3_settings.canned_acl_for_objects is defined %}
+        CannedAclForObjects: {{ endpoint.s3_settings.canned_acl_for_objects }}
+{%- endif %}
+{%- if endpoint.s3_settings.cdc_inserts_and_updates is defined %}
+        CdcInsertsAndUpdates: {{ endpoint.s3_settings.cdc_inserts_and_updates }}
+{%- endif %}
+{%- if endpoint.s3_settings.cdc_inserts_only is defined %}
+        CdcInsertsOnly: {{ endpoint.s3_settings.cdc_inserts_only }}
+{%- endif %}
+{%- if endpoint.s3_settings.cdc_max_batch_interval is defined %}
+        CdcMaxBatchInterval: {{ endpoint.s3_settings.cdc_max_batch_interval }}
+{%- endif %}
+{%- if endpoint.s3_settings.cdc_min_file_size is defined %}
+        CdcMinFileSize: {{ endpoint.s3_settings.cdc_min_file_size }}
+{%- endif %}
+{%- if endpoint.s3_settings.cdc_path is defined %}
+        CdcPath: {{ endpoint.s3_settings.cdc_path }}
+{%- endif %}
+{%- if endpoint.s3_settings.compression_type is defined %}
+        CompressionType: {{ endpoint.s3_settings.compression_type }}
+{%- endif %}
+{%- if endpoint.s3_settings.csv_delimiter is defined %}
+        CsvDelimiter: {{ endpoint.s3_settings.csv_delimiter }}
+{%- endif %}
+{%- if endpoint.s3_settings.csv_no_sup_value is defined %}
+        CsvNoSupValue: {{ endpoint.s3_settings.csv_no_sup_value }}
+{%- endif %}
+{%- if endpoint.s3_settings.csv_null_value is defined %}
+        CsvNullValue: {{ endpoint.s3_settings.csv_null_value }}
+{%- endif %}
+{%- if endpoint.s3_settings.csv_row_delimiter is defined %}
+        CsvRowDelimiter: {{ endpoint.s3_settings.csv_row_delimiter }}
+{%- endif %}
+{%- if endpoint.s3_settings.data_format is defined %}
+        DataFormat: {{ endpoint.s3_settings.data_format }}
+{%- endif %}
+{%- if endpoint.s3_settings.data_page_size is defined %}
+        DataPageSize: {{ endpoint.s3_settings.data_page_size }}
+{%- endif %}
+{%- if endpoint.s3_settings.date_partition_delimiter is defined %}
+        DatePartitionDelimiter: {{ endpoint.s3_settings.date_partition_delimiter }}
+{%- endif %}
+{%- if endpoint.s3_settings.date_partition_enabled is defined %}
+        DatePartitionEnabled: {{ endpoint.s3_settings.date_partition_enabled }}
+{%- endif %}
+{%- if endpoint.s3_settings.date_partition_sequence is defined %}
+        DatePartitionSequence: {{ endpoint.s3_settings.date_partition_sequence }}
+{%- endif %}
+{%- if endpoint.s3_settings.date_partition_timezone is defined %}
+        DatePartitionTimezone: {{ endpoint.s3_settings.date_partition_timezone }}
+{%- endif %}
+{%- if endpoint.s3_settings.dict_page_size_limit is defined %}
+        DictPageSizeLimit: {{ endpoint.s3_settings.dict_page_size_limit }}
+{%- endif %}
+{%- if endpoint.s3_settings.enable_statistics is defined %}
+        EnableStatistics: {{ endpoint.s3_settings.enable_statistics }}
+{%- endif %}
+{%- if endpoint.s3_settings.encoding_type is defined %}
+        EncodingType: {{ endpoint.s3_settings.encoding_type }}
+{%- endif %}
+{%- if endpoint.s3_settings.encryption_mode is defined %}
+        EncryptionMode: {{ endpoint.s3_settings.encryption_mode }}
+{%- endif %}
+{%- if endpoint.s3_settings.external_table_definition is defined %}
+        ExternalTableDefinition: {{ endpoint.s3_settings.external_table_definition }}
+{%- endif %}
+{%- if endpoint.s3_settings.ignore_header_rows is defined %}
+        IgnoreHeaderRows: {{ endpoint.s3_settings.ignore_header_rows }}
+{%- endif %}
+{%- if endpoint.s3_settings.include_op_for_full_load is defined %}
+        IncludeOpForFullLoad: {{ endpoint.s3_settings.include_op_for_full_load }}
+{%- endif %}
+{%- if endpoint.s3_settings.max_file_size is defined %}
+        MaxFileSize: {{ endpoint.s3_settings.max_file_size }}
+{%- endif %}
+{%- if endpoint.s3_settings.parquet_timestamp_in_millisecond is defined %}
+        ParquetTimestampInMillisecond: {{ endpoint.s3_settings.parquet_timestamp_in_millisecond }}
+{%- endif %}
+{%- if endpoint.s3_settings.parquet_version is defined %}
+        ParquetVersion: {{ endpoint.s3_settings.parquet_version }}
+{%- endif %}
+{%- if endpoint.s3_settings.preserve_transactions is defined %}
+        PreserveTransactions: {{ endpoint.s3_settings.preserve_transactions }}
+{%- endif %}
+{%- if endpoint.s3_settings.rfc_4180 is defined %}
+        Rfc4180: {{ endpoint.s3_settings.rfc_4180 }}
+{%- endif %}
+{%- if endpoint.s3_settings.row_group_length is defined %}
+        RowGroupLength: {{ endpoint.s3_settings.row_group_length }}
+{%- endif %}
+{%- if endpoint.s3_settings.server_side_encryption_kms_key_id is defined %}
+        ServerSideEncryptionKmsKeyId: {{ endpoint.s3_settings.server_side_encryption_kms_key_id | trim }}
+{%- endif %}
+{%- if endpoint.s3_settings.service_access_role_arn is defined %}
+        ServiceAccessRoleArn: {{ endpoint.s3_settings.service_access_role_arn }}
+{%- endif %}
+{%- if endpoint.s3_settings.timestamp_column_name is defined %}
+        TimestampColumnName: {{ endpoint.s3_settings.timestamp_column_name }}
+{%- endif %}
+{%- if endpoint.s3_settings.use_csv_no_sup_value is defined %}
+        UseCsvNoSupValue: {{ endpoint.s3_settings.use_csv_no_sup_value }}
+{%- endif %}
+{%- if endpoint.s3_settings.use_task_start_time_for_full_load_timestamp is defined %}
+        UseTaskStartTimeForFullLoadTimestamp: {{ endpoint.s3_settings.use_task_start_time_for_full_load_timestamp }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.s3_settings is defined %} #}
+{%- if endpoint.sybase_settings is defined %}  {# BEGIN {%- if endpoint.sybase_settings is defined %} #}
+      SybaseSettings:
+{%- if endpoint.sybase_settings.secrets_manager_access_role_arn is defined %}
+        SecretsManagerAccessRoleArn: {{ endpoint.sybase_settings.secrets_manager_access_role_arn | trim }}
+{%- endif %}
+{%- if endpoint.sybase_settings.secrets_manager_secret_id is defined %}
+        SecretsManagerSecretId: {{ endpoint.sybase_settings.secrets_manager_secret_id | trim }}
+{%- endif %}
+{%- endif %}  {# END {%- if endpoint.sybase_settings is defined %} #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if endpoint.tags is defined %}
+{%- for key,value in endpoint.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for endpoint in sceptre_user_data.endpoints %}
+{%- set endpoint_name = endpoint.name %}
+  {{ endpoint_name }}:
+    Description: ARN for {{ endpoint_name }}
+    Value:
+      Ref: {{ endpoint_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}"
+
+  {{ endpoint_name }}ExternalId:
+    Description: A value that can be used for cross-account validation for {{ endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ endpoint_name }}
+        - ExternalId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-ExternalId"
+
+{%- endfor %}
