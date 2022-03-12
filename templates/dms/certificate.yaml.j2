@@ -1,0 +1,39 @@
+---
+Description: DMS Certificate(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for certificate in sceptre_user_data.certificates %}
+{%- set certificate_name = certificate.name %}
+  {{ certificate_name }}:
+    Type: AWS::DMS::Certificate
+    DeletionPolicy: {{ certificate.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ certificate.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if certificate.certificate_identifier is defined %}
+      CertificateIdentifier: {{ certificate.certificate_identifier}}
+{%- endif %}
+{%- if certificate.certificate_pem is defined %}
+      CertificatePem: |-
+{{ certificate.certificate_pem | indent(width=8,first=true) }}
+{%- endif %}
+{%- if certificate.certificate_wallet is defined %}
+      CertificateWallet: {{ certificate.certificate_wallet }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for certificate in sceptre_user_data.certificates %}
+{%- set certificate_name = certificate.name %}
+  {{ certificate_name }}:
+    Description: ARN for {{ certificate_name }}
+    Value:
+      Ref: {{ certificate_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ certificate_name }}"
+
+{%- endfor %}

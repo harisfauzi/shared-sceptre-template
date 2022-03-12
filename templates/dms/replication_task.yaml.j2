@@ -1,0 +1,64 @@
+---
+Description: DMS ReplicationTask(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for replication_task in sceptre_user_data.replication_tasks %}
+{%- set replication_task_name = replication_task.name %}
+  {{ replication_task_name }}:
+    Type: Type: AWS::DMS::ReplicationTask
+    DeletionPolicy: {{ replication_task.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ replication_task.update_replace_policy | default('Delete') }}
+    Properties:
+      MigrationType: {{ replication_task.migration_type }}
+      ReplicationInstanceArn: {{ replication_task.replication_instance_arn | trim }}
+      SourceEndpointArn: {{ replication_task.source_endpoint_arn | trim }}
+      TableMappings: {{ replication_task.table_mappings }}
+      TargetEndpointArn: {{ replication_task.target_endpoint_arn | trim }}
+{%- if replication_task.cdc_start_position is defined %}
+      CdcStartPosition: {{ replication_task.cdc_start_position }}
+{%- endif %}
+{%- if replication_task.cdc_start_time is defined %}
+      CdcStartTime: {{ replication_task.cdc_start_time }}
+{%- endif %}
+{%- if replication_task.cdc_stop_position is defined %}
+      CdcStopPosition: {{ replication_task.cdc_stop_position }}
+{%- endif %}
+{%- if replication_task.replication_task_identifier is defined %}
+      ReplicationTaskIdentifier: {{ replication_task.replication_task_identifier }}
+{%- endif %}
+{%- if replication_task.replication_task_settings is defined %}
+      ReplicationTaskSettings: {{ replication_task.replication_task_settings }}
+{%- endif %}
+{%- if replication_task.resource_identifier is defined %}
+      ResourceIdentifier: {{ replication_task.resource_identifier | trim }}
+{%- endif %}
+{%- if replication_task.task_data is defined %}
+      TaskData: {{ replication_task.task_data }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if replication_task.tags is defined %}
+{%- for key,value in replication_task.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for replication_task in sceptre_user_data.replication_tasks %}
+{%- set replication_task_name = replication_task.name %}
+  {{ replication_task_name }}:
+    Description: ARN for {{ replication_task_name }}
+    Value:
+      Ref: {{ replication_task_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_task_name }}"
+
+{%- endfor %}
