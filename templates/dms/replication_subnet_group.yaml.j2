@@ -1,0 +1,46 @@
+---
+Description: DMS ReplicationSubnetGroup(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for replication_subnet_group in sceptre_user_data.replication_subnet_groups %}
+{%- set replication_subnet_group_name = replication_subnet_group.name %}
+  {{ replication_subnet_group_name }}:
+    Type: AWS::DMS::ReplicationSubnetGroup
+    DeletionPolicy: {{ replication_subnet_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ replication_subnet_group.update_replace_policy | default('Delete') }}
+    Properties:
+      ReplicationSubnetGroupDescription: {{ replication_subnet_group.description }}
+      SubnetIds:
+{%- for subnet_id in replication_subnet_group.subnet_ids %}
+        - {{ subnet_id }}
+{%- endfor %}
+{%- if replication_subnet_group.replication_subnet_group_identifier is defined %}
+      ReplicationSubnetGroupIdentifier: {{ replication_subnet_group.replication_subnet_group_identifier | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if replication_subnet_group.tags is defined %}
+{%- for key,value in replication_subnet_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for replication_subnet_group in sceptre_user_data.replication_subnet_groups %}
+{%- set replication_subnet_group_name = replication_subnet_group.name %}
+  {{ replication_subnet_group_name }}:
+    Description: The name of replication subnet group for {{ replication_subnet_group_name }}
+    Value:
+      Ref: {{ replication_subnet_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_subnet_group_name }}"
+
+{%- endfor %}
