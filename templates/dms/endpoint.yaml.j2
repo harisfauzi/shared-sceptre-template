@@ -14,7 +14,7 @@ Parameters:
     NoEcho: true
 
 {%- endif %}
-{%- if endpoint.gcp_mysql_settings.password is defined %}
+{%- if endpoint.gcp_mysql_settings is defined and endpoint.gcp_mysql_settings.password is defined %}
   {{ endpoint }}GcpMySQLSettingsPassword:
     Type: String
     Description: GcpMySQLSettings Password for {{ endpoint_name }}
@@ -22,7 +22,7 @@ Parameters:
     NoEcho: true
 
 {%- endif %}
-{%- if endpoint.kafka_settings.sasl_password is defined %}
+{%- if endpoint.kafka_settings is defined and endpoint.kafka_settings.sasl_password is defined %}
   {{ endpoint_name }}KafkaSettingsSaslPassword:
     Type: String
     Description: KafkaSettings SaslPassword for {{ endpoint_name }}
@@ -30,7 +30,7 @@ Parameters:
     NoEcho: true
 
 {%- endif %}
-{%- if endpoint.kafka_settings.ssl_client_key_password is defined %}
+{%- if endpoint.kafka_settings is defined and endpoint.kafka_settings.ssl_client_key_password is defined %}
   {{ endpoint_name }}KafkaSettingsSslClientKeyPassword:
     Type: String
     Description: KafkaSettings SslClientKeyPassword for {{ endpoint_name }}
@@ -38,7 +38,7 @@ Parameters:
     NoEcho: true
 
 {%- endif %}
-{%- if endpoint.mongo_db_settings.password is defined %}
+{%- if endpoint.mongo_db_settings is defined and endpoint.mongo_db_settings.password is defined %}
   {{ endpoint_name }}MongoDbSettingsPassword:
     Type: String
     Description: MongoDbSettings Password for {{ endpoint_name }}
@@ -46,18 +46,10 @@ Parameters:
     NoEcho: true
 
 {%- endif %}
-{%- if endpoint.redis_settings.auth_password is defined %}
+{%- if endpoint.redis_settings is defined and endpoint.redis_settings.auth_password is defined %}
   {{ endpoint_name }}RedisSettingsAuthPassword:
     Type: String
     Description: RedisSettings AuthPassword for {{ endpoint_name }}
-    Default: ''
-    NoEcho: true
-
-{%- endif %}
-{%- if endpoint.password is defined %}
-  {{ endpoint_name }}Password:
-    Type: String
-    Description: Password for {{ endpoint_name }}
     Default: ''
     NoEcho: true
 
@@ -563,15 +555,5 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}"
-
-  {{ endpoint_name }}ExternalId:
-    Description: A value that can be used for cross-account validation for {{ endpoint_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ endpoint_name }}
-        - ExternalId
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-ExternalId"
 
 {%- endfor %}
