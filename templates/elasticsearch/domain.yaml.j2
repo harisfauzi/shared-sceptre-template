@@ -25,6 +25,10 @@ Resources:
     Type: AWS::Elasticsearch::Domain
     DeletionPolicy: {{ domain.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ domain.update_replace_policy | default('Delete') }}
+{%- if domain.update_policy is defined %}
+    UpdatePolicy:
+      EnableVersionUpgrade: {{ domain.update_policy.enable_version_upgrade }}
+{%- endif %}
     Properties:
 {%- if domain.access_policies_json is defined %}
       AccessPolicies: {{ access_policies_json }}
