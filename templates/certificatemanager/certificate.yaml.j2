@@ -28,13 +28,13 @@ Resources:
 {%- if domain_validation_option.validation_domain is defined %}
           ValidationDomain: {{ domain_validation_option.validation_domain }}
 {%- endif %}
-{%- endif %}
+{%- endfor %}
 {%- endif %}
 {%- if certificate.subject_alternative_names is defined %}
       SubjectAlternativeNames:
 {%- for subject_alternative_name in certificate.subject_alternative_names %}
         - {{ subject_alternative_name }}
-{%- endif %}
+{%- endfor %}
 {%- endif %}
 {%- if certificate.validation_method is defined %}
       ValidationMethod: {{ certificate.validation_method }}
