@@ -15,7 +15,7 @@ Resources:
     Properties:
       SecretId: {{ rotation_schedule.secret_id | trim }}
 {%- if rotation_schedule.hosted_rotation_lambda is defined %}
-      HostedRotationLambda: 
+      HostedRotationLambda:
         RotationType: {{ rotation_schedule.hosted_rotation_lambda.rotation_type }}
 {%- if rotation_schedule.hosted_rotation_lambda.kms_key_arn is defined %}
         KmsKeyArn: {{ rotation_schedule.hosted_rotation_lambda.kms_key_arn }}
@@ -40,8 +40,16 @@ Resources:
       RotationLambdaARN: {{ rotation_schedule.rotation_lambda_arn }}
 {%- endif %}
 {%- if rotation_schedule.rotation_rules is defined %}
-      RotationRules: 
+      RotationRules:
+{%- if rotation_schedule.rotation_rules.automatically_after_days is defined %}
         AutomaticallyAfterDays: {{ rotation_schedule.rotation_rules.automatically_after_days }}
+{%- endif %}
+{%- if rotation_schedule.rotation_rules.duration is defined %}
+        Duration: {{ rotation_schedule.rotation_rules.duration }}
+{%- endif %}
+{%- if rotation_schedule.rotation_rules.schedule_expression is defined %}
+        ScheduleExpression: {{ rotation_schedule.rotation_rules.schedule_expression }}
+{%- endif %}
 {%- endif %}
 
 {%- endfor %}
