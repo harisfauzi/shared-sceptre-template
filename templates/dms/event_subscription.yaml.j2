@@ -23,7 +23,7 @@ Resources:
 {%- endif %}
 {%- if event_subscription.source_ids is defined %}
       SourceIds:
-{%- for source_id inevent_subscription.source_ids %}
+{%- for source_id in event_subscription.source_ids %}
         - {{ source_id }}
 {%- endfor %}
 {%- endif %}
