@@ -17,9 +17,9 @@
 {%- if networkinterface.device_index is defined %}
             DeviceIndex: {{ networkinterface.device_index }}
 {%- endif %}
-{%- if networkinterface.group_set is defined %}
-            GroupSet:
-{%- for item in networkinterface.group_set %}
+{%- if networkinterface.groups is defined %}
+            Groups:
+{%- for item in networkinterface.groups %}
                 - {{ item }}
 {%- endfor %}
 {%- endif %}
