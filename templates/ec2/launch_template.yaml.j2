@@ -216,7 +216,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if launch_template.launch_template_data.user_data is defined %}
-        UserData: |
+        UserData:
 {{ launch_template.launch_template_data.user_data | indent(width=10, first=true) }}
 {%- endif %}
 {%- endif %}  {# END {%- if launch_template.launch_template_data is defined %} #}
