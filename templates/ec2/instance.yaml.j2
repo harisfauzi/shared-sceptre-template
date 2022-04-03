@@ -109,7 +109,7 @@ Resources:
 {%- endif %}
 {%- if instance.launch_template is defined %}
       LaunchTemplate: 
-        Version: String
+        Version: {{ instance.launch_template.version | trim }}
 {%- if instance.launch_template.launch_template_id is defined %}
         LaunchTemplateId: {{ instance.launch_template.launch_template_id | trim }}
 {%- elif instance.launch_template.launch_templateName is defined %}

@@ -255,7 +255,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ launch_template_name }}"
 
   {{ launch_template_name }}DefaultVersionNumber:
-    Description: he default version of the launch template for {{ launch_template_name }}
+    Description: The default version of the launch template for {{ launch_template_name }}
     Value:
       Fn::GetAtt:
         - {{ launch_template_name }}
