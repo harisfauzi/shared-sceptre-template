@@ -79,22 +79,22 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ replication_instance_name }}"
 
   {{ replication_instance_name }}ReplicationInstancePrivateIpAddress0:
-    Description: The first private IP addresses for {{ replication_instance_name }}
+    Description: The private IP addresses for {{ replication_instance_name }}
     Value:
       Fn::GetAtt:
         - {{ replication_instance_name }}
-        - ReplicationInstancePrivateIpAddresses[0]
+        - ReplicationInstancePrivateIpAddresses
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ replication_instance_name }}-ReplicationInstancePrivateIpAddress0"
 
 {%- if replication_instance.publicly_accessible is defined and replication_instance.publicly_accessible %}
   {{ replication_instance_name }}ReplicationInstancePublicIpAddress0:
-    Description: The first public IP addresses for {{ replication_instance_name }}
+    Description: The public IP addresses for {{ replication_instance_name }}
     Value:
       Fn::GetAtt:
         - {{ replication_instance_name }}
-        - ReplicationInstancePublicIpAddresses[0]
+        - ReplicationInstancePublicIpAddresses
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ replication_instance_name }}-ReplicationInstancePublicIpAddress0"

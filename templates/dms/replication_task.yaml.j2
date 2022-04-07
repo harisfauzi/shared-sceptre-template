@@ -7,7 +7,7 @@ Resources:
 {%- for replication_task in sceptre_user_data.replication_tasks %}
 {%- set replication_task_name = replication_task.name %}
   {{ replication_task_name }}:
-    Type: Type: AWS::DMS::ReplicationTask
+    Type: AWS::DMS::ReplicationTask
     DeletionPolicy: {{ replication_task.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ replication_task.update_replace_policy | default('Delete') }}
     Properties:
