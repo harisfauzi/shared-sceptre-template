@@ -84,8 +84,12 @@ Resources:
       KmsKeyId: {{ endpoint.kms_key_id | trim }}
 {%- endif %}
 {%- if endpoint.password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
       Password:
         Ref: {{ endpoint_name }}Password
+{%- else %}
+      Password: {{ endpoint.password }}
+{%- endif %}
 {%- endif %}
 {%- if endpoint.port is defined %}
       Port: {{ endpoint.port }}
@@ -152,8 +156,12 @@ Resources:
         ParallelLoadThreads: {{ endpoint.gcp_mysql_settings.parallel_load_threads }}
 {%- endif %}
 {%- if endpoint.gcp_mysql_settings.password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
         Password:
           Ref: {{ endpoint }}GcpMySQLSettingsPassword
+{%- else %}
+        Password: {{ endpoint.gcp_mysql_settings.password }}
+{%- endif %}
 {%- endif %}
 {%- if endpoint.gcp_mysql_settings.port is defined %}
         Port: {{ endpoint.gcp_mysql_settings.port }}
@@ -207,8 +215,12 @@ Resources:
         PartitionIncludeSchemaTable: {{ endpoint.kafka_settings.partition_include_schema_table }}
 {%- endif %}
 {%- if endpoint.kafka_settings.sasl_password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
         SaslPassword:
           Ref: {{ endpoint_name }}KafkaSettingsSaslPassword
+{%- else %}
+        SaslPassword: {{ endpoint.kafka_settings.sasl_password }}
+{%- endif %}
 {%- endif %}
 {%- if endpoint.kafka_settings.sasl_user_name is defined %}
         SaslUserName: {{ endpoint.kafka_settings.sasl_user_name }}
@@ -226,8 +238,12 @@ Resources:
         SslClientKeyArn: {{ endpoint.kafka_settings.ssl_client_key_arn | trim }}
 {%- endif %}
 {%- if endpoint.kafka_settings.ssl_client_key_password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
         SslClientKeyPassword:
           Ref: {{ endpoint_name }}KafkaSettingsSslClientKeyPassword
+{%- else %}
+        SslClientKeyPassword: {{ endpoint.kafka_settings.ssl_client_key_password }}
+{%- endif %}
 {%- endif %}
 {%- if endpoint.kafka_settings.topic is defined %}
         Topic: {{ endpoint.kafka_settings.topic }}
@@ -296,8 +312,12 @@ Resources:
         NestingLevel: {{ endpoint.mongo_db_settings.nesting_level }}
 {%- endif %}
 {%- if endpoint.mongo_db_settings.password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
         Password:
           Ref: {{ endpoint_name }}MongoDbSettingsPassword
+{%- else %}
+        Password: {{ endpoint.mongo_db_settings.password }}
+{%- endif %}
 {%- endif %}
 {%- if endpoint.mongo_db_settings.port is defined %}
         Port: {{ endpoint.mongo_db_settings.port }}
@@ -375,8 +395,12 @@ Resources:
 {%- if endpoint.redis_settings is defined %}  {# BEGIN {%- if endpoint.redis_settings is defined %} #}
       RedisSettings:
 {%- if endpoint.redis_settings.auth_password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
         AuthPassword:
           Ref: {{ endpoint_name }}RedisSettingsAuthPassword
+{%- else %}
+        AuthPassword: {{ endpoint.redis_settings.auth_password }}
+{%- endif %}
 {%- endif %}
 {%- if endpoint.redis_settings.auth_type is defined %}
         AuthType: {{ endpoint.redis_settings.auth_type }}
