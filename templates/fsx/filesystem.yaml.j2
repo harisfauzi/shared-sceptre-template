@@ -1,0 +1,360 @@
+---
+Description: FSx FileSystem(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+Parameters:
+{%- for file_system in sceptre_user_data.file_systems %}
+{%- set file_system_name = file_system.name %}
+{%- if file_system.ontap_configuration is defined and file_system.ontap_configuration.fsx_admin_password is defined %}
+  {{ file_system_name }}FsxAdminPassword:
+    Type: String
+    Description: FsxAdminPassword for {{ file_system_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- if file_system.windows_configuration is defined and 
+  file_system.windows_configuration.self_managed_active_directory_configuration is defined and
+  file_system.windows_configuration.self_managed_active_directory_configuration.password is defined %}
+  {{ file_system_name }}WCSMADCPassword:
+    Type: String
+    Description: Windows Configuration Self Managed Active Directory Configuration Admin Password for {{ file_system_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+Resources:
+
+{%- for file_system in sceptre_user_data.file_systems %}
+{%- set file_system_name = file_system.name %}
+  {{ file_system_name }}:
+    Type: AWS::FSx::FileSystem
+    DeletionPolicy: {{ file_system.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ file_system.update_replace_policy | default('Delete') }}
+    Properties:
+      FileSystemType: {{ file_system.file_system_type }}
+      SubnetIds:
+{%- for subnet_id in file_system.subnet_ids%}
+        - {{ subnet_id | trim }}
+{%- endfor %}
+{%- if file_system.backup_id is defined %}
+      BackupId: {{ file_system.backup_id | trim }}
+{%- endif %}
+{%- if file_system.file_system_type_version is defined %}
+      FileSystemTypeVersion: {{ file_system.file_system_type_version }}
+{%- endif %}
+{%- if file_system.kms_key_id is defined %}
+      KmsKeyId: {{ file_system.kms_key_id | trim }}
+{%- endif %}
+{%- if file_system.lustre_configuration is defined %}  {# BEGIN {%- if file_system.lustre_configuration is defined %} #}
+      LustreConfiguration:
+{%- if file_system.lustre_configuration.auto_import_policy is defined %}
+        AutoImportPolicy: {{ file_system.lustre_configuration.auto_import_policy }}
+{%- endif %}
+{%- if file_system.lustre_configuration.automatic_backup_retention_days is defined %}
+        AutomaticBackupRetentionDays: {{ file_system.lustre_configuration.automatic_backup_retention_days }}
+{%- endif %}
+{%- if file_system.lustre_configuration.copy_tags_to_backups is defined %}
+        CopyTagsToBackups: {{ file_system.lustre_configuration.copy_tags_to_backups }}
+{%- endif %}
+{%- if file_system.lustre_configuration.daily_automatic_backup_start_time is defined %}
+        DailyAutomaticBackupStartTime: {{ file_system.lustre_configuration.daily_automatic_backup_start_time }}
+{%- endif %}
+{%- if file_system.lustre_configuration.data_compression_type is defined %}
+        DataCompressionType: {{ file_system.lustre_configuration.data_compression_type }}
+{%- endif %}
+{%- if file_system.lustre_configuration.deployment_type is defined %}
+        DeploymentType: {{ file_system.lustre_configuration.deployment_type }}
+{%- endif %}
+{%- if file_system.lustre_configuration.drive_cache_type is defined %}
+        DriveCacheType: {{ file_system.lustre_configuration.drive_cache_type }}
+{%- endif %}
+{%- if file_system.lustre_configuration.export_path is defined %}
+        ExportPath: {{ file_system.lustre_configuration.export_path }}
+{%- endif %}
+{%- if file_system.lustre_configuration.imported_file_chunk_size is defined %}
+        ImportedFileChunkSize: {{ file_system.lustre_configuration.imported_file_chunk_size }}
+{%- endif %}
+{%- if file_system.lustre_configuration.import_path is defined %}
+        ImportPath: {{ file_system.lustre_configuration.import_path }}
+{%- endif %}
+{%- if file_system.lustre_configuration.per_unit_storage_throughput is defined %}
+        PerUnitStorageThroughput: {{ file_system.lustre_configuration.per_unit_storage_throughput }}
+{%- endif %}
+{%- if file_system.lustre_configuration.weekly_maintenance_start_time is defined %}
+        WeeklyMaintenanceStartTime: {{ file_system.lustre_configuration.weekly_maintenance_start_time }}
+{%- endif %}
+{%- endif %}  {# END {%- if file_system.lustre_configuration is defined %} #}
+{%- if file_system.ontap_configuration is defined %}  {# BEGIN {%- if file_system.ontap_configuration is defined %} #}
+      OntapConfiguration:
+        DeploymentType: {{ ile_system.ontap_configuration.deployment_type }}
+{%- if file_system.ontap_configuration.automatic_backup_retention_days is defined %}
+        AutomaticBackupRetentionDays: {{ file_system.ontap_configuration.automatic_backup_retention_days }}
+{%- endif %}
+{%- if file_system.ontap_configuration.daily_automatic_backup_start_time is defined %}
+        DailyAutomaticBackupStartTime: {{ file_system.ontap_configuration.daily_automatic_backup_start_time }}
+{%- endif %}
+{%- if file_system.ontap_configuration.disk_iops_configuration is defined %}
+        DiskIopsConfiguration:
+{%- if file_system.ontap_configuration.disk_iops_configuration.iops is defined %}
+          Iops: {{ file_system.ontap_configuration.disk_iops_configuration.iops }}
+{%- endif %}
+{%- if file_system.ontap_configuration.disk_iops_configuration.mode is defined %}
+          Mode: {{ file_system.ontap_configuration.disk_iops_configuration.mode }}
+{%- endif %}
+{%- endif %}
+{%- if file_system.ontap_configuration.endpoint_ip_address_range is defined %}
+        EndpointIpAddressRange: {{ file_system.ontap_configuration.endpoint_ip_address_range }}
+{%- endif %}
+{%- if file_system.ontap_configuration.fsx_admin_password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+        FsxAdminPassword:
+          Ref: {{ file_system_name }}FsxAdminPassword
+{%- else %}
+        FsxAdminPassword: {{ file_system.ontap_configuration.fsx_admin_password }}
+{%- endif %}
+{%- endif %}
+{%- if file_system.ontap_configuration.preferred_subnet_id is defined %}
+        PreferredSubnetId: {{ file_system.ontap_configuration.preferred_subnet_id }}
+{%- endif %}
+{%- if file_system.ontap_configuration.route_table_ids is defined %}
+        RouteTableIds:
+{%- for route_table_id in file_system.ontap_configuration.route_table_ids %}
+          - {{ route_table_id }}
+{%- endfor %}
+{%- endif %}
+{%- if file_system.ontap_configuration.throughput_capacity is defined %}
+        ThroughputCapacity: {{ file_system.ontap_configuration.throughput_capacity }}
+{%- endif %}
+{%- if file_system.ontap_configuration.weekly_maintenance_start_time is defined %}
+        WeeklyMaintenanceStartTime: {{ file_system.ontap_configuration.weekly_maintenance_start_time }}
+{%- endif %}
+{%- endif %}  {# END {%- if file_system.ontap_configuration is defined %} #}
+{%- if file_system.open_zfs_configuration is defined %}  {# BEGIN {%- if file_system.open_zfs_configuration is defined %} #}
+      OpenZFSConfiguration:
+        DeploymentType: {{ file_system.open_zfs_configuration.deployment_type }}
+{%- if file_system.open_zfs_configuration.automatic_backup_retention_days is defined %}
+        AutomaticBackupRetentionDays: {{ file_system.open_zfs_configuration.automatic_backup_retention_days }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.copy_tags_to_backups is defined %}
+        CopyTagsToBackups: {{ file_system.open_zfs_configuration.copy_tags_to_backups }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.copy_tags_to_volumes is defined %}
+        CopyTagsToVolumes: {{ file_system.open_zfs_configuration.copy_tags_to_volumes }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.daily_automatic_backup_start_time is defined %}
+        DailyAutomaticBackupStartTime: {{ file_system.open_zfs_configuration.daily_automatic_backup_start_time }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.disk_iops_configuration is defined %}
+        DiskIopsConfiguration:
+{%- if file_system.open_zfs_configuration.disk_iops_configuration.iops is defined %}
+          Iops: {{ file_system.open_zfs_configuration.disk_iops_configuration.iops }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.disk_iops_configuration.mode is defined %}
+          Mode: {{ file_system.open_zfs_configuration.disk_iops_configuration.mode }}
+{%- endif %}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.options is defined %}
+        Options:
+{%- for option in file_system.open_zfs_configuration.options %}
+          - {{ option }}
+{%- endfor %}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.root_volume_configuration is defined %}
+        RootVolumeConfiguration:
+{%- if file_system.open_zfs_configuration.root_volume_configuration.copy_tags_to_snapshots is defined %}
+          CopyTagsToSnapshots: {{ file_system.open_zfs_configuration.root_volume_configuration.copy_tags_to_snapshots }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.root_volume_configuration.data_compression_type is defined %}
+          DataCompressionType: {{ file_system.open_zfs_configuration.root_volume_configuration.data_compression_type }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.root_volume_configuration.nfs_exports is defined %}
+          NfsExports:
+{%- for nfs_export in file_system.open_zfs_configuration.root_volume_configuration.nfs_exports %}
+            - ClientConfigurations:
+{%- for client_configuration in nfs_export.client_configurations %}
+                -
+{%- if client_configuration.clients is defined %}
+                  Clients: {{ client_configuration.clients }}
+{%- endif %}
+{%- if client_configuration.options is defined %}
+                  Options:
+{%- for option in client_configuration.options %}
+                    - {{ option }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endfor %}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.root_volume_configuration.read_only is defined %}
+          ReadOnly: {{ file_system.open_zfs_configuration.root_volume_configuration.read_only }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.root_volume_configuration.record_size_kib is defined %}
+          RecordSizeKiB: {{ file_system.open_zfs_configuration.root_volume_configuration.record_size_kib }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.root_volume_configuration.user_and_group_quotas is defined %}
+          UserAndGroupQuotas:
+{%- for quota in file_system.open_zfs_configuration.root_volume_configuration.user_and_group_quotas %}
+            -
+{%- if quota.id is defined %}
+              Id: {{ quota.id }}
+{%- endif %}
+{%- if quota.storage_capacity_quota_gib is defined %}
+              StorageCapacityQuotaGiB: {{ quota.storage_capacity_quota_gib }}
+{%- endif %}
+{%- if quota.type is defined %}
+              Type: {{ quota.type }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.throughput_capacity is defined %}
+        ThroughputCapacity: {{ file_system.open_zfs_configuration.throughput_capacity }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.weekly_maintenance_start_time is defined %}
+        WeeklyMaintenanceStartTime: {{ file_system.open_zfs_configuration.weekly_maintenance_start_time }}
+{%- endif %}
+{%- endif %}  {# END {%- if file_system.open_zfs_configuration is defined %} #}
+{%- if file_system.security_group_ids is defined %}
+      SecurityGroupIds:
+{%- for security_group_id in file_system.security_group_ids %}
+        - {{ security_group_id | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if file_system.storage_capacity is defined %}
+      StorageCapacity: {{ file_system.storage_capacity }}
+{%- endif %}
+{%- if file_system.storage_type is defined %}
+      StorageType: {{ file_system.storage_type }}
+{%- endif %}
+{%- if file_system.windows_configuration is defined %}  {# BEGIN {%- if file_system.windows_configuration is defined %} #}
+      WindowsConfiguration:
+{%- if file_system.windows_configuration.active_directory_id is defined %}
+        ActiveDirectoryId: {{ file_system.windows_configuration.active_directory_id | trim }}
+{%- endif %}
+{%- if file_system.windows_configuration.aliases is defined %}
+        Aliases:
+{%- for alias in file_system.windows_configuration.aliases %}
+          - {{ alias }}
+{%- endfor %}
+{%- endif %}
+{%- if file_system.windows_configuration.audit_log_configuration is defined %}
+        AuditLogConfiguration:
+          FileAccessAuditLogLevel: {{ file_system.windows_configuration.audit_log_configuration.file_access_audit_log_level }}
+          FileShareAccessAuditLogLevel: {{ file_system.windows_configuration.audit_log_configuration.file_share_access_audit_log_level }}
+{%- if file_system.windows_configuration.audit_log_configuration.audit_log_destination is defined %}
+          AuditLogDestination: {{ file_system.windows_configuration.audit_log_configuration.audit_log_destination }}
+{%- endif %}
+{%- endif %}
+{%- if file_system.windows_configuration.automatic_backup_retention_days is defined %}
+        AutomaticBackupRetentionDays: {{ file_system.windows_configuration.automatic_backup_retention_days }}
+{%- endif %}
+{%- if file_system.windows_configuration.copy_tags_to_backups is defined %}
+        CopyTagsToBackups: {{ file_system.windows_configuration.copy_tags_to_backups }}
+{%- endif %}
+{%- if file_system.windows_configuration.daily_automatic_backup_start_time is defined %}
+        DailyAutomaticBackupStartTime: {{ file_system.windows_configuration.daily_automatic_backup_start_time }}
+{%- endif %}
+{%- if file_system.windows_configuration.deployment_type is defined %}
+        DeploymentType: {{ file_system.windows_configuration.deployment_type }}
+{%- endif %}
+{%- if file_system.windows_configuration.preferred_subnet_id is defined %}
+        PreferredSubnetId: {{ file_system.windows_configuration.preferred_subnet_id | trim }}
+{%- endif %}
+{%- if file_system.windows_configuration.self_managed_active_directory_configuration is defined %}
+        SelfManagedActiveDirectoryConfiguration:
+{%- if file_system.windows_configuration.self_managed_active_directory_configuration.dns_ips is defined %}
+          DnsIps:
+{%- for dns_ip in file_system.windows_configuration.self_managed_active_directory_configuration.dns_ips %}
+            - {{ dns_ip }}
+{%- endfor %}
+{%- endif %}
+{%- if file_system.windows_configuration.self_managed_active_directory_configuration.domain_name is defined %}
+          DomainName: {{ file_system.windows_configuration.self_managed_active_directory_configuration.domain_name }}
+{%- endif %}
+{%- if file_system.windows_configuration.self_managed_active_directory_configuration.file_system_administrators_group is defined %}
+          FileSystemAdministratorsGroup: {{ file_system.windows_configuration.self_managed_active_directory_configuration.file_system_administrators_group }}
+{%- endif %}
+{%- if file_system.windows_configuration.self_managed_active_directory_configuration.organizational_unit_distinguished_name is defined %}
+          OrganizationalUnitDistinguishedName: {{ file_system.windows_configuration.self_managed_active_directory_configuration.organizational_unit_distinguished_name }}
+{%- endif %}
+{%- if file_system.windows_configuration.self_managed_active_directory_configuration.password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+          Password:
+            Ref: {{ file_system_name }}WCSMADCPassword
+{%- else %}
+          Password: {{ file_system.windows_configuration.self_managed_active_directory_configuration.password }}
+{%- endif %}
+{%- endif %}
+{%- if file_system.windows_configuration.self_managed_active_directory_configuration.user_name is defined %}
+          UserName: {{ file_system.windows_configuration.self_managed_active_directory_configuration.user_name }}
+{%- endif %}
+{%- endif %}
+{%- if file_system.windows_configuration.throughput_capacity is defined %}
+        ThroughputCapacity: {{ file_system.windows_configuration.throughput_capacity }}
+{%- endif %}
+{%- if file_system.windows_configuration.weekly_maintenance_start_time is defined %}
+        WeeklyMaintenanceStartTime: {{ file_system.windows_configuration.weekly_maintenance_start_time }}
+{%- endif %}
+{%- endif %}  {# END {%- if file_system.windows_configuration is defined %} #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if file_system.tags is defined %}
+{%- for key,value in file_system.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for file_system in sceptre_user_data.file_systems %}
+{%- set file_system_name = file_system.name %}
+  {{ file_system_name }}:
+    Description: FileSystem resource ID for {{ file_system_name }}
+    Value:
+      Ref: {{ file_system_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}"
+
+  {{ file_system_name }}DNSName:
+    Description: The FSx for Windows file system's DNSName for {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - DNSName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-DNSName"
+
+{%- if file_system.file_system_type == 'LUSTRE' %}
+  {{ file_system_name }}LustreMountName:
+    Description: The LustreMountName for {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - LustreMountName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-LustreMountName"
+{%- elif file_system.file_system_type == 'OPENZFS' %}
+  {{ file_system_name }}RootVolumeId:
+    Description: The RootVolumeId for {{ file_system_name }} with OpenZFS
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - RootVolumeId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-RootVolumeId"
+{%- endif %}
+
+{%- endfor %}
