@@ -1,0 +1,50 @@
+---
+Description: FSx Snapshot(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for snapshot in sceptre_user_data.snapshots %}
+{%- set snapshot_name = snapshot.name %}
+  {{ snapshot_name }}:
+    Type: AWS::FSx::Snapshot
+    DeletionPolicy: {{ snapshot.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ snapshot.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ snapshot.snapshot_name }}
+      VolumeId: {{ snapshot.volume_id | trim }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if snapshot.tags is defined %}
+{%- for key,value in snapshot.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for snapshot in sceptre_user_data.snapshots %}
+{%- set snapshot_name = snapshot.name %}
+  {{ snapshot_name }}:
+    Description: Snapshot ID for {{ snapshot_name }}
+    Value:
+      Ref: {{ snapshot_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ snapshot_name }}"
+
+  {{ snapshot_name }}ResourceARN:
+    Description: The Resource ARN for {{ snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ snapshot_name }}
+        - ResourceARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ snapshot_name }}-ResourceARN"
+
+{%- endfor %}

@@ -1,0 +1,148 @@
+---
+Description: FSx Volume(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for volume in sceptre_user_data.volumes %}
+{%- set volume_name = volume.name %}
+  {{ volume_name }}:
+    Type: AWS::FSx::Volume
+    DeletionPolicy: {{ volume.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ volume.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ volume.volume_name }}
+{%- if volume.backup_id is defined %}
+      BackupId: {{ volume.backup_id | trim }}
+{%- endif %}
+{%- if volume.ontap_configuration is defined %}
+      OntapConfiguration:
+        JunctionPath: {{ volume.ontap_configuration.junction_path }}
+        SizeInMegabytes: {{ volume.ontap_configuration.size_in_megabytes }}
+        StorageEfficiencyEnabled: {{ volume.ontap_configuration.storage_efficiency_enabled }}
+        StorageVirtualMachineId: {{ volume.ontap_configuration.storage_virtual_machine_id | trim }}
+{%- if volume.ontap_configuration.security_style is defined %}
+        SecurityStyle: {{ volume.ontap_configuration.security_style }}
+{%- endif %}
+{%- if volume.ontap_configuration.tiering_policy is defined %}
+        TieringPolicy:
+{%- if volume.ontap_configuration.tiering_policy.cooling_period is defined %}
+          CoolingPeriod: {{ volume.ontap_configuration.tiering_policy.cooling_period }}
+{%- endif %}
+{%- if volume.ontap_configuration.tiering_policy.name is defined %}
+          Name: {{ volume.ontap_configuration.tiering_policy.name }}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- if volume.open_zfs_configuration is defined %}
+      OpenZFSConfiguration:
+        ParentVolumeId: {{ volume.open_zfs_configuration.parent_volume_id | trim }}
+{%- if volume.open_zfs_configuration.copy_tags_to_snapshots is defined %}
+        CopyTagsToSnapshots: {{ volume.open_zfs_configuration.copy_tags_to_snapshots }}
+{%- endif %}
+{%- if volume.open_zfs_configuration.data_compression_type is defined %}
+        DataCompressionType: {{ volume.open_zfs_configuration.data_compression_type }}
+{%- endif %}
+{%- if volume.open_zfs_configuration.nfs_exports is defined %}
+        NfsExports:
+{%- for nfs_export in volume.open_zfs_configuration.nfs_exports %}
+          - ClientConfigurations:
+{%- for client_configuration in nfs_export.client_configurations %}
+              - Clients: {{ client_configuration.clients }}
+                Options:
+{%- for option in client_configuration.options %}
+                  - {{ option }}
+{%- endfor %}
+{%- endfor %}
+{%- endfor %}
+{%- endif %}
+{%- if volume.open_zfs_configuration.options is defined %}
+        Options:
+{%- for option in volume.open_zfs_configuration.options %}
+          - {{ option }}
+{%- endfor %}
+{%- endif %}
+{%- if volume.open_zfs_configuration.origin_snapshot is defined %}
+        OriginSnapshot:
+          CopyStrategy: {{ volume.open_zfs_configuration.origin_snapshot.copy_strategy }}
+          SnapshotARN: {{ volume.open_zfs_configuration.origin_snapshot.snapshot_arn | trim }}
+{%- endif %}
+{%- if volume.open_zfs_configuration.read_only is defined %}
+        ReadOnly: {{ volume.open_zfs_configuration.read_only }}
+{%- endif %}
+{%- if volume.open_zfs_configuration.record_size_kib is defined %}
+        RecordSizeKiB: {{ volume.open_zfs_configuration.record_size_kib }}
+{%- endif %}
+{%- if volume.open_zfs_configuration.storage_capacity_quota_gib is defined %}
+        StorageCapacityQuotaGiB: {{ volume.open_zfs_configuration.storage_capacity_quota_gib }}
+{%- endif %}
+{%- if volume.open_zfs_configuration.storage_capacity_reservation_gib is defined %}
+        StorageCapacityReservationGiB: {{ volume.open_zfs_configuration.storage_capacity_reservation_gib }}
+{%- endif %}
+{%- if volume.open_zfs_configuration.user_and_group_quotas is defined %}
+        UserAndGroupQuotas:
+{%- for quota in volume.open_zfs_configuration.user_and_group_quotas %}
+          - Id: {{ quota.id }}
+            StorageCapacityQuotaGiB: {{ quota.storage_capacity_quota_gib }}
+            Type: {{ quota.type }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if volume.volume_type is defined %}
+      VolumeType: {{ volume.volume_type }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if volume.tags is defined %}
+{%- for key,value in volume.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for volume in sceptre_user_data.volumes %}
+{%- set volume_name = volume.name %}
+  {{ volume_name }}:
+    Description: Volume ID for {{ volume_name }}
+    Value:
+      Ref: {{ volume_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ volume_name }}"
+
+  {{ volume_name }}ResourceARN:
+    Description: The ResourceARN for {{ volume_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ volume_name }}
+        - ResourceARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ volume_name }}-ResourceARN"
+
+  {{ volume_name }}UUID:
+    Description: The universally unique identifier for {{ volume_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ volume_name }}
+        - UUID
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ volume_name }}-UUID"
+
+  {{ volume_name }}VolumeId:
+    Description: The Volume Id for {{ volume_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ volume_name }}
+        - VolumeId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ volume_name }}-VolumeId"
+
+{%- endfor %}
