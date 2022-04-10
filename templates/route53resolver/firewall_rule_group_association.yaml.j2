@@ -1,0 +1,127 @@
+---
+Description: Route53Resolver FirewallRuleGroupAssociation(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for firewall_rule_group_association in sceptre_user_data.firewall_rule_group_associations %}
+{%- set firewall_rule_group_association_name = firewall_rule_group_association.name %}
+  {{ firewall_rule_group_association_name }}:
+    Type: AWS::Route53Resolver::FirewallRuleGroupAssociation
+    DeletionPolicy: {{ firewall_rule_group_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ firewall_rule_group_association.update_replace_policy | default('Delete') }}
+    Properties:
+      FirewallRuleGroupId: {{ firewall_rule_group_association.firewall_rule_group_id | trim }}
+      Priority: {{ firewall_rule_group_association.priority }}
+      VpcId: {{ firewall_rule_group_association.vpc_id | trim }}
+{%- if firewall_rule_group_association.mutation_protection is defined %}
+      MutationProtection: String
+{%- endif %}
+{%- if firewall_rule_group_association.firewall_rule_group_association_name is defined %}
+      Name: String
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if firewall_rule_group_association.tags is defined %}
+{%- for key,value in firewall_rule_group_association.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for firewall_rule_group_association in sceptre_user_data.firewall_rule_group_associations %}
+{%- set firewall_rule_group_association_name = firewall_rule_group_association.name %}
+  {{ firewall_rule_group_association_name }}:
+    Description: FirewallRuleGroupAssociation Id for {{ firewall_rule_group_association_name }}
+    Value:
+      Ref: {{ firewall_rule_group_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}"
+
+  {{ firewall_rule_group_association_name }}Arn:
+    Description: The ARN for {{ firewall_rule_group_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_association_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-Arn"
+
+  {{ firewall_rule_group_association_name }}CreationTime:
+    Description: The date and time that {{ firewall_rule_group_association_name }} was created, in UTC.
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_association_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-CreationTime"
+
+  {{ firewall_rule_group_association_name }}CreatorRequestId:
+    Description: A unique string defined by you to identify the request for {{ firewall_rule_group_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_association_name }}
+        - CreatorRequestId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-CreatorRequestId"
+
+  {{ firewall_rule_group_association_name }}Id:
+    Description: The Id for {{ firewall_rule_group_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_association_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-Id"
+
+  {{ firewall_rule_group_association_name }}ModificationTime:
+    Description: The date and time that {{ firewall_rule_group_association_name }} was last modified.
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_association_name }}
+        - ModificationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-ModificationTime"
+
+  {{ firewall_rule_group_association_name }}ModificationTime:
+    Description: The date and time that {{ firewall_rule_group_association_name }} was last modified.
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_association_name }}
+        - ModificationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-ModificationTime"
+
+  {{ firewall_rule_group_association_name }}Status:
+    Description: The status for {{ firewall_rule_group_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_association_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-Status"
+
+  {{ firewall_rule_group_association_name }}StatusMessage:
+    Description: Additional status message for {{ firewall_rule_group_association_name }}, if available.
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_association_name }}
+        - StatusMessage
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-StatusMessage"
+
+{%- endfor %}

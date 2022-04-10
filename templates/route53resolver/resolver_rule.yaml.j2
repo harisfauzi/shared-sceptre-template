@@ -1,0 +1,123 @@
+---
+Description: Route53Resolver ResolverRule(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for resolver_rule in sceptre_user_data.resolver_rules %}
+{%- set resolver_rule_name = resolver_rule.name %}
+  {{ resolver_rule_name }}:
+    Type: AWS::Route53Resolver::ResolverRule
+    DeletionPolicy: {{ resolver_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resolver_rule.update_replace_policy | default('Delete') }}
+    Properties:
+      DomainName: {{ resolver_rule.domain_name }}
+      RuleType: {{ resolver_rule.rule_type }}
+{%- if resolver_rule.resolver_rule_name is defined %}
+      Name: {{ resolver_rule.resolver_rule_name }}
+{%- endif %}
+{%- if resolver_rule.resolver_endpoint_id is defined %}
+      ResolverEndpointId: {{ resolver_rule.resolver_endpoint_id | trim }}
+{%- endif %}
+{%- if resolver_rule.target_ips is defined %}
+      TargetIps: 
+{%- for target_ip in resolver_rule.target_ips %}
+        - Ip: {{ target_ip.ip }}
+{%- if target_ip.port is defined %}
+          Port: {{ target_ip.port }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if resolver_rule.tags is defined %}
+{%- for key,value in resolver_rule.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for resolver_rule in sceptre_user_data.resolver_rules %}
+{%- set resolver_rule_name = resolver_rule.name %}
+  {{ resolver_rule_name }}:
+    Description: ResolverRule object for {{ resolver_rule_name }}
+    Value:
+      Ref: {{ resolver_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}"
+
+  {{ resolver_rule_name }}Arn:
+    Description: The ARN for {{ resolver_rule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_rule_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-Arn"
+
+  {{ resolver_rule_name }}DomainName:
+    Description: >
+      DNS queries for this domain name are forwarded to the IP addresses that are specified in TargetIps.
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_rule_name }}
+        - DomainName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-DomainName"
+
+  {{ resolver_rule_name }}Name:
+    Description: >
+      A friendly name for {{ resolver_rule_name }} that lets you
+      easily find a rule in the Resolver dashboard in the Route 53 console.
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_rule_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-Name"
+
+  {{ resolver_rule_name }}ResolverEndpointId:
+    Description: >
+      The ID of the outbound endpoint that {{ resolver_rule_name }} is associated with.
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_rule_name }}
+        - ResolverEndpointId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-ResolverEndpointId"
+
+  {{ resolver_rule_name }}ResolverRuleId:
+    Description: The ResolverRule Id for {{ resolver_rule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_rule_name }}
+        - ResolverRuleId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-ResolverRuleId"
+
+{%- if resolver_rule.rule_type == 'FORWARD' %}
+  {{ resolver_rule_name }}TargetIps:
+    Description: >
+      When the value of RuleType is FORWARD,
+      the IP addresses that the outbound endpoint forwards DNS queries to.
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_rule_name }}
+        - TargetIps
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-TargetIps"
+
+{%- endif %}
+{%- endfor %}

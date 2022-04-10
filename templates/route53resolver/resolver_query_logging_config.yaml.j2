@@ -1,0 +1,109 @@
+---
+Description: Route53Resolver ResolverQueryLoggingConfig(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for resolver_query_logging_config in sceptre_user_data.resolver_query_logging_configs %}
+{%- set resolver_query_logging_config_name = resolver_query_logging_config.name %}
+  {{ resolver_query_logging_config_name }}:
+    Type: AWS::Route53Resolver::ResolverQueryLoggingConfig
+    DeletionPolicy: {{ resolver_query_logging_config.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resolver_query_logging_config.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if resolver_query_logging_config.destination_arn is defined %}
+      DestinationArn: {{ resolver_query_logging_config.destination_arn | trim }}
+{%- endif %}
+{%- if resolver_query_logging_config.resolver_query_logging_config_name is defined %}
+      Name: {{ resolver_query_logging_config.resolver_query_logging_config_name }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+
+{%- for resolver_query_logging_config in sceptre_user_data.resolver_query_logging_configs %}
+{%- set resolver_query_logging_config_name = resolver_query_logging_config.name %}
+  {{ resolver_query_logging_config_name }}:
+    Description: The ID for {{ resolver_query_logging_config_name }}
+    Value:
+      Ref: {{ resolver_query_logging_config_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_name }}"
+
+  {{ resolver_query_logging_config_name }}Arn:
+    Description: The ARN for {{ resolver_query_logging_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_name }}-Arn"
+
+  {{ resolver_query_logging_config_name }}AssociationCount:
+    Description: The number of VPCs that are associated with {{ resolver_query_logging_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_name }}
+        - AssociationCount
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_name }}-AssociationCount"
+
+  {{ resolver_query_logging_config_name }}CreationTime:
+    Description: The date and time that {{ resolver_query_logging_config_name }} was created, in UTC.
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_name }}-CreationTime"
+
+  {{ resolver_query_logging_config_name }}CreatorRequestId:
+    Description: A unique string defined by you to identify the request for {{ resolver_query_logging_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_name }}
+        - CreatorRequestId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_name }}-CreatorRequestId"
+
+  {{ resolver_query_logging_config_name }}Id:
+    Description: The Id for {{ resolver_query_logging_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_name }}-Id"
+
+  {{ resolver_query_logging_config_name }}ShareStatus:
+    Description: >
+      An indication of whether {{ resolver_query_logging_config_name }}
+      is shared with other AWS accounts, or was shared
+      with the current account by another AWS account.
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_name }}
+        - ShareStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_name }}-ShareStatus"
+
+  {{ resolver_query_logging_config_name }}Status:
+    Description: The status for {{ resolver_query_logging_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_name }}-Status"
+
+{%- endfor %}

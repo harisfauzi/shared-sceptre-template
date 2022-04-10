@@ -1,0 +1,130 @@
+---
+Description: Route53Resolver FirewallDomainList(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for firewall_domain_list in sceptre_user_data.firewall_domain_lists %}
+{%- set firewall_domain_list_name = firewall_domain_list.name %}
+  {{ firewall_domain_list_name }}:
+    Type: AWS::Route53Resolver::FirewallDomainList
+    DeletionPolicy: {{ firewall_domain_list.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ firewall_domain_list.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if firewall_domain_list.domain_file_url is defined %}
+      DomainFileUrl: {{ firewall_domain_list.domain_file_url }}
+{%- endif %}
+{%- if firewall_domain_list.domains is defined %}
+      Domains:
+{%- for domain in firewall_domain_list.domains %}
+        - {{ domain }}
+{%- endfor %}
+{%- endif %}
+{%- if firewall_domain_list.firewall_domain_list_name is defined %}
+      Name: {{ firewall_domain_list.firewall_domain_list_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if firewall_domain_list.tags is defined %}
+{%- for key,value in firewall_domain_list.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for firewall_domain_list in sceptre_user_data.firewall_domain_lists %}
+{%- set firewall_domain_list_name = firewall_domain_list.name %}
+  {{ firewall_domain_list_name }}:
+    Description: FirewallDomainList object for {{ firewall_domain_list_name }}
+    Value:
+      Ref: {{ firewall_domain_list_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}"
+
+  {{ firewall_domain_list_name }}Arn:
+    Description: The ARN for {{ firewall_domain_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_domain_list_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-Arn"
+
+  {{ firewall_domain_list_name }}CreationTime:
+    Description: The date and time that {{ firewall_domain_list_name }} was created, in UTC.
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_domain_list_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-CreationTime"
+
+  {{ firewall_domain_list_name }}CreatorRequestId:
+    Description: A unique string defined by you to identify the request for {{ firewall_domain_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_domain_list_name }}
+        - CreatorRequestId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-CreatorRequestId"
+
+  {{ firewall_domain_list_name }}DomainCount:
+    Description: The DomainCount for {{ firewall_domain_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_domain_list_name }}
+        - DomainCount
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-DomainCount"
+
+  {{ firewall_domain_list_name }}Id:
+    Description: The Id for {{ firewall_domain_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_domain_list_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-Id"
+
+  {{ firewall_domain_list_name }}ModificationTime:
+    Description: The date and time that {{ firewall_domain_list_name }} was last modified.
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_domain_list_name }}
+        - ModificationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-ModificationTime"
+
+  {{ firewall_domain_list_name }}Status:
+    Description: The status for {{ firewall_domain_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_domain_list_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-Status"
+
+  {{ firewall_domain_list_name }}StatusMessage:
+    Description: Additional status message for {{ firewall_domain_list_name }}, if available.
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_domain_list_name }}
+        - StatusMessage
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-StatusMessage"
+
+{%- endfor %}
