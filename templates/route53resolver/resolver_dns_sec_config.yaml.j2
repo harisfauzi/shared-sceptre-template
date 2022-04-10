@@ -1,0 +1,62 @@
+---
+Description: Route53Resolver ResolverDNSSECConfig(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for resolver_dns_sec_config in sceptre_user_data.resolver_dns_sec_configs %}
+{%- set resolver_dns_sec_config_name = resolver_dns_sec_config.name %}
+  {{ resolver_dns_sec_config_name }}:
+    Type: AWS::Route53Resolver::ResolverDNSSECConfig
+    DeletionPolicy: {{ resolver_dns_sec_config.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resolver_dns_sec_config.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if resolver_dns_sec_config.resource_id is defined %}
+      ResourceId: {{ resolver_dns_sec_config.resource_id | trim }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for resolver_dns_sec_config in sceptre_user_data.resolver_dns_sec_configs %}
+{%- set resolver_dns_sec_config_name = resolver_dns_sec_config.name %}
+  {{ resolver_dns_sec_config_name }}:
+    Description: The Id for {{ resolver_dns_sec_config_name }}
+    Value:
+      Ref: {{ resolver_dns_sec_config_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_dns_sec_config_name }}"
+
+  {{ resolver_dns_sec_config_name }}Id:
+    Description: The Id for {{ resolver_dns_sec_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_dns_sec_config_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_dns_sec_config_name }}-Id"
+
+  {{ resolver_dns_sec_config_name }}OwnerId:
+    Description: The owner account ID of the Amazon Virtual Private Cloud VPC for {{ resolver_dns_sec_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_dns_sec_config_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_dns_sec_config_name }}-OwnerId"
+
+  {{ resolver_dns_sec_config_name }}ValidationStatus:
+    Description: The current validation status of for {{ resolver_dns_sec_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_dns_sec_config_name }}
+        - ValidationStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_dns_sec_config_name }}-ValidationStatus"
+
+{%- endfor %}

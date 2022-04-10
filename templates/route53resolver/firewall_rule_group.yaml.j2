@@ -1,0 +1,151 @@
+---
+Description: Route53Resolver FirewallRuleGroup(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for firewall_rule_group in sceptre_user_data.firewall_rule_groups %}
+{%- set firewall_rule_group_name = firewall_rule_group.name %}
+  {{ firewall_rule_group_name }}:
+    Type: AWS::Route53Resolver::FirewallRuleGroup
+    DeletionPolicy: {{ firewall_rule_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ firewall_rule_group.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if firewall_rule_group.firewall_rules is defined %}
+      FirewallRules:
+{%- for firewall_rule in firewall_rule_group.firewall_rules %}
+        - Action: {{ firewall_rule.action }}
+          FirewallDomainListId: {{ firewall_rule.firewall_domain_list_id | trim }}
+          Priority: {{ firewall_rule.priority }}
+{%- if firewall_rule.block_override_dns_type is defined %}
+          BlockOverrideDnsType: {{ firewall_rule.block_override_dns_type }}
+{%- endif %}
+{%- if firewall_rule.block_override_domain is defined %}
+          BlockOverrideDomain: {{ firewall_rule.block_override_domain }}
+{%- endif %}
+{%- if firewall_rule.block_override_ttl is defined %}
+          BlockOverrideTtl: {{ firewall_rule.block_override_ttl }}
+{%- endif %}
+{%- if firewall_rule.block_response is defined %}
+          BlockResponse: {{ firewall_rule.block_response }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if firewall_rule_group.firewall_rule_group_name is defined %}
+      Name: {{ firewall_rule_group.firewall_rule_group_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if firewall_rule_group.tags is defined %}
+{%- for key,value in firewall_rule_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for firewall_rule_group in sceptre_user_data.firewall_rule_groups %}
+{%- set firewall_rule_group_name = firewall_rule_group.name %}
+  {{ firewall_rule_group_name }}:
+    Description: FirewallRuleGroupId for {{ firewall_rule_group_name }}
+    Value:
+      Ref: {{ firewall_rule_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}"
+
+  {{ firewall_rule_group_name }}Arn:
+    Description: The ARN for {{ firewall_rule_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-Arn"
+
+  {{ firewall_rule_group_name }}CreationTime:
+    Description: The date and time that {{ firewall_rule_group_name }} was created, in UTC.
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-CreationTime"
+
+  {{ firewall_rule_group_name }}CreatorRequestId:
+    Description: A unique string defined by you to identify the request for {{ firewall_rule_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_name }}
+        - CreatorRequestId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-CreatorRequestId"
+
+  {{ firewall_rule_group_name }}Id:
+    Description: The Id for {{ firewall_rule_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-Id"
+
+  {{ firewall_rule_group_name }}ModificationTime:
+    Description: The date and time that {{ firewall_rule_group_name }} was last modified.
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_name }}
+        - ModificationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-ModificationTime"
+
+  {{ firewall_rule_group_name }}RuleCount:
+    Description: The rule count for {{ firewall_rule_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_name }}
+        - RuleCount
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-RuleCount"
+
+  {{ firewall_rule_group_name }}ShareStatus:
+    Description: The sharing status (via AWS Resource Access Manager) for {{ firewall_rule_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_name }}
+        - ShareStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-ShareStatus"
+
+  {{ firewall_rule_group_name }}Status:
+    Description: The status for {{ firewall_rule_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-Status"
+
+  {{ firewall_rule_group_name }}StatusMessage:
+    Description: Additional status message for {{ firewall_rule_group_name }}, if available.
+    Value:
+      Fn::GetAtt:
+        - {{ firewall_rule_group_name }}
+        - StatusMessage
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-StatusMessage"
+
+{%- endfor %}

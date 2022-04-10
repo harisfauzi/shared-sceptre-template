@@ -1,0 +1,89 @@
+---
+Description: Route53Resolver ResolverQueryLoggingConfigAssociation(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for resolver_query_logging_config_association in sceptre_user_data.resolver_query_logging_config_associations %}
+{%- set resolver_query_logging_config_association_name = resolver_query_logging_config_association.name %}
+  {{ resolver_query_logging_config_association_name }}:
+    Type: AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation
+    DeletionPolicy: {{ resolver_query_logging_config_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resolver_query_logging_config_association.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if resolver_query_logging_config_association.resolver_query_log_config_id is defined %}
+      ResolverQueryLogConfigId: {{ resolver_query_logging_config_association.resolver_query_log_config_id | trim }}
+{%- endif %}
+{%- if resolver_query_logging_config_association.resource_id is defined %}
+      ResourceId: {{ resolver_query_logging_config_association.resource_id | trim }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for resolver_query_logging_config_association in sceptre_user_data.resolver_query_logging_config_associations %}
+{%- set resolver_query_logging_config_association_name = resolver_query_logging_config_association.name %}
+  {{ resolver_query_logging_config_association_name }}:
+    Description: The ID of the configuration for DNS query logging for {{ resolver_query_logging_config_association_name }}
+    Value:
+      Ref: {{ resolver_query_logging_config_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_association_name }}"
+
+  {{ resolver_query_logging_config_association_name }}CreationTime:
+    Description: >
+      The date and time that the VPC was associated with the query logging configuration
+      for {{ resolver_query_logging_config_association_name }}, in UTC.
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_association_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_association_name }}-CreationTime"
+
+  {{ resolver_query_logging_config_association_name }}Error:
+    Description: >
+      If the value of Status is FAILED, the value of Error indicates the cause,
+      for {{ resolver_query_logging_config_association_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_association_name }}
+        - Error
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_association_name }}-Error"
+
+  {{ resolver_query_logging_config_association_name }}ErrorMessage:
+    Description: Contains additional information about the error for {{ resolver_query_logging_config_association_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_association_name }}
+        - ErrorMessage
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_association_name }}-ErrorMessage"
+
+  {{ resolver_query_logging_config_association_name }}Id:
+    Description: The ID of {{ resolver_query_logging_config_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_association_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_association_name }}-Id"
+
+  {{ resolver_query_logging_config_association_name }}Status:
+    Description: The status of {{ resolver_query_logging_config_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_query_logging_config_association_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_query_logging_config_association_name }}-Status"
+
+{%- endfor %}

@@ -1,0 +1,113 @@
+---
+Description: Route53Resolver ResolverEndpoint(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for resolver_endpoint in sceptre_user_data.resolver_endpoints %}
+{%- set resolver_endpoint_name = resolver_endpoint.name %}
+  {{ resolver_endpoint_name }}:
+    Type: AWS::Route53Resolver::ResolverEndpoint
+    DeletionPolicy: {{ resolver_endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resolver_endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      Direction: {{ resolver_endpoint.direction }}
+      IpAddresses:
+{%- for ip_address in resolver_endpoint.ip_addresses %}
+        - SubnetId: {{ ip_address.subnete_id }}
+{%- if ip_address.ip is defined %}
+          Ip: {{ ip_address.ip }}
+{%- endif %}
+{%- endfor %}
+      SecurityGroupIds:
+{%- for security_group_id in resolver_endpoint.security_group_ids %}
+        - {{ security_group_id }}
+{%- endfor %}
+{%- if resolver_endpoint.resolver_endpoint_name is defined %}
+      Name: {{ resolver_endpoint.resolver_endpoint_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if resolver_endpoint.tags is defined %}
+{%- for key,value in resolver_endpoint.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for resolver_endpoint in sceptre_user_data.resolver_endpoints %}
+{%- set resolver_endpoint_name = resolver_endpoint.name %}
+  {{ resolver_endpoint_name }}:
+    Description: ResolverEndpoint object for {{ resolver_endpoint_name }}
+    Value:
+      Ref: {{ resolver_endpoint_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}"
+
+  {{ resolver_endpoint_name }}Arn:
+    Description: The ARN for {{ resolver_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_endpoint_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-Arn"
+
+  {{ resolver_endpoint_name }}Direction:
+    Description: Indicates whether {{ resolver_endpoint_name }} allows inbound or outbound DNS queries
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_endpoint_name }}
+        - Direction
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-Direction"
+
+  {{ resolver_endpoint_name }}HostVPCId:
+    Description: The VPC ID where {{ resolver_endpoint_name }} is created.
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_endpoint_name }}
+        - HostVPCId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-HostVPCId"
+
+  {{ resolver_endpoint_name }}IpAddressCount:
+    Description: The number of IP addresses that {{ resolver_endpoint_name }} can use for DNS queries
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_endpoint_name }}
+        - IpAddressCount
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-IpAddressCount"
+
+  {{ resolver_endpoint_name }}Name:
+    Description: The name that you assigned to {{ resolver_endpoint_name }} when you created the endpoint.
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_endpoint_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-Name"
+
+  {{ resolver_endpoint_name }}ResolverEndpointId:
+    Description: The Id of {{ resolver_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_endpoint_name }}
+        - ResolverEndpointId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-ResolverEndpointId"
+
+{%- endfor %}

@@ -1,0 +1,61 @@
+---
+Description: Route53Resolver ResolverConfig(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for resolver_config in sceptre_user_data.resolver_configs %}
+{%- set resolver_config_name = resolver_config.name %}
+  {{ resolver_config_name }}:
+    Type: AWS::Route53Resolver::ResolverConfig
+    DeletionPolicy: {{ resolver_config.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resolver_config.update_replace_policy | default('Delete') }}
+    Properties:
+      AutodefinedReverseFlag: {{ resolver_config.autodefined_reverse_flag }}
+      ResourceId: {{ resolver_config.resource_id | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for resolver_config in sceptre_user_data.resolver_configs %}
+{%- set resolver_config_name = resolver_config.name %}
+  {{ resolver_config_name }}:
+    Description: ResolverConfiguration Id for {{ resolver_config_name }}
+    Value:
+      Ref: {{ resolver_config_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_config_name }}"
+
+  {{ resolver_config_name }}AutodefinedReverse:
+    Description: The status of whether or not the Route 53 Resolver will create autodefined rules for reverse DNS lookups for {{ resolver_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_config_name }}
+        - AutodefinedReverse
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_config_name }}-AutodefinedReverse"
+
+  {{ resolver_config_name }}Id:
+    Description: The Id for {{ resolver_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_config_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_config_name }}-Id"
+
+  {{ resolver_config_name }}OwnerId:
+    Description: The owner account ID of the Amazon Virtual Private Cloud VPC for {{ resolver_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resolver_config_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resolver_config_name }}-OwnerId"
+
+{%- endfor %}
