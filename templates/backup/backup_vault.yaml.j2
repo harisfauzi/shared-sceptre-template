@@ -1,0 +1,83 @@
+---
+Description: Backup BackupVault(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for backup_vault in sceptre_user_data.backup_vaults %}
+{%- set backup_vault_name = backup_vault.name %}
+  {{ backup_vault_name }}:
+    Type: AWS::Backup::BackupVault
+    DeletionPolicy: {{ backup_vault.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ backup_vault.update_replace_policy | default('Delete') }}
+    Properties:
+      BackupVaultName: {{ backup_vault.backup_vault_name }}
+{%- if backup_vault.access_policy_json is defined %}
+      AccessPolicy: {{ backup_vault.access_policy_json }}
+{%- elif backup_vault.access_policy is defined %}
+      AccessPolicy:
+{{ backup_vault.access_policy | indent(width=8,first=True)}}
+{%- endif %}
+{%- if backup_vault.backup_vault_tags is defined %}
+      BackupVaultTags:
+{%- for key, value in backup_vault.backup_vault_tags %}
+        "{{ key }}" : {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if backup_vault.encryption_key_arn is defined %}
+      EncryptionKeyArn: {{ backup_vault.encryption_key_arn | trim }}
+{%- endif %}
+{%- if backup_vault.lock_configuration is defined %}
+      LockConfiguration:
+        MinRetentionDays: {{ backup_vault.lock_configuration.min_retention_days }}
+{%- if backup_vault.lock_configuration.changeable_for_days is defined %}
+        ChangeableForDays: {{ backup_vault.lock_configuration.changeable_for_days }}
+{%- endif %}
+{%- if backup_vault.lock_configuration.max_retention_days is defined %}
+        MaxRetentionDays: {{ backup_vault.lock_configuration.max_retention_days }}
+{%- endif %}
+{%- endif %}
+{%- if backup_vault.notifications is defined %}
+      Notifications:
+        BackupVaultEvents:
+{%- for backup_vault_event in backup_vault.notifications.backup_vault_events %}
+          - {{ backup_vault_event }}
+{%- endfor %}
+        SNSTopicArn: {{ backup_vault.notifications.sns_topic_arn | trim }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for backup_vault in sceptre_user_data.backup_vaults %}
+{%- set backup_vault_name = backup_vault.name %}
+  {{ backup_vault_name }}:
+    Description: BackupVault Name for {{ backup_vault_name }}
+    Value:
+      Ref: {{ backup_vault_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ backup_vault_name }}"
+
+  {{ backup_vault_name }}BackupVaultArn:
+    Description: The ARN for {{ backup_vault_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ backup_vault_name }}
+        - BackupVaultArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ backup_vault_name }}-BackupVaultArn"
+
+  {{ backup_vault_name }}BackupVaultName:
+    Description: The BackupVaultName for {{ backup_vault_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ backup_vault_name }}
+        - BackupVaultName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ backup_vault_name }}-BackupVaultName"
+
+{%- endfor %}
