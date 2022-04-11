@@ -1,0 +1,22 @@
+---
+Description: SES ReceiptFilter(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for receipt_filter in sceptre_user_data.receipt_filters %}
+{%- set receipt_filter_name = receipt_filter.name %}
+  {{ receipt_filter_name }}:
+    Type: AWS::SES::ReceiptFilter
+    DeletionPolicy: {{ receipt_filter.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ receipt_filter.update_replace_policy | default('Delete') }}
+    Properties:
+      Filter: 
+        IpFilter: 
+          Cidr: {{ receipt_filter.filter.ip_filter.cidr }}
+          Policy: {{ receipt_filter.filter.ip_filter.policy }}
+{%- if receipt_filter.filter.name is defined %}
+        Name: {{ receipt_filter.filter.name }}
+{%- endif %}
+
+{%- endfor %}

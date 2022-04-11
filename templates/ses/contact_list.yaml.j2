@@ -1,0 +1,55 @@
+---
+Description: SES ContactList(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for contact_list in sceptre_user_data.contact_lists %}
+{%- set contact_list_name = contact_list.name %}
+  {{ contact_list_name }}:
+    Type: AWS::SES::ContactList
+    DeletionPolicy: {{ contact_list.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ contact_list.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if contact_list.contact_list_name is defined %}
+      ContactListName: {{ contact_list.contact_list_name }}
+{%- endif %}
+{%- if contact_list.description is defined %}
+      Description: {{ contact_list.description }}
+{%- endif %}
+{%- if contact_list.topics is defined %}
+      Topics:
+{%- for topic in contact_list.topics %}
+        - DefaultSubscriptionStatus: {{ topic.default_subscription_status }}
+          DisplayName: {{ topic.display_name }}
+          TopicName: {{ topic.topic_name }}
+{%- if topic.description is defined %}
+          Description: {{ topic.description }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if contact_list.tags is defined %}
+{%- for key,value in contact_list.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for contact_list in sceptre_user_data.contact_lists %}
+{%- set contact_list_name = contact_list.name %}
+  {{ contact_list_name }}:
+    Description: ContactList Name for {{ contact_list_name }}
+    Value:
+      Ref: {{ contact_list_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ contact_list_name }}"
+
+{%- endfor %}

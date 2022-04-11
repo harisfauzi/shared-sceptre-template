@@ -1,0 +1,41 @@
+---
+Description: SES ConfigurationSetEventDestination(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for configuration_set_event_destination in sceptre_user_data.configuration_set_event_destinations %}
+{%- set configuration_set_event_destination_name = configuration_set_event_destination.name %}
+  {{ configuration_set_event_destination_name }}:
+    Type: AWS::SES::ConfigurationSetEventDestination
+    DeletionPolicy: {{ configuration_set_event_destination.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ configuration_set_event_destination.update_replace_policy | default('Delete') }}
+    Properties:
+      ConfigurationSetName: {{ configuration_set_event_destination.configuration_set_name }}
+      EventDestination:
+        MatchingEventTypes:
+{%- for type in configuration_set_event_destination.event_destination.matching_event_types %}
+          - {{ type }}
+{%- endfor %}
+{%- if configuration_set_event_destination.event_destination.cloud_watch_destination is defined %}
+        CloudWatchDestination:
+          DimensionConfigurations:
+{%- for configuration in configuration_set_event_destination.event_destination.cloud_watch_destination.dimension_configurations %}
+            - DefaultDimensionValue: {{ configuration.default_dimension_value }}
+              DimensionName: {{ configuration.dimension_name }}
+              DimensionValueSource: {{ configuration.dimension_value_source }}
+{%- endfor %}
+{%- endif %}
+{%- if configuration_set_event_destination.event_destination.enabled is defined %}
+        Enabled: {{ configuration_set_event_destination.event_destination.enabled }}
+{%- endif %}
+{%- if configuration_set_event_destination.event_destination.kinesis_firehose_destination is defined %}
+        KinesisFirehoseDestination:
+          DeliveryStreamARN: {{ configuration_set_event_destination.event_destination.kinesis_firehose_destination.delivery_stream_arn | trim }}
+          IAMRoleARN: {{ configuration_set_event_destination.event_destination.kinesis_firehose_destination.iam_role_arn | trim }}
+{%- endif %}
+{%- if configuration_set_event_destination.event_destination.name is defined %}
+        Name: {{ configuration_set_event_destination.event_destination.name }}
+{%- endif %}
+
+{%- endfor %}
