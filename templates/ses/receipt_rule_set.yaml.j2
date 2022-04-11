@@ -1,0 +1,32 @@
+---
+Description: SES ReceiptRuleSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for receipt_rule_set in sceptre_user_data.receipt_rule_sets %}
+{%- set receipt_rule_set_name = receipt_rule_set.name %}
+  {{ receipt_rule_set_name }}:
+    Type: AWS::SES::ReceiptRuleSet
+    DeletionPolicy: {{ receipt_rule_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ receipt_rule_set.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if receipt_rule_set.rule_set_name is defined %}
+      RuleSetName: {{ receipt_rule_set.rule_set_name }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for receipt_rule_set in sceptre_user_data.receipt_rule_sets %}
+{%- set receipt_rule_set_name = receipt_rule_set.name %}
+  {{ receipt_rule_set_name }}:
+    Description: ReceiptRuleSet Name for {{ receipt_rule_set_name }}
+    Value:
+      Ref: {{ receipt_rule_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ receipt_rule_set_name }}"
+
+{%- endfor %}

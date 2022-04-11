@@ -1,0 +1,121 @@
+---
+Description: SES ReceiptRule(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for receipt_rule in sceptre_user_data.receipt_rules %}
+{%- set receipt_rule_name = receipt_rule.name %}
+  {{ receipt_rule_name }}:
+    Type: AWS::SES::ReceiptRule
+    DeletionPolicy: {{ receipt_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ receipt_rule.update_replace_policy | default('Delete') }}
+    Properties:
+      Rule:
+{%- if receipt_rule.rule.actions is defined %}
+        Actions:
+{%- for action in receipt_rule.rule.actions %}
+          -
+{%- if action.add_header_action is defined %}
+            AddHeaderAction:
+              HeaderName: {{ action.add_header_action.header_name }}
+              HeaderValue: {{ action.add_header_action.header_value }}
+{%- endif %}
+{%- if action.bounce_action is defined %}
+            BounceAction:
+              Message: {{ action.bounce_action.message }}
+              Sender: {{ action.bounce_action.sender }}
+              SmtpReplyCode: {{ action.bounce_action.smtp_reply_code }}
+{%- if action.bounce_action.status_code is defined %}
+              StatusCode: {{ action.bounce_action.status_code }}
+{%- endif %}
+{%- if action.bounce_action.topic_arn is defined %}
+              TopicArn: {{ action.bounce_action.topic_arn | trim }}
+{%- endif %}
+{%- endif %}
+{%- if action.lambda_action is defined %}
+            LambdaAction:
+              FunctionArn: {{ action.lambda_action.function_arn | trim }}
+{%- if action.lambda_action.invocation_type is defined %}
+              InvocationType: {{ action.lambda_action.invocation_type }}
+{%- endif %}
+{%- if action.lambda_action.topic_arn is defined %}
+              TopicArn: {{ action.lambda_action.topic_arn | trim }}
+{%- endif %}
+{%- endif %}
+{%- if action.s3_action is defined %}
+            S3Action:
+              BucketName: {{ action.s3_action.bucket_name }}
+{%- if action.s3_action.kms_key_arn is defined %}
+              KmsKeyArn: {{ action.s3_action.kms_key_arn | trim }}
+{%- endif %}
+{%- if action.s3_action.object_key_prefix is defined %}
+              ObjectKeyPrefix: {{ action.s3_action.object_key_prefix }}
+{%- endif %}
+{%- if action.s3_action.topic_arn is defined %}
+              TopicArn: {{ action.s3_action.topic_arn | trim }}
+{%- endif %}
+{%- endif %}
+{%- if action.sns_action is defined %}
+            SNSAction:
+{%- if action.sns_action.encoding is defined %}
+              Encoding: {{ action.sns_action.encoding }}
+{%- endif %}
+{%- if action.sns_action.topic_arn is defined %}
+              TopicArn: {{ action.sns_action.topic_arn | trim }}
+{%- endif %}
+{%- endif %}
+{%- if action.stop_action is defined %}
+            StopAction:
+              Scope: {{ action.stop_action.scope }}
+{%- if action.stop_action.topic_arn is defined %}
+              TopicArn: {{ action.stop_action.topic_arn }}
+{%- endif %}
+{%- endif %}
+{%- if action.workmail_action is defined %}
+            WorkmailAction:
+              OrganizationArn: {{ action.workmail_action.organization_arn | trim }}
+{%- if action.workmail_action.topic_arn is defined %}
+              TopicArn: {{ action.workmail_action.topic_arn }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if receipt_rule.rule.enabled is defined %}
+        Enabled: {{ receipt_rule.rule.enabled }}
+{%- endif %}
+{%- if receipt_rule.rule.name is defined %}
+        Name: {{ receipt_rule.rule.name }}
+{%- endif %}
+{%- if receipt_rule.rule.recipients is defined %}
+        Recipients:
+{%- for recipient in receipt_rule.rule.recipients %}
+          - {{ recipient }}
+{%- endfor %}
+{%- endif %}
+{%- if receipt_rule.rule.scan_enabled is defined %}
+        ScanEnabled: {{ receipt_rule.rule.scan_enabled }}
+{%- endif %}
+{%- if receipt_rule.rule.tls_policy is defined %}
+        TlsPolicy: {{ receipt_rule.rule.tls_policy }}
+{%- endif %}
+      RuleSetName: {{ receipt_rule.rule_set_name }}
+{%- if receipt_rule.after is defined %}
+      After: {{ receipt_rule.after }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for receipt_rule in sceptre_user_data.receipt_rules %}
+{%- set receipt_rule_name = receipt_rule.name %}
+  {{ receipt_rule_name }}:
+    Description: ReceiptRule Name for {{ receipt_rule_name }}
+    Value:
+      Ref: {{ receipt_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ receipt_rule_name }}"
+
+{%- endfor %}

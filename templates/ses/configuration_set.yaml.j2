@@ -1,0 +1,32 @@
+---
+Description: IAM ConfigurationSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for configuration_set in sceptre_user_data.configuration_sets %}
+{%- set configuration_set_name = configuration_set.name %}
+  {{ configuration_set_name }}:
+    Type: AWS::SES::ConfigurationSet
+    DeletionPolicy: {{ configuration_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ configuration_set.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if configuration_set.configuration_set_name is defined %}
+      Name: {{ configuration_set.configuration_set_name }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for configuration_set in sceptre_user_data.configuration_sets %}
+{%- set configuration_set_name = configuration_set.name %}
+  {{ configuration_set_name }}:
+    Description: ConfigurationSet Name for {{ configuration_set_name }}
+    Value:
+      Ref: {{ configuration_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ configuration_set_name }}"
+
+{%- endfor %}

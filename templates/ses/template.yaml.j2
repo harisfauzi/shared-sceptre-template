@@ -1,0 +1,28 @@
+---
+Description: SES Template(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for template in sceptre_user_data.templates %}
+{%- set template_name = template.name %}
+  {{ template_name }}:
+    Type: AWS::SES::Template
+    DeletionPolicy: {{ template.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ template.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if template.template is defined %}
+      Template: 
+        SubjectPart: {{ template.template.subject_part }}
+{%- if template.template.html_part is defined %}
+        HtmlPart: {{template.template.html_part }}
+{%- endif %}
+{%- if template.template.template_name is defined %}
+        TemplateName: {{ template.template.template_name }}
+{%- endif %}
+{%- if template.template.text_part is defined %}
+        TextPart: {{ template.template.text_part }}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}
