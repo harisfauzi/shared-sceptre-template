@@ -1,0 +1,71 @@
+---
+Description: SSO PermissionSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for permission_set in sceptre_user_data.permission_sets %}
+{%- set permission_set_name = permission_set.name %}
+  {{ permission_set_name }}:
+    Type: AWS::SSO::PermissionSet
+    DeletionPolicy: {{ permission_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ permission_set.update_replace_policy | default('Delete') }}
+    Properties:
+      InstanceArn: {{ permission_set.instance_arn | trim }}
+      Name: {{ permission_set.permission_set_name }}
+{%- if permission_set.description is defined %}
+      Description: {{ permission_set.description }}
+{%- endif %}
+{%- if permission_set.inline_policy_json is defined %}
+      InlinePolicy: {{ permission_set.inline_policy_json }}
+{%- if permission_set.inline_policy is defined %}
+      InlinePolicy:
+{{ permission_set.inline_policy | indent(width=8,first=true) }}
+{%- endif %}
+{%- if permission_set.managed_policies is defined %}
+      ManagedPolicies:
+{%- for managed_policy in permission_set.managed_policies %}
+        - {{ managed_policy }}
+{%- endfor %}
+{%- endif %}
+{%- if permission_set.relay_state_type is defined %}
+      RelayStateType: {{ permission_set.relay_state_type }}
+{%- endif %}
+{%- if permission_set.session_duration is defined %}
+      SessionDuration: {{ permission_set.session_duration }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if permission_set.tags is defined %}
+{%- for key,value in permission_set.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for permission_set in sceptre_user_data.permission_sets %}
+{%- set permission_set_name = permission_set.name %}
+  {{ permission_set_name }}:
+    Description: Generated Id for {{ permission_set_name }}
+    Value:
+      Ref: {{ permission_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ permission_set_name }}"
+
+  {{ permission_set_name }}PermissionSetArn:
+    Description: The ARN for {{ permission_set_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ permission_set_name }}
+        - PermissionSetArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ permission_set_name }}-PermissionSetArn"
+
+{%- endfor %}
