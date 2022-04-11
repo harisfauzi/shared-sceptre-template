@@ -1,0 +1,35 @@
+---
+Description: SSO Assignment(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for assignment in sceptre_user_data.assignments %}
+{%- set assignment_name = assignment.name %}
+  {{ assignment_name }}:
+    Type: AWS::SSO::Assignment
+    DeletionPolicy: {{ assignment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ assignment.update_replace_policy | default('Delete') }}
+    Properties:
+      InstanceArn: {{ assignment.instance_arn | trim }}
+      PermissionSetArn: {{ permission_set_arn | trim }}
+      PrincipalId: {{ assignment.principal_id | trim }}
+      PrincipalType: {{ assignment.principal_type }}
+      TargetId: {{ assignment.target_id | trim }}
+      TargetType: 'AWS_ACCOUNT'
+
+{%- endfor %}
+
+Outputs:
+
+{%- for assignment in sceptre_user_data.assignments %}
+{%- set assignment_name = assignment.name %}
+  {{ assignment_name }}:
+    Description: Assignment Id for {{ assignment_name }}
+    Value:
+      Ref: {{ assignment_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ assignment_name }}"
+
+{%- endfor %}
