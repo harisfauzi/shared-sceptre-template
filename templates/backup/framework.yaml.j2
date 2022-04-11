@@ -1,0 +1,101 @@
+---
+Description: Backup Framework(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for framework in sceptre_user_data.frameworks %}
+{%- set framework_name = framework.name %}
+  {{ framework_name }}:
+    Type: AWS::Backup::Framework
+    DeletionPolicy: {{ framework.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ framework.update_replace_policy | default('Delete') }}
+    Properties:
+      FrameworkControls:
+{%- for framework_control in framework.framework_controls %}
+        - ControlName: {{ framework_control.control_name }}
+{%- if framework_control.control_input_parameters is defined %}
+          ControlInputParameters:
+{%- for parameter in framework_control.control_input_parameters %}
+            - ParameterName: {{ parameter.parameter_name }}
+              ParameterValue: {{ parameter.parameter_value }}
+{%- endfor %}
+{%- endif %}
+{%- if framework_control.control_scope_json is defined %}
+          ControlScope: {{ framework_control.control_scope_json }}
+{%- elif framework_control.control_scope is defined %}
+          ControlScope:
+{{ framework_control.control_scope | indent(width=12,first=True) }}
+{%- endif %}
+{%- endfor %}
+{%- if framework.framework_description is defined %}
+      FrameworkDescription: {{ framework.framework_description }}
+{%- endif %}
+{%- if framework.framework_name is defined %}
+      FrameworkName: {{ framework.framework_name }}
+{%- endif %}
+      FrameworkTags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if framework.tags is defined %}
+{%- for key,value in framework.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for framework in sceptre_user_data.frameworks %}
+{%- set framework_name = framework.name %}
+  {{ framework_name }}:
+    Description: Framework name for {{ framework_name }}
+    Value:
+      Ref: {{ framework_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ framework_name }}"
+
+  {{ framework_name }}CreationTime:
+    Description: The UTC time when {{ framework_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ framework_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ framework_name }}-CreationTime"
+
+  {{ framework_name }}DeploymentStatus:
+    Description: Deployment status refers to whether {{ framework_name }} has completed deployment.
+    Value:
+      Fn::GetAtt:
+        - {{ framework_name }}
+        - DeploymentStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ framework_name }}-DeploymentStatus"
+
+  {{ framework_name }}FrameworkArn:
+    Description: The ARN for {{ framework_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ framework_name }}
+        - FrameworkArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ framework_name }}-FrameworkArn"
+
+  {{ framework_name }}FrameworkStatus:
+    Description: Whether you have turned on resource tracking for all of your resources for {{ framework_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ framework_name }}
+        - FrameworkStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ framework_name }}-FrameworkStatus"
+
+{%- endfor %}

@@ -1,0 +1,89 @@
+---
+Description: Backup BackupSelection(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for backup_selection in sceptre_user_data.backup_selections %}
+{%- set backup_selection_name = backup_selection.name %}
+  {{ backup_selection_name }}:
+    Type: AWS::Backup::BackupSelection
+    DeletionPolicy: {{ backup_selection.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ backup_selection.update_replace_policy | default('Delete') }}
+    Properties:
+      BackupPlanId: {{ backup_selection.backup_plan_id }}
+      BackupSelection:
+        IamRoleArn: {{ backup_selection.backup_selection.iam_role_arn | trim }}
+        SelectionName: {{ backup_selection.backup_selection.selection_name }}
+{%- if backup_selection.backup_selection.conditions_json is defined %}
+        Conditions: {{ backup_selection.backup_selection.conditions_json }}
+{%- else %}
+        Conditions:
+{{ backup_selection.backup_selection.conditions | indent(width=10,first=True) }}
+{%- endif %}
+{%- if backup_selection.backup_selection.list_of_tags is defined %}
+        ListOfTags:
+{%- for tag in backup_selection.backup_selection.list_of_tags %}
+          - ConditionKey: {{ tag.condition_key }}
+            ConditionType: {{ tag.condition_type }}
+            ConditionValue: {{ tag.condition_value }}
+{%- endfor %}
+{%- endif %}
+{%- if backup_selection.backup_selection.no_resources is defined %}
+        NotResources:
+{%- for not_resource in backup_selection.backup_selection.no_resources %}
+          - {{ not_resource }}
+{%- endfor %}
+{%- endif %}
+{%- if backup_selection.backup_selection.resources is defined %}
+        Resources:
+{%- for resource in backup_selection.backup_selection.resources %}
+          - {{ resource }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for backup_selection in sceptre_user_data.backup_selections %}
+{%- set backup_selection_name = backup_selection.name %}
+  {{ backup_selection_name }}:
+    Description: BackupSelection Id for {{ backup_selection_name }}
+    Value:
+      Ref: {{ backup_selection_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ backup_selection_name }}"
+
+  {{ backup_selection_name }}BackupPlanId:
+    Description: The BackupPlanId for {{ backup_selection_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ backup_selection_name }}
+        - BackupPlanId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ backup_selection_name }}-BackupPlanId"
+
+  {{ backup_selection_name }}Id:
+    Description: Uniquely identifies the backup selection for {{ backup_selection_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ backup_selection_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ backup_selection_name }}-Id"
+
+  {{ backup_selection_name }}SelectionId:
+    Description: Uniquely identifies a request to assign a set of resources to {{ backup_selection_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ backup_selection_name }}
+        - SelectionId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ backup_selection_name }}-SelectionId"
+
+{%- endfor %}

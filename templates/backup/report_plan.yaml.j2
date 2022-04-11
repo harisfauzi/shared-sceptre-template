@@ -1,0 +1,66 @@
+---
+Description: Backup ReportPlan(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for report_plan in sceptre_user_data.report_plans %}
+{%- set report_plan_name = report_plan.name %}
+  {{ report_plan_name }}:
+    Type: AWS::Backup::ReportPlan
+    DeletionPolicy: {{ report_plan.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ report_plan.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if report_plan.report_delivery_channel_json is defined %}
+      ReportDeliveryChannel: {{ report_plan.report_delivery_channel_json }}
+{%- else %}
+      ReportDeliveryChannel:
+{{ report_plan.report_delivery_channel | indent(width=8,first=True) }}
+{%- endif %}
+{%- if report_plan.report_setting_json is defined %}
+      ReportSetting: {{ report_plan.report_setting_json }}
+{%- else %}
+      ReportSetting:
+{{ report_plan.report_setting | indent(width=8,first=True) }}
+{%- endif %}
+{%- if report_plan.report_plan_description is defined %}
+      ReportPlanDescription: {{ report_plan.report_plan_description }}
+{%- endif %}
+{%- if report_plan.report_plan_name is defined %}
+      ReportPlanName: {{ report_plan.report_plan_name }}
+{%- endif %}
+      ReportPlanTags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if report_plan.tags is defined %}
+{%- for key,value in report_plan.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for report_plan in sceptre_user_data.report_plans %}
+{%- set report_plan_name = report_plan.name %}
+  {{ report_plan_name }}:
+    Description: ReportPlan Name for {{ report_plan_name }}
+    Value:
+      Ref: {{ report_plan_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ report_plan_name }}"
+
+  {{ report_plan_name }}ReportPlanArn:
+    Description: The ARN for {{ report_plan_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ report_plan_name }}
+        - ReportPlanArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ report_plan_name }}-ReportPlanArn"
+
+{%- endfor %}

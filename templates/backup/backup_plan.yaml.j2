@@ -1,0 +1,123 @@
+---
+Description: Backup BackupPlan(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for backup_plan in sceptre_user_data.backup_plans %}
+{%- set backup_plan_name = backup_plan.name %}
+  {{ backup_plan_name }}:
+    Type: AWS::Backup::BackupPlan
+    DeletionPolicy: {{ backup_plan.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ backup_plan.update_replace_policy | default('Delete') }}
+    Properties:
+      BackupPlan:
+        BackupPlanName: {{ backup_plan.backup_plan.backup_plan_name }}
+        BackupPlanRule:
+{%- for backup_plan_rule in backup_plan.backup_plan.backup_plan_rule %}
+          - RuleName: {{ backup_plan_rule.rule_name }}
+            TargetBackupVault: {{ backup_plan_rule.target_backup_vault }}
+{% if backup_plan_rule.completion_window_minutes is defined %}
+            CompletionWindowMinutes: {{ backup_plan_rule.completion_window_minutes }}
+{%- endif %}
+{% if backup_plan_rule.copy_actions is defined %}
+            CopyActions:
+{%- for copy_action in backup_plan_rule.copy_actions %}
+              - DestinationBackupVaultArn: {{ copy_action.destination_backup_vault_arn | trim }}
+{%- if copy_action.lifecycle is defined %}
+                Lifecycle:
+{%- if copy_action.lifecycle.delete_after_days is defined %}
+                  DeleteAfterDays: {{ copy_action.lifecycle.delete_after_days }}
+{%- endif %}
+{%- if copy_action.lifecycle.move_to_cold_storage_after_days is defined %}
+                  MoveToColdStorageAfterDays: {{ copy_action.lifecycle.move_to_cold_storage_after_days }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{% if backup_plan_rule.enable_continuous_backup is defined %}
+            EnableContinuousBackup: {{ backup_plan_rule.enable_continuous_backup }}
+{%- endif %}
+{%- if backup_plan_rule.lifecycle is defined %}
+            Lifecycle:
+{%- if backup_plan_rule.lifecycle.delete_after_days is defined %}
+              DeleteAfterDays: {{ backup_plan_rule.lifecycle.delete_after_days }}
+{%- endif %}
+{%- if backup_plan_rule.lifecycle.move_to_cold_storage_after_days is defined %}
+              MoveToColdStorageAfterDays: {{ backup_plan_rule.lifecycle.move_to_cold_storage_after_days }}
+{%- endif %}
+{%- endif %}
+{% if backup_plan_rule.recovery_point_tags is defined %}
+            RecoveryPointTags:
+{{ backup_plan_rule.recovery_point_tags | indent(width=14,first=True)}}
+{%- endif %}
+{% if backup_plan_rule.schedule_expression is defined %}
+            ScheduleExpression: {{ backup_plan_rule.schedule_expression }}
+{%- endif %}
+{% if backup_plan_rule.start_window_minutes is defined %}
+            StartWindowMinutes: {{ backup_plan_rule.start_window_minutes }}
+{%- endif %}
+{%- endfor %}
+{%- if backup_plan.backup_plan.advanced_backup_settings is defined %}
+        AdvancedBackupSettings:
+{%- for setting in backup_plan.backup_plan.advanced_backup_settings %}
+          - 
+{%- if setting.backup_options_json is defined %}
+            BackupOptions: {{ setting.backup_options_json }}
+{%- else %}
+            BackupOptions:
+{{ setting.backup_options | indent(width=14, first=True) }}
+{%- endif %}
+            ResourceType: {{ setting.resource_type }}
+{%- endfor %}
+{%- endif %}
+{%- if backup_plan.backup_plan_tags is defined %}
+      BackupPlanTags:
+{{ backup_plan.backup_plan_tags | indent(width=8, first=True) }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for backup_plan in sceptre_user_data.backup_plans %}
+{%- set backup_plan_name = backup_plan.name %}
+  {{ backup_plan_name }}:
+    Description: BackupPlanId for {{ backup_plan_name }}
+    Value:
+      Ref: {{ backup_plan_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ backup_plan_name }}"
+
+  {{ backup_plan_name }}Arn:
+    Description: The ARN for {{ backup_plan_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ backup_plan_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ backup_plan_name }}-Arn"
+
+  {{ backup_plan_name }}BackupPlanId:
+    Description: The BackupPlan Id for {{ backup_plan_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ backup_plan_name }}
+        - BackupPlanId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ backup_plan_name }}-BackupPlanId"
+
+  {{ backup_plan_name }}VersionId:
+    Description: The VersionId for {{ backup_plan_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ backup_plan_name }}
+        - VersionId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ backup_plan_name }}-VersionId"
+
+{%- endfor %}
