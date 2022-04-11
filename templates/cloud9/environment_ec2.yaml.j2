@@ -1,0 +1,87 @@
+---
+Description: Cloud9 EnvironmentEC2(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for environment_ec2 in sceptre_user_data.environment_ec2s %}
+{%- set environment_ec2_name = environment_ec2.name %}
+  {{ environment_ec2_name }}:
+    Type: AWS::Cloud9::EnvironmentEC2
+    DeletionPolicy: {{ environment_ec2.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ environment_ec2.update_replace_policy | default('Delete') }}
+    Properties:
+      InstanceType: {{ environment_ec2.instance_type }}
+{%- if environment_ec2.automatic_stop_time_minutes is defined %}
+      AutomaticStopTimeMinutes: {{ environment_ec2.automatic_stop_time_minutes }}
+{%- endif %}
+{%- if environment_ec2.connection_type is defined %}
+      ConnectionType: {{ environment_ec2.connection_type }}
+{%- endif %}
+{%- if environment_ec2.description is defined %}
+      Description: {{ environment_ec2.description }}
+{%- endif %}
+{%- if environment_ec2.image_id is defined %}
+      ImageId: {{ environment_ec2.image_id }}
+{%- endif %}
+{%- if environment_ec2.environment_ec2_name is defined %}
+      Name: {{ environment_ec2.environment_ec2_name }}
+{%- endif %}
+{%- if environment_ec2.owner_arn is defined %}
+      OwnerArn: {{ environment_ec2.owner_arn | trim }}
+{%- endif %}
+{%- if environment_ec2.repositories is defined %}
+      Repositories:
+{%- for repository in environment_ec2.repositories %}
+        - PathComponent: {{ repository.path_component }}
+          RepositoryUrl: {{ repository.repository_url }}
+{%- endfor %}
+{%- endif %}
+{%- if environment_ec2.subnet_id is defined %}
+      SubnetId: {{ environment_ec2.subnet_id | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if environment_ec2.tags is defined %}
+{%- for key,value in environment_ec2.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for environment_ec2 in sceptre_user_data.environment_ec2s %}
+{%- set environment_ec2_name = environment_ec2.name %}
+  {{ environment_ec2_name }}:
+    Description: EnvironmentEC2 Name for {{ environment_ec2_name }}
+    Value:
+      Ref: {{ environment_ec2_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ environment_ec2_name }}"
+
+  {{ environment_ec2_name }}Arn:
+    Description: The ARN for {{ environment_ec2_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ environment_ec2_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ environment_ec2_name }}-Arn"
+
+  {{ environment_ec2_name }}EnvironmentEC2Id:
+    Description: The EnvironmentEC2 Id for {{ environment_ec2_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ environment_ec2_name }}
+        - EnvironmentEC2Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ environment_ec2_name }}-EnvironmentEC2Id"
+
+{%- endfor %}
