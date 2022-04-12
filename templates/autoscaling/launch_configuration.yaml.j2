@@ -123,50 +123,11 @@ Outputs:
 {%- for launch_configuration in sceptre_user_data.launch_configurations %}
 {%- set launch_configuration_name = launch_configuration.name %}
   {{ launch_configuration_name }}:
-    Description: Repository ID for {{ launch_configuration_name }}
+    Description: Resource ID for {{ launch_configuration_name }}
     Value:
       Ref: {{ launch_configuration_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ launch_configuration_name }}"
 
-  {{ launch_configuration_name }}Arn:
-    Description: The ARN for {{ launch_configuration_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ launch_configuration_name }}
-        - Arn
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ launch_configuration_name }}-Arn"
-
-  {{ launch_configuration_name }}CloneUrlHttp:
-    Description: The URL to clone {{ launch_configuration_name }} over HTTPS
-    Value:
-      Fn::GetAtt:
-        - {{ launch_configuration_name }}
-        - CloneUrlHttp
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ launch_configuration_name }}-CloneUrlHttp"
-
-  {{ launch_configuration_name }}CloneUrlSsh:
-    Description: The URL to clone {{ launch_configuration_name }} over SSH
-    Value:
-      Fn::GetAtt:
-        - {{ launch_configuration_name }}
-        - CloneUrlSsh
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ launch_configuration_name }}-CloneUrlSsh"
-
-  {{ launch_configuration_name }}Name:
-    Description: The launch_configuration name for {{ launch_configuration_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ launch_configuration_name }}
-        - Name
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ launch_configuration_name }}-Name"
 {%- endfor %}
