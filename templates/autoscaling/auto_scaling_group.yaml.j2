@@ -351,7 +351,7 @@ Resources:
 {%- if auto_scaling_group.tags is defined %}  {## BEGIN {%- if auto_scaling_group.tags is defined %} #}
 {%- for tag_property in auto_scaling_group.tags %}  {### BEGIN {%- for tag_property in auto_scaling_group.tags %} #}
         - Key: {{ tag_property.key }}
-          Value: {{ tag_property.value }}
+          Value: {{ tag_property._value }}
           PropagateAtLaunch: {{ tag_property.propagate_at_launch }}
 {%- endfor %}  {### END {%- for tag_property in auto_scaling_group.tags %} #}
 {%- endif %}  {## END {%- if auto_scaling_group.tags is defined %} #}
