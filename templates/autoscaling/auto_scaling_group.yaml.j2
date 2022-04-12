@@ -130,11 +130,11 @@ Resources:
     UpdateReplacePolicy: {{ auto_scaling_group.update_replace_policy | default('Delete') }}
 {%- if auto_scaling_group.creation_policy is defined %}  {# BEGIN {%- if auto_scaling_group.creation_policy is defined %} #}
     CreationPolicy:
-{%- if auto_scaling_group.auto_scaling_creation_policy is defined %}
+{%- if auto_scaling_group.creation_policy.auto_scaling_creation_policy is defined %}
       AutoScalingCreationPolicy:
         MinSuccessfulInstancesPercent: {{ auto_scaling_group.auto_scaling_creation_policy.min_successful_instances_percent }}
 {%- endif %}
-{%- if auto_scaling_group.resource_signal is defined %}
+{%- if auto_scaling_group.creation_policy.resource_signal is defined %}
       ResourceSignal:
 {%- if auto_scaling_group.creation_policy.resource_signal.count is defined %}
         Count: {{ auto_scaling_group.creation_policy.resource_signal.count }}
