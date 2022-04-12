@@ -132,7 +132,7 @@ Resources:
     CreationPolicy:
 {%- if auto_scaling_group.creation_policy.auto_scaling_creation_policy is defined %}
       AutoScalingCreationPolicy:
-        MinSuccessfulInstancesPercent: {{ auto_scaling_group.auto_scaling_creation_policy.min_successful_instances_percent }}
+        MinSuccessfulInstancesPercent: {{ auto_scaling_group.creation_policy.auto_scaling_creation_policy.min_successful_instances_percent }}
 {%- endif %}
 {%- if auto_scaling_group.creation_policy.resource_signal is defined %}
       ResourceSignal:
