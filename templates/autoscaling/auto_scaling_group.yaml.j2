@@ -349,11 +349,11 @@ Resources:
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
           PropagateAtLaunch: 'true'
 {%- if auto_scaling_group.tags is defined %}  {## BEGIN {%- if auto_scaling_group.tags is defined %} #}
-{%- for key,value,propagte_at_launch in auto_scaling_group.tags.items() %}  {### BEGIN {%- for key,value in auto_scaling_group.tags.items() %} #}
-        - Key: {{ key }}
-          Value: {{ value }}
-          PropagateAtLaunch: {{ propagte_at_launch }}
-{%- endfor %}  {### END {%- for key,value in auto_scaling_group.tags.items() %} #}
+{%- for tag_property in auto_scaling_group.tags %}  {### BEGIN {%- for tag_property in auto_scaling_group.tags %} #}
+        - Key: {{ tag_property.key }}
+          Value: {{ tag_property.value }}
+          PropagateAtLaunch: {{ tag_property.propagate_at_launch }}
+{%- endfor %}  {### END {%- for tag_property in auto_scaling_group.tags %} #}
 {%- endif %}  {## END {%- if auto_scaling_group.tags is defined %} #}
 {%- endfor %}  {# END {%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %} #}
 
