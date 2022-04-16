@@ -1,0 +1,86 @@
+---
+{%- import 'macros/vpc_settings.yaml.j2' as vpc_settings %}
+Description: DirectoryService SimpleAD(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+Parameters:
+{%- for simple_ad in sceptre_user_data.simple_ads %}
+{%- set simple_ad_name = simple_ad.name %}
+{%- if simple_ad.password %}
+  {{ simple_ad_name }}Password:
+    Type: String
+    Description: Password for {{ simple_ad_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+Resources:
+
+{%- for simple_ad in sceptre_user_data.simple_ads %}
+{%- set simple_ad_name = simple_ad.name %}
+  {{ simple_ad_name }}:
+    Type: AWS::DirectoryService::SimpleAD
+    DeletionPolicy: {{ simple_ad.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ simple_ad.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ simple_ad.simple_ad_name }}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+      Password:
+        Ref: {{ simple_ad_name }}Password
+{%- else %}
+      Password: {{ simple_ad.password }}
+{%- endif %}
+      Size: {{ simple_ad.size }}
+{{ vpc_settings.prep(simple_ad.vpc_settings) }}
+{%- if simple_ad.create_alias is defined %}
+      CreateAlias: {{ simple_ad.create_alias }}
+{%- endif %}
+{%- if simple_ad.description is defined %}
+      Description: {{ simple_ad.description }}
+{%- endif %}
+{%- if simple_ad.enable_sso is defined %}
+      EnableSso: {{ simple_ad.enable_sso }}
+{%- endif %}
+{%- if simple_ad.short_name is defined %}
+      ShortName: {{ simple_ad.short_name }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for simple_ad in sceptre_user_data.simple_ads %}
+{%- set simple_ad_name = simple_ad.name %}
+  {{ simple_ad_name }}:
+    Description: Resource ID for {{ simple_ad_name }}
+    Value:
+      Ref: {{ simple_ad_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ simple_ad_name }}"
+
+  {{ simple_ad_name }}Alias:
+    Description: The Alias for {{ simple_ad_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ simple_ad_name }}
+        - Alias
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ simple_ad_name }}-Alias"
+
+  {{ simple_ad_name }}DnsIpAddresses:
+    Description: The DNS IP address for {{ simple_ad_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ simple_ad_name }}
+        - DnsIpAddresses
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ simple_ad_name }}-DnsIpAddresses"
+
+{%- endfor %}
