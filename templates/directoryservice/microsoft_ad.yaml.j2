@@ -1,0 +1,85 @@
+---
+{%- import 'macros/vpc_settings.yaml.j2' as vpc_settings %}
+Description: DirectoryService MicrosoftAD(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+Parameters:
+{%- for microsoft_ad in sceptre_user_data.microsoft_ads %}
+{%- set microsoft_ad_name = microsoft_ad.name %}
+{%- if microsoft_ad.password %}
+  {{ microsoft_ad_name }}Password:
+    Type: String
+    Description: Password for {{ microsoft_ad_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+Resources:
+
+{%- for microsoft_ad in sceptre_user_data.microsoft_ads %}
+{%- set microsoft_ad_name = microsoft_ad.name %}
+  {{ microsoft_ad_name }}:
+    Type: AWS::DirectoryService::MicrosoftAD
+    DeletionPolicy: {{ microsoft_ad.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ microsoft_ad.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ microsoft_ad.microsoft_ad_name }}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+      Password:
+        Ref: {{ microsoft_ad_name }}Password
+{%- else %}
+      Password: {{ microsoft_ad.password }}
+{%- endif %}
+{{ vpc_settings.prep(microsoft_ad.vpc_settings) }}
+{%- if microsoft_ad.create_alias is defined %}
+      CreateAlias: {{ microsoft_ad.create_alias }}
+{%- endif %}
+{%- if microsoft_ad.edition is defined %}
+      Edition: {{ microsoft_ad.edition }}
+{%- endif %}
+{%- if microsoft_ad.enable_sso is defined %}
+      EnableSso: {{ microsoft_ad.enable_sso }}
+{%- endif %}
+{%- if microsoft_ad.short_name is defined %}
+      ShortName: {{ microsoft_ad.short_name }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for microsoft_ad in sceptre_user_data.microsoft_ads %}
+{%- set microsoft_ad_name = microsoft_ad.name %}
+  {{ microsoft_ad_name }}:
+    Description: Resource ID for {{ microsoft_ad_name }}
+    Value:
+      Ref: {{ microsoft_ad_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}"
+
+  {{ microsoft_ad_name }}Alias:
+    Description: The Alias for {{ microsoft_ad_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ microsoft_ad_name }}
+        - Alias
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}-Alias"
+
+  {{ microsoft_ad_name }}DnsIpAddresses:
+    Description: The DNS IP address for {{ microsoft_ad_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ microsoft_ad_name }}
+        - DnsIpAddresses
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}-DnsIpAddresses"
+
+{%- endfor %}
