@@ -36,7 +36,6 @@ Resources:
 {%- if component.uri is defined %}
       Uri: {{ component.uri }}
 {%- endif %}
-
       Tags:
         "SourceRepoURL": "{{ sceptre_user_data.source_repo_url | default('unknown') }}"
 {%- if component.tags is defined %}
@@ -68,16 +67,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ component_name }}-Arn"
-
-  {{ component_name }}Encrypted:
-    Description: The encryption status for {{ component_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ component_name }}
-        - Encrypted
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ component_name }}-Encrypted"
 
   {{ component_name }}Name:
     Description: The Name for {{ component_name }}
