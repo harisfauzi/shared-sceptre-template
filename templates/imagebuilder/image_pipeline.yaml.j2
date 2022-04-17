@@ -50,7 +50,7 @@ Resources:
       Status: {{ image_pipeline.status }}
 {%- endif %}
       Tags:
-        SourceRepoURL: "{{ sceptre_user_data.source_repo_url | default('unknown') }}"
+        "SourceRepoURL": "{{ sceptre_user_data.source_repo_url | default('unknown') }}"
 {%- if image_pipeline.tags is defined %}
 {%- for key,value in image_pipeline.tags.items() %}
         "{{ key }}": "{{ value }}"
