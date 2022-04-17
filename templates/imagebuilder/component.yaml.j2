@@ -18,7 +18,8 @@ Resources:
       ChangeDescription: {{ component.change_description }}
 {%- endif %}
 {%- if component.data is defined %}
-      Data: {{ component.data }}
+      Data: |
+{{ component.data | indent(width=8,first=true) }}
 {%- endif %}
 {%- if component.description is defined %}
       Description: {{ component.description }}
