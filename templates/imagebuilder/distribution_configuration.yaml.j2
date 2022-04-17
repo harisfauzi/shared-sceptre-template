@@ -1,0 +1,157 @@
+---
+Description: ImageBuilder DistributionConfiguration(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for distribution_configuration in sceptre_user_data.distribution_configurations %}
+{%- set distribution_configuration_name = distribution_configuration.name %}
+  {{ distribution_configuration_name }}:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    DeletionPolicy: {{ distribution_configuration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ distribution_configuration.update_replace_policy | default('Delete') }}
+    Properties:
+      Distributions:
+{%- for distribution in distribution_configuration.distributions %}
+        - Region: {{ distribution.region }}
+{%- if distribution.ami_distribution_configuration is defined %}  {# BEGIN {%- if distribution.ami_distribution_configuration is defined %} #}
+          AmiDistributionConfiguration:
+{%- if distribution.ami_distribution_configuration.ami_tags is defined %}
+            AmiTags:
+{%- for key,value indistribution.ami_distribution_configuration.ami_tags.items() %}
+              "{{ key }}" : "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if distribution.ami_distribution_configuration.description is defined %}
+            Description: {{ distribution.ami_distribution_configuration.description }}
+{%- endif %}
+{%- if distribution.ami_distribution_configuration.kms_key_id is defined %}
+            KmsKeyId: {{ distribution.ami_distribution_configuration.kms_key_id | trim }}
+{%- endif %}
+{%- if distribution.ami_distribution_configuration.launch_permission_configuration is defined %}
+            LaunchPermissionConfiguration:
+{% if distribution.ami_distribution_configuration.launch_permission_configuration.organizational_unit_arns is defined %}
+              OrganizationalUnitArns:
+{%- for ou_arn in distribution.ami_distribution_configuration.launch_permission_configuration.organizational_unit_arns %}
+                - {{ ou_arn | trim }}
+{%- endfor %}
+{%- endif %}
+{% if distribution.ami_distribution_configuration.launch_permission_configuration.organization_arns is defined %}
+              OrganizationArns:
+{%- for organization_arn in distribution.ami_distribution_configuration.launch_permission_configuration.organization_arns %}
+                - {{ organization_arn | trim }}
+{%- endfor %}
+{%- endif %}
+{% if distribution.ami_distribution_configuration.launch_permission_configuration.user_groups is defined %}
+              UserGroups:
+{%- for user_group in distribution.ami_distribution_configuration.launch_permission_configuration.user_groups %}
+                - {{ user_group }}
+{%- endfor %}
+{%- endif %}
+{% if distribution.ami_distribution_configuration.launch_permission_configuration.user_ids is defined %}
+              UserIds:
+{%- for user_id indistribution.ami_distribution_configuration.launch_permission_configuration.user_ids %}
+                - {{ user_id }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if distribution.ami_distribution_configuration.name is defined %}
+            Name: {{ distribution.ami_distribution_configuration.name }}
+{%- endif %}
+{%- if distribution.ami_distribution_configuration.target_account_ids is defined %}
+            TargetAccountIds:
+{%- for account_id in distribution.ami_distribution_configuration.target_account_ids %}
+              - {{ account_id | trim }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}  {# END {%- if distribution.ami_distribution_configuration is defined %} #}
+{%- if distribution.container_distribution_configuration is defined %}  {# BEGIN {%- if distribution.container_distribution_configuration is defined %} #}
+          ContainerDistributionConfiguration:
+{%- if distribution.container_distribution_configuration.container_tags is defined %}
+            ContainerTags:
+{%- for container_tag in distribution.container_distribution_configuration.container_tags %}
+              - {{ container_tag }}
+{%- endfor %}
+{%- endif %}
+{%- if distribution.container_distribution_configuration.description is defined %}
+            Description: {{ distribution.container_distribution_configuration.description }}
+{%- endif %}
+{%- if distribution.container_distribution_configuration.target_repository is defined %}
+            TargetRepository:
+{%- if distribution.container_distribution_configuration.target_repository.repository_name is defined %}
+              RepositoryName: {{ distribution.container_distribution_configuration.target_repository.repository_name }}
+{%- endif %}
+{%- if distribution.container_distribution_configuration.target_repository.service is defined %}
+              Service: {{ distribution.container_distribution_configuration.target_repository.service }}
+{%- endif %}
+{%- endif %}
+{%- endif %}  {# END {%- if distribution.container_distribution_configuration is defined %} #}
+{%- if distribution.launch_template_configurations is defined %}  {# BEGIN {%- if distribution.launch_template_configurations is defined %} #}
+          LaunchTemplateConfigurations:
+{%- for launch_template_configuration in distribution.launch_template_configurations %}
+            -
+{%- if launch_template_configuration.account_id is defined %}
+              AccountId: {{ launch_template_configuration.account_id | trim }}
+{%- endif %}
+{%- if launch_template_configuration.launch_template_id is defined %}
+              LaunchTemplateId: {{ launch_template_configuration.launch_template_id | trim }}
+{%- endif %}
+{%- if launch_template_configuration.set_default_version is defined %}
+              SetDefaultVersion: {{ launch_template_configuration.set_default_version }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if distribution.launch_template_configurations is defined %} #}
+{%- if distribution.license_configuration_arns is defined %}
+          LicenseConfigurationArns:
+{%- for license_configuration_arn in distribution.license_configuration_arns %}
+            - {{ license_configuration_arn }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+      Name: {{ distribution_configuration.distribution_configuration_name }}
+{%- if distribution_configuration.description is defined %}
+      Description: {{ distribution_configuration.description }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if distribution_configuration.tags is defined %}
+{%- for key,value in distribution_configuration.tags.items() %}
+        "{{ key }}": "{{ value }}"
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for distribution_configuration in sceptre_user_data.distribution_configurations %}
+{%- set distribution_configuration_name = distribution_configuration.name %}
+  {{ distribution_configuration_name }}:
+    Description: DistributionConfiguration ARN for {{ distribution_configuration_name }}
+    Value:
+      Ref: {{ distribution_configuration_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_configuration_name }}"
+
+  {{ distribution_configuration_name }}Arn:
+    Description: The ARN for {{ distribution_configuration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ distribution_configuration_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_configuration_name }}-Arn"
+
+  {{ distribution_configuration_name }}Name:
+    Description: The Name of {{ distribution_configuration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ distribution_configuration_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_configuration_name }}-Name"
+
+{%- endfor %}

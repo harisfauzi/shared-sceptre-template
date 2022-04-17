@@ -1,0 +1,101 @@
+---
+Description: ImageBuilder Component(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for component in sceptre_user_data.components %}
+{%- set component_name = component.name %}
+  {{ component_name }}:
+    Type: AWS::ImageBuilder::Component
+    DeletionPolicy: {{ component.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ component.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ component.component_name }}
+      Platform: {{ component.platform }}
+      Version: {{ component.version }}
+{%- if component.change_description is defined %}
+      ChangeDescription: {{ component.change_description }}
+{%- endif %}
+{%- if component.data is defined %}
+      Data: {{ component.data }}
+{%- endif %}
+{%- if component.description is defined %}
+      Description: {{ component.description }}
+{%- endif %}
+{%- if component.kms_key_id is defined %}
+      KmsKeyId: {{ component.kms_key_id | trim }}
+{%- endif %}
+{%- if component.supported_os_versions is defined %}
+      SupportedOsVersions:
+{%- for supported_os_version in component.supported_os_versions %}
+        - {{ supported_os_version }}
+{%- endfor %}
+{%- endif %}
+{%- if component.uri is defined %}
+      Uri: {{ component.uri }}
+{%- endif %}
+
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if component.tags is defined %}
+{%- for key,value in component.tags.items() %}
+        "{{ key }}": "{{ value }}"
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for component in sceptre_user_data.components %}
+{%- set component_name = component.name %}
+  {{ component_name }}:
+    Description: Component ARN for {{ component_name }}
+    Value:
+      Ref: {{ component_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ component_name }}"
+
+  {{ component_name }}Arn:
+    Description: The ARN for {{ component_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ component_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ component_name }}-Arn"
+
+  {{ component_name }}Encrypted:
+    Description: The encryption status for {{ component_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ component_name }}
+        - Encrypted
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ component_name }}-Encrypted"
+
+  {{ component_name }}Name:
+    Description: The Name for {{ component_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ component_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ component_name }}-Name"
+
+  {{ component_name }}Type:
+    Description: Component type for {{ component_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ component_name }}
+        - Type
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ component_name }}-Type"
+
+{%- endfor %}

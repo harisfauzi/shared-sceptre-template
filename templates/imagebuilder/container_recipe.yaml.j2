@@ -1,0 +1,142 @@
+---
+Description: ImageBuilder ContainerRecipe(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for container_recipe in sceptre_user_data.container_recipes %}
+{%- set container_recipe_name = container_recipe.name %}
+  {{ container_recipe_name }}:
+    Type: AWS::ImageBuilder::ContainerRecipe
+    DeletionPolicy: {{ container_recipe.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ container_recipe.update_replace_policy | default('Delete') }}
+    Properties:
+      Components:
+{% for component in container_recipe.components %}
+        - ComponentArn: {{ component.component_arn | trim }}
+{%- endfor %}
+      ContainerType: {{ container_recipe.container_type }}
+      Name: {{ container_recipe.container_recipe_name }}
+      ParentImage: {{ container_recipe.parent_image | trim }}
+      TargetRepository:
+{%- if container_recipe.target_repository.repository_name is defined %}
+        RepositoryName: {{ container_recipe.target_repository.repository_name }}
+{%- endif %}
+{%- if container_recipe.target_repository.service is defined %}
+        Service: {{ container_recipe.target_repository.service }}
+{%- endif %}
+      Version: {{ container_recipe.version }}
+{%- if container_recipe.description is defined %}
+      Description: {{ container_recipe.description }}
+{%- endif %}
+{%- if container_recipe.dockerfile_template_data is defined %}
+      DockerfileTemplateData: |
+{{ container_recipe.dockerfile_template_data | indent(width=8,first=true) }}
+{%- endif %}
+{%- if container_recipe.dockerfile_template_uri is defined %}
+      DockerfileTemplateUri: {{ container_recipe.dockerfile_template_uri }}
+{%- endif %}
+{%- if container_recipe.image_os_version_override is defined %}
+      ImageOsVersionOverride: {{ container_recipe.image_os_version_override }}
+{%- endif %}
+{%- if container_recipe.instance_configuration is defined %}
+      InstanceConfiguration:
+{%- if container_recipe.instance_configuration.block_device_mappings is defined %}
+        BlockDeviceMappings:
+{%- for mapping in container_recipe.instance_configuration.block_device_mappings %}
+          -
+{%- if mapping.device_name is defined %}
+            DeviceName: {{ mapping.device_name }}
+{%- endif %}
+{%- if mapping.ebs is defined %}
+            Ebs:
+{%- if mapping.ebs.delete_on_termination is defined %}
+              DeleteOnTermination: {{ mapping.ebs.delete_on_termination }}
+{%- endif %}
+{%- if mapping.ebs.encrypted is defined %}
+              Encrypted: {{ mapping.ebs.encrypted }}
+{%- endif %}
+{%- if mapping.ebs.iops is defined %}
+              Iops: {{ mapping.ebs.iops }}
+{%- endif %}
+{%- if mapping.ebs.kms_key_id is defined %}
+              KmsKeyId: {{ mapping.ebs.kms_key_id | trim }}
+{%- endif %}
+{%- if mapping.ebs.snapshot_id is defined %}
+              SnapshotId: {{ mapping.ebs.snapshot_id | trim }}
+{%- endif %}
+{%- if mapping.ebs.throughput is defined %}
+              Throughput: {{ mapping.ebs.throughput }}
+{%- endif %}
+{%- if mapping.ebs.volume_size is defined %}
+              VolumeSize: {{ mapping.ebs.volume_size }}
+{%- endif %}
+{%- if mapping.ebs.volume_type is defined %}
+              VolumeType: {{ mapping.ebs.volume_type }}
+{%- endif %}
+{%- endif %}
+{%- if mapping.no_device is defined %}
+            NoDevice: {{ mapping.no_device }}
+{%- endif %}
+{%- if mapping.virtual_name is defined %}
+            VirtualName: {{ mapping.virtual_name }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if container_recipe.instance_configuration.image is defined %}
+        Image: {{ container_recipe.instance_configuration.image }}
+{%- endif %}
+{%- endif %}
+{%- if container_recipe.kms_key_id is defined %}
+      KmsKeyId: {{ container_recipe.kms_key_id | trim }}
+{%- endif %}
+{%- if container_recipe.platform_override is defined %}
+      PlatformOverride: {{ container_recipe.platform_override }}
+{%- endif %}
+{%- if container_recipe.working_directory is defined %}
+      WorkingDirectory: {{ container_recipe.working_directory }}
+{%- endif %}
+
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if container_recipe.tags is defined %}
+{%- for key,value in container_recipe.tags.items() %}
+        "{{ key }}": "{{ value }}"
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for container_recipe in sceptre_user_data.container_recipes %}
+{%- set container_recipe_name = container_recipe.name %}
+  {{ container_recipe_name }}:
+    Description: ContainerRecipe ARN for {{ container_recipe_name }}
+    Value:
+      Ref: {{ container_recipe_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ container_recipe_name }}"
+
+  {{ container_recipe_name }}Arn:
+    Description: The ARN for {{ container_recipe_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ container_recipe_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ container_recipe_name }}-Arn"
+
+  {{ container_recipe_name }}Name:
+    Description: The ContainerRecipe Id for {{ container_recipe_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ container_recipe_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ container_recipe_name }}-Name"
+
+{%- endfor %}
