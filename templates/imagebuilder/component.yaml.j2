@@ -38,7 +38,7 @@ Resources:
 {%- endif %}
 
       Tags:
-        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        "SourceRepoURL": "{{ sceptre_user_data.source_repo_url | default('unknown') }}"
 {%- if component.tags is defined %}
 {%- for key,value in component.tags.items() %}
         "{{ key }}": "{{ value }}"

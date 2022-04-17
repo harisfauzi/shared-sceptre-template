@@ -68,7 +68,7 @@ Resources:
       TerminateInstanceOnFailure: {{ infrastructure_configuration.terminate_instance_on_failure }}
 {%- endif %}
       Tags:
-        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        "SourceRepoURL": "{{ sceptre_user_data.source_repo_url | default('unknown') }}"
 {%- if infrastructure_configuration.tags is defined %}
 {%- for key,value in infrastructure_configuration.tags.items() %}
         "{{ key }}": "{{ value }}"
