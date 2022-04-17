@@ -1,0 +1,88 @@
+---
+Description: ImageBuilder Image(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for image in sceptre_user_data.images %}
+{%- set image_name = image.name %}
+  {{ image_name }}:
+    Type: AWS::ImageBuilder::Image
+    DeletionPolicy: {{ image.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ image.update_replace_policy | default('Delete') }}
+    Properties:
+      InfrastructureConfigurationArn: {{ image.infrastructure_configuration_arn | trim }}
+{%- if image.container_recipe_arn is defined %}
+      ContainerRecipeArn: {{ image.container_recipe_arn | trim }}
+{%- endif %}
+{%- if image.distribution_configuration_arn is defined %}
+      DistributionConfigurationArn: {{ image.distribution_configuration_arn | trim }}
+{%- endif %}
+{%- if image.enhanced_image_metadata_enabled is defined %}
+      EnhancedImageMetadataEnabled: {{ image.enhanced_image_metadata_enabled }}
+{%- endif %}
+{%- if image.image_recipe_arn is defined %}
+      ImageRecipeArn: {{ image.image_recipe_arn | trim }}
+{%- endif %}
+{%- if image.image_tests_configuration is defined %}
+      ImageTestsConfiguration:
+{%- if image.image_tests_configuration.image_tests_enabled is defined %}
+        ImageTestsEnabled: {{ image.image_tests_configuration.image_tests_enabled }}
+{%- endif %}
+{%- if image.image_tests_configuration.timeout_minutes is defined %}
+        TimeoutMinutes: {{ image.image_tests_configuration.timeout_minutes }}
+{%- endif %}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if image.tags is defined %}
+{%- for key,value in image.tags.items() %}
+        "{{ key }}": "{{ value }}"
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for image in sceptre_user_data.images %}
+{%- set image_name = image.name %}
+  {{ image_name }}:
+    Description: Image ARN for {{ image_name }}
+    Value:
+      Ref: {{ image_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ image_name }}"
+
+  {{ image_name }}Arn:
+    Description: The ARN for {{ image_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ image_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ image_name }}-Arn"
+
+  {{ image_name }}ImageId:
+    Description: The AMI ID for {{ image_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ image_name }}
+        - ImageId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ image_name }}-ImageId"
+
+  {{ image_name }}Name:
+    Description: The Image Name for {{ image_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ image_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ image_name }}-Name"
+
+{%- endfor %}
