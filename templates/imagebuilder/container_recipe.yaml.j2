@@ -96,7 +96,6 @@ Resources:
 {%- if container_recipe.working_directory is defined %}
       WorkingDirectory: {{ container_recipe.working_directory }}
 {%- endif %}
-
       Tags:
         "SourceRepoURL": "{{ sceptre_user_data.source_repo_url | default('unknown') }}"
 {%- if container_recipe.tags is defined %}
