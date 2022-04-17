@@ -1,0 +1,134 @@
+---
+Description: ImageBuilder ImageRecipe(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for image_recipe in sceptre_user_data.image_recipes %}
+{%- set image_recipe_name = image_recipe.name %}
+  {{ image_recipe_name }}:
+    Type: AWS::ImageBuilder::ImageRecipe
+    DeletionPolicy: {{ image_recipe.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ image_recipe.update_replace_policy | default('Delete') }}
+    Properties:
+      Components:
+{%- for component in image_recipe.components %}
+        -
+{%- if component.component_arn is defined %}
+          ComponentArn: {{ component.component_arn }}
+{%- endif %}
+{%- if component.parameters is defined %}
+          Parameters:
+{%- for parameter in component.parameters %}
+            - Name: {{ parameter.name }}
+              Value:
+{%- for val in parameter._value %}
+                - {{ val }}
+{%- endfor %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+      Name: {{ image_recipe.image_recipe_name }}
+      ParentImage: {{ image_recipe.parent_image }}
+      Version: {{ image_recipe.version }}
+{%- if image_recipe.additional_instance_configuration is defined %}  {# BEGIN {%- if image_recipe.additional_instance_configuration is defined %} #}
+      AdditionalInstanceConfiguration:
+{%- if image_recipe.additional_instance_configuration.systems_manager_agent is defined %}
+        SystemsManagerAgent:
+          UninstallAfterBuild: {{ image_recipe.additional_instance_configuration.systems_manager_agent.uninstall_after_build }}
+{%- endif %}
+{%- if image_recipe.additional_instance_configuration.user_data_override is defined %}
+        UserDataOverride: {{ image_recipe.additional_instance_configuration.user_data_override }}
+{%- endif %}
+{%- endif %}  {# END {%- if image_recipe.additional_instance_configuration is defined %} #}
+{%- if image_recipe.block_device_mappings is defined %}  {# BEGIN {%- if image_recipe.block_device_mappings is defined %} #}
+      BlockDeviceMappings:
+{%- for block_device_mapping in image_recipe.block_device_mappings %}
+        -
+{%- if block_device_mapping.device_name is defined %}
+          DeviceName: {{ block_device_mapping.device_name }}
+{%- endif %}
+{%- if block_device_mapping.ebs is defined %}
+          Ebs:
+{%- if block_device_mapping.ebs.delete_on_termination is defined %}
+            DeleteOnTermination: {{ block_device_mapping.ebs.delete_on_termination }}
+{%- endif %}
+{%- if block_device_mapping.ebs.encrypted is defined %}
+            Encrypted: {{ block_device_mapping.ebs.encrypted }}
+{%- endif %}
+{%- if block_device_mapping.ebs.iops is defined %}
+            Iops: {{ block_device_mapping.ebs.iops }}
+{%- endif %}
+{%- if block_device_mapping.ebs.kms_key_id is defined %}
+            KmsKeyId: {{ block_device_mapping.ebs.kms_key_id | trim }}
+{%- endif %}
+{%- if block_device_mapping.ebs.snapshot_id is defined %}
+            SnapshotId: {{ block_device_mapping.ebs.snapshot_id | trim }}
+{%- endif %}
+{%- if block_device_mapping.ebs.throughput is defined %}
+            Throughput: {{ block_device_mapping.ebs.throughput }}
+{%- endif %}
+{%- if block_device_mapping.ebs.volume_size is defined %}
+            VolumeSize: {{ block_device_mapping.ebs.volume_size }}
+{%- endif %}
+{%- if block_device_mapping.ebs.volume_type is defined %}
+            VolumeType: {{ block_device_mapping.ebs.volume_type }}
+{%- endif %}
+{%- endif %}
+{%- if block_device_mapping.no_device is defined %}
+          NoDevice: {{ block_device_mapping.no_device }}
+{%- endif %}
+{%- if block_device_mapping.virtual_name is defined %}
+          VirtualName: {{ block_device_mapping.virtual_name }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}  {# END {%- if image_recipe.block_device_mappings is defined %} #}
+{%- if image_recipe.description is defined %}
+      Description: {{ image_recipe.description }}
+{%- endif %}
+{%- if image_recipe.working_directory is defined %}
+      WorkingDirectory: {{ image_recipe.working_directory }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if image_recipe.tags is defined %}
+{%- for key,value in image_recipe.tags.items() %}
+        "{{ key }}": "{{ value }}"
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for image_recipe in sceptre_user_data.image_recipes %}
+{%- set image_recipe_name = image_recipe.name %}
+  {{ image_recipe_name }}:
+    Description: ImageRecipe ARN for {{ image_recipe_name }}
+    Value:
+      Ref: {{ image_recipe_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ image_recipe_name }}"
+
+  {{ image_recipe_name }}Arn:
+    Description: The ARN for {{ image_recipe_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ image_recipe_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ image_recipe_name }}-Arn"
+
+  {{ image_recipe_name }}Name:
+    Description: The Name of {{ image_recipe_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ image_recipe_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ image_recipe_name }}-Name"
+
+{%- endfor %}
