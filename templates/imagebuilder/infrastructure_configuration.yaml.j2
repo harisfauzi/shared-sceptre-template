@@ -48,7 +48,7 @@ Resources:
 {%- endif %}
 {%- if infrastructure_configuration.resource_tags is defined %}
       ResourceTags:
-{%- for key,value ininfrastructure_configuration.resource_tags.items() %}
+{%- for key,value in infrastructure_configuration.resource_tags.items() %}
         "{{ key }}" : "{{ value }}"
 {%- endfor %}
 {%- endif %}
