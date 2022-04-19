@@ -18,7 +18,7 @@ Resources:
           AmiDistributionConfiguration:
 {%- if distribution.ami_distribution_configuration.ami_tags is defined %}
             AmiTags:
-{%- for key,value indistribution.ami_distribution_configuration.ami_tags.items() %}
+{%- for key,value in distribution.ami_distribution_configuration.ami_tags.items() %}
               "{{ key }}" : "{{ value }}"
 {%- endfor %}
 {%- endif %}
@@ -50,7 +50,7 @@ Resources:
 {%- endif %}
 {% if distribution.ami_distribution_configuration.launch_permission_configuration.user_ids is defined %}
               UserIds:
-{%- for user_id indistribution.ami_distribution_configuration.launch_permission_configuration.user_ids %}
+{%- for user_id in distribution.ami_distribution_configuration.launch_permission_configuration.user_ids %}
                 - {{ user_id }}
 {%- endfor %}
 {%- endif %}
