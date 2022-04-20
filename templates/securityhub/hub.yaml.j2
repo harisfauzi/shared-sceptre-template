@@ -1,0 +1,36 @@
+---
+Description: SecurityHub Hub(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for hub in sceptre_user_data.hubs %}
+{%- set hub_name = hub.name %}
+  {{ hub_name }}:
+    Type: AWS::SecurityHub::Hub
+    DeletionPolicy: {{ hub.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ hub.update_replace_policy | default('Delete') }}
+    Properties:
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if hub.tags is defined %}
+{%- for key,value in hub.tags.items() %}
+        "{{ key }}": {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for hub in sceptre_user_data.hubs %}
+{%- set hub_name = hub.name %}
+  {{ hub_name }}:
+    Description: Hub Arn for {{ hub_name }}
+    Value:
+      Ref: {{ hub_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hub_name }}"
+
+{%- endfor %}
