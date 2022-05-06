@@ -1,0 +1,161 @@
+---
+Description: DocDB DBCluster(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+Parameters:
+{%- for db_cluster in sceptre_user_data.db_clusters %}
+{%- set db_cluster_name = db_cluster.name %}
+{%- if db_cluster.master_user_password is defined and db_cluster.master_user_password %}
+  {{ db_cluster_name }}MasterUserPassword:
+    Type: String
+    Description: Master User Password for {{ db_cluster_name }}
+    Default: ''
+    NoEcho: true
+
+{%- endfor %}
+{%- endif %}
+
+Resources:
+
+{%- for db_cluster in sceptre_user_data.db_clusters %}
+{%- set db_cluster_name = db_cluster.name %}
+  {{ db_cluster_name }}:
+    Type: AWS::DocDB::DBCluster
+    DeletionPolicy: {{ db_cluster.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ db_cluster.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if db_cluster.availability_zones is defined %}
+      AvailabilityZones:
+{%- for availability_zone in db_cluster.availability_zones %}
+        - {{ availability_zone }}
+{%- endfor %}
+{%- endif %}
+{%- if db_cluster.backup_retention_period is defined %}
+      BackupRetentionPeriod: {{ db_cluster.backup_retention_period }}
+{%- endif %}
+{%- if db_cluster.copy_tags_to_snapshot is defined %}
+      CopyTagsToSnapshot: {{ db_cluster.copy_tags_to_snapshot }}
+{%- endif %}
+{%- if db_cluster.db_cluster_identifier is defined %}
+      DBClusterIdentifier: {{ db_cluster.db_cluster_identifier }}
+{%- endif %}
+{%- if db_cluster.db_cluster_parameter_group_name is defined %}
+      DBClusterParameterGroupName: {{ db_cluster.db_cluster_parameter_group_name }}
+{%- endif %}
+{%- if db_cluster.db_subnet_group_name is defined %}
+      DBSubnetGroupName: {{ db_cluster.db_subnet_group_name }}
+{%- endif %}
+{%- if db_cluster.deletion_protection is defined %}
+      DeletionProtection: {{ db_cluster.deletion_protection }}
+{%- endif %}
+{%- if db_cluster.enable_cloudwatch_logs_exports is defined %}
+      EnableCloudwatchLogsExports:
+{%- for log_type in db_cluster.enable_cloudwatch_logs_exports %}
+        - {{ log_type }}
+{%- endfor %}
+{%- endif %}
+{%- if db_cluster.engine_version is defined %}
+      EngineVersion: {{ db_cluster.engine_version }}
+{%- endif %}
+{%- if db_cluster.kms_key_id is defined %}
+      KmsKeyId: {{ db_cluster.kms_key_id | trim }}
+{%- endif %}
+{%- if db_cluster.master_username is defined %}
+      MasterUsername: {{ db_cluster.master_username }}
+{%- endif %}
+{%- if db_cluster.master_user_password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+      MasterUserPassword:
+        Ref: {{ db_instance_name }}MasterUserPassword
+{%- else %}
+      MasterUserPassword: {{ db_instance.master_user_password }}
+{%- endif %}
+{%- endif %}
+{%- if db_cluster.port is defined %}
+      Port: {{ db_cluster.port }}
+{%- endif %}
+{%- if db_cluster.preferred_backup_window is defined %}
+      PreferredBackupWindow: {{ db_cluster.preferred_backup_window }}
+{%- endif %}
+{%- if db_cluster.preferred_maintenance_window is defined %}
+      PreferredMaintenanceWindow: {{ db_cluster.preferred_maintenance_window }}
+{%- endif %}
+{%- if db_cluster.snapshot_identifier is defined %}
+      SnapshotIdentifier: {{ db_cluster.snapshot_identifier | trim }}
+{%- endif %}
+{%- if db_cluster.storage_encrypted is defined %}
+      StorageEncrypted: {{ db_cluster.storage_encrypted }}
+{%- endif %}
+{%- if db_cluster.vpc_security_group_ids is defined %}
+      VpcSecurityGroupIds:
+{%- for security_group_id in db_cluster.vpc_security_group_ids %}
+        - {{ security_group_id }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if db_cluster.tags is defined %}
+{%- for key,value in db_cluster.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for db_cluster in sceptre_user_data.db_clusters %}
+{%- set db_cluster_name = db_cluster.name %}
+  {{ db_cluster_name }}:
+    Description: DBCluster Identifier for {{ db_cluster_name }}
+    Value:
+      Ref: {{ db_cluster_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}"
+
+  {{ db_cluster_name }}ClusterResourceId:
+    Description: The Resource Id for DB cluster {{ db_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_cluster_name }}
+        - ClusterResourceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-ClusterResourceId"
+
+  {{ db_cluster_name }}Endpoint:
+    Description: >
+      The connection endpoint for the cluster {{ db_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_cluster_name }}
+        - Endpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-Endpoint"
+
+  {{ db_cluster_name }}Port:
+    Description: The port number on which the cluster {{ db_cluster_name }} accepts connections.
+    Value:
+      Fn::GetAtt:
+        - {{ db_cluster_name }}
+        - Port
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-Port"
+
+  {{ db_cluster_name }}ReadEndpoint:
+    Description: The reader endpoint for the cluster {{ db_cluster_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ db_cluster_name }}
+        - ReadEndpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-ReadEndpoint"
+
+{%- endfor %}

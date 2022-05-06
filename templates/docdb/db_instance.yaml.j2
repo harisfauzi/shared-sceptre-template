@@ -1,0 +1,75 @@
+---
+Description: DocDB DBInstance(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for db_instance in sceptre_user_data.db_instances %}
+{%- set db_instance_name = db_instance.name %}
+  {{ db_instance_name }}:
+    Type: AWS::DocDB::DBInstance
+    DeletionPolicy: {{ db_instance.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ db_instance.update_replace_policy | default('Delete') }}
+    Properties:
+      DBClusterIdentifier: {{ db_instance.db_cluster_identifier}}
+      DBInstanceClass: {{ db_instance.db_instance_class }}
+{%- if db_instance.auto_minor_version_upgrade is defined %}
+      AutoMinorVersionUpgrade: {{ db_instance.auto_minor_version_upgrade }}
+{%- endif %}
+{%- if db_instance.availability_zone is defined %}
+      AvailabilityZone: {{ db_instance.availability_zone }}
+{%- endif %}
+{%- if db_instance.db_instance_identifier is defined %}
+      DBInstanceIdentifier: {{ db_instance.db_instance_identifier | trim }}
+{%- endif %}
+{%- if db_instance.enable_performance_insights is defined %}
+      EnablePerformanceInsights: {{ db_instance.enable_performance_insights }}
+{%- endif %}
+{%- if db_instance.preferred_maintenance_window is defined %}
+      PreferredMaintenanceWindow: {{ db_instance.preferred_maintenance_window }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if db_instance.tags is defined %}
+{%- for key,value in db_instance.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for db_instance in sceptre_user_data.db_instances %}
+{%- set db_instance_name = db_instance.name %}
+  {{ db_instance_name }}:
+    Description: DBInstance Name for {{ db_instance_name }}
+    Value:
+      Ref: {{ db_instance_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}"
+
+  {{ db_instance_name }}Endpoint:
+    Description: The connection endpoint for the instance {{ db_instance_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ db_instance_name }}
+        - Endpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}-Endpoint"
+
+  {{ db_instance_name }}Port:
+    Description: The port number on which {{ db_instance_name }} accepts connections.
+    Value:
+      Fn::GetAtt:
+        - {{ db_instance_name }}
+        - Port
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}-Port"
+
+{%- endfor %}
