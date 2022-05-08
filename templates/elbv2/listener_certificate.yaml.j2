@@ -12,7 +12,7 @@ Resources:
     Properties:
       Certificates:
 {%- for certificate in listener_certificate.certificates %}
-        - {{ certificate }}
+        - CertificateArn: {{ certificate.certificate_arn | trim }}
 {%- endfor %}
-      ListenerArn: {{ listener_certificate.listener_arn }}
+      ListenerArn: {{ listener_certificate.listener_arn | trim }}
 {%- endfor %}

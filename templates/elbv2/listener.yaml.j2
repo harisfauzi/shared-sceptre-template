@@ -13,7 +13,7 @@ Resources:
     Properties:
       DefaultActions:
 {{ listener_action.prep(listener.default_actions) }}
-      LoadBalancerArn: {{ listener.load_balancer_arn }}
+      LoadBalancerArn: {{ listener.load_balancer_arn | trim }}
 {%- if listener.alpn_policy is defined %}
       AlpnPolicy:
 {%- for alpn_policy in listener.alpn_policy %}
@@ -23,7 +23,7 @@ Resources:
 {%- if listener.certificates is defined %}
       Certificates:
 {%- for certificate in listener.certificates %}
-        - {{ certificate }}
+        - CertificateArn: {{ certificate.certificate_arn | trim }}
 {%- endfor %}
 {%- endif %}
 {%- if listener.port is defined %}
