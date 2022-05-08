@@ -204,6 +204,9 @@ Resources:
 {%- if auto_scaling_group.desired_capacity is defined %}
       DesiredCapacity: {{ auto_scaling_group.desired_capacity }}
 {%- endif %}
+{%- if auto_scaling_group.desired_capacity_type is defined %}
+      DesiredCapacityType: {{ auto_scaling_group.desired_capacity_type }}
+{%- endif %}
 {%- if auto_scaling_group.health_check_grace_period is defined %}
       HealthCheckGracePeriod: {{ auto_scaling_group.health_check_grace_period }}
 {%- endif %}
