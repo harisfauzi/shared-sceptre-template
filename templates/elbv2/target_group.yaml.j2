@@ -111,7 +111,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ target_group_name }}"
-
+{# 
   {{ target_group_name }}TargetGroupFullName:
     Description: The full name of the target group of {{ target_group_name }}
     Value:
@@ -131,6 +131,6 @@ Outputs:
       Ref: {{ target_group_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ target_group_name }}-TargetGroupName"
+        Fn::Sub: "${AWS::StackName}-{{ target_group_name }}-TargetGroupName" #}
 
 {%- endfor %}
