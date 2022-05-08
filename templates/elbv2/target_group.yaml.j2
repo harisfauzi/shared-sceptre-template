@@ -63,7 +63,7 @@ Resources:
           Key: {{ attribute.key }}
 {%- endif %}
 {%- if attribute.value is defined %}
-          Value: {{ ttribute.value }}
+          Value: {{ attribute.value }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}
@@ -112,16 +112,6 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ target_group_name }}"
 
-  {{ target_group_name }}LoadBalancerArns:
-    Description: The Amazon Resource Names (ARNs) of the load balancers that route traffic to this {{ target_group_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ target_group_name }}
-        - LoadBalancerArns
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ target_group_name }}-LoadBalancerArns"
-
   {{ target_group_name }}TargetGroupFullName:
     Description: The full name of the target group of {{ target_group_name }}
     Value:
@@ -138,7 +128,6 @@ Outputs:
       Fn::GetAtt:
         - {{ target_group_name }}
         - TargetGroupName
-      Ref: {{ target_group_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ target_group_name }}-TargetGroupName"
