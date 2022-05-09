@@ -1,4 +1,5 @@
 ---
+{%- import 'macros/ec2_instance_blockdevicemapping.yaml.j2' as ec2_instance_blockdevicemapping %}
 Description: NAT instances for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
@@ -94,6 +95,9 @@ Resources:
           Ipv6AddressCount: 1
 {%- endif %}
           SubnetId: {{ nat_instance.subnet_id | trim }}
+{%- if nat_instance.block_device_mappings is defined %}
+{{ ec2_instance_blockdevicemapping.prep(nat_instance.block_device_mappings) }}
+{%- endif %}
       SourceDestCheck: False
       Tags:
         - Key: SourceRepoURL
