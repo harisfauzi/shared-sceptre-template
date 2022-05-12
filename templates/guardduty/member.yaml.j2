@@ -1,0 +1,42 @@
+---
+Description: GuardDuty Member(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for member in sceptre_user_data.members %}
+{%- set member_name = member.name %}
+  {{ member_name }}:
+    Type: AWS::GuardDuty::Member
+    DeletionPolicy: {{ member.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ member.update_replace_policy | default('Delete') }}
+    Properties:
+      DetectorId: {{ member.detector_id | trim }}
+      Email: {{ member.email }}
+      MemberId: {{ member.member_id | trim }}
+{%- if member.disable_email_notification is defined %}
+      DisableEmailNotification: {{ member.disable_email_notification }}
+{%- endif %}
+{%- if member.message is defined %}
+      Message: {{ member.message }}
+{%- endif %}
+{%- if member.status is defined %}
+      Status: {{ member.status }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for member in sceptre_user_data.members %}
+{%- set member_name = member.name %}
+  {{ member_name }}:
+    Description: Unique Id member account for {{ member_name }}
+    Value:
+      Ref: {{ member_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ member_name }}"
+
+
+{%- endfor %}

@@ -1,0 +1,36 @@
+---
+Description: GuardDuty ThreatIntelSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for threat_intel_set in sceptre_user_data.threat_intel_sets %}
+{%- set threat_intel_set_name = threat_intel_set.name %}
+  {{ threat_intel_set_name }}:
+    Type: AWS::GuardDuty::ThreatIntelSet
+    DeletionPolicy: {{ threat_intel_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ threat_intel_set.update_replace_policy | default('Delete') }}
+    Properties:
+      Activate: {{ threat_intel_set.activate }}
+      DetectorId: {{ threat_intel_set.detector_id | trim }}
+      Format: {{ threat_intel_set.format }}
+      Location: {{ threat_intel_set.location }}
+{%- if threat_intel_set.threat_intel_set_name is defined %}
+      Name: {{ threat_intel_set.threat_intel_set_name }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for threat_intel_set in sceptre_user_data.threat_intel_sets %}
+{%- set threat_intel_set_name = threat_intel_set.name %}
+  {{ threat_intel_set_name }}:
+    Description: ThreatIntelSet unique Id for {{ threat_intel_set_name }}
+    Value:
+      Ref: {{ threat_intel_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ threat_intel_set_name }}"
+
+{%- endfor %}
