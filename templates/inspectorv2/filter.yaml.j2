@@ -1,0 +1,286 @@
+{%- import 'macros/filters.yaml.j2' as filters %}
+---
+Description: InspectorV2 Filter(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for filter in sceptre_user_data.filters %}
+{%- set filter_name = filter.name %}
+  {{ filter_name }}:
+    Type: AWS::InspectorV2::Filter
+    DeletionPolicy: {{ filter.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ filter.update_replace_policy | default('Delete') }}
+    Properties:
+      FilterAction: {{ filter.filter_action}}
+      FilterCriteria:
+{%- if filter.filter_criteria.aws_account_id is defined %}
+        AwsAccountId:
+{%- for string_filter in filter.filter_criteria.aws_account_id %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.component_id is defined %}
+        ComponentId:
+{%- for string_filter in filter.filter_criteria.component_id %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.component_type is defined %}
+        ComponentType:
+{%- for string_filter in filter.filter_criteria.component_type %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.ec2_instance_image_id is defined %}
+        Ec2InstanceImageId:
+{%- for string_filter in filter.filter_criteria.ec2_instance_image_id %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.ec2_instance_subnet_id is defined %}
+        Ec2InstanceSubnetId:
+{%- for string_filter in filter.filter_criteria.ec2_instance_subnet_id %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.ec2_instance_vpc_id is defined %}
+        Ec2InstanceVpcId:
+{%- for string_filter in filter.filter_criteria.ec2_instance_vpc_id %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.ecr_image_architecture is defined %}
+        EcrImageArchitecture:
+{%- for string_filter in filter.filter_criteria.ecr_image_architecture %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.ecr_image_hash is defined %}
+        EcrImageHash:
+{%- for string_filter in filter.filter_criteria.ecr_image_hash %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.ecr_image_pushed_at is defined %}
+        EcrImagePushedAt:
+{%- for date_filter in filter.filter_criteria.ecr_image_pushed_at %}
+          -
+{{ filters.prep_date_filter(date_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.ecr_image_registry is defined %}
+        EcrImageRegistry:
+{%- for string_filter in filter.filter_criteria.ecr_image_registry %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.ecr_image_repository_name is defined %}
+        EcrImageRepositoryName:
+{%- for string_filter in filter.filter_criteria.ecr_image_repository_name %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.ecr_image_tags is defined %}
+        EcrImageTags:
+{%- for string_filter in filter.filter_criteria.ecr_image_tags %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.finding_arn is defined %}
+        FindingArn:
+{%- for string_filter in filter.filter_criteria.finding_arn %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.finding_status is defined %}
+        FindingStatus:
+{%- for string_filter in filter.filter_criteria.finding_status %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.finding_type is defined %}
+        FindingType:
+{%- for string_filter in filter.filter_criteria.finding_type %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.first_observed_at is defined %}
+        FirstObservedAt:
+{%- for date_filter in filter.filter_criteria.first_observed_at %}
+          -
+{{ filters.prep_date_filter(date_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.inspector_score is defined %}
+        InspectorScore:
+{%- for number_filter in filter.filter_criteria.inspector_score %}
+          -
+{{ filters.prep_number_filter(number_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.last_observed_at is defined %}
+        LastObservedAt:
+{%- for date_filter in filter.filter_criteria.last_observed_at %}
+          -
+{{ filters.prep_date_filter(date_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.network_protocol is defined %}
+        NetworkProtocol:
+{%- for string_filter in filter.filter_criteria.network_protocol %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.port_range is defined %}
+        PortRange:
+{%- for port_range_filter in filter.filter_criteria.port_range %}
+          -
+{{ filters.prep_port_range_filter(port_range_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.related_vulnerabilities is defined %}
+        RelatedVulnerabilities:
+{%- for string_filter in filter.filter_criteria.related_vulnerabilities %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.resource_id is defined %}
+        ResourceId:
+{%- for string_filter in filter.filter_criteria.resource_id %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.resource_tags is defined %}
+        ResourceTags:
+{%- for map_filter in filter.filter_criteria.resource_tags %}
+          -
+{{ filters.prep_map_filter(map_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.resource_type is defined %}
+        ResourceType:
+{%- for string_filter in filter.filter_criteria.resource_type %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.severity is defined %}
+        Severity:
+{%- for string_filter in filter.filter_criteria.severity %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.title is defined %}
+        Title:
+{%- for string_filter in filter.filter_criteria.title %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.updated_at is defined %}
+        UpdatedAt:
+{%- for date_filter in filter.filter_criteria.updated_at %}
+          -
+{{ filters.prep_date_filter(date_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.vendor_severity is defined %}
+        VendorSeverity:
+{%- for string_filter in filter.filter_criteria.vendor_severity %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.vulnerability_id is defined %}
+        VulnerabilityId:
+{%- for string_filter in filter.filter_criteria.vulnerability_id %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.vulnerability_source is defined %}
+        VulnerabilitySource:
+{%- for string_filter in filter.filter_criteria.vulnerability_source %}
+          -
+{{ filters.prep_string_filter(string_filter) | indent(width=12,first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.filter_criteria.vulnerable_packages is defined %}
+        VulnerablePackages:
+{%- for vulnerable_package in filter.filter_criteria.vulnerable_packages %}
+          -
+{%- if vulnerable_package.architecture is defined %}
+            Architecture:
+{{ filters.prep_string_filter(vulnerable_package.architecture) | indent(width=14,first=true) }}
+{%- endif %}
+{%- if vulnerable_package.epoch is defined %}
+            Epoch:
+{{ filters.prep_number_filter(vulnerable_package.epoch) | indent(width=14,first=true) }}
+{%- endif %}
+{%- if vulnerable_package.name is defined %}
+            Name:
+{{ filters.prep_string_filter(vulnerable_package.name) | indent(width=14,first=true) }}
+{%- endif %}
+{%- if vulnerable_package.release is defined %}
+            Release:
+{{ filters.prep_string_filter(vulnerable_package.release) | indent(width=14,first=true) }}
+{%- endif %}
+{%- if vulnerable_package.source_layer_hash is defined %}
+            SourceLayerHash:
+{{ filters.prep_string_filter(vulnerable_package.source_layer_hash) | indent(width=14,first=true) }}
+{%- endif %}
+{%- if vulnerable_package.version is defined %}
+            Version:
+{{ filters.prep_string_filter(vulnerable_package.version) | indent(width=14,first=true) }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+      Name: {{ filter.filter_name }}
+{%- if filter.description is defined %}
+      Description: {{ filter.description }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for filter in sceptre_user_data.filters %}
+{%- set filter_name = filter.name %}
+  {{ filter_name }}:
+    Description: Filter ARN for {{ filter_name }}
+    Value:
+      Ref: {{ filter_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ filter_name }}"
+
+  {{ filter_name }}Arn:
+    Description: The ARN for {{ filter_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ filter_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ filter_name }}-Arn"
+
+{%- endfor %}

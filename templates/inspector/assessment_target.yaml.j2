@@ -1,0 +1,45 @@
+---
+Description: Inspector AssessmentTarget(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for assessment_target in sceptre_user_data.assessment_targets %}
+{%- set assessment_target_name = assessment_target.name %}
+  {{ assessment_target_name }}:
+    Type: AWS::Inspector::AssessmentTarget
+    DeletionPolicy: {{ assessment_target.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ assessment_target.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if assessment_target.assessment_target_name is defined %}
+      AssessmentTargetName: {{ assessment_target.assessment_target_name }}
+{%- endif %}
+{%- if assessment_target.resource_group_arn is defined %}
+      ResourceGroupArn: {{ assessment_target.resource_group_arn | trim }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for assessment_target in sceptre_user_data.assessment_targets %}
+{%- set assessment_target_name = assessment_target.name %}
+  {{ assessment_target_name }}:
+    Description: The ARN for {{ assessment_target_name }}
+    Value:
+      Ref: {{ assessment_target_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ assessment_target_name }}"
+
+  {{ assessment_target_name }}Arn:
+    Description: The ARN for {{ assessment_target_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ assessment_target_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ assessment_target_name }}-Arn"
+
+{%- endfor %}
