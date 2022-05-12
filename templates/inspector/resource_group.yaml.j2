@@ -1,0 +1,44 @@
+---
+Description: Inspector ResourceGroup(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for resource_group in sceptre_user_data.resource_groups %}
+{%- set resource_group_name = resource_group.name %}
+  {{ resource_group_name }}:
+    Type: AWS::Inspector::ResourceGroup
+    DeletionPolicy: {{ resource_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resource_group.update_replace_policy | default('Delete') }}
+    Properties:
+      ResourceGroupTags:
+{%- for key,value in resource_group.resource_group_tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for resource_group in sceptre_user_data.resource_groups %}
+{%- set resource_group_name = resource_group.name %}
+  {{ resource_group_name }}:
+    Description: The ARN for {{ resource_group_name }}
+    Value:
+      Ref: {{ resource_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_group_name }}"
+
+  {{ resource_group_name }}Arn:
+    Description: The ARN for {{ resource_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resource_group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_group_name }}-Arn"
+
+{%- endfor %}

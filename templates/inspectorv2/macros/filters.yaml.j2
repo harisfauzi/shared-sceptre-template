@@ -1,0 +1,46 @@
+{%- macro prep_string_filter(string_filter) %}
+Comparison: {{ string_filter.comparison}}
+Value: {{ string_filter._value }}
+{%- endmacro %}
+{%- macro prep_number_filter(number_filter) %}
+{%- if number_filter.lower_inclusive. is defined %}
+LowerInclusive: {{ number_filter.lower_inclusive }}
+{%- endif %}
+{%- if number_filter.upper_inclusive. is defined %}
+UpperInclusive: {{ number_filter.upper_inclusive}}
+{%- endif %}
+{%- endmacro %}
+{%- macro prep_date_filter(date_filter) %}
+{%- if date_filter.end_inclusive. is defined %}
+EndInclusive: {{ date_filter.end_inclusive }}
+{%- endif %}
+{%- if date_filter.start_inclusive. is defined %}
+StartInclusive: {{ date_filter.start_inclusive}}
+{%- endif %}
+{%- endmacro %}
+{%- macro prep_port_range_filter(port_range_filter) %}
+{%- if port_range_filter.end_inclusive. is defined %}
+EndInclusive: {{ port_range_filter.end_inclusive }}
+{%- endif %}
+{%- if port_range_filter.begin_inclusive. is defined %}
+BeginInclusive: {{ port_range_filter.begin_inclusive}}
+{%- endif %}
+{%- endmacro %}
+{%- macro prep_map_filter(map_filter) %}
+Comparison: {{ map_filter.comparison }}
+{%- if map_filter.key is defined %}
+Key: {{ map_filter.key }}
+{%- endif %}
+{%- if map_filter._value is defined %}
+Value: {{ map_filter._value }}
+{%- endif %}
+{%- endmacro %}
+{%- macro prep_package_filter(package_filter) %}
+Comparison: {{ map_filter.comparison }}
+{%- if map_filter.key is defined %}
+Key: {{ map_filter.key }}
+{%- endif %}
+{%- if map_filter._value is defined %}
+Value: {{ map_filter._value }}
+{%- endif %}
+{%- endmacro %}
