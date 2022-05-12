@@ -1,0 +1,92 @@
+---
+Description: GuardDuty Filter(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for filter in sceptre_user_data.filters %}
+{%- set filter_name = filter.name %}
+  {{ filter_name }}:
+    Type: AWS::GuardDuty::Filter
+    DeletionPolicy: {{ filter.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ filter.update_replace_policy | default('Delete') }}
+    Properties:
+      Action: {{ filter.action }}
+      Description: {{ filter.description }}
+      DetectorId: {{ filter.detector_id | trim }}
+      FindingCriteria:
+{%- if filter.criterion_json is defined %}
+        Criterion: {{ filter.criterion_json }}
+{%- elseif filter.criterion is defined %}
+        Criterion:
+{{ filter.criterion | indent(width=10,first=true) }}
+{%- endif %}
+{%- if filter.item_type is defined %}
+        ItemType:
+{%- if filter.item_type.eq is defined %}
+          Eq:
+{%- for eq in filter.item_type.eq %}
+            - {{ eq }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.item_type.equals is defined %}
+          Equals:
+{%- for equals in filter.item_type.equals %}
+            - {{ equals }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.item_type.greather_than is defined %}
+          GreaterThan: {{ filter.item_type.greather_than }}
+{%- endif %}
+{%- if filter.item_type.greather_thank_or_equal is defined %}
+          GreaterThanOrEqual: {{ filter.item_type.greather_thank_or_equal }}
+{%- endif %}
+{%- if filter.item_type.gt is defined %}
+          Gt: {{ filter.item_type.gt }}
+{%- endif %}
+{%- if filter.item_type.gte is defined %}
+          Gte: {{ filter.item_type.gte }}
+{%- endif %}
+{%- if filter.item_type.less_than is defined %}
+          LessThan: {{ filter.item_type.less_than }}
+{%- endif %}
+{%- if filter.item_type.less_than_or_equal is defined %}
+          LessThanOrEqual: {{ filter.item_type.less_than_or_equal }}
+{%- endif %}
+{%- if filter.item_type.lt is defined %}
+          Lt: {{ filter.item_type.lt }}
+{%- endif %}
+{%- if filter.item_type.lte is defined %}
+          Lte: {{ filter.item_type.lte }}
+{%- endif %}
+{%- if filter.item_type.neq is defined %}
+          Neq:
+{%- for neq in filter.item_type.neq %}
+            - {{ neq }}
+{%- endfor %}
+{%- endif %}
+{%- if filter.item_type.not_equals is defined %}
+          NotEquals:
+{%- for not_equals in filter.item_type.not_equals %}
+            - {{ not_equals }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+      Name: {{ filter.filter_name }}
+      Rank: {{ filter.rank }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for filter in sceptre_user_data.filters %}
+{%- set filter_name = filter.name %}
+  {{ filter_name }}:
+    Description: Filter Name for {{ filter_name }}
+    Value:
+      Ref: {{ filter_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ filter_name }}"
+
+{%- endfor %}

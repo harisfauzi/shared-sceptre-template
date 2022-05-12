@@ -1,0 +1,45 @@
+---
+Description: GuardDuty Detector(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for detector in sceptre_user_data.detectors %}
+{%- set detector_name = detector.name %}
+  {{ detector_name }}:
+    Type: AWS::GuardDuty::Detector
+    DeletionPolicy: {{ detector.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ detector.update_replace_policy | default('Delete') }}
+    Properties:
+      Enable: {{ detector.enable }}
+{%- if detector.data_sources is defined %}
+      DataSources:
+{%- if detector.data_sources.kubernetes is defined %}
+        Kubernetes:
+          AuditLogs:
+            Enable: {{ detector.data_sources.kubernetes.audit_logs.enable }}
+{%- endif %}
+{%- if detector.data_sources.s3_logs is defined %}
+        S3Logs:
+          Enable: {{ detector.data_sources.s3_logs.enable }}
+{%- endif %}
+{%- endif %}
+{%- if detector.finding_publishing_frequency is defined %}
+      FindingPublishingFrequency: {{ detector.finding_publishing_frequency }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for detector in sceptre_user_data.detectors %}
+{%- set detector_name = detector.name %}
+  {{ detector_name }}:
+    Description: Detector unique Id for {{ detector_name }}
+    Value:
+      Ref: {{ detector_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ detector_name }}"
+
+{%- endfor %}
