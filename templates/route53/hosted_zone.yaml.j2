@@ -70,7 +70,7 @@ Outputs:
 
 {%- if not hosted_zone.vpcs is defined %}
   {{ hosted_zone_name }}NameServer0:
-    Description: The Hosted Zone ID for {{ hosted_zone_name }}
+    Description: The NS Server for {{ hosted_zone_name }}
     Value:
       Fn::Select:
         - 0
@@ -82,7 +82,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer0"
 
   {{ hosted_zone_name }}NameServer1:
-    Description: The Hosted Zone ID for {{ hosted_zone_name }}
+    Description: The NS Server for {{ hosted_zone_name }}
     Value:
       Fn::Select:
         - 1
@@ -94,7 +94,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer1"
 
   {{ hosted_zone_name }}NameServer2:
-    Description: The Hosted Zone ID for {{ hosted_zone_name }}
+    Description: The NS Server for {{ hosted_zone_name }}
     Value:
       Fn::Select:
         - 2
@@ -106,7 +106,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer2"
 
   {{ hosted_zone_name }}NameServer3:
-    Description: The Hosted Zone ID for {{ hosted_zone_name }}
+    Description: The NS Server for {{ hosted_zone_name }}
     Value:
       Fn::Select:
         - 3
