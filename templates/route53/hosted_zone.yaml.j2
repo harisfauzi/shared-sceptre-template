@@ -58,7 +58,8 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}"
 
-{%- if sceptre_user_data.verbose_output is defined and sceptre_user_data.verbose_output %}  {# BEGIN {%- if sceptre_user_data.verbose_output is defined and sceptre_user_data.verbose_output %} #}
+{%- if sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %}  {# BEGIN {%- sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %} #}
+{%- else %}
   {{ hosted_zone_name }}Id:
     Description: The Hosted Zone ID for {{ hosted_zone_name }}
     Value:
@@ -119,5 +120,5 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer3"
 
 {%- endif %}  {# END {%- if not hosted_zone.vpcs is defined %}#}
-{%- endif %}  {# END {%- if sceptre_user_data.verbose_output is defined and sceptre_user_data.verbose_output %} #}
+{%- endif %}  {# END {%- sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %} #}
 {%- endfor %}
