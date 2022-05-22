@@ -73,6 +73,8 @@ Resources:
           commands:
             01_setup_nat:
               command: /usr/local/bin/setup_nat.sh
+            02_update_packages:
+              command: yum -y upgrade
 
     CreationPolicy:
       ResourceSignal:
