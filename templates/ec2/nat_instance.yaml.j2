@@ -50,6 +50,11 @@ Resources:
                 files:
                   - /etc/cfn/cfn-hup.conf
                   - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+          commands:
+            01_update_packages:
+              command: yum -y upgrade
+            02_restart_machine:
+              command: shutdown -r now
         config_enable_ip_forward:
           packages:
             yum:
@@ -74,9 +79,8 @@ Resources:
           commands:
             01_setup_nat:
               command: /usr/local/bin/setup_nat.sh
-            02_update_packages:
-              command: yum -y upgrade
-
+            02_package_cleanup:
+              command: package-cleanup --oldkernels --count=1 -y
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
@@ -127,8 +131,6 @@ Resources:
               --stack ${AWS::StackName} \
               --resource {{ nat_instance_name }} \
               --region ${AWS::Region}
-            shutdown -r now
-
 {%- if nat_instance.default_route_tables is defined %}
 {%- for route_table in nat_instance.default_route_tables %}
   {{ nat_instance_name }}{{ route_table.name }}:
