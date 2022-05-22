@@ -127,12 +127,13 @@ Resources:
               --stack ${AWS::StackName} \
               --resource {{ nat_instance_name }} \
               --region ${AWS::Region}
+            shutdown -r now
 
 {%- if nat_instance.default_route_tables is defined %}
 {%- for route_table in nat_instance.default_route_tables %}
   {{ nat_instance_name }}{{ route_table.name }}:
     Type: AWS::EC2::Route
-    Properties: 
+    Properties:
       RouteTableId: {{ route_table.route_table_id | trim }}
       DestinationCidrBlock: 0.0.0.0/0
       InstanceId:
@@ -183,7 +184,6 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ nat_instance_name }}-PrivateIp"
 
-  
   {{ nat_instance_name }}PublicIp:
     Description: The Public IP Address for {{ nat_instance_name }}
     Value:
