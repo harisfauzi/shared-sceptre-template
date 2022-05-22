@@ -71,12 +71,28 @@ Resources:
               mode: '000755'
               owner: root
               group: root
+            /root/cleanup.sh:
+              content: |
+                package-cleanup --oldkernels --count=1 -y
+              encoding: plain
+              mode: '000755'
+              owner: root
+              group: root
+            /root/crontab-reboot.sh:
+              content: |
+                echo "@reboot /root/cleanup.sh" | crontab -
+              encoding: plain
+              mode: '000755'
+              owner: root
+              group: root
           commands:
             01_setup_nat:
               command: /usr/local/bin/setup_nat.sh
             02_update_packages:
               command: yum -y upgrade
-
+              ignoreErrorrs: false
+            03_install_crontab:
+              command: /root/crontab-reboot.sh
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
@@ -128,7 +144,6 @@ Resources:
               --resource {{ nat_instance_name }} \
               --region ${AWS::Region}
             shutdown -r now
-
 {%- if nat_instance.default_route_tables is defined %}
 {%- for route_table in nat_instance.default_route_tables %}
   {{ nat_instance_name }}{{ route_table.name }}:
