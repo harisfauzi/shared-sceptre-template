@@ -11,7 +11,7 @@ Resources:
     DeletionPolicy: {{ scaling_policy.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ scaling_policy.update_replace_policy | default('Delete') }}
     Properties:
-      AutoScalingGroupName: String
+      AutoScalingGroupName: {{ scaling_policy.auto_scaling_group_name | trim }}
 {%- if scaling_policy.adjustment_type is defined %}
       AdjustmentType: {{ scaling_policy.adjustment_type }}
 {%- endif %}
@@ -53,7 +53,7 @@ Resources:
             PredefinedScalingMetricSpecification:
               PredefinedMetricType: {{ metric_specification.predefined_load_metrics_specification.predefined_metric_type }}
 {%- if metric_specification.predefined_load_metrics_specification.resource_label is defined %}
-              ResourceLabel: String
+              ResourceLabel: {{ metric_specification.predefined_load_metrics_specification.resource_label }}
 {%- endif %}
 {%- endif %}
 {%- endfor %}
