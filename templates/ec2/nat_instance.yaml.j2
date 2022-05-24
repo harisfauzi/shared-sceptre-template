@@ -74,6 +74,7 @@ Resources:
             /root/cleanup.sh:
               content: |
                 package-cleanup --oldkernels --count=1 -y
+                /sbin/iptables-restore < /etc/sysconfig/iptables
               encoding: plain
               mode: '000755'
               owner: root
