@@ -94,7 +94,7 @@ Resources:
           Namespace: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.namespace }}
           Statistic: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.statistic }}
           Dimensions:
-{%- for dimension scaling_policy.target_tracking_configuration.customized_metrics_specification.dimensions %}
+{%- for dimension in scaling_policy.target_tracking_configuration.customized_metrics_specification.dimensions %}
             - Name: {{ dimension.name }}
               Value: {{ dimension.value }}
 {%- endfor %}
