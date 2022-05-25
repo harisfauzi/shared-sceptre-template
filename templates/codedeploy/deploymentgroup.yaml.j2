@@ -75,26 +75,26 @@ Resources:
 {%- if deployment_group.deployment is defined %}
       Deployment:
         Revision:
-{%- if deployment_group.deployment.git_hub_location is defined %}
+{%- if deployment_group.deployment.revision.git_hub_location is defined %}
           GitHubLocation:
-            CommitId: {{ deployment_group.deployment.git_hub_location.commit_id }}
-            Repository: {{ deployment_group.deployment.git_hub_location.repository }}
+            CommitId: {{ deployment_group.deployment.revision.git_hub_location.commit_id }}
+            Repository: {{ deployment_group.deployment.revision.git_hub_location.repository }}
 {%- endif %}
-{%- if deployment_group.deployment.revision_type is defined %}
-          RevisionType: {{ deployment_group.deployment.revision_type }}
+{%- if deployment_group.deployment.revision.revision_type is defined %}
+          RevisionType: {{ deployment_group.deployment.revision.revision_type }}
 {%- endif %}
-{%- if deployment_group.deployment.s3_location is defined %}
+{%- if deployment_group.deployment.revision.s3_location is defined %}
           S3Location:
-            Bucket: {{ deployment_group.deployment.s3_location.bucket }}
-            Key: {{ deployment_group.deployment.s3_location.key }}
-{%- if deployment_group.deployment.s3_location.bundle_type is defined %}
-            BundleType: {{ deployment_group.deployment.s3_location.bundle_type }}
+            Bucket: {{ deployment_group.deployment.revision.s3_location.bucket }}
+            Key: {{ deployment_group.deployment.revision.s3_location.key }}
+{%- if deployment_group.deployment.revision.s3_location.bundle_type is defined %}
+            BundleType: {{ deployment_group.deployment.revision.s3_location.bundle_type }}
 {%- endif %}
-{%- if deployment_group.deployment.s3_location.e_tag is defined %}
-            ETag: {{ deployment_group.deployment.s3_location.e_tag }}
+{%- if deployment_group.deployment.revision.s3_location.e_tag is defined %}
+            ETag: {{ deployment_group.deployment.revision.s3_location.e_tag }}
 {%- endif %}
-{%- if deployment_group.deployment.s3_location.version is defined %}
-            Version: {{ deployment_group.deployment.s3_location.version }}
+{%- if deployment_group.deployment.revision.s3_location.version is defined %}
+            Version: {{ deployment_group.deployment.revision.s3_location.version }}
 {%- endif %}
 {%- endif %}
 {%- if deployment_group.deployment.description is defined %}
