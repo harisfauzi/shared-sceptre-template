@@ -126,8 +126,8 @@ Resources:
 {%- endif %}
 {%- endif %}  {# END {%- if auto_scaling_group.launch_configuration is defined %} #}
 
-{%- if auto_scaling_group.launch_template is defined %}  {# BEGIN {%- if auto_scaling_group.launch_template is defined %} #}
-{%- set launch_template = auto_scaling_group.launch_template %}
+{%- if auto_scaling_group.launch_template_spec is defined %}  {# BEGIN {%- if auto_scaling_group.launch_template is defined %} #}
+{%- set launch_template = auto_scaling_group.launch_template_spec %}
 {%- set launch_template_name = auto_scaling_group_name ~ 'LaunchTemplate' %}
   {{ launch_template_name }}:
     Type: AWS::EC2::LaunchTemplate
@@ -624,8 +624,8 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ launch_configuration_name }}"
 {%- endif %}  {# END {%- if auto_scaling_group.launch_configuration is defined %} #}
 
-{%- if auto_scaling_group.launch_template is defined %}  {# BEGIN {%- if auto_scaling_group.launch_template is defined %} #}
-{%- set launch_template = auto_scaling_group.launch_template %}
+{%- if auto_scaling_group.launch_template_spec is defined %}  {# BEGIN {%- if auto_scaling_group.launch_template is defined %} #}
+{%- set launch_template = auto_scaling_group.launch_template_spec %}
 {%- set launch_template_name = auto_scaling_group_name ~ 'LaunchTemplate' %}
   {{ launch_template_name }}:
     Description: Launch Template ID for {{ launch_template_name }}
