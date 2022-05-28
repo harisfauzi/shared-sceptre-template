@@ -365,6 +365,10 @@ Resources:
 
   {{ auto_scaling_group_name }}:
     Type: AWS::AutoScaling::AutoScalingGroup
+{%- if auto_scaling_group.launch_template_spec is defined %}  {# BEGIN {%- if auto_scaling_group.launch_template is defined %} #}
+{%- set launch_template_name = auto_scaling_group_name ~ 'LaunchTemplate' %}
+    DependsOn: {{ launch_template_name }}
+{%- endif %}  {# END {%- if auto_scaling_group.launch_template is defined %} #}
     DeletionPolicy: {{ auto_scaling_group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ auto_scaling_group.update_replace_policy | default('Delete') }}
 {%- if auto_scaling_group.creation_policy is defined %}  {# BEGIN {%- if auto_scaling_group.creation_policy is defined %} #}
