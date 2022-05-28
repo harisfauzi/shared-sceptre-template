@@ -511,6 +511,7 @@ Resources:
         LaunchTemplate:
           LaunchTemplateSpecification:
 {{ launch_template_specification.prep(auto_scaling_group.mixed_instances_policy.launch_template.launch_template_specification) | indent(width=12, first=true) }}
+{%- if auto_scaling_group.mixed_instances_policy.launch_template.overrides is defined %}  {# BEGIN {%- if auto_scaling_group.mixed_instances_policy.launch_template.overrides is defined %} #}
           Overrides:
 {%- for override in auto_scaling_group.mixed_instances_policy.launch_template.overrides %}
             -
@@ -525,6 +526,7 @@ Resources:
               WeightedCapacity: {{ override.wieghted_capacity }}
 {%- endif %}
 {%- endfor %}
+{%- endif %}  {# END {%- if auto_scaling_group.mixed_instances_policy.launch_template.overrides is defined %} #}
 {%- if auto_scaling_group.mixed_instances_policy.instances_distribution is defined %}
         InstancesDistribution:
 {%- if auto_scaling_group.mixed_instances_policy.instances_distribution.on_demand_allocation_strategy is defined %}
