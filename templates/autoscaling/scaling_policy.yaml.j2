@@ -107,9 +107,9 @@ Resources:
 {%- endif %}
 {%- if scaling_policy.target_tracking_configuration.predefined_metric_specification is defined %}
         PredefinedMetricSpecification:
-          PredefinedMetricType: {{ scaling_policy.target_tracking_configuration.predefined_metric_type }}
+          PredefinedMetricType: {{ scaling_policy.target_tracking_configuration.predefined_metric_specification.predefined_metric_type }}
 {%- if scaling_policy.target_tracking_configuration.resource_label is defined %}
-          ResourceLabel: {{ scaling_policy.target_tracking_configuration.resource_label }}
+          ResourceLabel: {{ scaling_policy.target_tracking_configuration.predefined_metric_specification.resource_label }}
 {%- endif %}
 {%- endif %}
 {%- endif %}
