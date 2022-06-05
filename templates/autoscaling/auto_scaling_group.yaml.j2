@@ -444,6 +444,9 @@ Resources:
 {%- if auto_scaling_group.cooldown is defined %}
       Cooldown: {{ auto_scaling_group.cooldown }}
 {%- endif %}
+{%- if auto_scaling_group.default_instance_warmup is defined %}
+      DefaultInstanceWarmup: {{ auto_scaling_group.default_instance_warmup }}
+{%- endif %}
 {%- if auto_scaling_group.desired_capacity is defined %}
       DesiredCapacity: {{ auto_scaling_group.desired_capacity }}
 {%- endif %}
