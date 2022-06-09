@@ -21,8 +21,8 @@ Resources:
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
+{%- if nat_gateway.tags is defined %}
+{%- for key,value in nat_gateway.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
