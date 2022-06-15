@@ -94,14 +94,4 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ listener_rule_name }}"
 
-  {{ listener_rule_name }}IsDefault:
-    Description: Indicate whether {{ listener_rule_name }} is the default rule for the listener.
-    Value:
-      Fn::GetAtt:
-        - {{ listener_rule_name }}
-        - IsDefault
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ listener_rule_name }}-IsDefault"
-
 {%- endfor %}
