@@ -22,7 +22,7 @@ Resources:
 {%- if condition.host_header_config is defined %}
           HostHeaderConfig:
             Values:
-{%- for value in condition.host_header_config.values %}
+{%- for value in condition.host_header_config._values %}
               - {{ value }}
 {%- endfor %}
 {%- endif%}
@@ -31,9 +31,9 @@ Resources:
 {%- if condition.http_header_config.http_header_name is defined %}
             HttpHeaderName: {{ condition.http_header_config.http_header_name }}
 {%- endif %}
-{%- if condition.http_header_config.values is defined %}
+{%- if condition.http_header_config._values is defined %}
             Values:
-{%- for value in condition.http_header_config.values %}
+{%- for value in condition.http_header_config._values %}
               - {{ value }}
 {%- endfor %}
 {%- endif %}
@@ -41,21 +41,21 @@ Resources:
 {%- if condition.http_request_method_config is defined %}
           HttpRequestMethodConfig:
             Values:
-{%- for value in condition.http_request_method_config.values %}
+{%- for value in condition.http_request_method_config._values %}
               - {{ value }}
 {%- endfor %}
 {%- endif%}
 {%- if condition.path_pattern_config is defined %}
           PathPatternConfig:
             Values:
-{%- for value in condition.path_pattern_config.values %}
+{%- for value in condition.path_pattern_config._values %}
               - {{ value }}
 {%- endfor %}
 {%- endif%}
 {%- if condition.query_string_config is defined %}
           QueryStringConfig:
             Values:
-{%- for value in condition.path_pattern_config.values %}
+{%- for value in condition.path_pattern_config._values %}
               -
 {%- if value.key is defined %}
                 Key: {{ value.key }}
@@ -68,19 +68,19 @@ Resources:
 {%- if condition.source_ip_config is defined %}
           SourceIpConfig:
             Values:
-{%- for value in condition.source_ip_config.values %}
+{%- for value in condition.source_ip_config._values %}
               - {{ value }}
 {%- endfor %}
 {%- endif%}
-{%- if condition.values is defined %}
+{%- if condition._values is defined %}
           Values:
-{%- for value in condition.values %}
+{%- for value in condition._values %}
             - {{ value }}
 {%- endfor %}
 {%- endif%}
 {%- endfor %}
       ListenerArn: {{ listener_rule.listener_arn }}
-      Priority: {{ listener.priority }}
+      Priority: {{ listener_rule.priority }}
 {%- endfor %}
 
 Outputs:
