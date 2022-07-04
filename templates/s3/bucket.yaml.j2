@@ -56,7 +56,7 @@ Resources:
 {%- if server_side_encryption_configuration.server_side_encryption_by_default is defined %}
             ServerSideEncryptionByDefault:
 {%- if server_side_encryption_configuration.server_side_encryption_by_default.kms_master_key_id is defined %}
-              KMSMasterKeyID: String
+              KMSMasterKeyID: {{ server_side_encryption_configuration.server_side_encryption_by_default.kms_master_key_id }}
 {%- endif %}
 {%- if server_side_encryption_configuration.server_side_encryption_by_default.sse_algorithm is defined %}
               SSEAlgorithm: {{ server_side_encryption_configuration.server_side_encryption_by_default.sse_algorithm }}

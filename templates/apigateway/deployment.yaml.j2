@@ -12,7 +12,7 @@ Resources:
     DeletionPolicy: {{ deployment.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ deployment.update_replace_policy | default('Delete') }}
     Properties:
-      RestApiId: String
+      RestApiId: {{ deployment.rest_api_id | trim }}
 {%- if deployment.deployment_canary_settings is defined %}  {# BEGIN {%- if deployment.deployment_canary_settings is defined %} #}
       DeploymentCanarySettings:
 {%- if deployment.deployment_canary_settings.percent_traffic is defined %}
