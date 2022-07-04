@@ -4,113 +4,297 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
+{%- for ec2_fleet in sceptre_user_data.ec2_fleets %}
+{%- set ec2_fleet_name = ec2_fleet.name %}
+  {{ ec2_fleet_name }}:
     Type: AWS::EC2::EC2Fleet
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+    DeletionPolicy: {{ ec2_fleet.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ ec2_fleet.update_replace_policy | default('Delete') }}
     Properties:
-      LaunchTemplateConfigs: 
+      LaunchTemplateConfigs:
+{%- for launch_template_config in ec2_fleet.launch_template_configs %}  {# BEGIN {%- for launch_template_config in ec2_fleet.launch_template_configs %} #}
         -
-          LaunchTemplateSpecification: 
-            LaunchTemplateId: String
-            LaunchTemplateName: String
-            Version: String
-          Overrides: 
-            - FleetLaunchTemplateOverridesRequest
-              AvailabilityZone: String
-              InstanceRequirements: 
-                AcceleratorCount: 
-                  Max: Integer
-                  Min: Integer
-                AcceleratorManufacturers: 
-                  - String
-                AcceleratorNames: 
-                  - String
-                AcceleratorTotalMemoryMiB: 
-                  Max: Integer
-                  Min: Integer
-                AcceleratorTypes: 
-                  - String
-                BareMetal: String
-                BaselineEbsBandwidthMbps: 
-                  Max: Integer
-                  Min: Integer
-                BurstablePerformance: String
-                CpuManufacturers: 
-                  - String
-                ExcludedInstanceTypes: 
-                  - String
-                InstanceGenerations: 
-                  - String
-                LocalStorage: String
-                LocalStorageTypes: 
-                  - String
-                MemoryGiBPerVCpu: 
-                  Max: Double
-                  Min: Double
-                MemoryMiB: 
-                  Max: Integer
-                  Min: Integer
-                NetworkInterfaceCount: 
-                  Max: Integer
-                  Min: Integer
-                OnDemandMaxPricePercentageOverLowestPrice: Integer
-                RequireHibernateSupport: Boolean
-                SpotMaxPricePercentageOverLowestPrice: Integer
-                TotalLocalStorageGB: 
-                  Max: Double
-                  Min: Double
-                VCpuCount: 
-                  Max: Integer
-                  Min: Integer
-              InstanceType: String
-              MaxPrice: String
-              Placement: 
-                Affinity: String
-                AvailabilityZone: String
-                GroupName: String
-                HostId: String
-                HostResourceGroupArn: String
-                PartitionNumber: Integer
-                SpreadDomain: String
-                Tenancy: String
-              Priority: Double
-              SubnetId: String
-              WeightedCapacity: Double
-      TargetCapacitySpecification: 
-        DefaultTargetCapacityType: String
-        OnDemandTargetCapacity: Integer
-        SpotTargetCapacity: Integer
-        TargetCapacityUnitType: String
-        TotalTargetCapacity: Integer
-      Context: String
-      ExcessCapacityTerminationPolicy: String
-      OnDemandOptions: 
-        AllocationStrategy: String
-        CapacityReservationOptions: 
-          UsageStrategy: String
-        MaxTotalPrice: String
-        MinTargetCapacity: Integer
-        SingleAvailabilityZone: Boolean
-        SingleInstanceType: Boolean
-      ReplaceUnhealthyInstances: Boolean
-      SpotOptions: 
-        AllocationStrategy: String
-        InstanceInterruptionBehavior: String
-        InstancePoolsToUseCount: Integer
-        MaintenanceStrategies: 
-          CapacityRebalance: 
-            ReplacementStrategy: String
-            TerminationDelay: Integer
-        MaxTotalPrice: String
-        MinTargetCapacity: Integer
-        SingleAvailabilityZone: Boolean
-        SingleInstanceType: Boolean
-{%- if capacity_reservation_fleet.tag_specifications is defined %}  {# BEGIN {%- if capacity_reservation_fleet.tag_specifications is defined %} #}
+{%- if launch_template_config.launch_template_specification is defined %}  {# BEGIN {%- if launch_template_config.launch_template_specification is defined %} #}
+          LaunchTemplateSpecification:
+{%- if launch_template_config.launch_template_specification.launch_template_id is defined %}
+            LaunchTemplateId: {{ launch_template_config.launch_template_specification.launch_template_id | trim }}
+{%- endif %}
+{%- if launch_template_config.launch_template_specification.launch_template_name is defined %}
+            LaunchTemplateName: {{launch_template_config.launch_template_specification.launch_template_name }}
+{%- endif %}
+{%- if launch_template_config.launch_template_specification.version is defined %}
+            Version: {{ launch_template_config.launch_template_specification.version }}
+{%- endif %}
+{%- endif %}  {# END {%- if launch_template_config.launch_template_specification is defined %}#}
+{%- if launch_template_config.overrides is defined %}  {# BEGIN {%- if launch_template_config.overrides is defined %} #}
+          Overrides:
+{%- for override in launch_template_config.overrides %}  {# BEGIN {%- for override in launch_template_config.overrides %} #}
+            -
+{%- if override.availability_zone is defined %}
+              AvailabilityZone: {{ override.availability_zone }}
+{%- endif %}
+{%- if override.instance_requirements is defined %}  {# BEGIN {%- if override.instance_requirements is defined %} #}
+              InstanceRequirements:
+{%- if override.instance_requirements.accelerator_count is defined %}
+                AcceleratorCount:
+{%- if override.instance_requirements.accelerator_count.max is defined %}
+                  Max: {{ override.instance_requirements.accelerator_count.max }}
+{%- endif %}
+{%- if override.instance_requirements.accelerator_count.min is defined %}
+                  Min: {{ override.instance_requirements.accelerator_count.min }}
+{%- endif %}
+{%- endif %}
+{%- if override.instance_requirements.accelerator_manufacturers is defined %}
+                AcceleratorManufacturers:
+{%- for manufacturer in override.instance_requirements.accelerator_manufacturers %}
+                  - {{ manufacturer }}
+{%- endfor %}
+{%- endif %}
+{%- if override.instance_requirements.accelerator_names is defined %}
+                AcceleratorNames:
+{%- for name in override.instance_requirements.accelerator_names %}
+                  - {{ name }}
+{%- endfor %}
+{%- endif %}
+{%- if override.instance_requirements.accelerator_total_memory_mib is defined %}
+                AcceleratorTotalMemoryMiB:
+{%- if override.instance_requirements.accelerator_total_memory_mib.max is defined %}
+                  Max: {{ override.instance_requirements.accelerator_total_memory_mib.max }}
+{%- endif %}
+{%- if override.instance_requirements.accelerator_total_memory_mib.min is defined %}
+                  Min: {{ override.instance_requirements.accelerator_total_memory_mib.min }}
+{%- endif %}
+{%- endif %}
+{%- if override.instance_requirements.accelerator_types is defined %}
+                AcceleratorTypes:
+{%- for type in override.instance_requirements.accelerator_types %}
+                  - {{ type }}
+{%- endfor %}
+{%- endif %}
+{%- if override.instance_requirements.bare_metal is defined %}
+                BareMetal: {{ override.instance_requirements.bare_metal }}
+{%- endif %}
+{%- if override.instance_requirements.baseline_ebs_bandwidth_mbps is defined %}
+                BaselineEbsBandwidthMbps:
+{%- if override.instance_requirements.baseline_ebs_bandwidth_mbps.max is defined %}
+                  Max: {{ override.instance_requirements.baseline_ebs_bandwidth_mbps.max }}
+{%- endif %}
+{%- if override.instance_requirements.baseline_ebs_bandwidth_mbps.min is defined %}
+                  Min: {{ override.instance_requirements.baseline_ebs_bandwidth_mbps.min }}
+{%- endif %}
+{%- endif %}
+{%- if override.instance_requirements.burstable_performance is defined %}
+                BurstablePerformance: {{ override.instance_requirements.burstable_performance }}
+{%- endif %}
+{%- if override.instance_requirements.cpu_manufacturers is defined %}
+                CpuManufacturers:
+{%- for manufacturer in override.instance_requirements.cpu_manufacturers %}
+                  - {{ manufacturer }}
+{%- endfor %}
+{%- endif %}
+{%- if override.instance_requirements.exclude_instance_types is defined %}
+                ExcludedInstanceTypes:
+{%- for instance_type in override.instance_requirements.exclude_instance_types %}
+                  - {{ instance_type }}
+{%- endfor %}
+{%- endif %}
+{%- if override.instance_requirements.instance_generations is defined %}
+                InstanceGenerations:
+{%- for generation in override.instance_requirements.instance_generations %}
+                  - {{ generation }}
+{%- endfor %}
+{%- endif %}
+{%- if override.instance_requirements.local_storage is defined %}
+                LocalStorage: {{ override.instance_requirements.local_storage }}
+{%- endif %}
+{%- if override.instance_requirements.local_storage_types is defined %}
+                LocalStorageTypes:
+{%- for type in override.instance_requirements.local_storage_types %}
+                  - {{ type }}
+{%- endfor %}
+{%- endif %}
+{%- if override.instance_requirements.memory_gib_per_vcpu is defined %}
+                MemoryGiBPerVCpu:
+{%- if override.instance_requirements.memory_gib_per_vcpu.max is defined %}
+                  Max: {{ override.instance_requirements.memory_gib_per_vcpu.max }}
+{%- endif %}
+{%- if override.instance_requirements.memory_gib_per_vcpu.min is defined %}
+                  Min: {{ override.instance_requirements.memory_gib_per_vcpu.min }}
+{%- endif %}
+{%- endif %}
+{%- if override.instance_requirements.memory_mib is defined %}
+                MemoryMiB:
+{%- if override.instance_requirements.memory_mib.max is defined %}
+                  Max: {{ override.instance_requirements.memory_mib.max }}
+{%- endif %}
+{%- if override.instance_requirements.memory_mib.min is defined %}
+                  Min: {{ override.instance_requirements.memory_mib.min }}
+{%- endif %}
+{%- endif %}
+{%- if override.instance_requirements.network_interface_count is defined %}
+                NetworkInterfaceCount:
+{%- if override.instance_requirements.network_interface_count.max is defined %}
+                  Max: {{ override.instance_requirements.network_interface_count.max }}
+{%- endif %}
+{%- if override.instance_requirements.network_interface_count.min is defined %}
+                  Min: {{ override.instance_requirements.network_interface_count.min }}
+{%- endif %}
+{%- endif %}
+{%- if override.instance_requirements.on_demand_max_price_percentage_over_lowest_price is defined %}
+                OnDemandMaxPricePercentageOverLowestPrice: {{ override.instance_requirements.on_demand_max_price_percentage_over_lowest_price }}
+{%- endif %}
+{%- if override.instance_requirements.require_hibernate_support is defined %}
+                RequireHibernateSupport: {{ override.instance_requirements.require_hibernate_support }}
+{%- endif %}
+{%- if override.instance_requirements.spot_max_price_percentage_over_lowest_price is defined %}
+                SpotMaxPricePercentageOverLowestPrice: {{ override.instance_requirements.spot_max_price_percentage_over_lowest_price }}
+{%- endif %}
+{%- if override.instance_requirements.total_local_storage_gb is defined %}
+                TotalLocalStorageGB:
+{%- if override.instance_requirements.total_local_storage_gb.max is defined %}
+                  Max: {{ override.instance_requirements.total_local_storage_gb.max }}
+{%- endif %}
+{%- if override.instance_requirements.total_local_storage_gb.min is defined %}
+                  Min: {{ override.instance_requirements.total_local_storage_gb.min }}
+{%- endif %}
+{%- endif %}
+{%- if override.instance_requirements.vcpu_count is defined %}
+                VCpuCount:
+{%- if override.instance_requirements.vcpu_count.max is defined %}
+                  Max: {{ override.instance_requirements.vcpu_count.max }}
+{%- endif %}
+{%- if override.instance_requirements.vcpu_count.min is defined %}
+                  Min: {{ override.instance_requirements.vcpu_count.min }}
+{%- endif %}
+{%- endif %}
+{%- endif %}  {# END {%- if override.instance_requirements is defined %} #}
+{%- if override.instance_type is defined %}
+              InstanceType: {{ override.instance_type }}
+{%- endif %}
+{%- if override.max_price is defined %}
+              MaxPrice: {{ override.max_price }}
+{%- endif %}
+{%- if override.placement is defined %}  {# BEGIN {%- if override.placement is defined %} #}
+              Placement:
+{%- if override.placement.affinity is defined %}
+                Affinity: {{ override.placement.affinity }}
+{%- endif %}
+{%- if override.placement.availability_zone is defined %}
+                AvailabilityZone: {{ override.placement.availability_zone }}
+{%- endif %}
+{%- if override.placement.group_name is defined %}
+                GroupName: {{ override.placement.group_name }}
+{%- endif %}
+{%- if override.placement.host_id is defined %}
+                HostId: {{ override.placement.host_id }}
+{%- endif %}
+{%- if override.placement.host_resource_group_arn is defined %}
+                HostResourceGroupArn: {{ override.placement.host_resource_group_arn }}
+{%- endif %}
+{%- if override.placement.partition_number is defined %}
+                PartitionNumber: {{ override.placement.partition_number }}
+{%- endif %}
+{%- if override.placement.spread_domain is defined %}
+                SpreadDomain: {{ override.placement.spread_domain }}
+{%- endif %}
+{%- if override.placement.tenancy is defined %}
+                Tenancy: {{ override.placement.tenancy }}
+{%- endif %}
+{%- endif %}  {# END {%- if override.placement is defined %} #}
+{%- if override.priority is defined %}
+              Priority: {{ override.priority }}
+{%- endif %}
+{%- if override.subnet_id is defined %}
+              SubnetId: {{ override.subnet_id }}
+{%- endif %}
+{%- if override.weighted_capacity is defined %}
+              WeightedCapacity: {{ override.weighted_capacity }}
+{%- endif %}
+{%- endfor %}  {# END {%- for override in launch_template_config.overrides %} #}
+{%- endif %}  {# END {%- if launch_template_config.overrides is defined %}#}
+{%- endfor %}  {# END {%- for launch_template_config in ec2_fleet.launch_template_configs %} #}
+      TargetCapacitySpecification:
+        TotalTargetCapacity: {{ ec2_fleet.target_capacity_specification.total_target_capacity }}
+{%- if ec2_fleet.target_capacity_specification.default_target_capacity_type is defined %}
+        DefaultTargetCapacityType: {{ ec2_fleet.target_capacity_specification.default_target_capacity_type }}
+{%- endif %}
+{%- if ec2_fleet.target_capacity_specification.on_demand_target_capacity is defined %}
+        OnDemandTargetCapacity: {{ ec2_fleet.target_capacity_specification.on_demand_target_capacity }}
+{%- endif %}
+{%- if ec2_fleet.target_capacity_specification.spot_target_capacity is defined %}
+        SpotTargetCapacity: {{ ec2_fleet.target_capacity_specification.spot_target_capacity }}
+{%- endif %}
+{%- if ec2_fleet.target_capacity_specification.target_capacity_unit_type is defined %}
+        TargetCapacityUnitType: {{ ec2_fleet.target_capacity_specification.target_capacity_unit_type }}
+{%- endif %}
+{%- if ec2_fleet.context is defined %}
+      Context: {{ ec2_fleet.context }}
+{%- endif %}
+{%- if ec2_fleet.excess_capacity_termination_policy is defined %}
+      ExcessCapacityTerminationPolicy: {{ ec2_fleet.excess_capacity_termination_policy }}
+{%- endif %}
+{%- if ec2_fleet.on_demand_options is defined %}  {# BEGIN {%- if ec2_fleet.on_demand_options is defined %} #}
+      OnDemandOptions:
+{%- if ec2_fleet.on_demand_options.allocation_strategy is defined %}
+        AllocationStrategy: {{ ec2_fleet.on_demand_options.allocation_strategy }}
+{%- endif %}
+{%- if ec2_fleet.on_demand_options.capacity_reservation_options is defined %}
+        CapacityReservationOptions:
+          UsageStrategy: use-capacity-reservations-first
+{%- endif %}
+{%- if ec2_fleet.on_demand_options.max_total_price is defined %}
+        MaxTotalPrice: {{ ec2_fleet.on_demand_options.max_total_price }}
+{%- endif %}
+{%- if ec2_fleet.on_demand_options.min_target_capacity is defined %}
+        MinTargetCapacity: {{ ec2_fleet.on_demand_options.min_target_capacity }}
+{%- endif %}
+{%- if ec2_fleet.on_demand_options.single_availability_zone is defined %}
+        SingleAvailabilityZone: {{ ec2_fleet.on_demand_options.single_availability_zone }}
+{%- endif %}
+{%- if ec2_fleet.on_demand_options.single_instance_type is defined %}
+        SingleInstanceType: {{ ec2_fleet.on_demand_options.single_instance_type }}
+{%- endif %}
+{%- endif %}  {# END {%- if ec2_fleet.on_demand_options is defined %} #}
+{%- if ec2_fleet.replace_unhealthy_instances is defined %}
+      ReplaceUnhealthyInstances: {{ ec2_fleet.replace_unhealthy_instances }}
+{%- endif %}
+{%- if ec2_fleet.spot_options is defined %}  {# BEGIN {%- if ec2_fleet.spot_options is defined %} #}
+      SpotOptions:
+{%- if ec2_fleet.spot_options.allocation_strategy is defined %}}
+        AllocationStrategy: {{ ec2_fleet.spot_options.allocation_strategy }}
+{%- endif %}
+{%- if ec2_fleet.spot_options.instance_interruption_behavior is defined %}}
+        InstanceInterruptionBehavior: {{ ec2_fleet.spot_options.instance_interruption_behavior }}
+{%- endif %}
+{%- if ec2_fleet.spot_options.instance_pools_to_use_count is defined %}}
+        InstancePoolsToUseCount: {{ ec2_fleet.spot_options.instance_pools_to_use_count }}
+{%- endif %}
+{%- if ec2_fleet.spot_options.maintenance_strategies is defined %}}
+        MaintenanceStrategies:
+          CapacityRebalance:
+{%- if ec2_fleet.spot_options.maintenance_strategies.capacity_rebalance.replacement_strategy is defined %}}
+            ReplacementStrategy: {{ ec2_fleet.spot_options.maintenance_strategies.capacity_rebalance.replacement_strategy }}
+{%- endif %}
+{%- if ec2_fleet.spot_options.maintenance_strategies.capacity_rebalance.termination_delay is defined %}}
+            TerminationDelay: {{ ec2_fleet.spot_options.maintenance_strategies.capacity_rebalance.termination_delay }}
+{%- endif %}
+{%- endif %}
+{%- if ec2_fleet.spot_options.max_total_price is defined %}}
+        MaxTotalPrice: {{ ec2_fleet.spot_options.max_total_price}}
+{%- endif %}
+{%- if ec2_fleet.spot_options.min_target_capacity is defined %}}
+        MinTargetCapacity: {{ ec2_fleet.spot_options.min_target_capacity }}
+{%- endif %}
+{%- if ec2_fleet.spot_options.single_availability_zone is defined %}}
+        SingleAvailabilityZone: {{ ec2_fleet.spot_options.single_availability_zone }}
+{%- endif %}
+{%- if ec2_fleet.spot_options.single_instance_type is defined %}}
+        SingleInstanceType: {{ ec2_fleet.spot_options.single_instance_type }}
+{%- endif %}
+{%- endif %}  {# END {%- if ec2_fleet.spot_options is defined %} #}
+{%- if ec2_fleet.tag_specifications is defined %}  {# BEGIN {%- if ec2_fleet.tag_specifications is defined %} #}
       TagSpecifications:
-{%- for tag_specification in capacity_reservation_fleet.tag_specifications %}
+{%- for tag_specification in ec2_fleet.tag_specifications %}
         -
 {%- if tag_specification.resource_type is defined %}
           ResourceType: {{ tag_specification.resource_type }}
@@ -123,44 +307,42 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if capacity_reservation_fleet.tag_specifications is defined %} #}
-      TerminateInstancesWithExpiration: Boolean
-      Type: String
-      ValidFrom: String
-      ValidUntil: String
+{%- endif %}  {# END {%- if ec2_fleet.tag_specifications is defined %} #}
+{%- if ec2_fleet.terminate_instances_with_expiration is defined %}
+      TerminateInstancesWithExpiration: {{ ec2_fleet.terminate_instances_with_expiration }}
+{%- endif %}
+{%- if ec2_fleet.type is defined %}
+      Type: {{ ec2_fleet.type }}
+{%- endif %}
+{%- if ec2_fleet.valid_from is defined %}
+      ValidFrom: {{ ec2_fleet.valid_from }}
+{%- endif %}
+{%- if ec2_fleet.valid_until is defined %}
+      ValidUntil: {{ ec2_fleet.valid_until }}
+{%- endif %}
 
 {%- endfor %}
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for ec2_fleet in sceptre_user_data.ec2_fleets %}
+{%- set ec2_fleet_name = ec2_fleet.name %}
+  {{ ec2_fleet_name }}:
+    Description: Fleet ID for {{ ec2_fleet_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ ec2_fleet_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
+        Fn::Sub: "${AWS::StackName}-{{ ec2_fleet_name }}"
 
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
+  {{ ec2_fleet_name }}FleetId:
+    Description: Fleet Id for {{ ec2_fleet_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
-        - Arn
+        - {{ ec2_fleet_name }}
+        - FleetId
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
-
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ role_name }}
-        - RoleId
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ ec2_fleet_name }}-FleetId"
 
 {%- endfor %}
