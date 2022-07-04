@@ -13,7 +13,7 @@ Resources:
     Properties:
       AutoScalingGroupName: {{ warm_pool.auto_scaling_group_name }}
 {%- if warm_pool.max_group_prepared_capacity is defined %}
-      MaxGroupPreparedCapacity: Integer
+      MaxGroupPreparedCapacity: {{ warm_pool.max_group_prepared_capacity }}
 {%- endif %}
 {%- if warm_pool.min_size is defined %}
       MinSize: {{ warm_pool.min_size }}
