@@ -28,6 +28,14 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cloud_front_origin_access_identity_name }}"
 
+  {{ cloud_front_origin_access_identity_name }}S3OriginConfigId:
+    Description: The id in the format 'origin-access-identity/cloudfront/ID-of-origin-access-identity' for {{ cloud_front_origin_access_identity_name }}
+    Value:
+      Fn::Sub: origin-access-identity/cloudfront/{{ cloud_front_origin_access_identity_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cloud_front_origin_access_identity_name }}-S3OriginConfigId"
+
   {{ cloud_front_origin_access_identity_name }}S3CanonicalUserId:
     Description: The Amazon S3 canonical user ID for the origin access identity for {{ cloud_front_origin_access_identity_name }}
     Value:
