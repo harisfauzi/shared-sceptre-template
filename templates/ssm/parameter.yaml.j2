@@ -11,9 +11,9 @@ Resources:
     DeletionPolicy: {{ parameter.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ parameter.update_replace_policy | default('Delete') }}
     Properties:
-      Name: '{{ parameter.parameter_name }}'
-      Type: '{{ parameter.type }}'
-      Value: '{{ parameter.value }}'
+      Name: '{{ parameter.parameter_name | trim }}'
+      Type: '{{ parameter.type | trim }}'
+      Value: '{{ parameter.value | trim }}'
 {%- if parameter.allowed_pattern is defined %}
       AllowedPattern: '{{ parameter.allowed_pattern }}'
 {%- endif %}
