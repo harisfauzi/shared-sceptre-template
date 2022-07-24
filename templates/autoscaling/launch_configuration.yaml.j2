@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for launch_configuration in sceptre_user_data.launch_configurations %}  {# BEGIN {%- for launch_configuration in sceptre_user_data.launch_configurations %} #}
+{%- for launch_configuration in sceptre_user_data.launch_configurations %}{# BEGIN {%- for launch_configuration in sceptre_user_data.launch_configurations %} #}
 {%- set launch_configuration_name = launch_configuration.name %}
   {{ launch_configuration_name }}:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -117,7 +117,7 @@ Resources:
       UserData:
 {{ launch_configuration.user_data | indent(width=8, first=true) }}
 {%- endif %}
-{%- endfor %}  {# END {%- for launch_configuration in sceptre_user_data.launch_configurations %} #}
+{%- endfor %}{# END {%- for launch_configuration in sceptre_user_data.launch_configurations %} #}
 
 Outputs:
 {%- for launch_configuration in sceptre_user_data.launch_configurations %}

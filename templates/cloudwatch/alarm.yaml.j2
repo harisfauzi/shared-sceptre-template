@@ -55,7 +55,7 @@ Resources:
 {%- endif %}
 {%- if alarm.metrics is defined %}
       Metrics:
-{%- for metric in alarm.metrics %}  {# BEGIN {%- for metric in alarm.metrics %} #}
+{%- for metric in alarm.metrics %}{# BEGIN {%- for metric in alarm.metrics %} #}
         - Id: {{ metric.id }}
 {%- if metric.account_id is defined %}
           AccountId: {{ metric.account_id | trim }}
@@ -94,7 +94,7 @@ Resources:
 {%- if metric.return_data is defined %}
           ReturnData: {{ metric.return_data }}
 {%- endif %}
-{%- endfor %}  {# END {%- for metric in alarm.metrics %} #}
+{%- endfor %}{# END {%- for metric in alarm.metrics %} #}
 {%- endif %}
 {%- if alarm.namespace is defined %}
       Namespace: {{ alarm.namespace }}

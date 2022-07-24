@@ -22,7 +22,7 @@ Resources:
 {%- if trail.enable_log_file_validation is defined %}
       EnableLogFileValidation: {{ trail.enable_log_file_validation }}
 {%- endif %}
-{%- if trail.event_selectors is defined %}  {# BEGIN {%- if trail.event_selectors is defined %} #}
+{%- if trail.event_selectors is defined %}{# BEGIN {%- if trail.event_selectors is defined %} #}
       EventSelectors:
 {%- for event_selector in trail.event_selectors %}
         -
@@ -51,7 +51,7 @@ Resources:
           ReadWriteType: {{ event_selector.read_write_type }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if trail.event_selectors is defined %} #}
+{%- endif %}{# END {%- if trail.event_selectors is defined %} #}
 {%- if trail.include_global_service_events is defined %}
       IncludeGlobalServiceEvents: {{ trail.include_global_service_events }}
 {%- endif %}

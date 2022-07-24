@@ -12,7 +12,7 @@ Resources:
     UpdateReplacePolicy: {{ group.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ group.group_name }}
-{%- if group.configuration is defined %}  {# BEGIN {%- if group.configuration is defined %} #}
+{%- if group.configuration is defined %}{# BEGIN {%- if group.configuration is defined %} #}
       Configuration:
 {%- for configuration_item in group.configuration %}
         -
@@ -35,11 +35,11 @@ Resources:
           Type: {{ configuration_item.type }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if group.configuration is defined %} #}
+{%- endif %}{# END {%- if group.configuration is defined %} #}
 {%- if group.description is defined %}
       Description: {{ group.description }}
 {%- endif %}
-{%- if group.resource_query is defined %}  {# BEGIN {%- if group.resource_query is defined %} #}
+{%- if group.resource_query is defined %}{# BEGIN {%- if group.resource_query is defined %} #}
       ResourceQuery:
 {%- if group.resource_query.query is defined %}
         Query:
@@ -71,7 +71,7 @@ Resources:
 {%- if group.resource_query.type is defined %}
         Type: {{ group.resource_query.type }}
 {%- endif %}
-{%- endif %}  {# END {%- if group.resource_query is defined %} #}
+{%- endif %}{# END {%- if group.resource_query is defined %} #}
 {%- if group.resources is defined %}
       Resources:
 {%- for resource in group.resources %}

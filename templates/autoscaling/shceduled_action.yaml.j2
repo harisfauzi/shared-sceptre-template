@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for scheduled_action in sceptre_user_data.scheduled_actions %}  {# BEGIN {%- for scheduled_action in sceptre_user_data.scheduled_actions %} #}
+{%- for scheduled_action in sceptre_user_data.scheduled_actions %}{# BEGIN {%- for scheduled_action in sceptre_user_data.scheduled_actions %} #}
 {%- set scheduled_action_name = scheduled_action.name %}
   {{ scheduled_action_name }}:
     Type: AWS::AutoScaling::ScheduledAction
@@ -33,7 +33,7 @@ Resources:
 {%- if scheduled_action.time_zone is defined %}
       TimeZone: {{ scheduled_action.time_zone }}
 {%- endif %}
-{%- endfor %}  {# END {%- for scheduled_action in sceptre_user_data.scheduled_actions %} #}
+{%- endfor %}{# END {%- for scheduled_action in sceptre_user_data.scheduled_actions %} #}
 
 Outputs:
 {%- for scheduled_action in sceptre_user_data.scheduled_actions %}

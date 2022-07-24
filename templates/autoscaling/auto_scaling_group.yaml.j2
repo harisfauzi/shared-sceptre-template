@@ -7,10 +7,10 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %}  {# BEGIN {%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %} #}
+{%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %}{# BEGIN {%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %} #}
 {%- set auto_scaling_group_name = auto_scaling_group.name %}
 
-{%- if auto_scaling_group.launch_configuration is defined %}  {# BEGIN {%- if auto_scaling_group.launch_configuration is defined %} #}
+{%- if auto_scaling_group.launch_configuration is defined %}{# BEGIN {%- if auto_scaling_group.launch_configuration is defined %} #}
 {%- set launch_configuration = auto_scaling_group.launch_configuration %}
 {%- set launch_configuration_name = auto_scaling_group_name ~ 'LaunchConfiguration' %}
   {{ launch_configuration_name }}:
@@ -124,9 +124,9 @@ Resources:
       UserData:
 {{ launch_configuration.user_data | indent(width=8, first=true) }}
 {%- endif %}
-{%- endif %}  {# END {%- if auto_scaling_group.launch_configuration is defined %} #}
+{%- endif %}{# END {%- if auto_scaling_group.launch_configuration is defined %} #}
 
-{%- if auto_scaling_group.launch_template_spec is defined %}  {# BEGIN {%- if auto_scaling_group.launch_template is defined %} #}
+{%- if auto_scaling_group.launch_template_spec is defined %}{# BEGIN {%- if auto_scaling_group.launch_template is defined %} #}
 {%- set launch_template = auto_scaling_group.launch_template_spec %}
 {%- set launch_template_name = auto_scaling_group_name ~ 'LaunchTemplate' %}
   {{ launch_template_name }}:
@@ -138,7 +138,7 @@ Resources:
     DeletionPolicy: {{ launch_template.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ launch_template.update_replace_policy | default('Delete') }}
     Properties:
-{%- if launch_template.launch_template_data is defined %}  {# BEGIN {%- if launch_template.launch_template_data is defined %} #}
+{%- if launch_template.launch_template_data is defined %}{# BEGIN {%- if launch_template.launch_template_data is defined %} #}
       LaunchTemplateData:
 {%- if launch_template.launch_template_data.block_device_mappings is defined %}
 {{ launch_template_blockdevicemapping.prep(launch_template.launch_template_data.block_device_mappings) }}
@@ -158,7 +158,7 @@ Resources:
 {%- endif %}
 {%- endif %}
 {%- endif %}
-{%- if launch_template.launch_template_data.cpu_options is defined %}  {## BEGIN {%- if launch_template.launch_template_data.cpu_options is defined %} ##}}
+{%- if launch_template.launch_template_data.cpu_options is defined %}{## BEGIN {%- if launch_template.launch_template_data.cpu_options is defined %} ##}}
         CpuOptions:
 {%- if launch_template.launch_template_data.cpu_options.core_count is defined %}
           CoreCount: {{ launch_template.launch_template_data.cpu_options.core_count }}
@@ -166,7 +166,7 @@ Resources:
 {%- if launch_template.launch_template_data.cpu_options.threads_per_core is defined %}
           ThreadsPerCore: {{ launch_template.launch_template_data.cpu_options.threads_per_core }}
 {%- endif %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.cpu_options is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.cpu_options is defined %} ##}
 {%- if launch_template.launch_template_data.credit_specification is defined %}
         CreditSpecification:
           CpuCredits: {{ launch_template.launch_template_data.credit_specification.cpu_credits }}
@@ -183,7 +183,7 @@ Resources:
           - Type: {{ specification }}
 {%- endfor %}
 {%- endif %}
-{%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %}  {## BEGIN {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
+{%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %}{## BEGIN {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
         ElasticInferenceAccelerators:
 {%- for elastic_inference_accelerator in launch_template.launch_template_data.elastic_inference_accelerators %}
           -
@@ -194,7 +194,7 @@ Resources:
             Type: {{ elastic_inference_accelerator.type }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
 {%- if launch_template.launch_template_data.enclave_options is defined %}
         EnclaveOptions:
           Enabled: {{ launch_template.launch_template_data.enclave_options.enabled }}
@@ -203,21 +203,21 @@ Resources:
         HibernationOptions:
           Configured: {{ launch_template.launch_template_data.hibernation_options.configured }}
 {%- endif %}
-{%- if launch_template.launch_template_data.iam_instance_profile is defined %}  {## BEGIN {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
+{%- if launch_template.launch_template_data.iam_instance_profile is defined %}{## BEGIN {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
         IamInstanceProfile:
 {%- if launch_template.launch_template_data.iam_instance_profile.arn is defined%}
           Arn: {{ launch_template.launch_template_data.iam_instance_profile.arn | trim }}
 {%- elif launch_template.launch_template_data.iam_instance_profile.name is defined%}
           Name: {{ launch_template.launch_template_data.iam_instance_profile.name }}
 {%- endif %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
 {%- if launch_template.launch_template_data.image_id is defined %}
         ImageId: {{ launch_template.launch_template_data.image_id | trim }}
 {%- endif %}
 {%- if launch_template.launch_template_data.instance_initiated_shutdown_behavior is defined %}
         InstanceInitiatedShutdownBehavior: {{ launch_template.launch_template_data.instance_initiated_shutdown_behavior }}
 {%- endif %}
-{%- if launch_template.launch_template_data.instance_market_options is defined %}  {## BEGIN {%- if launch_template.launch_template_data.instance_market_options is defined %} ##}
+{%- if launch_template.launch_template_data.instance_market_options is defined %}{## BEGIN {%- if launch_template.launch_template_data.instance_market_options is defined %} ##}
         InstanceMarketOptions:
 {%- if launch_template.launch_template_data.instance_market_options.market_type is defined %}
           MarketType: {{ launch_template.launch_template_data.instance_market_options.market_type }}
@@ -240,7 +240,7 @@ Resources:
             ValidUntil: {{ launch_template.launch_template_data.instance_market_options.spot_options.valid_until }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.instance_market_options is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.instance_market_options is defined %} ##}
 {%- if launch_template.launch_template_data.instance_type is defined %}
         InstanceType: {{ launch_template.launch_template_data.instance_type }}
 {%- endif %}
@@ -256,7 +256,7 @@ Resources:
           - LicenseConfigurationArn: {{ license_specification.license_configuration_arn | trim }}
 {%- endfor %}
 {%- endif %}
-{%- if launch_template.launch_template_data.metadata_options is defined %}  {## BEGIN {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
+{%- if launch_template.launch_template_data.metadata_options is defined %}{## BEGIN {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
         MetadataOptions:
 {%- if launch_template.launch_template_data.metadata_options.http_endpoint is defined %}
           HttpEndpoint: {{ launch_template.launch_template_data.metadata_options.http_endpoint }}
@@ -270,7 +270,7 @@ Resources:
 {%- if launch_template.launch_template_data.metadata_options.http_tokens is defined %}
           HttpTokens: {{ launch_template.launch_template_data.metadata_options.http_tokens }}
 {%- endif %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
 {%- if launch_template.launch_template_data.monitoring is defined %}
         Monitoring:
           Enabled: {{ launch_template.launch_template_data.monitoring.enabled }}
@@ -278,7 +278,7 @@ Resources:
 {%- if launch_template.launch_template_data.network_interfaces is defined %}
 {{ launch_template_networkinterface.prep(launch_template.launch_template_data.network_interfaces) }}
 {%- endif %}
-{%- if launch_template.launch_template_data.placement is defined %}  {## BEGIN {%- if launch_template.launch_template_data.placement is defined %} ##}
+{%- if launch_template.launch_template_data.placement is defined %}{## BEGIN {%- if launch_template.launch_template_data.placement is defined %} ##}
         Placement:
 {%- if launch_template.launch_template_data.placement.affinity is defined %}
           Affinity: {{ launch_template.launch_template_data.placement.affinity }}
@@ -304,7 +304,7 @@ Resources:
 {%- if launch_template.launch_template_data.placement.tenancy is defined %}
           Tenancy: {{ launch_template.launch_template_data.placement.tenancy }}
 {%- endif %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.placement is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.placement is defined %} ##}
 {%- if launch_template.launch_template_data.ram_disk_id is defined %}
         RamDiskId: {{ launch_template.launch_template_data.ram_disk_id | trim }}
 {%- endif %}
@@ -340,7 +340,7 @@ Resources:
         UserData:
 {{ launch_template.launch_template_data.user_data | indent(width=10, first=true) }}
 {%- endif %}
-{%- endif %}  {# END {%- if launch_template.launch_template_data is defined %} #}
+{%- endif %}{# END {%- if launch_template.launch_template_data is defined %} #}
 {%- if launch_template.launch_template_name is defined %}
       LaunchTemplateName: {{ launch_template.launch_template_name }}
 {%- endif %}
@@ -360,18 +360,18 @@ Resources:
 {%- endif %}
 {%- endfor %}
 {%- endif %}
-{%- endif %}  {# END {%- if auto_scaling_group.launch_template is defined %} #}
+{%- endif %}{# END {%- if auto_scaling_group.launch_template is defined %} #}
 
 
   {{ auto_scaling_group_name }}:
     Type: AWS::AutoScaling::AutoScalingGroup
-{%- if auto_scaling_group.launch_template_spec is defined %}  {# BEGIN {%- if auto_scaling_group.launch_template is defined %} #}
+{%- if auto_scaling_group.launch_template_spec is defined %}{# BEGIN {%- if auto_scaling_group.launch_template is defined %} #}
 {%- set launch_template_name = auto_scaling_group_name ~ 'LaunchTemplate' %}
     DependsOn: {{ launch_template_name }}
-{%- endif %}  {# END {%- if auto_scaling_group.launch_template is defined %} #}
+{%- endif %}{# END {%- if auto_scaling_group.launch_template is defined %} #}
     DeletionPolicy: {{ auto_scaling_group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ auto_scaling_group.update_replace_policy | default('Delete') }}
-{%- if auto_scaling_group.creation_policy is defined %}  {# BEGIN {%- if auto_scaling_group.creation_policy is defined %} #}
+{%- if auto_scaling_group.creation_policy is defined %}{# BEGIN {%- if auto_scaling_group.creation_policy is defined %} #}
     CreationPolicy:
 {%- if auto_scaling_group.creation_policy.auto_scaling_creation_policy is defined %}
       AutoScalingCreationPolicy:
@@ -386,8 +386,8 @@ Resources:
         Timeout: {{ auto_scaling_group.creation_policy.resource_signal.timeout }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if auto_scaling_group.creation_policy is defined %} #}
-{%- if auto_scaling_group.update_policy is defined %}  {# BEGIN {%- if auto_scaling_group.update_policy is defined %} #}
+{%- endif %}{# END {%- if auto_scaling_group.creation_policy is defined %} #}
+{%- if auto_scaling_group.update_policy is defined %}{# BEGIN {%- if auto_scaling_group.update_policy is defined %} #}
     UpdatePolicy:
 {%- if auto_scaling_group.update_policy.auto_scaling_replacing_update is defined %}
       AutoScalingReplacingUpdate:
@@ -421,7 +421,7 @@ Resources:
       AutoScalingScheduledAction:
         IgnoreUnmodifiedGroupSizeProperties: {{ auto_scaling_group.update_policy.auto_scaling_scheduled_action.ignore_unmodified_group_size_properties }}
 {%- endif %}
-{%- endif %}  {# END {%- if auto_scaling_group.update_policy is defined %} #}
+{%- endif %}{# END {%- if auto_scaling_group.update_policy is defined %} #}
 
     Properties:
       MaxSize: {{ auto_scaling_group.max_size }}
@@ -520,7 +520,7 @@ Resources:
         LaunchTemplate:
           LaunchTemplateSpecification:
 {{ launch_template_specification.prep(auto_scaling_group.mixed_instances_policy.launch_template.launch_template_specification) | indent(width=12, first=true) }}
-{%- if auto_scaling_group.mixed_instances_policy.launch_template.overrides is defined %}  {# BEGIN {%- if auto_scaling_group.mixed_instances_policy.launch_template.overrides is defined %} #}
+{%- if auto_scaling_group.mixed_instances_policy.launch_template.overrides is defined %}{# BEGIN {%- if auto_scaling_group.mixed_instances_policy.launch_template.overrides is defined %} #}
           Overrides:
 {%- for override in auto_scaling_group.mixed_instances_policy.launch_template.overrides %}
             -
@@ -535,7 +535,7 @@ Resources:
               WeightedCapacity: {{ override.wieghted_capacity }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if auto_scaling_group.mixed_instances_policy.launch_template.overrides is defined %} #}
+{%- endif %}{# END {%- if auto_scaling_group.mixed_instances_policy.launch_template.overrides is defined %} #}
 {%- if auto_scaling_group.mixed_instances_policy.instances_distribution is defined %}
         InstancesDistribution:
 {%- if auto_scaling_group.mixed_instances_policy.instances_distribution.on_demand_allocation_strategy is defined %}
@@ -599,14 +599,14 @@ Resources:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
           PropagateAtLaunch: 'true'
-{%- if auto_scaling_group.tags is defined %}  {## BEGIN {%- if auto_scaling_group.tags is defined %} #}
-{%- for tag_property in auto_scaling_group.tags %}  {### BEGIN {%- for tag_property in auto_scaling_group.tags %} #}
+{%- if auto_scaling_group.tags is defined %}{## BEGIN {%- if auto_scaling_group.tags is defined %} #}
+{%- for tag_property in auto_scaling_group.tags %}{### BEGIN {%- for tag_property in auto_scaling_group.tags %} #}
         - Key: {{ tag_property.key }}
           Value: {{ tag_property._value }}
           PropagateAtLaunch: {{ tag_property.propagate_at_launch }}
-{%- endfor %}  {### END {%- for tag_property in auto_scaling_group.tags %} #}
-{%- endif %}  {## END {%- if auto_scaling_group.tags is defined %} #}
-{%- endfor %}  {# END {%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %} #}
+{%- endfor %}{### END {%- for tag_property in auto_scaling_group.tags %} #}
+{%- endif %}{## END {%- if auto_scaling_group.tags is defined %} #}
+{%- endfor %}{# END {%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %} #}
 
 Outputs:
 {%- for auto_scaling_group in sceptre_user_data.auto_scaling_groups %}
@@ -619,7 +619,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ auto_scaling_group_name }}"
 
-{%- if auto_scaling_group.launch_configuration is defined %}  {# BEGIN {%- if auto_scaling_group.launch_configuration is defined %} #}
+{%- if auto_scaling_group.launch_configuration is defined %}{# BEGIN {%- if auto_scaling_group.launch_configuration is defined %} #}
 {%- set launch_configuration = auto_scaling_group.launch_configuration %}
 {%- set launch_configuration_name = auto_scaling_group_name ~ 'LaunchConfiguration' %}
   {{ launch_configuration_name }}:
@@ -629,9 +629,9 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ launch_configuration_name }}"
-{%- endif %}  {# END {%- if auto_scaling_group.launch_configuration is defined %} #}
+{%- endif %}{# END {%- if auto_scaling_group.launch_configuration is defined %} #}
 
-{%- if auto_scaling_group.launch_template_spec is defined %}  {# BEGIN {%- if auto_scaling_group.launch_template is defined %} #}
+{%- if auto_scaling_group.launch_template_spec is defined %}{# BEGIN {%- if auto_scaling_group.launch_template is defined %} #}
 {%- set launch_template = auto_scaling_group.launch_template_spec %}
 {%- set launch_template_name = auto_scaling_group_name ~ 'LaunchTemplate' %}
   {{ launch_template_name }}:

@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for dnssec in sceptre_user_data.dnssecs %}  {# BEGIN {%- for dnssec in sceptre_user_data.dnssecs %} #}
+{%- for dnssec in sceptre_user_data.dnssecs %}{# BEGIN {%- for dnssec in sceptre_user_data.dnssecs %} #}
 {%- set dnssec_name = dnssec.name %}
   {{ dnssec_name }}:
     Type: AWS::Route53::DNSSEC
@@ -13,7 +13,7 @@ Resources:
     Properties:
       HostedZoneId: {{ dnssec.hosted_zone_id | trim }}
 
-{%- endfor %}  {# END {%- for dnssec in sceptre_user_data.dnssecs %} #}
+{%- endfor %}{# END {%- for dnssec in sceptre_user_data.dnssecs %} #}
 
 Outputs:
 {%- for dnssec in sceptre_user_data.dnssecs %}

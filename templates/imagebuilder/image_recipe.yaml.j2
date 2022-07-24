@@ -31,7 +31,7 @@ Resources:
       Name: {{ image_recipe.image_recipe_name }}
       ParentImage: {{ image_recipe.parent_image }}
       Version: {{ image_recipe.version }}
-{%- if image_recipe.additional_instance_configuration is defined %}  {# BEGIN {%- if image_recipe.additional_instance_configuration is defined %} #}
+{%- if image_recipe.additional_instance_configuration is defined %}{# BEGIN {%- if image_recipe.additional_instance_configuration is defined %} #}
       AdditionalInstanceConfiguration:
 {%- if image_recipe.additional_instance_configuration.systems_manager_agent is defined %}
         SystemsManagerAgent:
@@ -40,8 +40,8 @@ Resources:
 {%- if image_recipe.additional_instance_configuration.user_data_override is defined %}
         UserDataOverride: {{ image_recipe.additional_instance_configuration.user_data_override }}
 {%- endif %}
-{%- endif %}  {# END {%- if image_recipe.additional_instance_configuration is defined %} #}
-{%- if image_recipe.block_device_mappings is defined %}  {# BEGIN {%- if image_recipe.block_device_mappings is defined %} #}
+{%- endif %}{# END {%- if image_recipe.additional_instance_configuration is defined %} #}
+{%- if image_recipe.block_device_mappings is defined %}{# BEGIN {%- if image_recipe.block_device_mappings is defined %} #}
       BlockDeviceMappings:
 {%- for block_device_mapping in image_recipe.block_device_mappings %}
         -
@@ -82,7 +82,7 @@ Resources:
           VirtualName: {{ block_device_mapping.virtual_name }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if image_recipe.block_device_mappings is defined %} #}
+{%- endif %}{# END {%- if image_recipe.block_device_mappings is defined %} #}
 {%- if image_recipe.description is defined %}
       Description: {{ image_recipe.description }}
 {%- endif %}

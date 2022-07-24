@@ -1,7 +1,7 @@
 {%- macro prep(actions) %}
-{%- for action in actions %}  {# BEGIN {%- for action in actions %} #}
+{%- for action in actions %}{# BEGIN {%- for action in actions %} #}
         - Type: {{ action.type }}
-{%- if action.authenticate_cognito_config is defined %}  {# BEGIN {%- if action.authenticate_cognito_config is defined %} #}
+{%- if action.authenticate_cognito_config is defined %}{# BEGIN {%- if action.authenticate_cognito_config is defined %} #}
           AuthenticateCognitoConfig:
             UserPoolArn: {{ action.authenticate_cognito_config.user_pool_arn }}
             UserPoolClientId: {{ action.authenticate_cognito_config.user_pool_client_id | trim }}
@@ -24,8 +24,8 @@
 {%- if action.authenticate_cognito_config.session_timeout is defined %}
             SessionTimeout: {{ action.authenticate_cognito_config.session_timeout }}
 {%- endif %}
-{%- endif %}  {# END {%- if action.authenticate_cognito_config is defined %} #}
-{%- if action.authenticate_oidc_config is defined %}  {# BEGIN {%- if action.authenticate_oidc_config is defined %} #}
+{%- endif %}{# END {%- if action.authenticate_cognito_config is defined %} #}
+{%- if action.authenticate_oidc_config is defined %}{# BEGIN {%- if action.authenticate_oidc_config is defined %} #}
           AuthenticateOidcConfig:
             AuthorizationEndpoint: {{ action.authenticate_oidc_config.authorization_endpoint }}
             ClientId: {{ action.authenticate_oidc_config.client_id | trim }}
@@ -51,8 +51,8 @@
 {%- if action.authenticate_oidc_config.session_timeout %}
             SessionTimeout: {{ action.authenticate_oidc_config.session_timeout }}
 {%- endif %}
-{%- endif %}  {# END {%- if action.authenticate_oidc_config is defined %} #}
-{%- if action.fixed_response_config is defined %}  {# BEGIN {%- if action.fixed_response_config is defined %} #}
+{%- endif %}{# END {%- if action.authenticate_oidc_config is defined %} #}
+{%- if action.fixed_response_config is defined %}{# BEGIN {%- if action.fixed_response_config is defined %} #}
           FixedResponseConfig:
             StatusCode: {{ action.fixed_response_config.status_code }}
 {%- if action.fixed_response_config.content_type is defined %}
@@ -61,8 +61,8 @@
 {%- if action.fixed_response_config.message_body is defined %}
             MessageBody: {{ action.fixed_response_config.message_body }}
 {%- endif %}
-{%- endif %}  {# END {%- if action.fixed_response_config is defined %} #}
-{%- if action.forward_config is defined %}  {# BEGIN {%- if action.forward_config is defined %} #}
+{%- endif %}{# END {%- if action.fixed_response_config is defined %} #}
+{%- if action.forward_config is defined %}{# BEGIN {%- if action.forward_config is defined %} #}
           ForwardConfig:
 {%- if action.forward_config.target_groups is defined %}
             TargetGroups:
@@ -85,11 +85,11 @@
               Enabled: {{ action.forward_config.target_group_stickiness_config.enabled }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if action.forward_config is defined %} #}
+{%- endif %}{# END {%- if action.forward_config is defined %} #}
 {%- if action.order is defined %}
           Order: {{ action.order }}
 {%- endif %}
-{%- if action.redirect_config is defined %}  {# BEGIN {%- if action.redirect_config is defined %} #}
+{%- if action.redirect_config is defined %}{# BEGIN {%- if action.redirect_config is defined %} #}
           RedirectConfig:
             StatusCode: {{ action.redirect_config.status_code }}
 {%- if action.redirect_config.host is defined %}
@@ -107,9 +107,9 @@
 {%- if action.redirect_config.query is defined %}
             Query: {{ action.redirect_config.query }}
 {%- endif %}
-{%- endif %}  {# END {%- if action.redirect_config is defined %} #}
+{%- endif %}{# END {%- if action.redirect_config is defined %} #}
 {%- if action.target_group_arn is defined %}
           TargetGroupArn: {{ action.target_group_arn }}
 {%- endif %}
-{%- endfor %}  {# END {%- for action in actions %} #}
+{%- endfor %}{# END {%- for action in actions %} #}
 {%- endmacro %}

@@ -17,7 +17,7 @@ Resources:
         - {{ excluded_account }}
 {%- endfor %}
 {%- endif %}
-{%- if organization_config_rule.organization_custom_rule_metadata is defined %}  {# BEGIN {%- if organization_config_rule.organization_custom_rule_metadata is defined %} #}
+{%- if organization_config_rule.organization_custom_rule_metadata is defined %}{# BEGIN {%- if organization_config_rule.organization_custom_rule_metadata is defined %} #}
       OrganizationCustomRuleMetadata:
         LambdaFunctionArn: {{ organization_config_rule.organization_custom_rule_metadata.lambda_function_arn }}
         OrganizationConfigRuleTriggerTypes:
@@ -48,8 +48,8 @@ Resources:
 {%- if organization_config_rule.organization_custom_rule_metadata.tag_value_scope is defined %}
         TagValueScope: {{ organization_config_rule.organization_custom_rule_metadata.tag_value_scope }}
 {%- endif %}
-{%- endif %}    {# END {%- if organization_config_rule.organization_custom_rule_metadata is defined %} #}
-{%- if organization_config_rule.organization_managed_rule_metadata is defined %}  {# BEGIN {%- if organization_config_rule.organization_managed_rule_metadata is defined %} #}
+{%- endif %}{# END {%- if organization_config_rule.organization_custom_rule_metadata is defined %} #}
+{%- if organization_config_rule.organization_managed_rule_metadata is defined %}{# BEGIN {%- if organization_config_rule.organization_managed_rule_metadata is defined %} #}
       OrganizationManagedRuleMetadata:
         RuleIdentifier: {{ organization_config_rule.organization_managed_rule_metadata.rule_identifier }}
 {%- if organization_config_rule.organization_managed_rule_metadata.description is defined %}
@@ -100,7 +100,7 @@ Resources:
 {%- if organization_config_rule.organization_managed_rule_metadata.tag_value_scope is defined %}
         TagValueScope: {{ organization_config_rule.organization_managed_rule_metadata.tag_value_scope }}
 {%- endif %}
-{%- endif %}  {# END {%- if organization_config_rule.organization_managed_rule_metadata is defined %} #}
+{%- endif %}{# END {%- if organization_config_rule.organization_managed_rule_metadata is defined %} #}
 {%- endfor %}
 
 Outputs:

@@ -12,9 +12,9 @@ Resources:
     UpdateReplacePolicy: {{ ec2_fleet.update_replace_policy | default('Delete') }}
     Properties:
       LaunchTemplateConfigs:
-{%- for launch_template_config in ec2_fleet.launch_template_configs %}  {# BEGIN {%- for launch_template_config in ec2_fleet.launch_template_configs %} #}
+{%- for launch_template_config in ec2_fleet.launch_template_configs %}{# BEGIN {%- for launch_template_config in ec2_fleet.launch_template_configs %} #}
         -
-{%- if launch_template_config.launch_template_specification is defined %}  {# BEGIN {%- if launch_template_config.launch_template_specification is defined %} #}
+{%- if launch_template_config.launch_template_specification is defined %}{# BEGIN {%- if launch_template_config.launch_template_specification is defined %} #}
           LaunchTemplateSpecification:
 {%- if launch_template_config.launch_template_specification.launch_template_id is defined %}
             LaunchTemplateId: {{ launch_template_config.launch_template_specification.launch_template_id | trim }}
@@ -25,15 +25,15 @@ Resources:
 {%- if launch_template_config.launch_template_specification.version is defined %}
             Version: {{ launch_template_config.launch_template_specification.version }}
 {%- endif %}
-{%- endif %}  {# END {%- if launch_template_config.launch_template_specification is defined %}#}
-{%- if launch_template_config.overrides is defined %}  {# BEGIN {%- if launch_template_config.overrides is defined %} #}
+{%- endif %}{# END {%- if launch_template_config.launch_template_specification is defined %}#}
+{%- if launch_template_config.overrides is defined %}{# BEGIN {%- if launch_template_config.overrides is defined %} #}
           Overrides:
-{%- for override in launch_template_config.overrides %}  {# BEGIN {%- for override in launch_template_config.overrides %} #}
+{%- for override in launch_template_config.overrides %}{# BEGIN {%- for override in launch_template_config.overrides %} #}
             -
 {%- if override.availability_zone is defined %}
               AvailabilityZone: {{ override.availability_zone }}
 {%- endif %}
-{%- if override.instance_requirements is defined %}  {# BEGIN {%- if override.instance_requirements is defined %} #}
+{%- if override.instance_requirements is defined %}{# BEGIN {%- if override.instance_requirements is defined %} #}
               InstanceRequirements:
 {%- if override.instance_requirements.accelerator_count is defined %}
                 AcceleratorCount:
@@ -167,14 +167,14 @@ Resources:
                   Min: {{ override.instance_requirements.vcpu_count.min }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if override.instance_requirements is defined %} #}
+{%- endif %}{# END {%- if override.instance_requirements is defined %} #}
 {%- if override.instance_type is defined %}
               InstanceType: {{ override.instance_type }}
 {%- endif %}
 {%- if override.max_price is defined %}
               MaxPrice: {{ override.max_price }}
 {%- endif %}
-{%- if override.placement is defined %}  {# BEGIN {%- if override.placement is defined %} #}
+{%- if override.placement is defined %}{# BEGIN {%- if override.placement is defined %} #}
               Placement:
 {%- if override.placement.affinity is defined %}
                 Affinity: {{ override.placement.affinity }}
@@ -200,7 +200,7 @@ Resources:
 {%- if override.placement.tenancy is defined %}
                 Tenancy: {{ override.placement.tenancy }}
 {%- endif %}
-{%- endif %}  {# END {%- if override.placement is defined %} #}
+{%- endif %}{# END {%- if override.placement is defined %} #}
 {%- if override.priority is defined %}
               Priority: {{ override.priority }}
 {%- endif %}
@@ -210,9 +210,9 @@ Resources:
 {%- if override.weighted_capacity is defined %}
               WeightedCapacity: {{ override.weighted_capacity }}
 {%- endif %}
-{%- endfor %}  {# END {%- for override in launch_template_config.overrides %} #}
-{%- endif %}  {# END {%- if launch_template_config.overrides is defined %}#}
-{%- endfor %}  {# END {%- for launch_template_config in ec2_fleet.launch_template_configs %} #}
+{%- endfor %}{# END {%- for override in launch_template_config.overrides %} #}
+{%- endif %}{# END {%- if launch_template_config.overrides is defined %}#}
+{%- endfor %}{# END {%- for launch_template_config in ec2_fleet.launch_template_configs %} #}
       TargetCapacitySpecification:
         TotalTargetCapacity: {{ ec2_fleet.target_capacity_specification.total_target_capacity }}
 {%- if ec2_fleet.target_capacity_specification.default_target_capacity_type is defined %}
@@ -233,7 +233,7 @@ Resources:
 {%- if ec2_fleet.excess_capacity_termination_policy is defined %}
       ExcessCapacityTerminationPolicy: {{ ec2_fleet.excess_capacity_termination_policy }}
 {%- endif %}
-{%- if ec2_fleet.on_demand_options is defined %}  {# BEGIN {%- if ec2_fleet.on_demand_options is defined %} #}
+{%- if ec2_fleet.on_demand_options is defined %}{# BEGIN {%- if ec2_fleet.on_demand_options is defined %} #}
       OnDemandOptions:
 {%- if ec2_fleet.on_demand_options.allocation_strategy is defined %}
         AllocationStrategy: {{ ec2_fleet.on_demand_options.allocation_strategy }}
@@ -254,11 +254,11 @@ Resources:
 {%- if ec2_fleet.on_demand_options.single_instance_type is defined %}
         SingleInstanceType: {{ ec2_fleet.on_demand_options.single_instance_type }}
 {%- endif %}
-{%- endif %}  {# END {%- if ec2_fleet.on_demand_options is defined %} #}
+{%- endif %}{# END {%- if ec2_fleet.on_demand_options is defined %} #}
 {%- if ec2_fleet.replace_unhealthy_instances is defined %}
       ReplaceUnhealthyInstances: {{ ec2_fleet.replace_unhealthy_instances }}
 {%- endif %}
-{%- if ec2_fleet.spot_options is defined %}  {# BEGIN {%- if ec2_fleet.spot_options is defined %} #}
+{%- if ec2_fleet.spot_options is defined %}{# BEGIN {%- if ec2_fleet.spot_options is defined %} #}
       SpotOptions:
 {%- if ec2_fleet.spot_options.allocation_strategy is defined %}}
         AllocationStrategy: {{ ec2_fleet.spot_options.allocation_strategy }}
@@ -291,8 +291,8 @@ Resources:
 {%- if ec2_fleet.spot_options.single_instance_type is defined %}}
         SingleInstanceType: {{ ec2_fleet.spot_options.single_instance_type }}
 {%- endif %}
-{%- endif %}  {# END {%- if ec2_fleet.spot_options is defined %} #}
-{%- if ec2_fleet.tag_specifications is defined %}  {# BEGIN {%- if ec2_fleet.tag_specifications is defined %} #}
+{%- endif %}{# END {%- if ec2_fleet.spot_options is defined %} #}
+{%- if ec2_fleet.tag_specifications is defined %}{# BEGIN {%- if ec2_fleet.tag_specifications is defined %} #}
       TagSpecifications:
 {%- for tag_specification in ec2_fleet.tag_specifications %}
         -
@@ -307,7 +307,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if ec2_fleet.tag_specifications is defined %} #}
+{%- endif %}{# END {%- if ec2_fleet.tag_specifications is defined %} #}
 {%- if ec2_fleet.terminate_instances_with_expiration is defined %}
       TerminateInstancesWithExpiration: {{ ec2_fleet.terminate_instances_with_expiration }}
 {%- endif %}

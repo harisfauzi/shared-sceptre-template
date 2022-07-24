@@ -86,7 +86,7 @@ Resources:
       Tags:
 {{ nodegroup.tags | indent(width=8, first=true) }}
 {%- endif %}
-{%- if nodegroup.taints is defined %}  {# BEGIN {%- if nodegroup.taints is defined %} #}
+{%- if nodegroup.taints is defined %}{# BEGIN {%- if nodegroup.taints is defined %} #}
       Taints:
 {%- for taint in nodegroup.taints %}
         -
@@ -100,7 +100,7 @@ Resources:
           Value: {{ taint.value }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if nodegroup.taints is defined %} #}
+{%- endif %}{# END {%- if nodegroup.taints is defined %} #}
 {%- if nodegroup.update_config is defined %}
       UpdateConfig:
 {%- if nodegroup.update_config.max_unavailable is defined %}

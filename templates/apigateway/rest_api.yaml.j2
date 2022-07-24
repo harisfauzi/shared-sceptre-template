@@ -26,7 +26,7 @@ Resources:
       Body:
 {{ rest_api.body | indent(width=8, first=true )}}
 {%- endif %}
-{%- if rest_api.body_s3_location is defined %}  {# BEGIN {%- if rest_api.body_s3_location is defined %} #}
+{%- if rest_api.body_s3_location is defined %}{# BEGIN {%- if rest_api.body_s3_location is defined %} #}
       BodyS3Location:
 {%- if rest_api.body_s3_location.bucket is defined %}
         Bucket: {{ rest_api.body_s3_location.bucket }}
@@ -40,7 +40,7 @@ Resources:
 {%- if rest_api.body_s3_location.version is defined %}
         Version: {{ rest_api.body_s3_location.version }}
 {%- endif %}
-{%- endif %}  {# END {%- if rest_api.body_s3_location is defined %} #}
+{%- endif %}{# END {%- if rest_api.body_s3_location is defined %} #}
 {%- if rest_api.clone_from is defined %}
       CloneFrom: {{ rest_api.clone_from }}
 {%- endif %}
@@ -50,7 +50,7 @@ Resources:
 {%- if rest_api.disable_execute_api_endpoint is defined %}
       DisableExecuteApiEndpoint: {{ rest_api.disable_execute_api_endpoint }}
 {%- endif %}
-{%- if rest_api.endpoint_configuration is defined %}  {# BEGIN {%- if rest_api.endpoint_configuration is defined %} #}
+{%- if rest_api.endpoint_configuration is defined %}{# BEGIN {%- if rest_api.endpoint_configuration is defined %} #}
       EndpointConfiguration:
 {%- if rest_api.endpoint_configuration.types is defined %}
         Types:
@@ -64,7 +64,7 @@ Resources:
           - {{ item }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}  {# END {%- if rest_api.endpoint_configuration is defined %} #}
+{%- endif %}{# END {%- if rest_api.endpoint_configuration is defined %} #}
 {%- if rest_api.fail_on_warnings is defined %}
       FailOnWarnings: {{ rest_api.fail_on_warnings }}
 {%- endif %}

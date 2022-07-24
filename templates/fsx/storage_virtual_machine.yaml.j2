@@ -38,7 +38,7 @@ Resources:
     Properties:
       FileSystemId: {{ storage_virtual_machine.file_system_id | trim }}
       Name: {{ storage_virtual_machine.storage_virtual_machine_name }}
-{%- if storage_virtual_machine.active_directory_configuration is defined %}  {# BEGIN {%- if storage_virtual_machine.active_directory_configuration is defined %} #}
+{%- if storage_virtual_machine.active_directory_configuration is defined %}{# BEGIN {%- if storage_virtual_machine.active_directory_configuration is defined %} #}
       ActiveDirectoryConfiguration:
 {%- if storage_virtual_machine.active_directory_configuration.net_bios_name is defined %}
         NetBiosName: {{ storage_virtual_machine.active_directory_configuration.net_bios_name }}
@@ -72,7 +72,7 @@ Resources:
           UserName: {{ storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.user_name }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if storage_virtual_machine.active_directory_configuration is defined %} #}
+{%- endif %}{# END {%- if storage_virtual_machine.active_directory_configuration is defined %} #}
 {%- if storage_virtual_machine.root_volume_security_style is defined %}
       RootVolumeSecurityStyle: {{ storage_virtual_machine.root_volume_security_style }}
 {%- endif %}

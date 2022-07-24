@@ -49,7 +49,7 @@ Resources:
 {%- if project.badge_enabled is defined %}
       BadgeEnabled: {{ project.badge_enabled }}
 {%- endif %}
-{%- if project.build_batch_config is defined %}  {# BEGIN {%- if project.build_batch_config is defined %} #}
+{%- if project.build_batch_config is defined %}{# BEGIN {%- if project.build_batch_config is defined %} #}
       BuildBatchConfig:
 {%- if project.build_batch_config.batch_report_mode is defined %}
         BatchReportMode: {{ project.build_batch_config.batch_report_mode }}
@@ -57,7 +57,7 @@ Resources:
 {%- if project.build_batch_config.combine_artifacts is defined %}
         CombineArtifacts: {{ project.build_batch_config.combine_artifacts }}
 {%- endif %}
-{%- if project.build_batch_config.restrictions is defined %}  {## BEGIN {%- if project.build_batch_config.restrictions is defined %} #}
+{%- if project.build_batch_config.restrictions is defined %}{## BEGIN {%- if project.build_batch_config.restrictions is defined %} #}
         Restrictions:
 {%- if project.build_batch_config.restrictions.compute_types_allowed is defined %}
           ComputeTypesAllowed:
@@ -68,14 +68,14 @@ Resources:
 {%- if project.build_batch_config.restrictions.maximum_builds_allowed is defined %}
           MaximumBuildsAllowed: {{ project.build_batch_config.restrictions.maximum_builds_allowed }}
 {%- endif %}
-{%- endif %}  {## END {%- if project.build_batch_config.restrictions is defined %} #}
+{%- endif %}{## END {%- if project.build_batch_config.restrictions is defined %} #}
 {%- if project.build_batch_config.service_role is defined %}
         ServiceRole: {{ project.build_batch_config.service_role }}
 {%- endif %}
 {%- if project.build_batch_config.timeout_in_mins is defined %}
         TimeoutInMins: {{ project.build_batch_config.timeout_in_mins }}
 {%- endif %}
-{%- endif %}  {# END {%- if project.build_batch_config is defined %} #}
+{%- endif %}{# END {%- if project.build_batch_config is defined %} #}
 {%- if project.cache is defined %}
       Cache:
         Type: {{ project.cache.type }}
@@ -110,7 +110,7 @@ Resources:
 {%- endif %}
 {%- endfor %}
 {%- endif %}
-{%- if project.logs_config is defined %}  {# BEGIN {%- if project.logs_config is defined %} #}
+{%- if project.logs_config is defined %}{# BEGIN {%- if project.logs_config is defined %} #}
       LogsConfig:
 {%- if project.logs_config.cloud_watch_logs is defined %}
         CloudWatchLogs:
@@ -132,7 +132,7 @@ Resources:
           Location: {{ project.logs_config.s3_logs.location }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if project.logs_config is defined %} #}
+{%- endif %}{# END {%- if project.logs_config is defined %} #}
 {%- if project.project_name is defined %}
       Name: {{ project.project_name }}
 {%- endif %}

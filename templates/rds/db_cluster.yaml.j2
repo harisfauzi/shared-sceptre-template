@@ -111,7 +111,7 @@ Resources:
 {%- if db_cluster.restore_type is defined %}
       RestoreType: {{ db_cluster.restore_type }}
 {%- endif %}
-{%- if db_cluster.scaling_configuration is defined %}  {# BEGIN {%- if db_cluster.scaling_configuration is defined %} #}
+{%- if db_cluster.scaling_configuration is defined %}{# BEGIN {%- if db_cluster.scaling_configuration is defined %} #}
       ScalingConfiguration:
 {%- if db_cluster.scaling_configuration.auto_pause is defined %}
         AutoPause: {{ db_cluster.scaling_configuration.auto_pause }}
@@ -125,7 +125,7 @@ Resources:
 {%- if db_cluster.scaling_configuration.seconds_until_auto_pause is defined %}
         SecondsUntilAutoPause: {{ db_cluster.scaling_configuration.seconds_until_auto_pause }}
 {%- endif %}
-{%- endif %}  {# END {%- if db_cluster.scaling_configuration is defined %} #}
+{%- endif %}{# END {%- if db_cluster.scaling_configuration is defined %} #}
 {%- if db_cluster.snapshot_identifier is defined %}
       SnapshotIdentifier: {{ db_cluster.snapshot_identifier }}
 {%- endif %}

@@ -5,7 +5,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for record_set_group in sceptre_user_data.record_set_groups %}  {# BEGIN {%- for record_set_group in sceptre_user_data.record_set_groups %} #}
+{%- for record_set_group in sceptre_user_data.record_set_groups %}{# BEGIN {%- for record_set_group in sceptre_user_data.record_set_groups %} #}
 {%- set record_set_group_name = record_set_group.name %}
   {{ record_set_group_name }}:
     Type: AWS::Route53::RecordSetGroup
@@ -27,7 +27,7 @@ Resources:
 {{ record_set_macro.prep(record_set) | indent(width=8, first=true) }}
 {%- endfor %}
 {%- endif %}
-{%- endfor %}  {# END {%- for record_set_group in sceptre_user_data.record_set_groups %} #}
+{%- endfor %}{# END {%- for record_set_group in sceptre_user_data.record_set_groups %} #}
 
 Outputs:
 {%- for record_set_group in sceptre_user_data.record_set_groups %}

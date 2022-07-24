@@ -3,7 +3,7 @@ Description: S3 AccessPoint(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-{%- for access_point in sceptre_user_data.access_points %}  {# BEGIN {%- for access_point in sceptre_user_data.access_points %} #}
+{%- for access_point in sceptre_user_data.access_points %}{# BEGIN {%- for access_point in sceptre_user_data.access_points %} #}
 {%- set access_point_name = access_point.name %}
   {{ access_point_name }}:
     Type: AWS::S3::AccessPoint
@@ -46,7 +46,7 @@ Resources:
         VpcId: {{ access_point.vpc_configuration.vpc_id | trim }}
 {%- endif %}
 
-{%- endfor %}  {# END {%- for access_point in sceptre_user_data.access_points %} #}
+{%- endfor %}{# END {%- for access_point in sceptre_user_data.access_points %} #}
 
 Outputs:
 {%- for access_point in sceptre_user_data.access_points %}

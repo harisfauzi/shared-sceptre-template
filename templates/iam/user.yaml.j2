@@ -71,7 +71,7 @@ Resources:
       UserName: {{ user.user_name }}
 {%- endif %}
 
-{%- if user.access_key_1 is defined %}  {# BEGIN {%- if user.access_key_1 is defined %} #}
+{%- if user.access_key_1 is defined %}{# BEGIN {%- if user.access_key_1 is defined %} #}
   {{ user_name }}accesskey1:
     Type: AWS::IAM::AccessKey
     DeletionPolicy: {{ user.deletion_policy | default('Delete') }}
@@ -85,9 +85,9 @@ Resources:
 {%- if user.access_key_1.serial is defined %}
       Status: {{ user.access_key_1.serial }}
 {%- endif %}
-{%- endif %}  {# END {%- if user.access_key_1 is defined %} #}
+{%- endif %}{# END {%- if user.access_key_1 is defined %} #}
 
-{%- if user.access_key_2 is defined %}  {# BEGIN {%- if user.access_key_2 is defined %} #}
+{%- if user.access_key_2 is defined %}{# BEGIN {%- if user.access_key_2 is defined %} #}
   {{ user_name }}accesskey2:
     Type: AWS::IAM::AccessKey
     DeletionPolicy: {{ user.deletion_policy | default('Delete') }}
@@ -101,7 +101,7 @@ Resources:
 {%- if user.access_key_2.serial is defined %}
       Status: {{ user.access_key_2.serial }}
 {%- endif %}
-{%- endif %}  {# END {%- if user.access_key_2 is defined %} #}
+{%- endif %}{# END {%- if user.access_key_2 is defined %} #}
 {%- endfor %}
 
 Outputs:
@@ -126,7 +126,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-Arn"
 
-{%- if user.access_key_1 is defined %}  {# BEGIN {%- if user.access_key_1 is defined %} #}
+{%- if user.access_key_1 is defined %}{# BEGIN {%- if user.access_key_1 is defined %} #}
   {{ user_name }}accesskey1AccessKeyId:
     Description: Access Key Id for {{ user_name }}accesskey1
     Value:
@@ -135,7 +135,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-accesskey1-AccessKeyId"
 
-{%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %}  {# BEGIN {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %} #}
+{%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %}{# BEGIN {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %} #}
   {{ user_name }}accesskey1SecretAccessKey:
     Description: The Secret Access Key for {{ user_name }} accesskey1
     Value:
@@ -145,10 +145,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-accesskey1-SecretAccessKey"
-{%- endif %}    {# END {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %} #}
-{%- endif %}  {# END {%- if user.access_key_1 is defined %} #}
+{%- endif %}{# END {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %} #}
+{%- endif %}{# END {%- if user.access_key_1 is defined %} #}
 
-{%- if user.access_key_2 is defined %}  {# BEGIN {%- if user.access_key_2 is defined %} #}
+{%- if user.access_key_2 is defined %}{# BEGIN {%- if user.access_key_2 is defined %} #}
   {{ user_name }}accesskey2AccessKeyId:
     Description: Access Key Id for {{ user_name }}accesskey2
     Value:
@@ -157,7 +157,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-accessaccesskey2key1-AccessKeyId"
 
-{%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %}  {# BEGIN {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %} #}
+{%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %}{# BEGIN {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %} #}
   {{ user_name }}accesskey1SecretAccessKey:
     Description: The Secret Access Key for {{ user_name }} accesskey2
     Value:
@@ -167,7 +167,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-accesskey1-SecretAccessKey"
-{%- endif %}    {# END {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %} #}
-{%- endif %}  {# END {%- if user.access_key_2 is defined %} #}
+{%- endif %}{# END {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %} #}
+{%- endif %}{# END {%- if user.access_key_2 is defined %} #}
 
 {%- endfor %}

@@ -13,7 +13,7 @@ Resources:
     Properties:
       DBProxyName: {{ db_proxy_target_group.db_proxy_name }}
       TargetGroupName: {{ db_proxy_target_group.target_group_name }}
-{%- if db_proxy_target_group.connection_pool_configuration_info is defined %}  {# BEGIN {%- if db_proxy_target_group.connection_pool_configuration_info is defined %} #}
+{%- if db_proxy_target_group.connection_pool_configuration_info is defined %}{# BEGIN {%- if db_proxy_target_group.connection_pool_configuration_info is defined %} #}
       ConnectionPoolConfigurationInfo:
 {%- if db_proxy_target_group.connection_pool_configuration_info.connection_borrow_timeout is defined %}
         ConnectionBorrowTimeout: {{ db_proxy_target_group.connection_pool_configuration_info.connection_borrow_timeout }}
@@ -33,7 +33,7 @@ Resources:
           - {{ filter }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}  {# END {%- if db_proxy_target_group.connection_pool_configuration_info is defined %} #}
+{%- endif %}{# END {%- if db_proxy_target_group.connection_pool_configuration_info is defined %} #}
 {%- if db_proxy_target_group.db_cluster_identifiers is defined %}
       DBClusterIdentifiers:
 {%- for db_cluster_identifier in db_proxy_target_group.db_cluster_identifiers %}

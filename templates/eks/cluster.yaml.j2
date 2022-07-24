@@ -23,7 +23,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
       RoleArn: {{ cluster.role_arn }}
-{%- if cluster.encryption_config is defined %}  {# BEGIN {%- if cluster.encryption_config is defined %} #}
+{%- if cluster.encryption_config is defined %}{# BEGIN {%- if cluster.encryption_config is defined %} #}
       EncryptionConfig:
 {%- for encryption_config in cluster.encryption_config %}
         -
@@ -38,7 +38,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if cluster.encryption_config is defined %} #}
+{%- endif %}{# END {%- if cluster.encryption_config is defined %} #}
 {%- if cluster.kubernetes_network_config is defined %}
       KubernetesNetworkConfig:
         ServiceIpv4Cidr: {{ cluster.kubernetes_network_config.service_ipv4_cidr }}

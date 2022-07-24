@@ -14,7 +14,7 @@ Resources:
     DeletionPolicy: {{ service.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ service.update_replace_policy | default('Delete') }}
     Properties:
-{%- if service.capacity_provider_strategy is defined %}  {# BEGIN {%- if service.capacity_provider_strategy is defined %} #}
+{%- if service.capacity_provider_strategy is defined %}{# BEGIN {%- if service.capacity_provider_strategy is defined %} #}
       CapacityProviderStrategy:
 {%- for capacity_provider_strategy inservice.capacity_provider_strategy %}
         -
@@ -28,11 +28,11 @@ Resources:
           Weight: {{ capacity_provider_strategy.weight }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if service.capacity_provider_strategy is defined %} #}
+{%- endif %}{# END {%- if service.capacity_provider_strategy is defined %} #}
 {%- if service.cluster is defined %}
       Cluster: {{ service.cluster }}
 {%- endif %}
-{%- if service.deployment_configuration is defined %}  {# BEGIN {%- if service.deployment_configuration is defined %} #}
+{%- if service.deployment_configuration is defined %}{# BEGIN {%- if service.deployment_configuration is defined %} #}
       DeploymentConfiguration:
 {%- if service.deployment_configuration.deployment_circuit_breaker is defined %}
         DeploymentCircuitBreaker:
@@ -45,7 +45,7 @@ Resources:
 {%- if service.deployment_configuration.minimum_healthy_percent is defined %}
         MinimumHealthyPercent: {{ service.deployment_configuration.minimum_healthy_percent }}
 {%- endif %}
-{%- endif %}  {# END {%- if service.deployment_configuration is defined %} #}
+{%- endif %}{# END {%- if service.deployment_configuration is defined %} #}
 {%- if service.deployment_controller is defined %}
       DeploymentController:
         Type: {{ service.deployment_controller.type }}

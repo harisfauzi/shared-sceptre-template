@@ -106,7 +106,7 @@ Resources:
 {%- if endpoint.username is defined %}
       Username: {{ endpoint.username }}
 {%- endif %}
-{%- if endpoint.doc_db_settings is defined %}  {# BEGIN {%- if endpoint.doc_db_settings is defined %} #}
+{%- if endpoint.doc_db_settings is defined %}{# BEGIN {%- if endpoint.doc_db_settings is defined %} #}
       DocDbSettings:
 {%- if endpoint.doc_db_settings.secrets_manager_access_role_arn is defined %}
         SecretsManagerAccessRoleArn: {{ endpoint.doc_db_settings.secrets_manager_access_role_arn | trim }}
@@ -114,12 +114,12 @@ Resources:
 {%- if endpoint.doc_db_settings.secrets_manager_secret_id is defined %}
         SecretsManagerSecretId: {{ endpoint.doc_db_settings.secrets_manager_secret_id | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.doc_db_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.doc_db_settings is defined %} #}
 {%- if endpoint.dynamo_db_settings is defined %}
       DynamoDbSettings:
         ServiceAccessRoleArn: {{ endpoint.dynamo_db_settings.service_access_role_arn | trim }}
 {%- endif %}
-{%- if endpoint.elasticsearch_settings is defined %}  {# BEGIN {%- if endpoint.elasticsearch_settings is defined %} #}
+{%- if endpoint.elasticsearch_settings is defined %}{# BEGIN {%- if endpoint.elasticsearch_settings is defined %} #}
       ElasticsearchSettings:
 {%- if endpoint.elasticsearch_settings.endpoint_uri is defined %}
         EndpointUri: {{ endpoint.elasticsearch_settings.endpoint_uri }}
@@ -133,8 +133,8 @@ Resources:
 {%- if endpoint.elasticsearch_settings.service_access_role_arn is defined %}
         ServiceAccessRoleArn: {{ endpoint.elasticsearch_settings.service_access_role_arn | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.elasticsearch_settings is defined %} #}
-{%- if endpoint.gcp_mysql_settings is defined %}  {# BEGIN {%- if endpoint.gcp_mysql_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.elasticsearch_settings is defined %} #}
+{%- if endpoint.gcp_mysql_settings is defined %}{# BEGIN {%- if endpoint.gcp_mysql_settings is defined %} #}
       GcpMySQLSettings:
 {%- if endpoint.gcp_mysql_settings.after_connect_script is defined %}
         AfterConnectScript: |-
@@ -181,8 +181,8 @@ Resources:
 {%- if endpoint.gcp_mysql_settings.username is defined %}
         Username: {{ endpoint.gcp_mysql_settings.username }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.gcp_mysql_settings is defined %} #}
-{%- if endpoint.ibm_db2_settings is defined %}  {# BEGIN {%- if endpoint.ibm_db2_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.gcp_mysql_settings is defined %} #}
+{%- if endpoint.ibm_db2_settings is defined %}{# BEGIN {%- if endpoint.ibm_db2_settings is defined %} #}
       IbmDb2Settings:
 {%- if endpoint.ibm_db2_settings.secrets_manager_access_role_arn is defined %}
         SecretsManagerAccessRoleArn: {{ endpoint.ibm_db2_settings.secrets_manager_access_role_arn | trim }}
@@ -190,8 +190,8 @@ Resources:
 {%- if endpoint.ibm_db2_settings.secrets_manager_secret_id is defined %}
         SecretsManagerSecretId: {{ endpoint.ibm_db2_settings.secrets_manager_secret_id | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.ibm_db2_settings is defined %} #}
-{%- if endpoint.kafka_settings is defined %}  {# BEGIN {%- if endpoint.kafka_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.ibm_db2_settings is defined %} #}
+{%- if endpoint.kafka_settings is defined %}{# BEGIN {%- if endpoint.kafka_settings is defined %} #}
       KafkaSettings:
 {%- if endpoint.kafka_settings.broker is defined %}
         Broker: {{ endpoint.kafka_settings.broker }}
@@ -248,8 +248,8 @@ Resources:
 {%- if endpoint.kafka_settings.topic is defined %}
         Topic: {{ endpoint.kafka_settings.topic }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.kafka_settings is defined %} #}
-{%- if endpoint.kinesis_settings is defined %}  {# BEGIN {%- if endpoint.kinesis_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.kafka_settings is defined %} #}
+{%- if endpoint.kinesis_settings is defined %}{# BEGIN {%- if endpoint.kinesis_settings is defined %} #}
       KinesisSettings:
 {%- if endpoint.kinesis_settings.include_control_details is defined %}
         IncludeControlDetails: {{ endpoint.kinesis_settings.include_control_details }}
@@ -278,8 +278,8 @@ Resources:
 {%- if endpoint.kinesis_settings.stream_arn is defined %}
         StreamArn: {{ endpoint.kinesis_settings.stream_arn | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.kinesis_settings is defined %} #}
-{%- if endpoint.microsoft_sql_server_settings is defined %}  {# BEGIN {%- if endpoint.microsoft_sql_server_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.kinesis_settings is defined %} #}
+{%- if endpoint.microsoft_sql_server_settings is defined %}{# BEGIN {%- if endpoint.microsoft_sql_server_settings is defined %} #}
       MicrosoftSqlServerSettings:
 {%- if endpoint.microsoft_sql_server_settings.secrets_manager_access_role_arn is defined %}
         SecretsManagerAccessRoleArn: {{ endpoint.microsoft_sql_server_settings.secrets_manager_access_role_arn | trim }}
@@ -287,8 +287,8 @@ Resources:
 {%- if endpoint.microsoft_sql_server_settings.secrets_manager_secret_id is defined %}
         SecretsManagerSecretId: {{ endpoint.microsoft_sql_server_settings.secrets_manager_secret_id | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.microsoft_sql_server_settings is defined %} #}
-{%- if endpoint.mongo_db_settings is defined %}  {# BEGIN {%- if endpoint.mongo_db_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.microsoft_sql_server_settings is defined %} #}
+{%- if endpoint.mongo_db_settings is defined %}{# BEGIN {%- if endpoint.mongo_db_settings is defined %} #}
       MongoDbSettings:
 {%- if endpoint.mongo_db_settings.auth_mechanism is defined %}
         AuthMechanism: {{ endpoint.mongo_db_settings.auth_mechanism }}
@@ -334,8 +334,8 @@ Resources:
 {%- if endpoint.mongo_db_settings.username is defined %}
         Username: {{ endpoint.mongo_db_settings.username }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.mongo_db_settings is defined %} #}
-{%- if endpoint.mysql_settings is defined %}  {# BEGIN {%- if endpoint.mysql_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.mongo_db_settings is defined %} #}
+{%- if endpoint.mysql_settings is defined %}{# BEGIN {%- if endpoint.mysql_settings is defined %} #}
       MySqlSettings:
 {%- if endpoint.mysql_settings.secrets_manager_access_role_arn is defined %}
         SecretsManagerAccessRoleArn: {{ endpoint.mysql_settings.secrets_manager_access_role_arn | trim }}
@@ -343,8 +343,8 @@ Resources:
 {%- if endpoint.mysql_settings.secrets_manager_secret_id is defined %}
         SecretsManagerSecretId: {{ endpoint.mysql_settings.secrets_manager_secret_id | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.mysql_settings is defined %} #}
-{%- if endpoint.neptune_settings is defined %}  {# BEGIN {%- if endpoint.neptune_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.mysql_settings is defined %} #}
+{%- if endpoint.neptune_settings is defined %}{# BEGIN {%- if endpoint.neptune_settings is defined %} #}
       NeptuneSettings:
 {%- if endpoint.neptune_settings.error_retry_duration is defined %}
         ErrorRetryDuration: {{ endpoint.neptune_settings.error_retry_duration }}
@@ -367,8 +367,8 @@ Resources:
 {%- if endpoint.neptune_settings.service_access_role_arn is defined %}
         ServiceAccessRoleArn: {{ endpoint.neptune_settings.service_access_role_arn | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.neptune_settings is defined %} #}
-{%- if endpoint.oracle_settings is defined %}  {# BEGIN {%- if endpoint.oracle_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.neptune_settings is defined %} #}
+{%- if endpoint.oracle_settings is defined %}{# BEGIN {%- if endpoint.oracle_settings is defined %} #}
       OracleSettings:
 {%- if endpoint.oracle_settings.secrets_manager_access_role_arn is defined %}
         SecretsManagerAccessRoleArn: {{ endpoint.oracle_settings.secrets_manager_access_role_arn | trim }}
@@ -382,8 +382,8 @@ Resources:
 {%- if endpoint.oracle_settings.secrets_manager_secret_id is defined %}
         SecretsManagerSecretId: {{ endpoint.oracle_settings.secrets_manager_secret_id | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.oracle_settings is defined %} #}
-{%- if endpoint.postgresql_settings is defined %}  {# BEGIN {%- if endpoint.postgresql_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.oracle_settings is defined %} #}
+{%- if endpoint.postgresql_settings is defined %}{# BEGIN {%- if endpoint.postgresql_settings is defined %} #}
       PostgreSqlSettings:
 {%- if endpoint.postgresql_settings.secrets_manager_access_role_arn is defined %}
         SecretsManagerAccessRoleArn: {{ endpoint.postgresql_settings.secrets_manager_access_role_arn | trim }}
@@ -391,8 +391,8 @@ Resources:
 {%- if endpoint.postgresql_settings.secrets_manager_secret_id is defined %}
         SecretsManagerSecretId: {{ endpoint.postgresql_settings.secrets_manager_secret_id | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.postgresql_settings is defined %} #}
-{%- if endpoint.redis_settings is defined %}  {# BEGIN {%- if endpoint.redis_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.postgresql_settings is defined %} #}
+{%- if endpoint.redis_settings is defined %}{# BEGIN {%- if endpoint.redis_settings is defined %} #}
       RedisSettings:
 {%- if endpoint.redis_settings.auth_password is defined %}
 {%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
@@ -420,8 +420,8 @@ Resources:
 {%- if endpoint.redis_settings.ssl_security_protocol is defined %}
         SslSecurityProtocol: {{ endpoint.redis_settings.ssl_security_protocol }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.redis_settings is defined %} #}
-{%- if endpoint.redshift_settings is defined %}  {# BEGIN {%- if endpoint.redshift_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.redis_settings is defined %} #}
+{%- if endpoint.redshift_settings is defined %}{# BEGIN {%- if endpoint.redshift_settings is defined %} #}
       RedshiftSettings:
 {%- if endpoint.redshift_settings.secrets_manager_access_role_arn is defined %}
         SecretsManagerAccessRoleArn: {{ endpoint.redshift_settings.secrets_manager_access_role_arn | trim }}
@@ -429,8 +429,8 @@ Resources:
 {%- if endpoint.redshift_settings.secrets_manager_secret_id is defined %}
         SecretsManagerSecretId: {{ endpoint.redshift_settings.secrets_manager_secret_id | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.redshift_settings is defined %} #}
-{%- if endpoint.s3_settings is defined %}  {# BEGIN {%- if endpoint.s3_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.redshift_settings is defined %} #}
+{%- if endpoint.s3_settings is defined %}{# BEGIN {%- if endpoint.s3_settings is defined %} #}
       S3Settings:
 {%- if endpoint.s3_settings.add_column_name is defined %}
         AddColumnName: {{ endpoint.s3_settings.add_column_name }}
@@ -546,8 +546,8 @@ Resources:
 {%- if endpoint.s3_settings.use_task_start_time_for_full_load_timestamp is defined %}
         UseTaskStartTimeForFullLoadTimestamp: {{ endpoint.s3_settings.use_task_start_time_for_full_load_timestamp }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.s3_settings is defined %} #}
-{%- if endpoint.sybase_settings is defined %}  {# BEGIN {%- if endpoint.sybase_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.s3_settings is defined %} #}
+{%- if endpoint.sybase_settings is defined %}{# BEGIN {%- if endpoint.sybase_settings is defined %} #}
       SybaseSettings:
 {%- if endpoint.sybase_settings.secrets_manager_access_role_arn is defined %}
         SecretsManagerAccessRoleArn: {{ endpoint.sybase_settings.secrets_manager_access_role_arn | trim }}
@@ -555,7 +555,7 @@ Resources:
 {%- if endpoint.sybase_settings.secrets_manager_secret_id is defined %}
         SecretsManagerSecretId: {{ endpoint.sybase_settings.secrets_manager_secret_id | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if endpoint.sybase_settings is defined %} #}
+{%- endif %}{# END {%- if endpoint.sybase_settings is defined %} #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}

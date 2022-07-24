@@ -30,7 +30,7 @@ Resources:
 {%- if capacity_reservation.instance_match_criteria is defined %}
       InstanceMatchCriteria: {{ capacity_reservation.instance_match_criteria }}
 {%- endif %}
-{%- if capacity_reservation.tag_specifications is defined %}  {# BEGIN {%- if capacity_reservation.tag_specifications is defined %} #}
+{%- if capacity_reservation.tag_specifications is defined %}{# BEGIN {%- if capacity_reservation.tag_specifications is defined %} #}
       TagSpecifications:
 {%- for tag_specification in capacity_reservation.tag_specifications %}
         -
@@ -45,7 +45,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if capacity_reservation.tag_specifications is defined %} #}
+{%- endif %}{# END {%- if capacity_reservation.tag_specifications is defined %} #}
 {%- if capacity_reservation.tenancy is defined %}
       Tenancy: {{ capacity_reservation.tenancy }}
 {%- endif %}

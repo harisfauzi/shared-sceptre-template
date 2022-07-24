@@ -16,7 +16,7 @@ Resources:
       Content:
 {{ document.content | indent(width=8, first=true) }}
 {%- endif %}
-{%- if document.attachments is defined %}  {# BEGIN {%- if document.attachments is defined %} #}
+{%- if document.attachments is defined %}{# BEGIN {%- if document.attachments is defined %} #}
       Attachments:
 {%- for attachment in document.attachments %}
         -
@@ -33,7 +33,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if document.attachments is defined %} #}
+{%- endif %}{# END {%- if document.attachments is defined %} #}
 {%- if document.document_format is defined %}
       DocumentFormat: {{ document.document_format }}
 {%- endif %}
