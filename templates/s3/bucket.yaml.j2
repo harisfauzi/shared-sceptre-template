@@ -150,76 +150,76 @@ Resources:
 {%- endif %}  {# if bucket.inventory_configurations is defined #}
 {%- if bucket.lifecycle_configuration is defined %}
       LifecycleConfiguration:
-          Rules:
+        Rules:
 {%- for rule in bucket.lifecycle_configuration.rules %}
-            - Status: {{ rule.status }}
+          - Status: {{ rule.status }}
 {%- if rule.abort_incomplete_multipart_upload is defined %}
-              AbortIncompleteMultipartUpload:
-                DaysAfterInitiation: {{ rule.abort_incomplete_multipart_upload.days_after_initiation }}
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: {{ rule.abort_incomplete_multipart_upload.days_after_initiation }}
 {%- endif %}
 {%- if rule.expiration_date is defined %}
-              ExpirationDate: {{ rule.expiration_date }}
+            ExpirationDate: {{ rule.expiration_date }}
 {%- endif %}
 {%- if rule.expiration_in_days is defined %}
-              ExpirationInDays: {{ rule.expiration_in_days }}
+            ExpirationInDays: {{ rule.expiration_in_days }}
 {%- endif %}
 {%- if rule.expired_object_delete_marker is defined %}
-              ExpiredObjectDeleteMarker: {{ rule.expired_object_delete_marker }}
+            ExpiredObjectDeleteMarker: {{ rule.expired_object_delete_marker }}
 {%- endif %}
 {%- if rule.id is defined %}
-              Id: {{ rule.id }}
+            Id: {{ rule.id }}
 {%- endif %}
 {%- if rule.noncurrent_version_expiration is defined %}
-              NoncurrentVersionExpiration:
-                NoncurrentDays: {{ rule.noncurrent_version_expiration.noncurrent_days }}
+            NoncurrentVersionExpiration:
+              NoncurrentDays: {{ rule.noncurrent_version_expiration.noncurrent_days }}
 {%- if rule.noncurrent_version_expiration.newer_noncurrent_versions is defined %}
-                NewerNoncurrentVersions: {{ rule.noncurrent_version_expiration.newer_noncurrent_versions }}
+              NewerNoncurrentVersions: {{ rule.noncurrent_version_expiration.newer_noncurrent_versions }}
 {%- endif %}
 {%- endif %}
 {%- if rule.noncurrent_version_expiration_in_days is defined %}
-              NoncurrentVersionExpirationInDays: {{ rule.noncurrent_version_expiration_in_days }}
+            NoncurrentVersionExpirationInDays: {{ rule.noncurrent_version_expiration_in_days }}
 {%- endif %}
 {%- if rule.noncurrent_version_transitions is defined %}
-              NoncurrentVersionTransition:
-                StorageClass: {{ rule.noncurrent_version_transitions.storage_class }}
-                TransitionInDays: {{ rule.noncurrent_version_transitions.transition_in_days }}
+            NoncurrentVersionTransition:
+              StorageClass: {{ rule.noncurrent_version_transitions.storage_class }}
+              TransitionInDays: {{ rule.noncurrent_version_transitions.transition_in_days }}
 {%- endif %}
 {%- if rule.noncurrent_version_transitions is defined %}
-              NoncurrentVersionTransitions:
+            NoncurrentVersionTransitions:
 {%- for noncurrent_version_transition in rule.noncurrent_version_transitions %}
-                - StorageClass: {{ noncurrent_version_transition.storage_class }}
-                  TransitionInDays: {{ noncurrent_version_transition.transition_in_days }}
+              - StorageClass: {{ noncurrent_version_transition.storage_class }}
+                TransitionInDays: {{ noncurrent_version_transition.transition_in_days }}
 {%- endfor %}
 {%- endif %}
 {%- if rule.prefix is defined %}
-              Prefix: {{ rule.prefix }}
+            Prefix: {{ rule.prefix }}
 {%- endif %}
 {%- if rule.tag_filters is defined %}
-              TagFilters:
+            TagFilters:
 {%- for key,value in rule.tag_filters.items() %}
-                - Key: {{ key }}
-                  Value: {{ value }}
+              - Key: {{ key }}
+                Value: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if rule.transition is defined %}
-              Transition:
-                StorageClass: {{ rule.transition.storage_class }}
+            Transition:
+              StorageClass: {{ rule.transition.storage_class }}
 {%- if rule.transition.transition_date is defined %}
-                TransitionDate: {{ rule.transition.transition_date }}
+              TransitionDate: {{ rule.transition.transition_date }}
 {%- endif %}
 {%- if rule.transition.transition_in_days is defined %}
-                TransitionInDays: {{ rule.transition.transition_in_days }}
+              TransitionInDays: {{ rule.transition.transition_in_days }}
 {%- endif %}
 {%- endif %}
 {%- if rule.transitions is defined %}
-              Transitions:
+            Transitions:
 {%- for transition in rule.transitions %}
-                - StorageClass: {{ transition.storage_class }}
+              - StorageClass: {{ transition.storage_class }}
 {%- if transition.transition_date is defined %}
-                  TransitionDate: {{ transition.transition_date }}
+                TransitionDate: {{ transition.transition_date }}
 {%- endif %}
 {%- if transition.transition_in_days is defined %}
-                  TransitionInDays: {{ transition.transition_in_days }}
+                TransitionInDays: {{ transition.transition_in_days }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}  {# if rule.transitions is defined #}
