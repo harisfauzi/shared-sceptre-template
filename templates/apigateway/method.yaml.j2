@@ -29,7 +29,7 @@ Resources:
 {%- if method.authorizer_id is defined %}
       AuthorizerId: {{ method.authorizer_id }}
 {%- endif %}
-{%- if method.integration is defined %}  {# BEGIN {%- if method.integration is defined %} #}
+{%- if method.integration is defined %}{# BEGIN {%- if method.integration is defined %} #}
       Integration:
 {%- if method.integration.cache_key_parameters is defined %}
         CacheKeyParameters:
@@ -103,8 +103,8 @@ Resources:
 {%- if method.integration.uri is defined %}
         Uri: {{ method.integration.uri }}
 {%- endif %}
-{%- endif %}  {# END {%- if method.integration is defined %} #}
-{%- if method.method_responses is defined %}  {# BEGIN {%- if method.method_responses is defined %} #}
+{%- endif %}{# END {%- if method.integration is defined %} #}
+{%- if method.method_responses is defined %}{# BEGIN {%- if method.method_responses is defined %} #}
       MethodResponses:
 {%- for response in method.method_responses %}
         - StatusCode: {{ response.status_code }}
@@ -121,7 +121,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if method.method_responses is defined %} #}
+{%- endif %}{# END {%- if method.method_responses is defined %} #}
 {%- if method.operation_name is defined %}
       OperationName: {{ method.operation_name }}
 {%- endif %}

@@ -43,7 +43,7 @@ Resources:
 {%- if table.table_input.retention is defined %}
         Retention: {{ table.table_input.retention }}
 {%- endif %}
-{%- if table.table_input.storage_descriptor is defined %}  {# BEGIN {%- if table.table_input.storage_descriptor is defined %} #}
+{%- if table.table_input.storage_descriptor is defined %}{# BEGIN {%- if table.table_input.storage_descriptor is defined %} #}
         StorageDescriptor:
 {%- if table.table_input.storage_descriptor.bucket_columns is defined %}
           BucketColumns:
@@ -84,7 +84,7 @@ Resources:
           Parameters:
 {{ table.table_input.storage_descriptor.parameters | indent(width=12, first=true) }}
 {%- endif %}
-{%- if table.table_input.storage_descriptor.schema_reference is defined %}  {# BEGIN {%- if table.table_input.storage_descriptor.schema_reference is defined %} #}
+{%- if table.table_input.storage_descriptor.schema_reference is defined %}{# BEGIN {%- if table.table_input.storage_descriptor.schema_reference is defined %} #}
           SchemaReference:
 {%- if table.table_input.storage_descriptor.schema_reference.schema_id is defined %}
             SchemaId:
@@ -104,8 +104,8 @@ Resources:
 {%- if table.table_input.storage_descriptor.schema_reference.schema_version_number is defined %}
             SchemaVersionNumber: {{ table.table_input.storage_descriptor.schema_reference.schema_version_number }}
 {%- endif %}
-{%- endif %}  {# END {%- if table.table_input.storage_descriptor.schema_reference is defined %} #}
-{%- if table.table_input.storage_descriptor.serde_info is defined %}  {# BEGIN {%- if table.table_input.storage_descriptor.serde_info is defined %} #}
+{%- endif %}{# END {%- if table.table_input.storage_descriptor.schema_reference is defined %} #}
+{%- if table.table_input.storage_descriptor.serde_info is defined %}{# BEGIN {%- if table.table_input.storage_descriptor.serde_info is defined %} #}
           SerdeInfo:
 {%- if table.table_input.storage_descriptor.serde_info.name is defined %}
             Name: {{ table.table_input.storage_descriptor.serde_info.name }}
@@ -119,8 +119,8 @@ Resources:
 {%- if table.table_input.storage_descriptor.serde_info.serialization_library is defined %}
             SerializationLibrary: {{ table.table_input.storage_descriptor.serde_info.serialization_library }}
 {%- endif %}
-{%- endif %}  {# END {%- if table.table_input.storage_descriptor.serde_info is defined %} #}
-{%- if table.table_input.storage_descriptor.skewed_info is defined %}  {# BEGIN {%- if table.table_input.storage_descriptor.skewed_info is defined %} #}
+{%- endif %}{# END {%- if table.table_input.storage_descriptor.serde_info is defined %} #}
+{%- if table.table_input.storage_descriptor.skewed_info is defined %}{# BEGIN {%- if table.table_input.storage_descriptor.skewed_info is defined %} #}
           SkewedInfo:
 {%- if table.table_input.storage_descriptor.skewed_info.skewed_column_names is defined %}
             SkewedColumnNames:
@@ -140,7 +140,7 @@ Resources:
               - {{ skewed_column_value }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}  {# END {%- if table.table_input.storage_descriptor.skewed_info is defined %} #}
+{%- endif %}{# END {%- if table.table_input.storage_descriptor.skewed_info is defined %} #}
 {%- if table.table_input.storage_descriptor.sort_columns is defined %}
           SortColumns:
 {%- for sort_column in table.table_input.storage_descriptor.sort_columns %}
@@ -151,11 +151,11 @@ Resources:
 {%- if table.table_input.storage_descriptor.stored_as_sub_directories is defined %}
           StoredAsSubDirectories: {{ table.table_input.storage_descriptor.stored_as_sub_directories }}
 {%- endif %}
-{%- endif %}  {# END {%- if table.table_input.storage_descriptor is defined %} #}
+{%- endif %}{# END {%- if table.table_input.storage_descriptor is defined %} #}
 {%- if table.table_input.table_type is defined %}
         TableType: {{ table.table_input.table_type }}
 {%- endif %}
-{%- if table.table_input.target_table is defined %}  {# BEGIN {%- if table.table_input.target_table is defined %} #}
+{%- if table.table_input.target_table is defined %}{# BEGIN {%- if table.table_input.target_table is defined %} #}
         TargetTable:
 {%- if table.table_input.target_table.catalog_id is defined %}
           CatalogId: {{ table.table_input.target_table.catalog_id }}
@@ -166,7 +166,7 @@ Resources:
 {%- if table.table_input.target_table.name is defined %}
           Name: {{ table.table_input.target_table.name }}
 {%- endif %}
-{%- endif %}  {# END {%- if table.table_input.target_table is defined %} #}
+{%- endif %}{# END {%- if table.table_input.target_table is defined %} #}
 {%- if table.table_input.view_expanded_text is defined %}
         ViewExpandedText: {{ table.table_input.view_expanded_text }}
 {%- endif %}

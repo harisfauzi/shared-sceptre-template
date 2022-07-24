@@ -23,7 +23,7 @@ Resources:
 {%- if work_group.state is defined %}
       State: {{ work_group.state }}
 {%- endif %}
-{%- if work_group.work_group_configuration is defined %}  {# BEGIN {%- if work_group.work_group_configuration is defined %} #}
+{%- if work_group.work_group_configuration is defined %}{# BEGIN {%- if work_group.work_group_configuration is defined %} #}
       WorkGroupConfiguration:
 {%- if work_group.work_group_configuration.bytes_scanned_cutoff_per_query is defined %}
         BytesScannedCutoffPerQuery: {{ work_group.work_group_configuration.bytes_scanned_cutoff_per_query }}
@@ -41,7 +41,7 @@ Resources:
 {%- if work_group.work_group_configuration.requester_pays_enabled is defined %}
         RequesterPaysEnabled: {{ work_group.work_group_configuration.requester_pays_enabled }}
 {%- endif %}
-{%- if work_group.work_group_configuration.result_configuration is defined %}  {# BEGIN {%- if work_group.work_group_configuration.result_configuration is defined %} #}
+{%- if work_group.work_group_configuration.result_configuration is defined %}{# BEGIN {%- if work_group.work_group_configuration.result_configuration is defined %} #}
         ResultConfiguration:
 {%- if work_group.work_group_configuration.result_configuration.encryption_configuration is defined %}
           EncryptionConfiguration:
@@ -50,9 +50,9 @@ Resources:
 {%- if work_group.work_group_configuration.result_configuration.output_location is defined %}
           OutputLocation: {{ work_group.work_group_configuration.result_configuration.output_location }}
 {%- endif %}
-{%- endif %}  {# END {%- if work_group.work_group_configuration.result_configuration is defined %} #}
-{%- endif %}  {# END {%- if work_group.work_group_configuration is defined %} #}
-{%- if work_group.work_group_configuration_updates is defined %}  {# BEGIN {%- if work_group.work_group_configuration_updates is defined %} #}
+{%- endif %}{# END {%- if work_group.work_group_configuration.result_configuration is defined %} #}
+{%- endif %}{# END {%- if work_group.work_group_configuration is defined %} #}
+{%- if work_group.work_group_configuration_updates is defined %}{# BEGIN {%- if work_group.work_group_configuration_updates is defined %} #}
       WorkGroupConfigurationUpdates:
 {%- if work_group.work_group_configuration_updates.bytes_scanned_cutoff_per_query is defined %}
         BytesScannedCutoffPerQuery: {{ work_group.work_group_configuration_updates.bytes_scanned_cutoff_per_query }}
@@ -73,7 +73,7 @@ Resources:
 {%- if work_group.work_group_configuration_updates.requester_pays_enabled is defined %}
         RequesterPaysEnabled: {{ work_group.work_group_configuration_updates.requester_pays_enabled }}
 {%- endif %}
-{%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %}  {# BEGIN {%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %} #}
+{%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %}{# BEGIN {%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %} #}
         ResultConfigurationUpdates:
 {%- if work_group.work_group_configuration_updates.result_configuration_updates.encryption_configuration is defined %}
           EncryptionConfiguration:
@@ -88,8 +88,8 @@ Resources:
 {%- if work_group.work_group_configuration_updates.result_configuration_updates.remove_output_location is defined %}
           RemoveOutputLocation: {{ work_group.work_group_configuration_updates.result_configuration_updates.remove_output_location }}
 {%- endif %}
-{%- endif %}  {# END {%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %} #}
-{%- endif %}  {# END {%- if work_group.work_group_configuration_updates is defined %} #}
+{%- endif %}{# END {%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %} #}
+{%- endif %}{# END {%- if work_group.work_group_configuration_updates is defined %} #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}

@@ -12,7 +12,7 @@ Resources:
     UpdateReplacePolicy: {{ patch_baseline.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ patch_baseline.patch_baseline_name }}
-{%- if patch_baseline.approval_rules is defined %}  {# BEGIN {%- if patch_baseline.approval_rules is defined %} #}
+{%- if patch_baseline.approval_rules is defined %}{# BEGIN {%- if patch_baseline.approval_rules is defined %} #}
       ApprovalRules:
         PatchRules:
 {%- for patch_rule in patch_baseline.approval_rules.patch_rules %}
@@ -22,7 +22,7 @@ Resources:
 {%- endif %}
 {%- if patch_rule.approve_until_date is defined %}
             ApproveUntilDate:
-              {{ patch_rule.approve_until_date }}  {#  YYYY-MM-DD #}
+              {{ patch_rule.approve_until_date }}{#  YYYY-MM-DD #}
 {%- endif %}
 {%- if patch_rule.compliance_level is defined %}
             ComplianceLevel: {{ patch_rule.compliance_level }}
@@ -35,7 +35,7 @@ Resources:
 {{ patch_filter_group_macro.prep(patch_rule.patch_filter_group) | indent(width=14, first=true) }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if patch_baseline.approval_rules is defined %} #}
+{%- endif %}{# END {%- if patch_baseline.approval_rules is defined %} #}
 {%- if patch_baseline.approved_patches is defined %}
       ApprovedPatches:
 {%- for approved_patch in patch_baseline.approved_patches %}

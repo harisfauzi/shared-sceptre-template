@@ -42,7 +42,7 @@ Resources:
 {%- if association.max_errors is defined %}
       MaxErrors: {{ association.max_errors }}
 {%- endif %}
-{%- if association.output_location is defined %}  {# BEGIN {%- if association.output_location is defined %} #}
+{%- if association.output_location is defined %}{# BEGIN {%- if association.output_location is defined %} #}
       OutputLocation:
         S3Location:
 {%- if association.output_location.s3_location.output_s3_bucket_name is defined %}
@@ -54,7 +54,7 @@ Resources:
 {%- if association.output_location.s3_location.output_s3_region is defined %}
           OutputS3Region: {{ association.output_location.s3_location.output_s3_region }}
 {%- endif %}
-{%- endif %}  {# END {%- if association.output_location is defined %} #}
+{%- endif %}{# END {%- if association.output_location is defined %} #}
 {%- if association.parameters is defined %}
       Parameters:
 {%- for key, _values in association.parameters.items() %}

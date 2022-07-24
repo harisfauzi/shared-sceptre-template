@@ -42,7 +42,7 @@ Resources:
       Targets:
 {{ targets_macro.prep(maintenance_window_task.targets) | indent(width=8, first=true) }}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters is defined %}  {# BEGIN {%- if maintenance_window_task.task_invocation_parameters is defined %} #}
+{%- if maintenance_window_task.task_invocation_parameters is defined %}{# BEGIN {%- if maintenance_window_task.task_invocation_parameters is defined %} #}
       TaskInvocationParameters:
 {%- if maintenance_window_task.task_invocation_parameters.maintenance_window_automation_parameters is defined %}
         MaintenanceWindowAutomationParameters:
@@ -79,7 +79,7 @@ Resources:
 {%- endif %}
 {%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.notification_config is defined %}
           NotificationConfig:
-            NotificationArn: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.notification_config.notification_arn }}  {# required #}
+            NotificationArn: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.notification_config.notification_arn }}{# required #}
 {%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.notification_config.notification_events is defined %}
             NotificationEvents:
 {%- for notification_event in maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.notification_config.notification_events %}
@@ -116,7 +116,7 @@ Resources:
           Name: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_step_functions_parameters.name }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if maintenance_window_task.task_invocation_parameters is defined %} #}
+{%- endif %}{# END {%- if maintenance_window_task.task_invocation_parameters is defined %} #}
 {%- if maintenance_window_task.task_parameters_json is defined %}
       TaskParameters: {{ maintenance_window_task.task_parameters_json }}
 {%- elif maintenance_window_task.task_parameters is defined %}

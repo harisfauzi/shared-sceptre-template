@@ -35,20 +35,20 @@ Resources:
 {%- if spot_fleet.spot_fleet_request_config_data.instance_pools_to_use_count is defined %}
         InstancePoolsToUseCount: {{ spot_fleet.spot_fleet_request_config_data.instance_pools_to_use_count }}
 {%- endif %}
-{%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %}  {# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %} #}
+{%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %}{# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %} #}
         LaunchSpecifications:
 {%- for launch_specification in spot_fleet.spot_fleet_request_config_data.launch_specifications %}
           -
 {{ spot_fleet_launch_specification.prep(launch_specification) | indent(width=12, first=True) }}
 {%- endfor %}
 {# END {%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %} #}
-{%- elif spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %}  {# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %} #}
+{%- elif spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %}{# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %} #}
         LaunchTemplateConfigs:
 {%- for launch_template_config in spot_fleet.spot_fleet_request_config_data.launch_template_configs %}
 
 {%- endfor %}
-{%- endif %}  {# END {%- if spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %} #}
-{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %}  {# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %} #}
+{%- endif %}{# END {%- if spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %} #}
+{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %}{# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %} #}
         LoadBalancersConfig:
 {%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config.classic_load_balancers_config is defined %}
           ClassicLoadBalancersConfig:
@@ -64,7 +64,7 @@ Resources:
               - Arn: {{ target_group | trim }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}  {# END {%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %} #}
+{%- endif %}{# END {%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %} #}
 {%- if spot_fleet.spot_fleet_request_config_data.on_demand_allocation_strategy is defined %}
         OnDemandAllocationStrategy: {{ spot_fleet.spot_fleet_request_config_data.on_demand_allocation_strategy }}
 {%- endif %}
@@ -77,7 +77,7 @@ Resources:
 {%- if spot_fleet.spot_fleet_request_config_data.replace_unhealthy_instances is defined %}
         ReplaceUnhealthyInstances: {{ spot_fleet.spot_fleet_request_config_data.replace_unhealthy_instances }}
 {%- endif %}
-{%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %}  {## BEGIN {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %} #}
+{%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %}{## BEGIN {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %} #}
         SpotMaintenanceStrategies:
           CapacityRebalance:
 {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance.replacement_strategy is defined %}
@@ -86,7 +86,7 @@ Resources:
 {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance.termination_delay is defined %}
             TerminationDelay: {{ spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance.termination_delay }}
 {%- endif %}
-{%- endif %}  {## END {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %} #}
+{%- endif %}{## END {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %} #}
 {%- if spot_fleet.spot_fleet_request_config_data.spot_max_total_price is defined %}
         SpotMaxTotalPrice: {{ spot_fleet.spot_fleet_request_config_data.spot_max_total_price }}
 {%- endif %}

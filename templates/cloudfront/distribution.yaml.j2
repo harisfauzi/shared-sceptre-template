@@ -20,13 +20,13 @@ Resources:
           - {{ alias }}
 {%- endfor %}
 {%- endif %}
-{%- if distribution.distribution_config.cache_behaviors is defined %}  {# BEGIN {%- if distribution.distribution_config.cache_behaviors is defined %} #}
+{%- if distribution.distribution_config.cache_behaviors is defined %}{# BEGIN {%- if distribution.distribution_config.cache_behaviors is defined %} #}
         CacheBehaviors:
 {%- for cache_behavior in distribution.distribution_config.cache_behaviors %}
           -
 {{ macro_distribution_cache_behavior.prep(cache_behavior) | indent(width=12, first=true) }}
 {%- endfor %}
-{%- endif %}   {# END {%- if distribution.distribution_config.cache_behaviors is defined %} #}
+{%- endif %}{# END {%- if distribution.distribution_config.cache_behaviors is defined %} #}
 {%- if distribution.distribution_config.cnames is defined %}
         CNAMEs:
 {%- for cname in distribution.distribution_config.cnames %}
@@ -89,7 +89,7 @@ Resources:
           Prefix: {{ distribution.distribution_config.logging.include_cookies }}
 {%- endif %}
 {%- endif %}
-{%- if distribution.distribution_config.origin_groups is defined %}  {# BEGIN {%- if distribution.distribution_config.origin_groups is defined %} #}
+{%- if distribution.distribution_config.origin_groups is defined %}{# BEGIN {%- if distribution.distribution_config.origin_groups is defined %} #}
         OriginGroups:
           Quantity: {{ distribution.distribution_config.origin_groups.quantity }}
 {%- if distribution.distribution_config.origin_groups.items is defined %}
@@ -111,8 +111,8 @@ Resources:
                 Quantity: {{ item.members.quantity }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}  {# END {%- if distribution.distribution_config.origin_groups is defined %} #}
-{%- if distribution.distribution_config.origins is defined %}  {# {%- if distribution.distribution_config.origins is defined %} #}
+{%- endif %}{# END {%- if distribution.distribution_config.origin_groups is defined %} #}
+{%- if distribution.distribution_config.origins is defined %}{# {%- if distribution.distribution_config.origins is defined %} #}
         Origins:
 {%- for origin in distribution.distribution_config.origins %}
           - DomainName: {{ origin.domain_name }}
@@ -155,7 +155,7 @@ Resources:
 {%- if origin.origin_path is defined %}
             OriginPath: {{ origin.origin_path }}
 {%- endif %}
-{%- if origin.origin_shield is defined %}  {## BEGIN {%- if origin.origin_shield is defined %} #}
+{%- if origin.origin_shield is defined %}{## BEGIN {%- if origin.origin_shield is defined %} #}
             OriginShield:
 {%- if origin.origin_shield.enabled is defined %}
               Enabled: {{ origin.origin_shield.enabled }}
@@ -163,13 +163,13 @@ Resources:
 {%- if origin.origin_shield.origin_shield_region is defined %}
               OriginShieldRegion: {{ origin.origin_shield.origin_shield_region }}
 {%- endif %}
-{%- endif %}  {## END {%- if origin.origin_shield is defined %} #}
+{%- endif %}{## END {%- if origin.origin_shield is defined %} #}
 {%- if origin.s3_origin_config is defined %}
             S3OriginConfig:
               OriginAccessIdentity: {{ origin.s3_origin_config.origin_access_identity }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if distribution.distribution_config.origins is defined %} #}
+{%- endif %}{# END {%- if distribution.distribution_config.origins is defined %} #}
 {%- if distribution.distribution_config.price_class is defined %}
         PriceClass: {{ distribution.distribution_config.price_class }}
 {%- endif %}
@@ -191,7 +191,7 @@ Resources:
           OriginAccessIdentity: {{ distribution.distribution_config.s3_origin.origin_access_identity }}
 {%- endif %}
 {%- endif %}
-{%- if distribution.distribution_config.viewer_certificate is defined %}  {## BEGIN {%- if distribution.distribution_config.viewer_certificate is defined %} #}
+{%- if distribution.distribution_config.viewer_certificate is defined %}{## BEGIN {%- if distribution.distribution_config.viewer_certificate is defined %} #}
         ViewerCertificate:
 {%- if distribution.distribution_config.viewer_certificate.acm_certificate_arn is defined %}
           AcmCertificateArn: {{ distribution.distribution_config.viewer_certificate.acm_certificate_arn | trim }}
@@ -208,7 +208,7 @@ Resources:
 {%- if distribution.distribution_config.viewer_certificate.ssl_support_method is defined %}
           SslSupportMethod: {{ distribution.distribution_config.viewer_certificate.ssl_support_method }}
 {%- endif %}
-{%- endif %}  {## END {%- if distribution.distribution_config.viewer_certificate is defined %} #}
+{%- endif %}{## END {%- if distribution.distribution_config.viewer_certificate is defined %} #}
 {%- if distribution.distribution_config.web_acl_id is defined %}
         WebACLId: {{ distribution.distribution_config.web_acl_id | trim }}
 {%- endif %}

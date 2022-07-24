@@ -22,7 +22,7 @@ Resources:
 {%- endif %}
 
 {%- if route_table.route_entries is defined %}
-{%- for route_entry in route_table.route_entries %}  {# BEGIN {%- for route_entry in route_table.route_entries %} #}
+{%- for route_entry in route_table.route_entries %}{# BEGIN {%- for route_entry in route_table.route_entries %} #}
 {%- set route_entry_name = route_table_name ~ route_entry.name %}
   {{ route_entry_name }}:
     Type: AWS::EC2::Route
@@ -67,7 +67,7 @@ Resources:
       VpcPeeringConnectionId: {{ route_entry.vpc_peering_connection_id | trim }}
 {%- endif %}
 
-{%- endfor %}  {# END {%- for route_entry in route_table.route_entries %} #}
+{%- endfor %}{# END {%- for route_entry in route_table.route_entries %} #}
 {%- endif %}
 
 {%- endfor %}

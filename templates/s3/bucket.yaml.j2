@@ -3,21 +3,21 @@ Description: S3 Bucket(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-{%- for bucket in sceptre_user_data.buckets %}  {# BEGIN {%- for bucket in sceptre_user_data.buckets %} #}
+{%- for bucket in sceptre_user_data.buckets %}{# BEGIN {%- for bucket in sceptre_user_data.buckets %} #}
 {%- set bucket_name = bucket.name %}
   {{ bucket_name }}:
     Type: AWS::S3::Bucket
     DeletionPolicy: {{ bucket.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ bucket.update_replace_policy | default('Delete') }}
     Properties:
-{%- if bucket.accelerate_configuration is defined %}  {## BEGIN {%- if bucket.accelerate_configuration is defined %} #}
+{%- if bucket.accelerate_configuration is defined %}{## BEGIN {%- if bucket.accelerate_configuration is defined %} #}
       AccelerateConfiguration:
         AccelerationStatus: {{ bucket.accelerate_configuration.acceleration_status }}
-{%- endif %}  {## END {%- if bucket.accelerate_configuration is defined %} #}
-{%- if bucket.access_control is defined %}  {## BEGIN {%- if bucket.access_control is defined %} #}
+{%- endif %}{## END {%- if bucket.accelerate_configuration is defined %} #}
+{%- if bucket.access_control is defined %}{## BEGIN {%- if bucket.access_control is defined %} #}
       AccessControl: {{ bucket.access_control }}
-{%- endif %}  {## END {%- if bucket.access_control is defined %} #}
-{%- if bucket.analytics_configurations is defined %}  {## BEGIN {%- if bucket.analytics_configurations is defined %} #}
+{%- endif %}{## END {%- if bucket.access_control is defined %} #}
+{%- if bucket.analytics_configurations is defined %}{## BEGIN {%- if bucket.analytics_configurations is defined %} #}
       AnalyticsConfigurations:
 {%- for analytics_configurations in bucket.analytics_configurations %}
         - Id: {{ analytics_configurations.id }}
@@ -28,7 +28,7 @@ Resources:
             DataExport:
               Destination:
                 BucketArn: {{ analytics_configurations.storage_class_analysis.data_export.destination.bucket_arn }}
-                Format: {{ analytics_configurations.storage_class_analysis.data_export.destination.format }}  {# one of CSV | ORC | Parquet #}
+                Format: {{ analytics_configurations.storage_class_analysis.data_export.destination.format }}{# one of CSV | ORC | Parquet #}
 {%- if analytics_configurations.storage_class_analysis.data_export.destination.bucket_account_id is defined %}
                 BucketAccountId: {{ analytics_configurations.storage_class_analysis.data_export.destination.bucket_account_id | trim }}
 {%- endif %}
@@ -42,9 +42,9 @@ Resources:
             - Key: {{ key }}
               Value: {{ value }}
 {%- endfor %}
-{%- endif %}  {# if analytics_configurations.tag_filters #}
-{%- endfor %} {# for analytics_configurations in bucket.analytics_configurations #}
-{%- endif %}  {## END {%- if bucket.analytics_configurations is defined %} #}
+{%- endif %}{# if analytics_configurations.tag_filters #}
+{%- endfor %}{# for analytics_configurations in bucket.analytics_configurations #}
+{%- endif %}{## END {%- if bucket.analytics_configurations is defined %} #}
 {%- if bucket.bucket_encryption is defined %}
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -62,8 +62,8 @@ Resources:
               SSEAlgorithm: {{ server_side_encryption_configuration.server_side_encryption_by_default.sse_algorithm }}
 {%- endif %}
 {%- endif %}
-{%- endfor %}  {# for server_side_encryption_configuration in bucket.bucket_encryption.server_side_encryption_configuration #}
-{%- endif %}  {# if bucket.bucket_encryption is defined #}
+{%- endfor %}{# for server_side_encryption_configuration in bucket.bucket_encryption.server_side_encryption_configuration #}
+{%- endif %}{# if bucket.bucket_encryption is defined #}
 {%- if bucket.bucket_name is defined %}
       BucketName: {{ bucket.bucket_name }}
 {%- endif %}
@@ -97,8 +97,8 @@ Resources:
 {%- if corse_rule.max_age is defined %}
               MaxAge: {{ corse_rule.max_age }}
 {%- endif %}
-{%- endfor %}  {# for corse_rule in bucket.cors_configuration.cors_rules #}
-{%- endif %}  {# if bucket.cors_configuration is defined #}
+{%- endfor %}{# for corse_rule in bucket.cors_configuration.cors_rules #}
+{%- endif %}{# if bucket.cors_configuration is defined #}
 {%- if bucket.intelligent_tiering_configurations is defined %}
       IntelligentTieringConfigurations:
 {%- for intelligent_tiering_configuration in bucket.intelligent_tiering_configurations %}
@@ -119,8 +119,8 @@ Resources:
             - AccessTier: {{ tiering.access_tier }}
               Days: {{ tiering.days }}
 {%- endfor %}
-{%- endfor %}  {# for intelligent_tiering_configuration in bucket.intelligent_tiering_configurations #}
-{%- endif %}  {# if bucket.intelligent_tiering_configurations is defined #}
+{%- endfor %}{# for intelligent_tiering_configuration in bucket.intelligent_tiering_configurations #}
+{%- endif %}{# if bucket.intelligent_tiering_configurations is defined #}
 {%- if bucket.inventory_configurations is defined %}
       InventoryConfigurations:
 {%- for inventory_configuration in bucket.inventory_configurations %}
@@ -146,83 +146,83 @@ Resources:
 {%- if inventory_configuration.prefix is defined %}
           Prefix: {{ inventory_configuration.prefix }}
 {%- endif %}
-{%- endfor %}  {# for inventory_configuration in bucket.inventory_configurations #}
-{%- endif %}  {# if bucket.inventory_configurations is defined #}
+{%- endfor %}{# for inventory_configuration in bucket.inventory_configurations #}
+{%- endif %}{# if bucket.inventory_configurations is defined #}
 {%- if bucket.lifecycle_configuration is defined %}
       LifecycleConfiguration:
-          Rules:
+        Rules:
 {%- for rule in bucket.lifecycle_configuration.rules %}
-            - Status: {{ rule.status }}
+          - Status: {{ rule.status }}
 {%- if rule.abort_incomplete_multipart_upload is defined %}
-              AbortIncompleteMultipartUpload:
-                DaysAfterInitiation: {{ rule.abort_incomplete_multipart_upload.days_after_initiation }}
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: {{ rule.abort_incomplete_multipart_upload.days_after_initiation }}
 {%- endif %}
 {%- if rule.expiration_date is defined %}
-              ExpirationDate: {{ rule.expiration_date }}
+            ExpirationDate: {{ rule.expiration_date }}
 {%- endif %}
 {%- if rule.expiration_in_days is defined %}
-              ExpirationInDays: {{ rule.expiration_in_days }}
+            ExpirationInDays: {{ rule.expiration_in_days }}
 {%- endif %}
 {%- if rule.expired_object_delete_marker is defined %}
-              ExpiredObjectDeleteMarker: {{ rule.expired_object_delete_marker }}
+            ExpiredObjectDeleteMarker: {{ rule.expired_object_delete_marker }}
 {%- endif %}
 {%- if rule.id is defined %}
-              Id: {{ rule.id }}
+            Id: {{ rule.id }}
 {%- endif %}
 {%- if rule.noncurrent_version_expiration is defined %}
-              NoncurrentVersionExpiration:
-                NoncurrentDays: {{ rule.noncurrent_version_expiration.noncurrent_days }}
+            NoncurrentVersionExpiration:
+              NoncurrentDays: {{ rule.noncurrent_version_expiration.noncurrent_days }}
 {%- if rule.noncurrent_version_expiration.newer_noncurrent_versions is defined %}
-                NewerNoncurrentVersions: {{ rule.noncurrent_version_expiration.newer_noncurrent_versions }}
+              NewerNoncurrentVersions: {{ rule.noncurrent_version_expiration.newer_noncurrent_versions }}
 {%- endif %}
 {%- endif %}
 {%- if rule.noncurrent_version_expiration_in_days is defined %}
-              NoncurrentVersionExpirationInDays: {{ rule.noncurrent_version_expiration_in_days }}
+            NoncurrentVersionExpirationInDays: {{ rule.noncurrent_version_expiration_in_days }}
 {%- endif %}
 {%- if rule.noncurrent_version_transitions is defined %}
-              NoncurrentVersionTransition:
-                StorageClass: {{ rule.noncurrent_version_transitions.storage_class }}
-                TransitionInDays: {{ rule.noncurrent_version_transitions.transition_in_days }}
+            NoncurrentVersionTransition:
+              StorageClass: {{ rule.noncurrent_version_transitions.storage_class }}
+              TransitionInDays: {{ rule.noncurrent_version_transitions.transition_in_days }}
 {%- endif %}
 {%- if rule.noncurrent_version_transitions is defined %}
-              NoncurrentVersionTransitions:
+            NoncurrentVersionTransitions:
 {%- for noncurrent_version_transition in rule.noncurrent_version_transitions %}
-                - StorageClass: {{ noncurrent_version_transition.storage_class }}
-                  TransitionInDays: {{ noncurrent_version_transition.transition_in_days }}
+              - StorageClass: {{ noncurrent_version_transition.storage_class }}
+                TransitionInDays: {{ noncurrent_version_transition.transition_in_days }}
 {%- endfor %}
 {%- endif %}
 {%- if rule.prefix is defined %}
-              Prefix: {{ rule.prefix }}
+            Prefix: {{ rule.prefix }}
 {%- endif %}
 {%- if rule.tag_filters is defined %}
-              TagFilters:
+            TagFilters:
 {%- for key,value in rule.tag_filters.items() %}
-                - Key: {{ key }}
-                  Value: {{ value }}
+              - Key: {{ key }}
+                Value: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if rule.transition is defined %}
-              Transition:
-                StorageClass: {{ rule.transition.storage_class }}
+            Transition:
+              StorageClass: {{ rule.transition.storage_class }}
 {%- if rule.transition.transition_date is defined %}
-                TransitionDate: {{ rule.transition.transition_date }}
+              TransitionDate: {{ rule.transition.transition_date }}
 {%- endif %}
 {%- if rule.transition.transition_in_days is defined %}
-                TransitionInDays: {{ rule.transition.transition_in_days }}
+              TransitionInDays: {{ rule.transition.transition_in_days }}
 {%- endif %}
 {%- endif %}
 {%- if rule.transitions is defined %}
-              Transitions:
+            Transitions:
 {%- for transition in rule.transitions %}
-                - StorageClass: {{ transition.storage_class }}
+              - StorageClass: {{ transition.storage_class }}
 {%- if transition.transition_date is defined %}
-                  TransitionDate: {{ transition.transition_date }}
+                TransitionDate: {{ transition.transition_date }}
 {%- endif %}
 {%- if transition.transition_in_days is defined %}
-                  TransitionInDays: {{ transition.transition_in_days }}
+                TransitionInDays: {{ transition.transition_in_days }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# if rule.transitions is defined #}
+{%- endif %}{# if rule.transitions is defined #}
 {%- endfor %}
 {%- endif %}
 {%- if bucket.logging_configuration is defined %}
@@ -249,7 +249,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# if bucket.metrics_configuration is defined #}
+{%- endif %}{# if bucket.metrics_configuration is defined #}
 {%- if bucket.notification_configuration is defined %}
       NotificationConfiguration:
 {%- if bucket.notification_configuration.event_bridge_configuration is defined %}
@@ -271,7 +271,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# if bucket.notification_configuration.lambda_configurations is defined #}
+{%- endif %}{# if bucket.notification_configuration.lambda_configurations is defined #}
 {%- if bucket.notification_configuration.queue_configurations is defined %}
         QueueConfigurations:
 {%- for queue_configuration in bucket.notification_configuration.queue_configurations %}
@@ -287,7 +287,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# if bucket.notification_configuration.queue_configurations is defined #}
+{%- endif %}{# if bucket.notification_configuration.queue_configurations is defined #}
 {%- if bucket.notification_configuration.topic_configurations is defined %}
         TopicConfigurations:
 {%- for topic_configuration in bucket.notification_configuration.queue_configurations %}
@@ -303,8 +303,8 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# if bucket.notification_configuration.topic_configurations is defined #}
-{%- endif %}  {# if bucket.notification_configuration is defined #}
+{%- endif %}{# if bucket.notification_configuration.topic_configurations is defined #}
+{%- endif %}{# if bucket.notification_configuration is defined #}
 {%- if bucket.object_lock_configuration is defined %}
       ObjectLockConfiguration:
 {%- if bucket.object_lock_configuration.object_lock_enabled is defined %}
@@ -434,7 +434,7 @@ Resources:
 {%- endif %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# if bucket.replication_configuration is defined #}
+{%- endif %}{# if bucket.replication_configuration is defined #}
 {%- if bucket.tags is defined %}
       Tags:
 {%- for key,value in bucket.tags.items() %}
@@ -491,7 +491,7 @@ Resources:
 {%- endif %}
 {%- endfor %}
 {%- endif %}
-{%- endif %}  {# if bucket.website_configuration is defined #}
+{%- endif %}{# if bucket.website_configuration is defined #}
 
 {%- if bucket.bucket_policy is defined %}
   {{ bucket_name }}Policy:
@@ -503,8 +503,8 @@ Resources:
         Ref: {{ bucket_name }}
       PolicyDocument:
 {{ bucket.bucket_policy.policy_document | indent(width=8, first=true) }}
-{%- endif %}  {# if bucket.bucket_policy is defined #}
-{%- endfor %}  {# END {%- for bucket in sceptre_user_data.buckets %} #}
+{%- endif %}{# if bucket.bucket_policy is defined #}
+{%- endfor %}{# END {%- for bucket in sceptre_user_data.buckets %} #}
 
 Outputs:
 {%- for bucket in sceptre_user_data.buckets %}

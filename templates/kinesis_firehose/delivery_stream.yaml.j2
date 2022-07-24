@@ -29,7 +29,7 @@ Resources:
     DeletionPolicy: {{ delivery_stream.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ delivery_stream.update_replace_policy | default('Delete') }}
     Properties:
-{%- if delivery_stream.amazonopensearchservice_destination_configuration is defined %}  {# BEGIN {%- if delivery_stream.amazonopensearchservice_destination_configuration is defined %} #}
+{%- if delivery_stream.amazonopensearchservice_destination_configuration is defined %}{# BEGIN {%- if delivery_stream.amazonopensearchservice_destination_configuration is defined %} #}
       AmazonopensearchserviceDestinationConfiguration:
         IndexName: {{ delivery_stream.amazonopensearchservice_destination_configuration.index_name }}
         RoleARN: {{ delivery_stream.amazonopensearchservice_destination_configuration.role_arn | trim }}
@@ -75,21 +75,21 @@ Resources:
         VpcConfiguration:
 {{ macro_vpc_configuration.prep(delivery_stream.amazonopensearchservice_destination_configuration.vpc_configuration) | indent(width=10, first=True) }}
 {%- endif %}
-{%- endif %}  {# END {%- if delivery_stream.amazonopensearchservice_destination_configuration is defined %} #}
-{%- if delivery_stream.delivery_stream_encryption_configuration_input is defined %}  {# BEGIN {%- if delivery_stream.delivery_stream_encryption_configuration_input is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.amazonopensearchservice_destination_configuration is defined %} #}
+{%- if delivery_stream.delivery_stream_encryption_configuration_input is defined %}{# BEGIN {%- if delivery_stream.delivery_stream_encryption_configuration_input is defined %} #}
       DeliveryStreamEncryptionConfigurationInput:
         KeyType: {{ delivery_stream.delivery_stream_encryption_configuration_input.key_type }}
 {%- if delivery_stream.delivery_stream_encryption_configuration_input.key_arn is defined %}
         KeyARN: {{ delivery_stream.delivery_stream_encryption_configuration_input.key_arn }}
 {%- endif %}
-{%- endif %}  {# END {%- if delivery_stream.delivery_stream_encryption_configuration_input is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.delivery_stream_encryption_configuration_input is defined %} #}
 {%- if delivery_stream.delivery_stream_name is defined %}
       DeliveryStreamName: {{ delivery_stream.delivery_stream_name }}
 {%- endif %}
 {%- if delivery_stream.delivery_stream_type is defined %}
       DeliveryStreamType: {{ delivery_stream.delivery_stream_type }}
 {%- endif %}
-{%- if delivery_stream.elastic_search_destination_configuration is defined %}  {# BEGIN {%- if delivery_stream.elastic_search_destination_configuration is defined %} #}
+{%- if delivery_stream.elastic_search_destination_configuration is defined %}{# BEGIN {%- if delivery_stream.elastic_search_destination_configuration is defined %} #}
       ElasticsearchDestinationConfiguration:
         IndexName: {{ delivery_stream.elastic_search_destination_configuration.index_name }}
         RoleARN: {{ delivery_stream.elastic_search_destination_configuration.role_arn | trim }}
@@ -135,8 +135,8 @@ Resources:
         VpcConfiguration:
 {{ macro_vpc_configuration.prep(delivery_stream.elastic_search_destination_configuration.vpc_configuration) | indent(width=10, first=True) }}
 {%- endif %}
-{%- endif %}  {# END {%- if delivery_stream.elastic_search_destination_configuration is defined %} #}
-{%- if delivery_stream.extended_s3_destination_configuration is defined %}  {# BEGIN {%- if delivery_stream.extended_s3_destination_configuration is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.elastic_search_destination_configuration is defined %} #}
+{%- if delivery_stream.extended_s3_destination_configuration is defined %}{# BEGIN {%- if delivery_stream.extended_s3_destination_configuration is defined %} #}
       ExtendedS3DestinationConfiguration:
         BucketARN: {{ delivery_stream.extended_s3_destination_configuration.bucket_arn | trim }}
         RoleARN: {{ delivery_stream.extended_s3_destination_configuration.role_arn | trim }}
@@ -161,7 +161,7 @@ Resources:
 {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.enabled is defined %}
           Enabled: {{ delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.enabled }}
 {%- endif %}
-{%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.input_format_configuration is defined %}  {# BEGIN {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.input_format_configuration is defined %} #}
+{%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.input_format_configuration is defined %}{# BEGIN {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.input_format_configuration is defined %} #}
           InputFormatConfiguration:
             Deserializer:
 {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.input_format_configuration.deserializer.hive_json_ser_de is defined %}
@@ -186,8 +186,8 @@ Resources:
                 ConvertDotsInJsonKeysToUnderscores: {{ delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.input_format_configuration.deserializer.openx_json_ser_de.convert_dots_in_json_keys_to_underscore }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.input_format_configuration is defined %} #}
-{%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.output_formation_configuration is defined %}  {# BEGIN {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.output_formation_configuration is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.input_format_configuration is defined %} #}
+{%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.output_formation_configuration is defined %}{# BEGIN {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.output_formation_configuration is defined %} #}
           OutputFormatConfiguration:
             Serializer:
 {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.output_formation_configuration.serializer.orc_ser_de is defined %}
@@ -247,8 +247,8 @@ Resources:
                 WriterVersion: {{ delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.output_formation_configuration.serializer.parquet_ser_de.writer_version }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.output_formation_configuration is defined %} #}
-{%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.schema_configuration is defined %}  {# BEGIN {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.schema_configuration is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.output_formation_configuration is defined %} #}
+{%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.schema_configuration is defined %}{# BEGIN {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.schema_configuration is defined %} #}
           SchemaConfiguration:
 {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.schema_configuration.catalog_id is defined %}
             CatalogId: {{ delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.schema_configuration.catalog_id }}
@@ -268,7 +268,7 @@ Resources:
 {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.schema_configuration.version_id is defined %}
             VersionId: {{ delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.schema_configuration.version_id | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.schema_configuration is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.schema_configuration is defined %} #}
 {%- endif %}
 {%- if delivery_stream.extended_s3_destination_configuration.dynamic_partitioning_configuration is defined %}
         DynamicPartitioningConfiguration:
@@ -307,8 +307,8 @@ Resources:
 {%- if delivery_stream.extended_s3_destination_configuration.s3_backup_mode is defined %}
         S3BackupMode: {{ delivery_stream.extended_s3_destination_configuration.s3_backup_mode }}
 {%- endif %}
-{%- endif %}  {# END {%- if delivery_stream.extended_s3_destination_configuration is defined %} #}
-{%- if delivery_stream.http_endpoint_destination_configuration is defined %}  {# BEGIN {%- if delivery_stream.http_endpoint_destination_configuration is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.extended_s3_destination_configuration is defined %} #}
+{%- if delivery_stream.http_endpoint_destination_configuration is defined %}{# BEGIN {%- if delivery_stream.http_endpoint_destination_configuration is defined %} #}
       HttpEndpointDestinationConfiguration:
         EndpointConfiguration:
           Url: {{ delivery_stream.http_endpoint_destination_configuration.endpoint_configuration.url }}
@@ -362,13 +362,13 @@ Resources:
 {%- if delivery_stream.http_endpoint_destination_configuration.s3_backup_mode is defined %}
         S3BackupMode: {{ delivery_stream.http_endpoint_destination_configuration.s3_backup_mode }}
 {%- endif %}
-{%- endif %}  {# END {%- if delivery_stream.http_endpoint_destination_configuration is defined %} #}
-{%- if delivery_stream.kinesis_stream_source_configuration is defined %}  {# BEGIN {%- if delivery_stream.kinesis_stream_source_configuration is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.http_endpoint_destination_configuration is defined %} #}
+{%- if delivery_stream.kinesis_stream_source_configuration is defined %}{# BEGIN {%- if delivery_stream.kinesis_stream_source_configuration is defined %} #}
       KinesisStreamSourceConfiguration:
         KinesisStreamARN: {{ delivery_stream.kinesis_stream_source_configuration.kinesis_stream_arn | trim }}
         RoleARN: {{ delivery_stream.kinesis_stream_source_configuration.role_arn | trim }}
-{%- endif %}  {# END {%- if delivery_stream.kinesis_stream_source_configuration is defined %} #}
-{%- if delivery_stream.redshift_destination_configuration is defined %}  {# BEGIN {%- if delivery_stream.redshift_destination_configuration is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.kinesis_stream_source_configuration is defined %} #}
+{%- if delivery_stream.redshift_destination_configuration is defined %}{# BEGIN {%- if delivery_stream.redshift_destination_configuration is defined %} #}
       RedshiftDestinationConfiguration:
         ClusterJDBCURL: {{ delivery_stream.redshift_destination_configuration.cluster_jdbc_url }}
         CopyCommand:
@@ -404,12 +404,12 @@ Resources:
 {%- if delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.s3_backup_mode is defined %}
         S3BackupMode: {{ delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.s3_backup_mode }}
 {%- endif %}
-{%- endif %}  {# END {%- if delivery_stream.redshift_destination_configuration is defined %} #}
-{%- if delivery_stream.s3_destination_configuration is defined %}  {# BEGIN {%- if delivery_stream.s3_destination_configuration is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.redshift_destination_configuration is defined %} #}
+{%- if delivery_stream.s3_destination_configuration is defined %}{# BEGIN {%- if delivery_stream.s3_destination_configuration is defined %} #}
       S3DestinationConfiguration:
 {{ macro_s3_configuration.prep(delivery_stream.s3_destination_configuration) | indent(width=8, first=True) }}
-{%- endif %}  {# END {%- if delivery_stream.s3_destination_configuration is defined %} #}
-{%- if delivery_stream.splunk_destination_configuration is defined %}  {# BEGIN {%- if delivery_stream.splunk_destination_configuration is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.s3_destination_configuration is defined %} #}
+{%- if delivery_stream.splunk_destination_configuration is defined %}{# BEGIN {%- if delivery_stream.splunk_destination_configuration is defined %} #}
       SplunkDestinationConfiguration:
         HECEndpoint: {{ delivery_stream.splunk_destination_configuration.hec_endpoint }}
         HECEndpointType: {{ delivery_stream.splunk_destination_configuration.hec_endpoint_type }}
@@ -434,7 +434,7 @@ Resources:
 {%- if delivery_stream.splunk_destination_configuration.s3_backup_mode is defined %}
         S3BackupMode: {{ delivery_stream.splunk_destination_configuration.s3_backup_mode }}
 {%- endif %}
-{%- endif %}  {# END {%- if delivery_stream.splunk_destination_configuration is defined %} #}
+{%- endif %}{# END {%- if delivery_stream.splunk_destination_configuration is defined %} #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}

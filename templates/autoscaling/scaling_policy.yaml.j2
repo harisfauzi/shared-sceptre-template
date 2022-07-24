@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for scaling_policy in sceptre_user_data.scaling_policys %}  {# BEGIN {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
+{%- for scaling_policy in sceptre_user_data.scaling_policys %}{# BEGIN {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
 {%- set scaling_policy_name = scaling_policy.name %}
   {{ scaling_policy_name }}:
     Type: AWS::AutoScaling::ScalingPolicy
@@ -30,7 +30,7 @@ Resources:
 {%- if scaling_policy.policy_type is defined %}
       PolicyType: {{ scaling_policy.policy_type }}
 {%- endif %}
-{%- if scaling_policy.predictive_scaling_configuration is defined %}  {# BEGIN {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
+{%- if scaling_policy.predictive_scaling_configuration is defined %}{# BEGIN {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
       PredictiveScalingConfiguration:
         MetricSpecifications:
 {%- for metric_specification in scaling_policy.predictive_scaling_configuration.metric_specifications %}
@@ -69,7 +69,7 @@ Resources:
 {%- if scaling_policy.predictive_scaling_configuration.scheduling_buffer_time is defined %}
         SchedulingBufferTime: {{ scaling_policy.predictive_scaling_configuration.scheduling_buffer_time }}
 {%- endif %}
-{%- endif %}  {# END {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
+{%- endif %}{# END {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
 {%- if scaling_policy.scaling_adjustment is defined %}
       ScalingAdjustment: {{ scaling_policy.scaling_adjustment }}
 {%- endif %}
@@ -113,7 +113,7 @@ Resources:
 {%- endif %}
 {%- endif %}
 {%- endif %}
-{%- endfor %}  {# END {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
+{%- endfor %}{# END {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
 
 Outputs:
 {%- for scaling_policy in sceptre_user_data.scaling_policys %}

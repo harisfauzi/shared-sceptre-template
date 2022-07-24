@@ -38,7 +38,7 @@ Resources:
 {%- if resource_data_sync.sync_format is defined %}
       SyncFormat: 'JsonSerDe'
 {%- endif %}
-{%- if resource_data_sync.sync_source is defined %}  {# BEGIN {%- if resource_data_sync.sync_source is defined %} #}
+{%- if resource_data_sync.sync_source is defined %}{# BEGIN {%- if resource_data_sync.sync_source is defined %} #}
       SyncSource: 
         SourceRegions:
 {%- for source_region in resource_data_sync.sync_source.source_regions %}
@@ -58,7 +58,7 @@ Resources:
 {%- if resource_data_sync.sync_source.include_future_regions is defined %}
         IncludeFutureRegions: {{ resource_data_sync.sync_source.include_future_regions }}
 {% endif %}
-{%- endif %}  {# END {%- if resource_data_sync.sync_source is defined %} #}
+{%- endif %}{# END {%- if resource_data_sync.sync_source is defined %} #}
 {%- if resource_data_sync.sync_type is defined %}
       SyncType: {{ resource_data_sync.sync_type}}
 {%- endif %}

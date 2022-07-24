@@ -14,7 +14,7 @@ Resources:
       Distributions:
 {%- for distribution in distribution_configuration.distributions %}
         - Region: {{ distribution.region }}
-{%- if distribution.ami_distribution_configuration is defined %}  {# BEGIN {%- if distribution.ami_distribution_configuration is defined %} #}
+{%- if distribution.ami_distribution_configuration is defined %}{# BEGIN {%- if distribution.ami_distribution_configuration is defined %} #}
           AmiDistributionConfiguration:
 {%- if distribution.ami_distribution_configuration.ami_tags is defined %}
             AmiTags:
@@ -64,8 +64,8 @@ Resources:
               - {{ account_id | trim }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}  {# END {%- if distribution.ami_distribution_configuration is defined %} #}
-{%- if distribution.container_distribution_configuration is defined %}  {# BEGIN {%- if distribution.container_distribution_configuration is defined %} #}
+{%- endif %}{# END {%- if distribution.ami_distribution_configuration is defined %} #}
+{%- if distribution.container_distribution_configuration is defined %}{# BEGIN {%- if distribution.container_distribution_configuration is defined %} #}
           ContainerDistributionConfiguration:
 {%- if distribution.container_distribution_configuration.container_tags is defined %}
             ContainerTags:
@@ -85,8 +85,8 @@ Resources:
               Service: {{ distribution.container_distribution_configuration.target_repository.service }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if distribution.container_distribution_configuration is defined %} #}
-{%- if distribution.launch_template_configurations is defined %}  {# BEGIN {%- if distribution.launch_template_configurations is defined %} #}
+{%- endif %}{# END {%- if distribution.container_distribution_configuration is defined %} #}
+{%- if distribution.launch_template_configurations is defined %}{# BEGIN {%- if distribution.launch_template_configurations is defined %} #}
           LaunchTemplateConfigurations:
 {%- for launch_template_configuration in distribution.launch_template_configurations %}
             -
@@ -100,7 +100,7 @@ Resources:
               SetDefaultVersion: {{ launch_template_configuration.set_default_version }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if distribution.launch_template_configurations is defined %} #}
+{%- endif %}{# END {%- if distribution.launch_template_configurations is defined %} #}
 {%- if distribution.license_configuration_arns is defined %}
           LicenseConfigurationArns:
 {%- for license_configuration_arn in distribution.license_configuration_arns %}

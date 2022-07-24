@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for warm_pool in sceptre_user_data.warm_pools %}  {# BEGIN {%- for warm_pool in sceptre_user_data.warm_pools %} #}
+{%- for warm_pool in sceptre_user_data.warm_pools %}{# BEGIN {%- for warm_pool in sceptre_user_data.warm_pools %} #}
 {%- set warm_pool_name = warm_pool.name %}
   {{ warm_pool_name }}:
     Type: AWS::AutoScaling::WarmPool
@@ -21,4 +21,4 @@ Resources:
 {%- if warm_pool.pool_state is defined %}
       PoolState: {{ warm_pool.pool_state }}
 {%- endif %}
-{%- endfor %}  {# END {%- for warm_pool in sceptre_user_data.warm_pools %} #}
+{%- endfor %}{# END {%- for warm_pool in sceptre_user_data.warm_pools %} #}

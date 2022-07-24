@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for key_signing_key in sceptre_user_data.key_signing_keys %}  {# BEGIN {%- for key_signing_key in sceptre_user_data.key_signing_keys %} #}
+{%- for key_signing_key in sceptre_user_data.key_signing_keys %}{# BEGIN {%- for key_signing_key in sceptre_user_data.key_signing_keys %} #}
 {%- set key_signing_key_name = key_signing_key.name %}
   {{ key_signing_key_name }}:
     Type: AWS::Route53::KeySigningKey
@@ -15,7 +15,7 @@ Resources:
           KeyManagementServiceArn: {{ key_signing_key.key_management_service_arn }}
           Name: {{ key_signing_key.key_signing_key_name }}
           Status: {{ key_signing_key.status }}
-{%- endfor %}  {# END {%- for key_signing_key in sceptre_user_data.key_signing_keys %} #}
+{%- endfor %}{# END {%- for key_signing_key in sceptre_user_data.key_signing_keys %} #}
 
 Outputs:
 {%- for key_signing_key in sceptre_user_data.key_signing_keys %}

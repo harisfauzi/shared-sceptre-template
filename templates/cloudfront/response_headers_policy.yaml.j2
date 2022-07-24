@@ -16,7 +16,7 @@ Resources:
 {%- if response_headers_policy.response_header_policy_config.comment is defined %}
         Comment: {{ response_headers_policy.response_header_policy_config.comment }}
 {%- endif %}
-{%- if response_headers_policy.response_header_policy_config.cors_config is defined %}  {# BEGIN {%- if response_headers_policy.response_header_policy_config.cors_config is defined %} #}
+{%- if response_headers_policy.response_header_policy_config.cors_config is defined %}{# BEGIN {%- if response_headers_policy.response_header_policy_config.cors_config is defined %} #}
         CorsConfig:
           AccessControlAllowCredentials: {{ response_headers_policy.response_header_policy_config.cors_config.access_control_allow_credentials }}
           AccessControlAllowHeaders:
@@ -45,8 +45,8 @@ Resources:
 {%- if response_headers_policy.response_header_policy_config.cors_config.access_control_max_age_sec is defined %}
           AccessControlMaxAgeSec: {{response_headers_policy.response_header_policy_config.cors_config.access_control_max_age_sec }}
 {%- endif %}
-{%- endif %}  {# END {%- if response_headers_policy.response_header_policy_config.cors_config is defined %} #}
-{%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %}  {# BEGIN {%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %} #}
+{%- endif %}{# END {%- if response_headers_policy.response_header_policy_config.cors_config is defined %} #}
+{%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %}{# BEGIN {%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %} #}
         CustomHeadersConfig:
           Items:
 {%- for item in response_headers_policy.response_header_policy_config.custom_header_config.items %}
@@ -54,8 +54,8 @@ Resources:
               Override: {{ item.override }}
               Value: {{ item.value }}
 {%- endfor %}
-{%- endif %}  {# END {%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %} #}
-{%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %}  {# BEGIN {%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %} #}
+{%- endif %}{# END {%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %} #}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %}{# BEGIN {%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %} #}
         SecurityHeadersConfig:
 {%- if response_headers_policy.response_header_policy_config.security_headers_config.content_security_policy is defined %}
           ContentSecurityPolicy:
@@ -98,7 +98,7 @@ Resources:
             ReportUri: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.report_uri }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %} #}
+{%- endif %}{# END {%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %} #}
 
 {%- endfor %}
 

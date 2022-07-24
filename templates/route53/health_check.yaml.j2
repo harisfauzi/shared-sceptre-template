@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for health_check in sceptre_user_data.health_checks %}  {# BEGIN {%- for health_check in sceptre_user_data.health_checks %} #}
+{%- for health_check in sceptre_user_data.health_checks %}{# BEGIN {%- for health_check in sceptre_user_data.health_checks %} #}
 {%- set health_check_name = health_check.name %}
   {{ health_check_name }}:
     Type: AWS::Route53::HealthCheck
@@ -20,7 +20,7 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- endfor %}  {# END {%- for health_check in sceptre_user_data.health_checks %} #}
+{%- endfor %}{# END {%- for health_check in sceptre_user_data.health_checks %} #}
 
 Outputs:
 {%- for health_check in sceptre_user_data.health_checks %}

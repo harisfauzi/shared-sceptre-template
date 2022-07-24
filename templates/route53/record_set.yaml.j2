@@ -5,7 +5,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for record_set in sceptre_user_data.record_sets %}  {# BEGIN {%- for record_set in sceptre_user_data.record_sets %} #}
+{%- for record_set in sceptre_user_data.record_sets %}{# BEGIN {%- for record_set in sceptre_user_data.record_sets %} #}
 {%- set record_set_name = record_set.name %}
   {{ record_set_name }}:
     Type: AWS::Route53::RecordSet
@@ -13,7 +13,7 @@ Resources:
     UpdateReplacePolicy: {{ record_set.update_replace_policy | default('Delete') }}
     Properties:
 {{ record_set_macro.prep(record_set) | indent(width=6, first=true) }}
-{%- endfor %}  {# END {%- for record_set in sceptre_user_data.record_sets %} #}
+{%- endfor %}{# END {%- for record_set in sceptre_user_data.record_sets %} #}
 
 Outputs:
 {%- for record_set in sceptre_user_data.record_sets %}
