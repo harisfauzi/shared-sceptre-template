@@ -194,6 +194,17 @@ Resources:
 {%- endfor %}
 {%- endif %}
 
+{%- if instance.eip_allocation_id is defined %}
+  {{ instance_name }}EIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    DeletionPolicy: {{ instance.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ instance.deletion_policy | default('Delete') }}
+    Properties:
+      AllocationId: {{ instance.eip_allocation_id | trim }}
+      InstanceId:
+        Ref: {{ instance_name }}
+{%- endif %}
+
 {%- endfor %}
 
 Outputs:
