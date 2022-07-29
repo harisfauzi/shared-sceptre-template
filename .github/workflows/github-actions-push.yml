@@ -40,7 +40,7 @@ jobs:
         uses: docker://harisfauzi/hf-sceptre:3.1.0-03
         with:
           entrypoint: /usr/bin/yamllint
-          args: sceptre/
+          args: test/sceptre/
   run-cfn-guard:
     needs: lint-files
     runs-on: self-hosted
@@ -51,7 +51,7 @@ jobs:
           entrypoint: /usr/bin/cfn-guard
           args: >
             validate
-            --rules sceptre/cfn-guard/
-            --data sceptre/all-cfn-templates.yaml
+            --rules test/sceptre/cfn-guard/
+            --data test/sceptre/all-cfn-templates.yaml
             --type CFNTemplate
             --show-summary
