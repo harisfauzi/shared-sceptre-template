@@ -1,0 +1,76 @@
+let ec2_vpc_test1 = Resources.ec2vpctest1
+let ec2_vpc_test1_vpccidrblock = Resources.ec2vpctest1CidrBlock
+let resource_type_vpc = 'AWS::EC2::VPC'
+let resource_type_vpccudrblock = 'AWS::EC2::VPCCidrBlock'
+let cidr_block = '10.255.252.0/22'
+let enableddnshostnames = True
+let enablednssupport = True
+let valid_instancetenancy = ['dedicated','default','host']
+let allowed_deletion_policy = ['Delete','Retain']
+let allowed_updatereplace_policy = ['Delete','Retain']
+let git_repo = 'git@github.com:harisfauzi/shared-sceptre-template.git'
+
+rule ec2_vpc_valid_resource_type when %ec2_vpc_test1 !empty {
+    let ec2_vpc_test1_resource_type = %ec2_vpc_test1.Type
+    %ec2_vpc_test1_resource_type == %resource_type_vpc
+}
+
+rule ec2_vpc_valid_resource_type when %ec2_vpc_test1_vpccidrblock !empty {
+    let ec2_vpc_test1vpccidrblock_resource_type = %ec2_vpc_test1_vpccidrblock.Type
+    %ec2_vpc_test1vpccidrblock_resource_type == %resource_type_vpccudrblock
+}
+
+rule ec2_vpc_valid_cidr_block when %ec2_vpc_test1 !empty {
+    let ec2_vpc_test1_cidr_block = %ec2_vpc_test1.Properties.CidrBlock
+    %ec2_vpc_test1_cidr_block exists
+    %ec2_vpc_test1_cidr_block == %cidr_block
+}
+
+rule ec2_vpc_valid_enableddnshostnames when %ec2_vpc_test1 !empty {
+    let ec2_vpc_test1_enableddnshostnames = %ec2_vpc_test1.Properties.EnableDnsHostnames
+    %ec2_vpc_test1_enableddnshostnames == %enableddnshostnames
+}
+
+rule ec2_vpc_valid_enablednssupport when %ec2_vpc_test1 !empty {
+    let ec2_vpc_test1_enablednssupport = %ec2_vpc_test1.Properties.EnableDnsSupport
+    %ec2_vpc_test1_enablednssupport == %enablednssupport
+}
+
+rule ec2_vpc_valid_tenancy when %ec2_vpc_test1 !empty {
+    let ec2_vpc_test1_instancetenancy = %ec2_vpc_test1.Properties.InstanceTenancy
+    %ec2_vpc_test1_instancetenancy in %valid_instancetenancy
+}
+
+rule ec2_vpc_valid_deletion_policy when %ec2_vpc_test1 !empty {
+    let ec2_vpc_test1_deletion_policy = %ec2_vpc_test1.DeletionPolicy
+    %ec2_vpc_test1_deletion_policy exists
+    %ec2_vpc_test1_deletion_policy in %allowed_deletion_policy
+}
+
+rule ec2_vpc_valid_updatereplace_policy when %ec2_vpc_test1 !empty {
+    let ec2_vpc_test1_updatereplace_policy = %ec2_vpc_test1.UpdateReplacePolicy
+    %ec2_vpc_test1_updatereplace_policy exists
+    %ec2_vpc_test1_updatereplace_policy in %allowed_updatereplace_policy
+}
+
+rule ec2_vpc_tag_name_exists when %ec2_vpc_test1 !empty {
+    let ec2_vpc_test1_tag_name = %ec2_vpc_test1.Properties.Tags[ Key == 'Name' ]
+    %ec2_vpc_test1_tag_name exists
+}
+
+rule ec2_vpc_tag_sourcerepourl when %ec2_vpc_test1 !empty {
+    let ec2_vpc_test1_tag_sourcerepourl = %ec2_vpc_test1.Properties.Tags[ Key == 'SourceRepoURL' ]
+    %ec2_vpc_test1_tag_sourcerepourl exists
+    %ec2_vpc_test1_tag_sourcerepourl.Value == %git_repo
+}
+
+rule ec2_vpc_vpccidrblock_valid_vpcid when %ec2_vpc_test1_vpccidrblock !empty {
+    let ec2_vpc_test1_vpccidrblock_vpcid_ref = %ec2_vpc_test1_vpccidrblock.Properties.VpcId.Ref
+    %ec2_vpc_test1_vpccidrblock_vpcid_ref exists
+}
+
+rule ec2_vpc_vpccidrblock_ipv6_is_set when %ec2_vpc_test1_vpccidrblock !empty {
+    let ec2_vpc_test1_vpccidrblock_ipv6 = %ec2_vpc_test1_vpccidrblock.Properties.AmazonProvidedIpv6CidrBlock
+    %ec2_vpc_test1_vpccidrblock_ipv6 exists
+    %ec2_vpc_test1_vpccidrblock_ipv6 == True
+}
