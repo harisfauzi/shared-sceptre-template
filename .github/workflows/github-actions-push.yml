@@ -2,7 +2,7 @@
 name: GitHub Actions Push
 on: [push]
 jobs:
-  cfn-guard:
+  unit-test-ssm-parameter:
     runs-on: ubuntu-latest
     container:
       image: harisfauzi/hf-sceptre:3.1.0-03
@@ -27,7 +27,7 @@ jobs:
           /usr/bin/sceptre
           --var-file ./vars/main.yaml
           --var aws_region=${AWS_DEFAULT_REGION}
-          generate . > all-cfn-templates.yaml
+          generate ssm/parameter.yaml > ssm-parameter-template.yaml
       - name: Run yamllint
         uses: docker://harisfauzi/hf-sceptre:3.1.0-03
         with:
@@ -40,6 +40,6 @@ jobs:
           args: >
             validate
             --rules test/sceptre/cfn-guard/
-            --data test/sceptre/all-cfn-templates.yaml
+            --data test/sceptre/ssm-parameter-template.yaml
             --type CFNTemplate
             --show-summary all
