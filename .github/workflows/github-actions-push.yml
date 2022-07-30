@@ -3,7 +3,8 @@ name: GitHub Actions Push
 on: [push]
 jobs:
   checkout-repos:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    # runs-on: self-hosted
     steps:
       - name: Checkout this repo
         uses: actions/checkout@v3
@@ -13,7 +14,7 @@ jobs:
           (cd "${CURRENT_DIR}/templates"; tar cf - .) \
             | (cd "${CURRENT_DIR}/test/sceptre/templates"; tar xf -)
   sceptre-generate-yaml:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: checkout-repos
     container:
       image: harisfauzi/hf-sceptre:3.1.0-03
@@ -34,7 +35,7 @@ jobs:
           generate . > all-cfn-templates.yaml
   lint-files:
     needs: sceptre-generate-yaml
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Run yamllint
         uses: docker://harisfauzi/hf-sceptre:3.1.0-03
@@ -43,7 +44,7 @@ jobs:
           args: test/sceptre/
   run-cfn-guard:
     needs: lint-files
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Run cfn-guard
         uses: docker://harisfauzi/hf-sceptre:3.1.0-03
