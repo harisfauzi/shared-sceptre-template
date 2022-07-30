@@ -3,8 +3,8 @@ let ec2_vpc_test1_vpccidrblock = Resources.ec2vpctest1CidrBlock
 let resource_type_vpc = 'AWS::EC2::VPC'
 let resource_type_vpccudrblock = 'AWS::EC2::VPCCidrBlock'
 let cidr_block = '10.255.252.0/22'
-let enableddnshostnames = True
-let enablednssupport = True
+let enableddnshostnames = 'True'
+let enablednssupport = 'True'
 let valid_instancetenancy = ['dedicated','default','host']
 let allowed_deletion_policy = ['Delete','Retain']
 let allowed_updatereplace_policy = ['Delete','Retain']
@@ -72,5 +72,5 @@ rule ec2_vpc_vpccidrblock_valid_vpcid when %ec2_vpc_test1_vpccidrblock !empty {
 rule ec2_vpc_vpccidrblock_ipv6_is_set when %ec2_vpc_test1_vpccidrblock !empty {
     let ec2_vpc_test1_vpccidrblock_ipv6 = %ec2_vpc_test1_vpccidrblock.Properties.AmazonProvidedIpv6CidrBlock
     %ec2_vpc_test1_vpccidrblock_ipv6 exists
-    %ec2_vpc_test1_vpccidrblock_ipv6 == True
+    %ec2_vpc_test1_vpccidrblock_ipv6 == 'True'
 }
