@@ -2,7 +2,7 @@
 name: GitHub Actions Push
 on: [push]
 jobs:
-  unit-test-ssm-parameter:
+  unit-tests:
     runs-on: ubuntu-latest
     container:
       image: harisfauzi/hf-sceptre:3.1.0-03
@@ -16,24 +16,30 @@ jobs:
     steps:
       - name: Checkout this repo
         uses: actions/checkout@v3
-      - name: Copy templates content
+      - name: Link templates directory
         run: |
           CURRENT_DIR=$(pwd)
-          (cd "${CURRENT_DIR}/templates"; tar cf - .) \
-            | (cd "${CURRENT_DIR}/test/sceptre/templates"; tar xf -)
-      - name: Run sceptre generate
+          ln -sf "${CURRENT_DIR}/templates" "${CURRENT_DIR}/test/sceptre/templates"
+      - name: Run sceptre generate ssm/parameter.yaml
         run: >
           cd test/sceptre;
           /usr/bin/sceptre
           --var-file ./vars/main.yaml
           --var aws_region=${AWS_DEFAULT_REGION}
           generate ssm/parameter.yaml > ssm-parameter-template.yaml
+      - name: Run sceptre generate ec2/vpc.yaml
+        run: >
+          cd test/sceptre;
+          /usr/bin/sceptre
+          --var-file ./vars/main.yaml
+          --var aws_region=${AWS_DEFAULT_REGION}
+          generate ec2/vpc.yaml > ec2-vpc-template.yaml
       - name: Run yamllint
         uses: docker://harisfauzi/hf-sceptre:3.1.0-03
         with:
           entrypoint: /usr/bin/yamllint
           args: test/sceptre/
-      - name: Run cfn-guard
+      - name: Run cfn-guard ssm-parameter-template.yaml
         uses: docker://harisfauzi/hf-sceptre:3.1.0-03
         with:
           entrypoint: /usr/bin/cfn-guard
@@ -41,5 +47,15 @@ jobs:
             validate
             --rules test/sceptre/cfn-guard/
             --data test/sceptre/ssm-parameter-template.yaml
+            --type CFNTemplate
+            --show-summary all
+      - name: Run cfn-guard ec2-vpc-template.yaml
+        uses: docker://harisfauzi/hf-sceptre:3.1.0-03
+        with:
+          entrypoint: /usr/bin/cfn-guard
+          args: >
+            validate
+            --rules test/sceptre/cfn-guard/
+            --data test/sceptre/ec2-vpc-template.yaml
             --type CFNTemplate
             --show-summary all
