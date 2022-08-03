@@ -1,8 +1,8 @@
-{%- macro prep(specification) %}
+{%- macro prep(specification) -%}
 {%- if specification.launch_template_id is defined %}
 LaunchTemplateId: {{ specification.launch_template_id | trim }}
 {%- elif specification.launch_template_name is defined %}
 LaunchTemplateName: {{ specification.launch_template_name }}
 {%- endif  %}
 Version: {{ specification.version }}
-{%- endmacro %}
+{%- endmacro -%}

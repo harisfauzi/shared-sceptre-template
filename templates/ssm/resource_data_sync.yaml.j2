@@ -24,7 +24,7 @@ Resources:
       KMSKeyArn: {{ resource_data_sync.kms_key_arn }}
 {%- endif %}
 {%- if resource_data_sync.s3_destination is defined %}
-      S3Destination: 
+      S3Destination:
         BucketName: {{ resource_data_sync.s3_destination.bucket_name }}
         BucketRegion: {{ resource_data_sync.s3_destination.bucket_region }}
         SyncFormat: 'JsonSerDe'
@@ -39,17 +39,17 @@ Resources:
       SyncFormat: 'JsonSerDe'
 {%- endif %}
 {%- if resource_data_sync.sync_source is defined %}{# BEGIN {%- if resource_data_sync.sync_source is defined %} #}
-      SyncSource: 
+      SyncSource:
         SourceRegions:
 {%- for source_region in resource_data_sync.sync_source.source_regions %}
           - {{ source_region }}
 {%- endfor %}
         SourceType: {{ resource_data_sync.sync_source.source_type }}
 {%- if resource_data_sync.sync_source.aws_organization_source is defined %}
-        AwsOrganizationsSource: 
+        AwsOrganizationsSource:
           OrganizationSourceType: {{ resource_data_sync.sync_source.aws_organization_source.organization_source_type }}
 {%- if resource_data_sync.sync_source.aws_organization_source.organizational_units is defined %}
-          OrganizationalUnits: 
+          OrganizationalUnits:
 {%- for organization_unit in resource_data_sync.sync_source.aws_organization_source.organizational_units %}
             - {{ organization_unit }}
 {%- endif %}

@@ -1,12 +1,12 @@
 {%- macro prep(patch_filter_group) %}
-PatchFilters: 
+PatchFilters:
 {%- for patch_filter in patch_filter_group.patch_filters %}
   -
 {%- if patch_filter.key is defined %}
     Key: {{ patch_filter.key }}
 {%- endif %}
 {%- if patch_filter._values is defined %}
-    Values: 
+    Values:
 {%- for value in patch_filter._values %}
       - {{ value }}
 {%- endfor %}

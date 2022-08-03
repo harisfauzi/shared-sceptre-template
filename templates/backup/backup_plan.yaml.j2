@@ -61,7 +61,7 @@ Resources:
 {%- if backup_plan.backup_plan.advanced_backup_settings is defined %}
         AdvancedBackupSettings:
 {%- for setting in backup_plan.backup_plan.advanced_backup_settings %}
-          - 
+          -
 {%- if setting.backup_options_json is defined %}
             BackupOptions: {{ setting.backup_options_json }}
 {%- else %}

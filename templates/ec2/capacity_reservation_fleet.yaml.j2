@@ -21,7 +21,7 @@ Resources:
       InstanceMatchCriteria: {{ capacity_reservation_fleet.instance_match_criteria }}
 {%- endif %}
 {%- if capacity_reservation_fleet.instance_type_specification is defined %}
-      InstanceTypeSpecifications: 
+      InstanceTypeSpecifications:
 {%- for instance_type_specification in capacity_reservation_fleet.instance_type_specification %}
         -
 {%- if instance_type_specification.availability_zone is defined %}

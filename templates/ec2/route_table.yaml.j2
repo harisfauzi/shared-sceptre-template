@@ -28,7 +28,7 @@ Resources:
     Type: AWS::EC2::Route
     DeletionPolicy: {{ route_entry.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ route_entry.update_replace_policy | default('Delete') }}
-    Properties: 
+    Properties:
       RouteTableId:
         Ref: {{ route_table_name }}
 {%- if route_entry.destination_cidr_block is defined %}
