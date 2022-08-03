@@ -1,14 +1,14 @@
 {%- macro prep(tag_filters) -%}
 {%- for tag_filter in tag_filters -%}
-  -
+-
 {%- if tag_filter.key is defined %}
-    Key: {{ tag_filter.key }}
+  Key: {{ tag_filter.key }}
 {%- endif %}
 {%- if tag_filter.type is defined %}
-    Type: {{ tag_filter.type }}
+  Type: {{ tag_filter.type }}
 {%- endif %}
 {%- if tag_filter._value is defined %}
-    Value: {{ tag_filter._value }}
+  Value: {{ tag_filter._value }}
 {%- endif %}
 {%- endfor -%}
 {%- endmacro -%}
