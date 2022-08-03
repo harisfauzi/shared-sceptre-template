@@ -1,9 +1,9 @@
-{%- macro prep(store) %}
-{%- if store.encryption_key is defined %}
+{%- macro prep(store) -%}
+{%- if store.encryption_key is defined -%}
 EncryptionKey:
   Id: {{ store.encryption_key.id }}
   Type: {{ store.encryption_key.type }}
 {%- endif %}
 Location: {{ store.location }}
 Type: {{ store.type }}
-{%- endmacro %}
+{%- endmacro -%}
