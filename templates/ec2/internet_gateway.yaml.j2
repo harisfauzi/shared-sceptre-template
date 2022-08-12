@@ -10,7 +10,7 @@ Resources:
     Type: AWS::EC2::InternetGateway
     DeletionPolicy: {{ internet_gateway.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ internet_gateway.update_replace_policy | default('Delete') }}
-    Properties: 
+    Properties:
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -24,7 +24,7 @@ Resources:
 {%- if internet_gateway.vpc_id is defined %}
   {{ internet_gateway_name }}VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
-    Properties: 
+    Properties:
       InternetGatewayId:
         Ref: {{ internet_gateway_name }}
       VpcId: {{ internet_gateway.vpc_id | trim }}

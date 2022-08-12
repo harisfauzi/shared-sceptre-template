@@ -28,7 +28,7 @@ Resources:
 {%- if vpn_gateway.vpc_id is defined %}
   {{ vpn_gateway_name }}VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
-    Properties: 
+    Properties:
       VpnGatewayId:
         Ref: {{ vpn_gateway_name }}
       VpcId: {{ vpn_gateway.vpc_id | trim }}

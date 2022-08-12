@@ -10,7 +10,7 @@ Resources:
     Type: AWS::EC2::Subnet
     DeletionPolicy: {{ subnet.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ subnet.update_replace_policy | default('Delete') }}
-    Properties: 
+    Properties:
       CidrBlock: {{ subnet.cidr_block }}
 {%- if subnet.assign_ipv6_on_creation is defined %}
       AssignIpv6AddressOnCreation: {{ subnet.assign_ipv6_on_creation }}
@@ -47,7 +47,7 @@ Resources:
 {%- if subnet.network_acl_id is defined %}
   {{ subnet_name }}SubnetNetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
-    Properties: 
+    Properties:
       NetworkAclId: {{ subnet.network_acl_id | trim }}
       SubnetId:
         Ref: {{ subnet_name }}
@@ -56,7 +56,7 @@ Resources:
 {%- if subnet.route_table_id is defined %}
   {{ subnet_name }}SubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties: 
+    Properties:
       RouteTableId: {{ subnet.route_table_id | trim }}
       SubnetId:
         Ref: {{ subnet_name }}
