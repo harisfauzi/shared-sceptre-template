@@ -12,7 +12,7 @@ Resources:
     UpdateReplacePolicy: {{ template.update_replace_policy | default('Delete') }}
     Properties:
 {%- if template.template is defined %}
-      Template: 
+      Template:
         SubjectPart: {{ template.template.subject_part }}
 {%- if template.template.html_part is defined %}
         HtmlPart: {{template.template.html_part }}

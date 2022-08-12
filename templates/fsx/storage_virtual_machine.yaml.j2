@@ -14,7 +14,7 @@ Parameters:
     NoEcho: true
 
 {%- endif %}
-{%- if storage_virtual_machine.active_directory_configuration is defined and 
+{%- if storage_virtual_machine.active_directory_configuration is defined and
   storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration is defined and
   storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.password is defined %}
   {{ storage_virtual_machine_name }}ADCSMADCPassword:

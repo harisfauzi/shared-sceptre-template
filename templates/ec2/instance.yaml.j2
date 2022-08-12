@@ -108,7 +108,7 @@ Resources:
       KeyName: {{ instance.key_name }}
 {%- endif %}
 {%- if instance.launch_template is defined %}
-      LaunchTemplate: 
+      LaunchTemplate:
         Version: {{ instance.launch_template.version | trim }}
 {%- if instance.launch_template.launch_template_id is defined %}
         LaunchTemplateId: {{ instance.launch_template.launch_template_id | trim }}
@@ -159,7 +159,7 @@ Resources:
 {%- if association.association_parameters is defined %}
           AssociationParameters:
 {%- for parameter in association.association_parameters %}
-            - 
+            -
               Key: {{ parameter.Key }}
               Value:
 {%- for paramvalue in parameter.Value %}
