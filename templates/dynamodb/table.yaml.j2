@@ -7,7 +7,7 @@ Resources:
 {%- for table in sceptre_user_data.tables %}
 {%- set table_name = table.name %}
   {{ table_name }}:
-    Type: Type: AWS::DynamoDB::Table
+    Type: AWS::DynamoDB::Table
     DeletionPolicy: {{ table.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ table.update_replace_policy | default('Delete') }}
     Properties:
