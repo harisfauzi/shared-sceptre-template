@@ -171,6 +171,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ table_name }}-Arn"
 
+{%- if table.stream_specification is defined %}
   {{ table_name }}StreamArn:
     Description: The ARN of the DynamoDB stream for {{ table_name }}
     Value:
@@ -180,5 +181,5 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ table_name }}-StreamArn"
-
+{%- endif %}
 {%- endfor %}
