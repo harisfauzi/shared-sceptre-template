@@ -1,0 +1,18 @@
+{%- macro prep(capacity_autoscaling_settings) %}
+MaxCapacity: {{ capacity_autoscaling_settings.max_capacity }}
+MinCapacity: {{ capacity_autoscaling_settings.min_capacity }}
+TargetTrackingScalingPolicyConfiguration:
+  TargetValue: {{ capacity_autoscaling_settings.target_tracking_scaling_policy_configuration.target_value }}
+{%- if capacity_autoscaling_settings.target_tracking_scaling_policy_configuration.disable_scale_in is defined %}
+  DisableScaleIn: {{ capacity_autoscaling_settings.target_tracking_scaling_policy_configuration.disable_scale_in }}
+{%- endif %}
+{%- if capacity_autoscaling_settings.target_tracking_scaling_policy_configuration.scale_in_cooldown is defined %}
+  ScaleInCooldown: {{ capacity_autoscaling_settings.target_tracking_scaling_policy_configuration.scale_in_cooldown }}
+{%- endif %}
+{%- if capacity_autoscaling_settings.target_tracking_scaling_policy_configuration.scale_out_cooldown is defined %}
+  ScaleOutCooldown: {{ capacity_autoscaling_settings.target_tracking_scaling_policy_configuration.scale_out_cooldown }}
+{%- endif %}
+{%- if capacity_autoscaling_settings.seed_capacity is defined %}
+SeedCapacity: {{ capacity_autoscaling_settings.seed_capacity }}
+{%- endif %}
+{%- endmacro %}
