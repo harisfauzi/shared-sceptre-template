@@ -183,6 +183,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ global_table_name }}-Arn"
 
+{%- if global_table.stream_specification is defined %}
   {{ global_table_name }}StreamArn:
     Description: The ARN of the DynamoDB stream for {{ global_table_name }}
     Value:
@@ -192,7 +193,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ global_table_name }}-StreamArn"
-
+{%- endif %}
   {{ global_table_name }}TableId:
     Description: Unique identifier for the table {{ global_table_name }}
     Value:
