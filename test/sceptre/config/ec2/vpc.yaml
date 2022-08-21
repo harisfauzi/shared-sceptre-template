@@ -1,0 +1,18 @@
+---
+template_path: ec2/vpc.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ var.git_repo }}
+  vpcs:
+    - name: ec2vpctest1
+      cidr_block: 10.255.252.0/22
+      use_ipv6: True
+      enable_dns_hostnames: True
+      enable_dns_support: True
+      tags:
+        Name: ec2vpctest1
+        Project: {{ stack_group_config.project_code }}
+
+stack_tags:
+  Test: ec2-vpc

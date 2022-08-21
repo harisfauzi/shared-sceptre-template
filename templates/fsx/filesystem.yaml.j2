@@ -14,7 +14,7 @@ Parameters:
     NoEcho: true
 
 {%- endif %}
-{%- if file_system.windows_configuration is defined and 
+{%- if file_system.windows_configuration is defined and
   file_system.windows_configuration.self_managed_active_directory_configuration is defined and
   file_system.windows_configuration.self_managed_active_directory_configuration.password is defined %}
   {{ file_system_name }}WCSMADCPassword:

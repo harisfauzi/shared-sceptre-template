@@ -11,10 +11,10 @@ Resources:
     DeletionPolicy: {{ report_group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ report_group.update_replace_policy | default('Delete') }}
     Properties:
-      ExportConfig: 
+      ExportConfig:
         ExportConfigType: {{ report_group.export_config.export_config_type }}
 {%- if report_group.export_config.s3_destination is defined %}
-        S3Destination: 
+        S3Destination:
           Bucket: {{ report_group.export_config.s3_destination.bucket }}
 {%- if report_group.export_config.s3_destination.bucket_owner is defined %}
           BucketOwner: {{ report_group.export_config.s3_destination.bucket_owner }}

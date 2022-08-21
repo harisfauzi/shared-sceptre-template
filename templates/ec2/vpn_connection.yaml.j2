@@ -48,7 +48,7 @@ Resources:
 {%- set route_name = vpn_connection_name ~ route.name %}
   {{ route_name }}:
     Type: AWS::EC2::VPNConnectionRoute
-    Properties: 
+    Properties:
       DestinationCidrBlock: {{ route.destination_cidr_block }}
       VpnConnectionId:
         Ref: {{ vpn_connection_name }}
