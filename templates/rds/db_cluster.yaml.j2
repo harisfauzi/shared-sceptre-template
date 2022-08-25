@@ -193,15 +193,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-EndpointPort"
-
-#  {{ db_cluster_name }}ReadEndpointAddress:
-#    Description: The reader endpoint for DB cluster {{ db_cluster_name }}
-#    Value:
-#      Fn::GetAtt:
-#        - {{ db_cluster_name }}
-#        - ReadEndpoint.Address
-#    Export:
-#      Name:
-#        Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-ReadEndpointAddress"
+{%- if not db_cluster.engine_mode is defined or (db_cluster.engine_mode is defined and db_cluster.engine_mode != 'serverless') %}
+  {{ db_cluster_name }}ReadEndpointAddress:
+    Description: The reader endpoint for DB cluster {{ db_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_cluster_name }}
+        - ReadEndpoint.Address
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-ReadEndpointAddress"
+{%- endif %}
 
 {%- endfor %}
