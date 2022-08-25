@@ -93,9 +93,11 @@ Resources:
 {%- if db_cluster.master_username is defined %}
       MasterUsername: {{ db_cluster.master_username }}
 {%- endif %}
-{%- if db_cluster.master_user_password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
       MasterUserPassword:
         Ref: {{ db_cluster_name }}MasterUserPassword
+{%- else %}
+      MasterUserPassword: {{ db_cluster.master_user_password }}
 {%- endif %}
 {%- if db_cluster.port is defined %}
       Port: {{ db_cluster.port }}
