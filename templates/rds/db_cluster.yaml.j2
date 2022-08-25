@@ -13,6 +13,7 @@ Parameters:
     Default: ''
     NoEcho: true
 
+{%- endif %}
 {%- endfor %}
 {%- endif %}
 
@@ -92,9 +93,11 @@ Resources:
 {%- if db_cluster.master_username is defined %}
       MasterUsername: {{ db_cluster.master_username }}
 {%- endif %}
-{%- if db_cluster.master_user_password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
       MasterUserPassword:
         Ref: {{ db_cluster_name }}MasterUserPassword
+{%- elif db_cluster.master_user_password is defined %}
+      MasterUserPassword: {{ db_cluster.master_user_password }}
 {%- endif %}
 {%- if db_cluster.port is defined %}
       Port: {{ db_cluster.port }}
@@ -176,7 +179,7 @@ Outputs:
     Value:
       Fn::GetAtt:
         - {{ db_cluster_name }}
-        - Endpoint.Addres
+        - Endpoint.Address
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-EndpointAddres"
@@ -190,7 +193,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-EndpointPort"
-
+{%- if not db_cluster.engine_mode is defined or (db_cluster.engine_mode is defined and db_cluster.engine_mode != 'serverless') %}
   {{ db_cluster_name }}ReadEndpointAddress:
     Description: The reader endpoint for DB cluster {{ db_cluster_name }}
     Value:
@@ -200,5 +203,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-ReadEndpointAddress"
+{%- endif %}
 
 {%- endfor %}
