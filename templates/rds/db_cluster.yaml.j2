@@ -194,14 +194,14 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-EndpointPort"
 
-  {{ db_cluster_name }}ReadEndpointAddress:
-    Description: The reader endpoint for DB cluster {{ db_cluster_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ db_cluster_name }}
-        - ReadEndpoint.Address
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-ReadEndpointAddress"
+#  {{ db_cluster_name }}ReadEndpointAddress:
+#    Description: The reader endpoint for DB cluster {{ db_cluster_name }}
+#    Value:
+#      Fn::GetAtt:
+#        - {{ db_cluster_name }}
+#        - ReadEndpoint.Address
+#    Export:
+#      Name:
+#        Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-ReadEndpointAddress"
 
 {%- endfor %}
