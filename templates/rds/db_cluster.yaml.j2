@@ -180,7 +180,7 @@ Outputs:
     Value:
       Fn::GetAtt:
         - {{ db_cluster_name }}
-        - Endpoint.Addres
+        - Endpoint.Address
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-EndpointAddres"
