@@ -20,7 +20,7 @@
 {%- if networkinterface.groups is defined %}
             Groups:
 {%- for item in networkinterface.groups %}
-                - {{ item }}
+              - {{ item }}
 {%- endfor %}
 {%- endif %}
 {%- if networkinterface.interface_type is defined %}
@@ -32,7 +32,7 @@
 {%- if networkinterface.ipv6_addresses is defined %}
             Ipv6Addresses:
 {%- for ipv6address in networkinterface.ipv6_addresses %}
-                - Ipv6Address: {{ ipv6address.Ipv6Address }}
+              - Ipv6Address: {{ ipv6address.Ipv6Address }}
 {%- endfor %}
 {%- endif %}
 {%- if networkinterface.network_card_index is defined %}
@@ -47,8 +47,8 @@
 {%- if networkinterface.private_ip_addresses is defined %}
             PrivateIpAddresses:
 {%- for specification in networkinterface.private_ip_addresses %}
-                - Primary: {{ specification.primary }}
-                  PrivateIpAddress: {{ specification.private_ip_address }}
+              - Primary: {{ specification.primary }}
+                PrivateIpAddress: {{ specification.private_ip_address }}
 {%- endfor %}
 {%- endif %}
 {%- if networkinterface.secondary_private_ip_address_count is defined %}
