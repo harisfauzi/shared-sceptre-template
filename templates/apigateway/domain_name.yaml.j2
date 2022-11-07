@@ -60,7 +60,7 @@ Outputs:
   {%- set domain_name_name = domain_name.name %}
   {%- set isEDGE = false %}
   {%- set isREGIONAL = false %}
-  {%- if domain_name.endpoint_configuration.types is defined %}
+  {%- if domain_name.endpoint_configuration is defined and domain_name.endpoint_configuration.types is defined %}
     {%- for type in domain_name.endpoint_configuration.types %}
       {%- if type == 'EDGE' %}
         {%- set isEDGE = true %}
