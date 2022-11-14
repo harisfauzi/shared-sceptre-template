@@ -8,6 +8,8 @@ Resources:
 {%- set web_acl_name = web_acl.name %}
   {{ web_acl_name }}:
     Type: AWS::WAF::WebACL
+    DeletionPolicy: {{ web_acl.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ web_acl.update_replace_policy | default('Delete') }}
     Properties:
       DefaultAction:
         Type: {{ web_acl.default_action.type }}
@@ -18,7 +20,7 @@ Resources:
 {%- for rule in web_acl.rules %}
         -
           Priority: {{ rule.priority }}
-          RuleId: {{ rule.rule_id }}
+          RuleId: {{ rule.rule_id | trim }}
 {%- if rule.action is defined %}
           Action:
             Type: {{ rule.action.type }}

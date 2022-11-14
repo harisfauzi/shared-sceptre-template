@@ -8,6 +8,8 @@ Resources:
 {%- set byte_match_set_name = byte_match_set.name %}
   {{ byte_match_set_name }}:
     Type: AWS::WAF::ByteMatchSet
+    DeletionPolicy: {{ byte_match_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ byte_match_set.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ byte_match_set.byte_match_set_name }}
 {%-if byte_match_set.byte_match_tuples is defined %}

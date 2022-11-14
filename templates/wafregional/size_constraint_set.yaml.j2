@@ -1,58 +1,29 @@
 ---
-Description: IAM Role(s) for {{ sceptre_user_data.project_code }}
+Description: WAFRegional SizeConstraintSet(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Type: AWS::IAM::Role
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+{%- for size_constraint_set in sceptre_user_data.size_constraint_sets %}
+{%- set size_constraint_set_name = size_constraint_set.name %}
+  {{ size_constraint_set_name }}:
+    Type: AWS::WAFRegional::SizeConstraintSet
+    DeletionPolicy: {{ size_constraint_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ size_constraint_set.update_replace_policy | default('Delete') }}
     Properties:
-      AssumeRolePolicyDocument:
-{{ role.assume_role_policy_document | indent(width=8, first=true)}}
-{%- if role.description is defined %}
-      Description: {{ role.description }}
+      Name: {{ size_constraint_set.size_constraint_set_name }}
+{%- if size_constraint_set.size_constraints is defined %}
+      SizeConstraints:
+{%- for size_constraint in size_constraint_set.size_constraints %}
+        -
+          ComparisonOperator: {{ size_constraint.comparison_operator }}
+          FieldToMatch:
+            Type: {{ size_constraint.field_to_match.type }}
+{%- if size_constraint.field_to_match.data is defined %}
+            Data: {{ size_constraint.field_to_match.data }}
 {%- endif %}
-{%- if role.managed_policy_arns is defined %}
-      ManagedPolicyArns:
-{%- for arn in role.managed_policy_arns %}
-        - {{ arn }}
-{%- endfor %}
-{%- endif %}
-{%- if role.max_session_duration is defined %}
-      MaxSessionDuration: {{ role.max_session_duration }}
-{%- endif %}
-{%- if role.path is defined %}
-      Path: {{ role.path }}
-{%- endif %}
-{%- if role.permissions_boundary is defined %}
-      PermissionsBoundary: {{ role.permissions_boundary }}
-{%- endif %}
-{%- if role.policies is defined %}
-      Policies:
-{%- for policy in role.policies %}
-        - PolicyName: {{ policy.policy_name }}
-{%- if policy.policy_document_json is defined %}
-          PolicyDocument: {{ policy.policy_document_json }}
-{%- else %}
-          PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if role.role_name is defined %}
-      RoleName: {{ role.role_name }}
-{%- endif %}
-      Tags:
-        - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
-        - Key: {{ key }}
-          Value: {{ value }}
+          Size: {{ size_constraint.size }}
+          TextTransformation: {{ size_constraint.text_transformation }}
 {%- endfor %}
 {%- endif %}
 
@@ -60,34 +31,14 @@ Resources:
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for size_constraint_set in sceptre_user_data.size_constraint_sets %}
+{%- set size_constraint_set_name = size_constraint_set.name %}
+  {{ size_constraint_set_name }}:
+    Description: The ID for {{ size_constraint_set_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ size_constraint_set_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
-
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ role_name }}
-        - Arn
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
-
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ role_name }}
-        - RoleId
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ size_constraint_set_name }}"
 
 {%- endfor %}

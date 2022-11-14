@@ -1,56 +1,32 @@
 ---
-Description: IAM Role(s) for {{ sceptre_user_data.project_code }}
+Description: WAFv2 RegexPatternSet(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Type: AWS::IAM::Role
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+{%- for regex_pattern_set in sceptre_user_data.regex_pattern_sets %}
+{%- set regex_pattern_set_name = regex_pattern_set.name %}
+  {{ regex_pattern_set_name }}:
+    Type: AWS::WAFv2::RegexPatternSet
+    DeletionPolicy: {{ regex_pattern_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ regex_pattern_set.update_replace_policy | default('Delete') }}
     Properties:
-      AssumeRolePolicyDocument:
-{{ role.assume_role_policy_document | indent(width=8, first=true)}}
-{%- if role.description is defined %}
-      Description: {{ role.description }}
-{%- endif %}
-{%- if role.managed_policy_arns is defined %}
-      ManagedPolicyArns:
-{%- for arn in role.managed_policy_arns %}
-        - {{ arn }}
+      RegularExpressionList:
+{%- for regular_expression in regex_pattern_set.regular_expression_list %}
+        - {{ regular_expression }}
 {%- endfor %}
+      Scope: {{ regex_pattern_set.scope }}
+{%- if regex_pattern_set.description is defined %}
+      Description: {{ regex_pattern_set.description }}
 {%- endif %}
-{%- if role.max_session_duration is defined %}
-      MaxSessionDuration: {{ role.max_session_duration }}
-{%- endif %}
-{%- if role.path is defined %}
-      Path: {{ role.path }}
-{%- endif %}
-{%- if role.permissions_boundary is defined %}
-      PermissionsBoundary: {{ role.permissions_boundary }}
-{%- endif %}
-{%- if role.policies is defined %}
-      Policies:
-{%- for policy in role.policies %}
-        - PolicyName: {{ policy.policy_name }}
-{%- if policy.policy_document_json is defined %}
-          PolicyDocument: {{ policy.policy_document_json }}
-{%- else %}
-          PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if role.role_name is defined %}
-      RoleName: {{ role.role_name }}
+{%- if regex_pattern_set.regex_pattern_set_name is defined %}
+      Name: {{ regex_pattern_set.regex_pattern_set_name }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
+{%- if regex_pattern_set.tags is defined %}
+{%- for key,value in regex_pattern_set.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
@@ -60,34 +36,34 @@ Resources:
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for regex_pattern_set in sceptre_user_data.regex_pattern_sets %}
+{%- set regex_pattern_set_name = regex_pattern_set.name %}
+  {{ regex_pattern_set_name }}:
+    Description: Reference of {{ regex_pattern_set_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ regex_pattern_set_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
+        Fn::Sub: "${AWS::StackName}-{{ regex_pattern_set_name }}"
 
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
+  {{ regex_pattern_set_name }}Arn:
+    Description: The ARN of {{ regex_pattern_set_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
+        - {{ regex_pattern_set_name }}
         - Arn
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
+        Fn::Sub: "${AWS::StackName}-{{ regex_pattern_set_name }}-Arn"
 
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
+  {{ regex_pattern_set_name }}Id:
+    Description: The ID of {{ regex_pattern_set_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
-        - RoleId
+        - {{ regex_pattern_set_name }}
+        - Id
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ regex_pattern_set_name }}-Id"
 
 {%- endfor %}

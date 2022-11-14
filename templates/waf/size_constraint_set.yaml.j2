@@ -8,6 +8,8 @@ Resources:
 {%- set size_constraint_set_name = size_constraint_set.name %}
   {{ size_constraint_set_name }}:
     Type: AWS::WAF::SizeConstraintSet
+    DeletionPolicy: {{ size_constraint_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ size_constraint_set.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ size_constraint_set.size_constraint_set_name }}
       SizeConstraints:

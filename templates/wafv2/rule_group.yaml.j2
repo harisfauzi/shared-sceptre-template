@@ -1,56 +1,80 @@
 ---
-Description: IAM Role(s) for {{ sceptre_user_data.project_code }}
+{%- import 'macros/statement.yaml.j2' as rule_group_statement %}
+Description: WAFv2 RuleGroup(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Type: AWS::IAM::Role
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+{%- for rule_group in sceptre_user_data.rule_groups %}
+{%- set rule_group_name = rule_group.name %}
+  {{ rule_group_name }}:
+    Type: AWS::WAFv2::RuleGroup
+    DeletionPolicy: {{ rule_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ rule_group.update_replace_policy | default('Delete') }}
     Properties:
-      AssumeRolePolicyDocument:
-{{ role.assume_role_policy_document | indent(width=8, first=true)}}
-{%- if role.description is defined %}
-      Description: {{ role.description }}
-{%- endif %}
-{%- if role.managed_policy_arns is defined %}
-      ManagedPolicyArns:
-{%- for arn in role.managed_policy_arns %}
-        - {{ arn }}
+      Capacity: {{ rule_group.capacity }}
+      Scope: {{ rule_group.scope }}
+      VisibilityConfig:
+        CloudWatchMetricsEnabled: {{ rule_group.visibility_config.cloud_watch_metrics_enabled }}
+        MetricName: {{ rule_group.visibility_config.metric_name }}
+        SampledRequestsEnabled: {{ rule_group.visibility_config.sampled_requests_enabled }}
+{%- if rule_group.custom_response_bodies is defined %}
+      CustomResponseBodies:
+{%- for key,value in rule_group.custom_response_bodies.items() %}
+        {{ key }} : {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- if role.max_session_duration is defined %}
-      MaxSessionDuration: {{ role.max_session_duration }}
+{%- if rule_group.description is defined %}
+      Description: {{ rule_group.description }}
 {%- endif %}
-{%- if role.path is defined %}
-      Path: {{ role.path }}
+{%- if rule_group.rule_group_name is defined %}
+      Name: {{ rule_group.rule_group_name }}
 {%- endif %}
-{%- if role.permissions_boundary is defined %}
-      PermissionsBoundary: {{ role.permissions_boundary }}
+{%- if rule_group.rules is defined %}
+      Rules:
+{%- for rule in rule_group.rules %}
+        -
+          Name: {{ rule.name }}
+          Priority: {{ rule.priority }}
+          Statement:
+{{ rule_group_statement.prep(rule.statement) | indent(width=12, first=true) }}
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: {{ rule.visibility_config.cloud_watch_metrics_enabled }}
+            MetricName: {{ rule.visibility_config.metric_name }}
+            SampledRequestsEnabled: {{ rule.visibility_config.sampled_requests_enabled}}
+{%- if rule.action is defined %}
+          Action:
+{%- if rule.action.allow is defined %}
+            Allow: {{ rule.action.allow }}
 {%- endif %}
-{%- if role.policies is defined %}
-      Policies:
-{%- for policy in role.policies %}
-        - PolicyName: {{ policy.policy_name }}
-{%- if policy.policy_document_json is defined %}
-          PolicyDocument: {{ policy.policy_document_json }}
-{%- else %}
-          PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
+{%- if rule.action.block is defined %}
+            Block: {{ rule.action.block }}
 {%- endif %}
+{%- if rule.action.captcha is defined %}
+            Captcha: {{ rule.action.captcha }}
+{%- endif %}
+{%- if rule.action.count is defined %}
+            Count: {{ rule.action.count }}
+{%- endif %}
+{%- endif %}
+{%- if rule.captcha_config is defined %}
+          CaptchaConfig:
+            ImmunityTimeProperty:
+              ImmunityTime: {{ rule.captcha_config.immunity_time_property.immunity_time }}
+{%- endif %}
+{%- if rule.rule_labels is defined %}
+          RuleLabels:
+{%- for rule_label in rule.rule_labels %}
+            - Name: {{ rule_label.name }}
 {%- endfor %}
 {%- endif %}
-{%- if role.role_name is defined %}
-      RoleName: {{ role.role_name }}
+{%- endfor %}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
+{%- if rule_group.tags is defined %}
+{%- for key,value in rule_group.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
@@ -60,34 +84,44 @@ Resources:
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for rule_group in sceptre_user_data.rule_groups %}
+{%- set rule_group_name = rule_group.name %}
+  {{ rule_group_name }}:
+    Description: The reference of {{ rule_group_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ rule_group_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
+        Fn::Sub: "${AWS::StackName}-{{ rule_group_name }}"
 
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
+  {{ rule_group_name }}Arn:
+    Description: The ARN of {{ rule_group_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
+        - {{ rule_group_name }}
         - Arn
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
+        Fn::Sub: "${AWS::StackName}-{{ rule_group_name }}-Arn"
 
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
+  {{ rule_group_name }}Id:
+    Description: The ID of {{ rule_group_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
-        - RoleId
+        - {{ rule_group_name }}
+        - Id
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ rule_group_name }}-Id"
+
+  {{ rule_group_name }}LabelNamespace:
+    Description: The LabelNamespace of {{ rule_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ rule_group_name }}
+        - LabelNamespace
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ rule_group_name }}-LabelNamespace"
 
 {%- endfor %}

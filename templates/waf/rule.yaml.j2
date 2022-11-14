@@ -8,6 +8,8 @@ Resources:
 {%- set rule_name = rule.name %}
   {{ rule_name }}:
     Type: AWS::WAF::Rule
+    DeletionPolicy: {{ rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ rule.update_replace_policy | default('Delete') }}
     Properties:
       MetricName: {{ rule.metric_name }}
       Name: {{ rule.rule_name }}

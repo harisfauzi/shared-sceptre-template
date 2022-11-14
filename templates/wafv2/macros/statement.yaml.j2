@@ -1,0 +1,58 @@
+{%- macro prep(statement, extra_indent) %}
+{%- if statement.and_statement is defined %}
+AndStatement:
+  Statements:
+{%- for statement in statement.and_statement.statements %}
+    -
+{{ prep( statement) | indent(width=6, first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.byte_match_statement is defined %}
+ByteMatchStatement:
+  ByteMatchStatement
+{%- endif %}
+{%- if statement.geo_match_statement is defined %}
+GeoMatchStatement:
+  GeoMatchStatement
+{%- endif %}
+{%- if statement.ip_set_reference_statement is defined %}
+IPSetReferenceStatement:
+  IPSetReferenceStatement
+{%- endif %}
+{%- if statement.label_match_statement is defined %}
+LabelMatchStatement:
+  LabelMatchStatement
+{%- endif %}
+{%- if statement.not_statement is defined %}
+NotStatement:
+  NotStatement
+{%- endif %}
+{%- if statement.or_statement is defined %}
+OrStatement:
+  OrStatement
+{%- endif %}
+{%- if statement.rate_based_statement is defined %}
+RateBasedStatement:
+  RateBasedStatement
+{%- endif %}
+{%- if statement.regex_match_statement is defined %}
+RegexMatchStatement:
+  RegexMatchStatement
+{%- endif %}
+{%- if statement.regex_pattern_set_reference_statement is defined %}
+RegexPatternSetReferenceStatement:
+  RegexPatternSetReferenceStatement
+{%- endif %}
+{%- if statement.size_constraint_statement is defined %}
+SizeConstraintStatement:
+  SizeConstraintStatement
+{%- endif %}
+{%- if statement.sqli_match_statement is defined %}
+SqliMatchStatement:
+  SqliMatchStatement
+{%- endif %}
+{%- if statement.xss_match_statement is defined %}
+XssMatchStatement:
+  XssMatchStatement
+{%- endif %}
+{%- endmacro %}

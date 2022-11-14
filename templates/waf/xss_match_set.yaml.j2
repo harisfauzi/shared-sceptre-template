@@ -8,6 +8,8 @@ Resources:
 {%- set xss_match_set_name = xss_match_set.name %}
   {{ xss_match_set_name }}:
     Type: AWS::WAF::XssMatchSet
+    DeletionPolicy: {{ xss_match_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ xss_match_set.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ xss_match_set.xss_match_set_name }}
       XssMatchTuples:

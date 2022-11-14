@@ -8,6 +8,8 @@ Resources:
 {%- set ip_set_name = ip_set.name %}
   {{ ip_set_name }}:
     Type: AWS::WAF::IPSet
+    DeletionPolicy: {{ ip_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ ip_set.update_replace_policy | default('Delete') }}
     Properties: 
       Name: {{ ip_set.ip_set_name }}
 {%- if ip_set.ip_set_descriptors is defined %}

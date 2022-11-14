@@ -1,56 +1,120 @@
 ---
-Description: IAM Role(s) for {{ sceptre_user_data.project_code }}
+{%- import 'macros/statement.yaml.j2' as web_acl_statement %}
+Description: WAFv2 WebACL(s) for {{ sceptre_user_data.project_code }}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Type: AWS::IAM::Role
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+{%- for web_acl in sceptre_user_data.web_acls %}
+{%- set web_acl_name = web_acl.name %}
+  {{ web_acl_name }}:
+    Type: AWS::WAFv2::WebACL
+    DeletionPolicy: {{ web_acl.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ web_acl.update_replace_policy | default('Delete') }}
     Properties:
-      AssumeRolePolicyDocument:
-{{ role.assume_role_policy_document | indent(width=8, first=true)}}
-{%- if role.description is defined %}
-      Description: {{ role.description }}
-{%- endif %}
-{%- if role.managed_policy_arns is defined %}
-      ManagedPolicyArns:
-{%- for arn in role.managed_policy_arns %}
-        - {{ arn }}
+      DefaultAction:
+{%- if web_acl.default_action.allow is defined %}
+        Allow:
+          CustomRequestHandling:
+            InsertHeaders:
+{%- for header in web_acl.default_action.allow.custom_request_handling.insert_headers %}
+              -
+                Name: {{ header.name }}
+                Value: {{ header.value }}
 {%- endfor %}
 {%- endif %}
-{%- if role.max_session_duration is defined %}
-      MaxSessionDuration: {{ role.max_session_duration }}
+{%- if web_acl.default_action.block is defined %}
+        Block:
+          CustomResponse:
+            ResponseCode: {{ web_acl.default_action.block.custom_response.response_code }}
+{%- if web_acl.default_action.block.custom_response.response_code.custom_response_body_key is defined %}
+            CustomResponseBodyKey: {{ web_acl.default_action.block.custom_response.response_code.custom_response_body_key }}
 {%- endif %}
-{%- if role.path is defined %}
-      Path: {{ role.path }}
-{%- endif %}
-{%- if role.permissions_boundary is defined %}
-      PermissionsBoundary: {{ role.permissions_boundary }}
-{%- endif %}
-{%- if role.policies is defined %}
-      Policies:
-{%- for policy in role.policies %}
-        - PolicyName: {{ policy.policy_name }}
-{%- if policy.policy_document_json is defined %}
-          PolicyDocument: {{ policy.policy_document_json }}
-{%- else %}
-          PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
-{%- endif %}
+{%- if web_acl.default_action.block.custom_response.response_code.response_headers is defined %}
+            ResponseHeaders:
+{%- for response_header in web_acl.default_action.block.custom_response.response_code.response_headers %}
+              -
+                Name: {{ response_header.name }}
+                Value: {{ response_header.value }}
 {%- endfor %}
 {%- endif %}
-{%- if role.role_name is defined %}
-      RoleName: {{ role.role_name }}
+{%- endif %}
+      Scope: {{ web_acl.scope }}
+      VisibilityConfig:
+        CloudWatchMetricsEnabled: {{ web_acl.visibility_config.cloud_watch_metrics_enabled }}
+        MetricName: {{ web_acl.visibility_config.metric_name }}
+        SampledRequestsEnabled: {{ web_acl.visibility_config.sampled_requests_enabled }}
+{%- if web_acl.captcha_config is defined %}
+      CaptchaConfig:
+        ImmunityTimeProperty:
+          ImmunityTime: {{ web_acl.captcha_config.immunity_time_property.immunity_time }}
+{%- endif %}
+{%- if web_acl.custom_response_bodies is defined %}
+      CustomResponseBodies:
+{%- for key,value in web_acl.custom_response_bodies.items() %}
+        {{ key }} : {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if web_acl.description is defined %}
+      Description: {{ web_acl.description }}
+{%- endif %}
+{%- if web_acl.web_acl_name is defined %}
+      Name: {{ web_acl.web_acl_name }}
+{%- endif %}
+{%- if web_acl.rules is defined %}
+      Rules:
+{%- for rule in web_acl.rules %}
+        -
+          Name: {{ rule.name }}
+          Priority: {{ rule.priority }}
+          Statement:
+{{ web_acl_statement.prep(rule.statement) | indent(width=12, first=true) }}
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: {{ rule.visibility_config.cloud_watch_metrics_enabled}}
+            MetricName: {{ rule.visibility_config.metric_name }}
+            SampledRequestsEnabled: {{ rule.visibility_config.sampled_requests_enabled }}
+          Action:
+            Allow: 
+              CustomRequestHandling:
+                InsertHeaders:
+                  -
+                    Name: String
+                    Value: String
+            Block: 
+              CustomResponse: 
+                CustomResponseBodyKey: String
+                ResponseCode: Integer
+                ResponseHeaders: 
+                  -
+                    Name: String
+                    Value: String
+            Captcha: 
+              CustomRequestHandling: 
+                InsertHeaders:
+                  -
+                    Name: String
+                    Value: String
+            Count: 
+              CustomRequestHandling: 
+                InsertHeaders:
+                  -
+                    Name: String
+                    Value: String
+          CaptchaConfig:
+            ImmunityTimeProperty:
+              ImmunityTime: Integer
+          OverrideAction:
+            Count: Json
+            None: Json
+          RuleLabels:
+            - Name: String
+{%- endfor %}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if role.tags is defined %}
-{%- for key,value in role.tags.items() %}
+{%- if web_acl.tags is defined %}
+{%- for key,value in web_acl.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
@@ -60,34 +124,34 @@ Resources:
 
 Outputs:
 
-{%- for role in sceptre_user_data.roles %}
-{%- set role_name = role.name %}
-  {{ role_name }}:
-    Description: Role Name for {{ role_name }}
+{%- for web_acl in sceptre_user_data.web_acls %}
+{%- set web_acl_name = web_acl.name %}
+  {{ web_acl_name }}:
+    Description: Role Name for {{ web_acl_name }}
     Value:
-      Ref: {{ role_name }}
+      Ref: {{ web_acl_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}"
+        Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}"
 
-  {{ role_name }}Arn:
-    Description: The ARN for {{ role_name }}
+  {{ web_acl_name }}Arn:
+    Description: The ARN for {{ web_acl_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
+        - {{ web_acl_name }}
         - Arn
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
+        Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}-Arn"
 
-  {{ role_name }}RoleId:
-    Description: The Role Id for {{ role_name }}
+  {{ web_acl_name }}RoleId:
+    Description: The Role Id for {{ web_acl_name }}
     Value:
       Fn::GetAtt:
-        - {{ role_name }}
+        - {{ web_acl_name }}
         - RoleId
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}-RoleId"
 
 {%- endfor %}
