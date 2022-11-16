@@ -73,41 +73,75 @@ Resources:
             CloudWatchMetricsEnabled: {{ rule.visibility_config.cloud_watch_metrics_enabled}}
             MetricName: {{ rule.visibility_config.metric_name }}
             SampledRequestsEnabled: {{ rule.visibility_config.sampled_requests_enabled }}
+{%- if rule.action is defined %}
           Action:
-            Allow: 
+{%- if rule.action.allow is defined %}
+            Allow:
               CustomRequestHandling:
                 InsertHeaders:
+{%- for insert_header in rule.action.allow.custom_request_handling.insert_headers %}
                   -
-                    Name: String
-                    Value: String
-            Block: 
-              CustomResponse: 
-                CustomResponseBodyKey: String
-                ResponseCode: Integer
-                ResponseHeaders: 
+                    Name: {{ insert_header.name }}
+                    Value: {{ insert_header.value }}
+{%- endfor %}
+{%- endif %}
+{%- if rule.action.block is defined %}
+            Block:
+              CustomResponse:
+                ResponseCode: {{ rule.action.block.custom_response.response_code }}
+{%- if rule.action.block.custom_response.custom_response_body_key is defined %}
+                CustomResponseBodyKey: {{ rule.action.block.custom_response.custom_response_body_key }}
+{%- endif %}
+{%- if rule.action.block.custom_response.response_headers is defined %}
+                ResponseHeaders:
+{%- for response_header in rule.action.block.custom_response.response_headers %}
                   -
-                    Name: String
-                    Value: String
-            Captcha: 
-              CustomRequestHandling: 
+                    Name: {{ response_header.name }}
+                    Value: {{ response_header.value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if rule.action.captcha is defined %}
+            Captcha:
+              CustomRequestHandling:
                 InsertHeaders:
+{%- for insert_header in rule.action.captcha.custom_request_handling.insert_headers %}
                   -
-                    Name: String
-                    Value: String
-            Count: 
-              CustomRequestHandling: 
+                    Name: {{ insert_header.name }}
+                    Value: {{ insert_header.value }}
+{%- endfor %}
+{%- endif %}
+{%- if rule.action.count is defined %}
+            Count:
+              CustomRequestHandling:
                 InsertHeaders:
+{%- for insert_header in rule.action.count.custom_request_handling.insert_headers %}
                   -
-                    Name: String
-                    Value: String
+                    Name: {{ insert_header.name }}
+                    Value: {{ insert_header.value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if rule.captcha_config is defined %}
           CaptchaConfig:
             ImmunityTimeProperty:
-              ImmunityTime: Integer
+              ImmunityTime: {{ rule.captcha_config.immunity_time_property.immunity_time }}
+{%- endif %}
+{%- if rule.override_action is defined %}
           OverrideAction:
-            Count: Json
-            None: Json
+{%- if rule.override_action.count is defined %}
+            Count: {{ rule.override_action.count }}
+{%- endif %}
+{%- if rule.override_action.none is defined %}
+            None: {{ rule.override_action.none }}
+{%- endif %}
+{%- endif %}
+{%- if rule.rule_labels is defined %}
           RuleLabels:
-            - Name: String
+{%- for rule_label in rule.rule_labels %}
+            - Name: {{ rule_label.name }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 {%- endif %}
       Tags:
@@ -127,7 +161,7 @@ Outputs:
 {%- for web_acl in sceptre_user_data.web_acls %}
 {%- set web_acl_name = web_acl.name %}
   {{ web_acl_name }}:
-    Description: Role Name for {{ web_acl_name }}
+    Description: The Ref of {{ web_acl_name }}
     Value:
       Ref: {{ web_acl_name }}
     Export:
@@ -135,7 +169,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}"
 
   {{ web_acl_name }}Arn:
-    Description: The ARN for {{ web_acl_name }}
+    Description: The ARN of {{ web_acl_name }}
     Value:
       Fn::GetAtt:
         - {{ web_acl_name }}
@@ -144,14 +178,14 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}-Arn"
 
-  {{ web_acl_name }}RoleId:
-    Description: The Role Id for {{ web_acl_name }}
+  {{ web_acl_name }}Id:
+    Description: The ID of {{ web_acl_name }}
     Value:
       Fn::GetAtt:
         - {{ web_acl_name }}
-        - RoleId
+        - Id
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}-RoleId"
+        Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}-Id"
 
 {%- endfor %}

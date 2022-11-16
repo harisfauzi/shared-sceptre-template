@@ -9,7 +9,104 @@ AndStatement:
 {%- endif %}
 {%- if statement.byte_match_statement is defined %}
 ByteMatchStatement:
-  ByteMatchStatement
+{%- if statement.byte_match_statement.field_to_match is defined %}
+  FieldToMatch: 
+{%- if statement.byte_match_statement.field_to_match.all_query_arguments is defined %}
+    AllQueryArguments: {{ statement.byte_match_statement.field_to_match.all_query_arguments }}
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.body is defined %}
+    Body: 
+      OversizeHandling: {{ statement.byte_match_statement.field_to_match.body.oversize_handling }}
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.cookies is defined %}
+    Cookies: 
+      MatchPattern: 
+{%- if statement.byte_match_statement.field_to_match.cookies.match_pattern.all is defined %}
+        All: {{ statement.byte_match_statement.field_to_match.cookies.match_pattern.all }}
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.cookies.match_pattern.excluded_cookies is defined %}
+        ExcludedCookies: 
+{%- for cookie in statement.byte_match_statement.field_to_match.cookies.match_pattern.excluded_cookies %}
+          - {{ cookie }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.cookies.match_pattern.included_cookies is defined %}
+        IncludedCookies: 
+{%- for cookie in statement.byte_match_statement.field_to_match.cookies.match_pattern.included_cookies %}
+          - {{ cookie }}
+{%- endfor %}
+{%- endif %}
+      MatchScope: {{ statement.byte_match_statement.field_to_match.cookies.match_scope }}
+      OversizeHandling: {{ statement.byte_match_statement.field_to_match.cookies.oversize_handling }}
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.headers is defined %}
+    Headers: 
+      MatchPattern: 
+{%- if statement.byte_match_statement.field_to_match.headers.match_pattern.all is defined %}
+        All: {{ statement.byte_match_statement.field_to_match.headers.match_pattern.all }}
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.headers.match_pattern.excluded_headers is defined %}
+        ExcludedHeaders: 
+{%- for excluded_header in statement.byte_match_statement.field_to_match.headers.match_pattern.excluded_headers %}
+          - {{ excluded_header }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.headers.match_pattern.included_headers is defined %}
+        IncludedHeaders: 
+{%- for included_header in statement.byte_match_statement.field_to_match.headers.match_pattern.included_headers %}
+          - {{ included_header }}
+{%- endfor %}
+{%- endif %}
+      MatchScope: {{ statement.byte_match_statement.field_to_match.headers.match_scope }}
+      OversizeHandling: {{ statement.byte_match_statement.field_to_match.headers.oversize_handling }}
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.json_body is defined %}
+    JsonBody: 
+      MatchPattern: 
+{%- if statement.byte_match_statement.field_to_match.json_body.match_pattern.all is defined %}
+        All: {{ statement.byte_match_statement.field_to_match.json_body.match_pattern.all }}
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.json_body.match_pattern.included_paths is defined %}
+        IncludedPaths: 
+{%- for included_path in statement.byte_match_statement.field_to_match.json_body.match_pattern.included_paths %}
+          - {{ included_path }}
+{%- endfor %}
+{%- endif %}
+      MatchScope: {{ statement.byte_match_statement.field_to_match.json_body.match_scope }}
+      InvalidFallbackBehavior: {{ statement.byte_match_statement.field_to_match.json_body.invaid_fallback_behavior }}
+      OversizeHandling: {{ statement.byte_match_statement.field_to_match.json_body.oversize_handling }}
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.zzzzzz is defined %}
+    Method: Json
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.zzzzzz is defined %}
+    QueryString: Json
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.zzzzzz is defined %}
+    SingleHeader: Json
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.zzzzzz is defined %}
+    SingleQueryArgument: Json
+{%- endif %}
+{%- if statement.byte_match_statement.field_to_match.zzzzzz is defined %}
+    UriPath: Json
+{%- endif %}
+{%- endif %}
+{%- if statement.byte_match_statement.xxxxxx is defined %}
+  PositionalConstraint: String
+{%- endif %}
+{%- if statement.byte_match_statement.xxxxxx is defined %}
+  SearchString: 
+    String
+{%- endif %}
+{%- if statement.byte_match_statement.xxxxxx is defined %}
+  SearchStringBase64: 
+    String
+{%- endif %}
+{%- if statement.byte_match_statement.xxxxxx is defined %}
+  TextTransformations: 
+    - TextTransformation
+{%- endif %}
 {%- endif %}
 {%- if statement.geo_match_statement is defined %}
 GeoMatchStatement:
