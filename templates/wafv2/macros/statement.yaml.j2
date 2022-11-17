@@ -1,155 +1,150 @@
-{%- macro prep(statement, extra_indent) %}
+{%- import 'field_to_match.yaml.j2' as macro_field_to_match %}
+{%- macro prep(statement) %}
 {%- if statement.and_statement is defined %}
 AndStatement:
   Statements:
-{%- for statement in statement.and_statement.statements %}
+{%- for sub_statement in statement.and_statement.statements %}
     -
-{{ prep( statement) | indent(width=6, first=true) }}
+{{ prep(sub_statement) | indent(width=6, first=true) }}
 {%- endfor %}
 {%- endif %}
 {%- if statement.byte_match_statement is defined %}
 ByteMatchStatement:
 {%- if statement.byte_match_statement.field_to_match is defined %}
-  FieldToMatch: 
-{%- if statement.byte_match_statement.field_to_match.all_query_arguments is defined %}
-    AllQueryArguments: {{ statement.byte_match_statement.field_to_match.all_query_arguments }}
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.byte_match_statement.field_to_match) | indent(width=4,first=true) }}
 {%- endif %}
-{%- if statement.byte_match_statement.field_to_match.body is defined %}
-    Body: 
-      OversizeHandling: {{ statement.byte_match_statement.field_to_match.body.oversize_handling }}
+{%- if statement.byte_match_statement.positional_constraint is defined %}
+  PositionalConstraint: {{ statement.byte_match_statement.positional_constraint }}
 {%- endif %}
-{%- if statement.byte_match_statement.field_to_match.cookies is defined %}
-    Cookies: 
-      MatchPattern: 
-{%- if statement.byte_match_statement.field_to_match.cookies.match_pattern.all is defined %}
-        All: {{ statement.byte_match_statement.field_to_match.cookies.match_pattern.all }}
+{%- if statement.byte_match_statement.search_string is defined %}
+  SearchString:
+    {{ statement.byte_match_statement.search_string }}
 {%- endif %}
-{%- if statement.byte_match_statement.field_to_match.cookies.match_pattern.excluded_cookies is defined %}
-        ExcludedCookies: 
-{%- for cookie in statement.byte_match_statement.field_to_match.cookies.match_pattern.excluded_cookies %}
-          - {{ cookie }}
+{%- if statement.byte_match_statement.search_string_base64 is defined %}
+  SearchStringBase64:
+    {{ statement.byte_match_statement.search_string_base64 }}
+{%- endif %}
+{%- if statement.byte_match_statement.text_transformations is defined %}
+  TextTransformations:
+{%- for text_transformation in statement.byte_match_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
 {%- endfor %}
-{%- endif %}
-{%- if statement.byte_match_statement.field_to_match.cookies.match_pattern.included_cookies is defined %}
-        IncludedCookies: 
-{%- for cookie in statement.byte_match_statement.field_to_match.cookies.match_pattern.included_cookies %}
-          - {{ cookie }}
-{%- endfor %}
-{%- endif %}
-      MatchScope: {{ statement.byte_match_statement.field_to_match.cookies.match_scope }}
-      OversizeHandling: {{ statement.byte_match_statement.field_to_match.cookies.oversize_handling }}
-{%- endif %}
-{%- if statement.byte_match_statement.field_to_match.headers is defined %}
-    Headers: 
-      MatchPattern: 
-{%- if statement.byte_match_statement.field_to_match.headers.match_pattern.all is defined %}
-        All: {{ statement.byte_match_statement.field_to_match.headers.match_pattern.all }}
-{%- endif %}
-{%- if statement.byte_match_statement.field_to_match.headers.match_pattern.excluded_headers is defined %}
-        ExcludedHeaders: 
-{%- for excluded_header in statement.byte_match_statement.field_to_match.headers.match_pattern.excluded_headers %}
-          - {{ excluded_header }}
-{%- endfor %}
-{%- endif %}
-{%- if statement.byte_match_statement.field_to_match.headers.match_pattern.included_headers is defined %}
-        IncludedHeaders: 
-{%- for included_header in statement.byte_match_statement.field_to_match.headers.match_pattern.included_headers %}
-          - {{ included_header }}
-{%- endfor %}
-{%- endif %}
-      MatchScope: {{ statement.byte_match_statement.field_to_match.headers.match_scope }}
-      OversizeHandling: {{ statement.byte_match_statement.field_to_match.headers.oversize_handling }}
-{%- endif %}
-{%- if statement.byte_match_statement.field_to_match.json_body is defined %}
-    JsonBody: 
-      MatchPattern: 
-{%- if statement.byte_match_statement.field_to_match.json_body.match_pattern.all is defined %}
-        All: {{ statement.byte_match_statement.field_to_match.json_body.match_pattern.all }}
-{%- endif %}
-{%- if statement.byte_match_statement.field_to_match.json_body.match_pattern.included_paths is defined %}
-        IncludedPaths: 
-{%- for included_path in statement.byte_match_statement.field_to_match.json_body.match_pattern.included_paths %}
-          - {{ included_path }}
-{%- endfor %}
-{%- endif %}
-      MatchScope: {{ statement.byte_match_statement.field_to_match.json_body.match_scope }}
-      InvalidFallbackBehavior: {{ statement.byte_match_statement.field_to_match.json_body.invaid_fallback_behavior }}
-      OversizeHandling: {{ statement.byte_match_statement.field_to_match.json_body.oversize_handling }}
-{%- endif %}
-{%- if statement.byte_match_statement.field_to_match.zzzzzz is defined %}
-    Method: Json
-{%- endif %}
-{%- if statement.byte_match_statement.field_to_match.zzzzzz is defined %}
-    QueryString: Json
-{%- endif %}
-{%- if statement.byte_match_statement.field_to_match.zzzzzz is defined %}
-    SingleHeader: Json
-{%- endif %}
-{%- if statement.byte_match_statement.field_to_match.zzzzzz is defined %}
-    SingleQueryArgument: Json
-{%- endif %}
-{%- if statement.byte_match_statement.field_to_match.zzzzzz is defined %}
-    UriPath: Json
-{%- endif %}
-{%- endif %}
-{%- if statement.byte_match_statement.xxxxxx is defined %}
-  PositionalConstraint: String
-{%- endif %}
-{%- if statement.byte_match_statement.xxxxxx is defined %}
-  SearchString: 
-    String
-{%- endif %}
-{%- if statement.byte_match_statement.xxxxxx is defined %}
-  SearchStringBase64: 
-    String
-{%- endif %}
-{%- if statement.byte_match_statement.xxxxxx is defined %}
-  TextTransformations: 
-    - TextTransformation
 {%- endif %}
 {%- endif %}
 {%- if statement.geo_match_statement is defined %}
 GeoMatchStatement:
-  GeoMatchStatement
+{%- if statement.geo_match_statement.country_codes is defined %}
+  CountryCodes:
+{%- for country_code in statement.geo_match_statement.country_codes %}
+    - {{ country_code }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.geo_match_statement.forwarded_ip_config is defined %}
+  ForwardedIPConfig:
+    FallbackBehavior: {{ statement.geo_match_statement.forwarded_ip_config.fallback_behavior }}
+    HeaderName: {{ statement.geo_match_statement.forwarded_ip_config.header_name }}
+{%- endif %}
 {%- endif %}
 {%- if statement.ip_set_reference_statement is defined %}
 IPSetReferenceStatement:
-  IPSetReferenceStatement
+  Arn: {{ statement.ip_set_reference_statement.arn }}
+{%- if statement.ip_set_reference_statement.ip_set_forwarded_ip_config is defined %}
+  IPSetForwardedIPConfig:
+    FallbackBehavior: {{ statement.ip_set_reference_statement.ip_set_forwarded_ip_config.fallback_behavior }}
+    HeaderName: {{ statement.ip_set_reference_statement.ip_set_forwarded_ip_config.header_name }}
+    Position: {{ statement.ip_set_reference_statement.ip_set_forwarded_ip_config.position }}
+{%- endif %}
 {%- endif %}
 {%- if statement.label_match_statement is defined %}
 LabelMatchStatement:
-  LabelMatchStatement
+  Key: {{ statement.label_match_statement.key }}
+  Scope: {{ statement.label_match_statement.scope }}
 {%- endif %}
 {%- if statement.not_statement is defined %}
 NotStatement:
-  NotStatement
+  Statement:
+{{ prep(statement.not_statement.statement) | indent(width=4, first=true) }}
 {%- endif %}
 {%- if statement.or_statement is defined %}
 OrStatement:
-  OrStatement
+  Statements:
+{%- for sub_statement in statement.or_statement.statements %}
+    -
+{{ prep(sub_statement) | indent(width=6, first=true) }}
+{%- endfor %}
 {%- endif %}
 {%- if statement.rate_based_statement is defined %}
 RateBasedStatement:
-  RateBasedStatement
+  AggregateKeyType: {{ statement.rate_based_statement.aggregate_key_type }}
+  Limit: {{ statement.rate_based_statement.limit }}
+{%- if statement.rate_based_statement.forwarded_ip_config %}
+  ForwardedIPConfig:
+    FallbackBehavior: {{ statement.rate_based_statement.forwarded_ip_config.fallback_behavior }}
+    HeaderName: {{ statement.rate_based_statement.forwarded_ip_config.header_name }}
+{%- endif %}
+{%- if statement.rate_based_statement.scope_down_statement %}
+  ScopeDownStatement:
+{{ prep(statement.rate_based_statement.scope_down_statement) | indent(width=4, first=true) }}
+{%- endif %}
 {%- endif %}
 {%- if statement.regex_match_statement is defined %}
 RegexMatchStatement:
-  RegexMatchStatement
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.regex_match_statement.field_to_match) | indent(width=4,first=true) }}
+  RegexString:
+    {{ statement.regex_match_statement.regex_string }}
+  TextTransformations:
+{%- for text_transformation in statement.regex_match_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
 {%- endif %}
 {%- if statement.regex_pattern_set_reference_statement is defined %}
 RegexPatternSetReferenceStatement:
-  RegexPatternSetReferenceStatement
+  Arn: {{ statement.regex_pattern_set_reference_statement.arn }}
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.regex_pattern_set_reference_statement.field_to_match) | indent(width=4,first=true) }}
+  TextTransformations:
+{%- for text_transformation in statement.regex_pattern_set_reference_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
 {%- endif %}
 {%- if statement.size_constraint_statement is defined %}
 SizeConstraintStatement:
-  SizeConstraintStatement
+  ComparisonOperator: {{ statement.size_constraint_statement.comparison_operator }}
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.size_constraint_statement.field_to_match) | indent(width=4,first=true) }}
+  Size: {{ statement.size_constraint_statement.size }}
+  TextTransformations:
+{%- for text_transformation in statement.regex_pattern_set_reference_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
 {%- endif %}
 {%- if statement.sqli_match_statement is defined %}
 SqliMatchStatement:
-  SqliMatchStatement
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.sqli_match_statement.field_to_match) | indent(width=4,first=true) }}
+  TextTransformations:
+{%- for text_transformation in statement.sqli_match_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
+{%- if statement.sqli_match_statement.sensitivity_level is defined %}
+  SensitivityLevel: {{ statement.sqli_match_statement.sensitivity_level }}
+{%- endif %}
 {%- endif %}
 {%- if statement.xss_match_statement is defined %}
 XssMatchStatement:
-  XssMatchStatement
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.xss_match_statement.field_to_match) | indent(width=4,first=true) }}
+  TextTransformations:
+{%- for text_transformation in statement.xss_match_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
 {%- endif %}
 {%- endmacro %}
