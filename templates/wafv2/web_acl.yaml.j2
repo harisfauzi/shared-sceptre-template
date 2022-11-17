@@ -14,6 +14,9 @@ Resources:
     Properties:
       DefaultAction:
 {%- if web_acl.default_action.allow is defined %}
+{%- if not web_acl.default_action.allow.custom_request_handling is defined %}
+        Allow: {}
+{%- else %}
         Allow:
           CustomRequestHandling:
             InsertHeaders:
@@ -23,20 +26,25 @@ Resources:
                 Value: {{ header.value }}
 {%- endfor %}
 {%- endif %}
+{%- endif %}
 {%- if web_acl.default_action.block is defined %}
+{%- if not web_acl.default_action.block.custom_response is defined %}
+        Block: {}
+{%- else %}
         Block:
           CustomResponse:
             ResponseCode: {{ web_acl.default_action.block.custom_response.response_code }}
-{%- if web_acl.default_action.block.custom_response.response_code.custom_response_body_key is defined %}
-            CustomResponseBodyKey: {{ web_acl.default_action.block.custom_response.response_code.custom_response_body_key }}
+{%- if web_acl.default_action.block.custom_response.custom_response_body_key is defined %}
+            CustomResponseBodyKey: {{ web_acl.default_action.block.custom_response.custom_response_body_key }}
 {%- endif %}
-{%- if web_acl.default_action.block.custom_response.response_code.response_headers is defined %}
+{%- if web_acl.default_action.block.custom_response.response_headers is defined %}
             ResponseHeaders:
-{%- for response_header in web_acl.default_action.block.custom_response.response_code.response_headers %}
+{%- for response_header in web_acl.default_action.block.custom_response.response_headers %}
               -
                 Name: {{ response_header.name }}
                 Value: {{ response_header.value }}
 {%- endfor %}
+{%- endif %}
 {%- endif %}
 {%- endif %}
       Scope: {{ web_acl.scope }}
@@ -51,9 +59,7 @@ Resources:
 {%- endif %}
 {%- if web_acl.custom_response_bodies is defined %}
       CustomResponseBodies:
-{%- for key,value in web_acl.custom_response_bodies.items() %}
-        {{ key }} : {{ value }}
-{%- endfor %}
+{{ web_acl.custom_response_bodies | indent(width=8,first=true) }}
 {%- endif %}
 {%- if web_acl.description is defined %}
       Description: {{ web_acl.description }}

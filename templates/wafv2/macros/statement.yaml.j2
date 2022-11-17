@@ -1,4 +1,4 @@
-{%- import 'field_to_match.yaml.j2' as macro_field_to_match %}
+{%- import 'macros/field_to_match.yaml.j2' as macro_field_to_match %}
 {%- macro prep(statement) %}
 {%- if statement.and_statement is defined %}
 AndStatement:
@@ -61,6 +61,44 @@ IPSetReferenceStatement:
 LabelMatchStatement:
   Key: {{ statement.label_match_statement.key }}
   Scope: {{ statement.label_match_statement.scope }}
+{%- endif %}
+{%- if statement.managed_rule_group_statement is defined %}
+ManagedRuleGroupStatement:
+  Name: {{  statement.managed_rule_group_statement.name }}
+  VendorName: {{  statement.managed_rule_group_statement.vendor_name }}
+{%- if statement.managed_rule_group_statement.excluded_rules is defined %}
+  ExcludedRules:
+{%- for excluded_rule in statement.managed_rule_group_statement.excluded_rules %}
+    - Name: {{ excluded_rule }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.managed_rule_group_statement.managed_rule_group_configs is defined %}
+  ManagedRuleGroupConfigs:
+{%- for managed_rule_group_config in statement.managed_rule_group_statement.managed_rule_group_configs %}
+    -
+{%- if managed_rule_group_config.login_path is defined %}
+      LoginPath: String
+{%- endif %}
+{%- if managed_rule_group_config.password_field is defined %}
+      PasswordField:
+        Identifier: {{ managed_rule_group_config.password_field.Identifier }}
+{%- endif %}
+{%- if managed_rule_group_config.payload_type is defined %}
+      PayloadType: {{ managed_rule_group_config.payload_type }}
+{%- endif %}
+{%- if managed_rule_group_config.username_field is defined %}
+      UsernameField:
+        Identifier: {{ managed_rule_group_config.username_field.Identifier }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if  statement.managed_rule_group_statement.scope_down_statement is defined %}
+  ScopeDownStatement:
+{{ prep(statement.managed_rule_group_statement.scope_down_statement) | indent(width=6, first=true) }}
+{%- endif %}
+{%- if  statement.managed_rule_group_statement.version is defined %}
+  Version: {{ statement.managed_rule_group_statement.version }}
+{%- endif %}
 {%- endif %}
 {%- if statement.not_statement is defined %}
 NotStatement:
