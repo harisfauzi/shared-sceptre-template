@@ -3,7 +3,7 @@ template_path: ec2/vpc.yaml.j2
 
 sceptre_user_data:
   project_code: "{{ stack_group_config.project_code }}"
-  source_repo_url: {{ var.git_repo }}
+  source_repo_url: {{ git_repo }}
   vpcs:
     - name: ec2vpctest1
       cidr_block: 10.255.252.0/22
