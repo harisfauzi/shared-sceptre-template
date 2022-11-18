@@ -73,5 +73,53 @@ sceptre_user_data:
       tags:
         Name: test2
 
+    - name: wafv2webacltest3
+      description: Test template scoped CLOUDFRONT
+      default_action:
+        block:
+          custom_response:
+            response_code: 503
+            custom_response_body_key: CustomResponseBodyKey1
+            response_headers:
+              - name: AllowActionHeader1Name
+                value: AllowActionHeader1Value
+              - name: AllowActionHeader2Name
+                value: AllowActionHeader2Value
+      scope: CLOUDFRONT
+      visibility_config:
+        cloud_watch_metrics_enabled: 'true'
+        metric_name: SampleWebACLMMetric
+        sampled_requests_enabled: 'true'
+      custom_response_bodies: |
+        CustomResponseBodyKey1:
+          ContentType: TEXT_PLAIN
+          Content: this is a plain text
+        CustomResponseBodyKey2:
+          ContentType: APPLICATION_JSON
+          Content: '{"jsonfieldname": "jsonfieldvalue"}'
+      rules:
+        - name: RandomRulewithAndStatement
+          priority: 0
+          statement:
+            and_statement:
+              statements:
+                -
+                  managed_rule_group_statement:
+                    name: AWSManagedRulesCommonRuleSet
+                    vendor_name: AWS
+                -
+                  xss_match_statement:
+                    field_to_match:
+                      all_query_arguments: '{}'
+                    text_transformations:
+                      - priority: 1
+                        type: 'NONE'
+          visibility_config:
+            cloud_watch_metrics_enabled: 'true'
+            metric_name: AWSManagedWebACLMetric
+            sampled_requests_enabled: 'true'
+      tags:
+        Name: test3
+
 stack_tags:
   Test: ssm-parameter
