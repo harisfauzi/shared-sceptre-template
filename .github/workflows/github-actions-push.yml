@@ -35,12 +35,12 @@ jobs:
           --var aws_region=${AWS_DEFAULT_REGION}
           generate ec2/vpc.yaml > ec2-vpc-template.yaml
       - name: Run yamllint
-        uses: docker://harisfauzi/hf-sceptre:3.1.0-03
+        uses: docker://harisfauzi/hf-sceptre:3.2.0-01
         with:
           entrypoint: /usr/bin/yamllint
           args: test/sceptre/
       - name: Run cfn-guard ssm-parameter-template.yaml
-        uses: docker://harisfauzi/hf-sceptre:3.1.0-03
+        uses: docker://harisfauzi/hf-sceptre:3.2.0-01
         with:
           entrypoint: /usr/bin/cfn-guard
           args: >
@@ -50,7 +50,7 @@ jobs:
             --type CFNTemplate
             --show-summary all
       - name: Run cfn-guard ec2-vpc-template.yaml
-        uses: docker://harisfauzi/hf-sceptre:3.1.0-03
+        uses: docker://harisfauzi/hf-sceptre:3.2.0-01
         with:
           entrypoint: /usr/bin/cfn-guard
           args: >
