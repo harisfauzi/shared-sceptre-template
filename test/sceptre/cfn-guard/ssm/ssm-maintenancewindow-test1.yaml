@@ -1,0 +1,105 @@
+---
+- input:
+    Resources:
+      test1:
+        Type: AWS::SSM::MaintenanceWindow
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          AllowUnassociatedTargets: false
+          Cutoff: 1
+          Duration: 1
+          Name: test1
+          Schedule: cron(0 4 ? * SUN *)
+          Description: Test1 description
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+
+  expectations:
+    rules:
+      ssm_maintenancewindows_valid_aut: PASS
+      ssm_maintenancewindows_valid_cutoff: PASS
+      ssm_maintenancewindows_valid_duration: PASS
+      ssm_maintenancewindows_valid_name: PASS
+      ssm_maintenancewindows_valid_schedule: PASS
+      ssm_maintenancewindows_valid_description: PASS
+      ssm_maintenancewindows_valid_deletion_policy: PASS
+      ssm_maintenancewindow_valid_updatereplace_policy: PASS
+      ssm_maintenancewindow_tag_name_exists: PASS
+      ssm_maintenancewindow_tag_sourcerepourl: PASS
+      ssm_maintenancewindow_valid_description: PASS
+
+- input:
+    Resources:
+      test1:
+        Type: AWS::SSM::MaintenanceWindow
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          AllowUnassociatedTargets: true
+          Cutoff: 1
+          Duration: 1
+          Name: test1
+          Schedule: at(2023-05-14T15:55:00)
+          Description: Test2 description
+          EndDate: 2022-11-30
+          ScheduleOffset: 3
+          ScheduleTimezone: Australia/Brisbane
+          StartDate: 2022-11-01
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+            - Key: Name
+              Value: test1
+
+  expectations:
+    rules:
+      ssm_maintenancewindows_valid_aut: PASS
+      ssm_maintenancewindows_valid_cutoff: PASS
+      ssm_maintenancewindows_valid_duration: PASS
+      ssm_maintenancewindows_valid_name: PASS
+      ssm_maintenancewindows_valid_schedule: PASS
+      ssm_maintenancewindows_valid_description: PASS
+      ssm_maintenancewindows_valid_deletion_policy: PASS
+      ssm_maintenancewindow_valid_updatereplace_policy: PASS
+      ssm_maintenancewindow_tag_name_exists: PASS
+      ssm_maintenancewindow_tag_sourcerepourl: PASS
+      ssm_maintenancewindow_valid_description: PASS
+
+- input:
+    Resources:
+      test1:
+        Type: AWS::SSM::MaintenanceWindow
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          AllowUnassociatedTargets: true
+          Cutoff: 1
+          Duration: 1
+          Name: test1
+          Schedule: cron(0 4 ? * SUN *)
+          Description: Test3 description
+          EndDate: 2022-11-30
+          ScheduleOffset: 3
+          ScheduleTimezone: Australia/Brisbane
+          StartDate: 2022-11-01
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+            - Key: Name
+              Value: test1
+
+  expectations:
+    rules:
+      ssm_maintenancewindows_valid_aut: PASS
+      ssm_maintenancewindows_valid_cutoff: PASS
+      ssm_maintenancewindows_valid_duration: PASS
+      ssm_maintenancewindows_valid_name: PASS
+      ssm_maintenancewindows_valid_schedule: PASS
+      ssm_maintenancewindows_valid_description: PASS
+      ssm_maintenancewindows_valid_deletion_policy: PASS
+      ssm_maintenancewindow_valid_updatereplace_policy: PASS
+      ssm_maintenancewindow_tag_name_exists: PASS
+      ssm_maintenancewindow_tag_sourcerepourl: PASS
+      ssm_maintenancewindow_valid_description: PASS

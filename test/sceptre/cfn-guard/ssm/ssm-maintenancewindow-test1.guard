@@ -1,0 +1,26 @@
+let ssm_maintenancewindowtest1 = Resources.test1
+let allowed_scope = ['CLOUDFRONT','REGIONAL']
+let allowed_deletion_policy = ['Delete','Retain']
+let allowed_updatereplace_policy = ['Delete','Retain']
+let resource_type = 'AWS::SSM::MaintenanceWindow'
+let ssm_maintenancewindow_test1_description = Resources.test1.Properties.Description
+
+let ssm_maintenancewindows = Resources.*[ Type == 'AWS::SSM::MaintenanceWindow' ]
+let git_repo = 'git@github.com:harisfauzi/shared-sceptre-template.git'
+
+rule ssm_maintenancewindow_valid_resource_type when %ssm_maintenancewindowtest1 !empty {
+  let ssm_maintenancewindowtest1_resource_type = %ssm_maintenancewindowtest1.Type
+  %ssm_maintenancewindowtest1_resource_type == %resource_type
+}
+
+rule ssm_maintenancewindow_tag_sourcerepourl when ssm_maintenancewindow_valid_resource_type {
+  let ssm_maintenancewindow_test1_tag_sourcerepourl = %ssm_maintenancewindowtest1.Properties.Tags[ Key == 'SourceRepoURL' ]
+  %ssm_maintenancewindow_test1_tag_sourcerepourl exists
+  %ssm_maintenancewindow_test1_tag_sourcerepourl.Value == %git_repo
+}
+
+rule ssm_maintenancewindow_valid_description when %ssm_maintenancewindowtest1 !empty {
+  let ssm_maintenancewindow_test1_description = Resources.test1.Properties.Description
+  %ssm_maintenancewindow_test1_description exists
+  %ssm_maintenancewindow_test1_description is_string
+}
