@@ -7,6 +7,8 @@ let valid_instancetenancy = ['dedicated','default','host']
 let allowed_deletion_policy = ['Delete','Retain']
 let allowed_updatereplace_policy = ['Delete','Retain']
 let git_repo = 'git@github.com:harisfauzi/shared-sceptre-template.git'
+let ec2_vpc_test1_enableddnshostnames = Resources.ec2vpctest1.Properties.EnableDnsHostnames
+let ec2_vpc_test1_enablednssupport = Resources.ec2vpctest1.Properties.EnableDnsSupport
 
 rule ec2_vpc_valid_resource_type when %ec2_vpc_test1 !empty {
     let ec2_vpc_test1_resource_type = %ec2_vpc_test1.Type
@@ -24,13 +26,11 @@ rule ec2_vpc_valid_cidr_block when %ec2_vpc_test1 !empty {
     %ec2_vpc_test1_cidr_block == %cidr_block
 }
 
-rule ec2_vpc_valid_enableddnshostnames when %ec2_vpc_test1 !empty {
-    let ec2_vpc_test1_enableddnshostnames = %ec2_vpc_test1.Properties.EnableDnsHostnames
+rule ec2_vpc_valid_enableddnshostnames when %ec2_vpc_test1_enableddnshostnames !empty {
     %ec2_vpc_test1_enableddnshostnames is_bool
 }
 
-rule ec2_vpc_valid_enablednssupport when %ec2_vpc_test1 !empty {
-    let ec2_vpc_test1_enablednssupport = %ec2_vpc_test1.Properties.EnableDnsSupport
+rule ec2_vpc_valid_enablednssupport when %ec2_vpc_test1_enablednssupport !empty {
     %ec2_vpc_test1_enablednssupport is_bool
 }
 
@@ -70,5 +70,5 @@ rule ec2_vpc_vpccidrblock_valid_vpcid when %ec2_vpc_test1_vpccidrblock !empty {
 rule ec2_vpc_vpccidrblock_ipv6_is_set when %ec2_vpc_test1_vpccidrblock !empty {
     let ec2_vpc_test1_vpccidrblock_ipv6 = %ec2_vpc_test1_vpccidrblock.Properties.AmazonProvidedIpv6CidrBlock
     %ec2_vpc_test1_vpccidrblock_ipv6 exists
-    %ec2_vpc_test1_vpccidrblock_ipv6 == 'True'
+    %ec2_vpc_test1_vpccidrblock_ipv6 is_bool
 }
