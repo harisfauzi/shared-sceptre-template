@@ -1,4 +1,5 @@
 let ssm_parametertest1 = Resources.ssmparametertest1
+
 let resource_type = 'AWS::SSM::Parameter'
 let allowed_type = ["String","StringList"]
 let allowed_value = 'one'
@@ -12,34 +13,29 @@ rule ssm_parameter_valid_resource_type when %ssm_parametertest1 !empty {
     %ssm_parametertest1_resource_type == %resource_type
 }
 
-rule ssm_parameter_valid_type when %ssm_parametertest1 !empty {
-    let ssm_parametertest1_type = %ssm_parametertest1.Properties.Type
-    %ssm_parametertest1_type in %allowed_type
-}
-
-rule ssm_parameter_valid_value when %ssm_parametertest1 !empty {
+rule ssm_parameter_valid_value when ssm_parameter_valid_resource_type {
     let ssm_parametertest1_value = %ssm_parametertest1.Properties.Value
     %ssm_parametertest1_value == %allowed_value
 }
 
-rule ssm_parameter_valid_deletion_policy when %ssm_parametertest1 !empty {
+rule ssm_parameter_valid_deletion_policy when ssm_parameter_valid_resource_type {
     let ssm_parametertest1_deletion_policy = %ssm_parametertest1.DeletionPolicy
     %ssm_parametertest1_deletion_policy exists
     %ssm_parametertest1_deletion_policy in %allowed_deletion_policy
 }
 
-rule ssm_parameter_valid_updatereplace_policy when %ssm_parametertest1 !empty {
+rule ssm_parameter_valid_updatereplace_policy when ssm_parameter_valid_resource_type {
     let ssm_parametertest1_updatereplace_policy = %ssm_parametertest1.UpdateReplacePolicy
     %ssm_parametertest1_updatereplace_policy exists
     %ssm_parametertest1_updatereplace_policy in %allowed_updatereplace_policy
 }
 
-rule ssm_parameter_tag_name_exists when %ssm_parametertest1 !empty {
+rule ssm_parameter_tag_name_exists when ssm_parameter_valid_resource_type {
     let ssm_parametertest1_tag_name = %ssm_parametertest1.Properties.Tags.Name
     %ssm_parametertest1_tag_name exists
 }
 
-rule ssm_parameter_tag_sourcerepourl when %ssm_parametertest1 !empty {
+rule ssm_parameter_tag_sourcerepourl when ssm_parameter_valid_resource_type {
     let ssm_parametertest1_tag_sourcerepourl = %ssm_parametertest1.Properties.Tags.SourceRepoURL
     %ssm_parametertest1_tag_sourcerepourl exists
     %ssm_parametertest1_tag_sourcerepourl == %git_repo
