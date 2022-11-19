@@ -40,6 +40,22 @@ jobs:
         with:
           entrypoint: /usr/bin/yamllint
           args: test/sceptre/
+      - name: Validate CloudFormatoin
+        run: |
+          cd test/sceptre;
+          for CFNTEST in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+            _jq() {
+              echo "${CFNTEST}" | base64 -d | jq -r "$1"
+            }
+            YAML_DIR=$(_jq .directory)
+            YAML_FILE=$(_jq .file)
+            CFN_TEMPLATE=$(_jq .cfntemplate)
+            CFNGUARD_RULEDIR=$(_jq .cfnguardruledir)
+            echo "Validating ${CFN_TEMPLATE}"
+            /usr/bin/aws \
+              cloudformation validate-template \
+              --template-body file://"${CFN_TEMPLATE}"
+          done
       - name: Run cfn-guard wafv2-webacl1-template.yaml
         run: |
           cd test/sceptre;
@@ -51,6 +67,7 @@ jobs:
             YAML_FILE=$(_jq .file)
             CFN_TEMPLATE=$(_jq .cfntemplate)
             CFNGUARD_RULEDIR=$(_jq .cfnguardruledir)
+            echo "cfn-guard ${CFN_TEMPLATE}"
             /usr/bin/cfn-guard \
               validate \
               --rules "${CFNGUARD_RULEDIR}" \
