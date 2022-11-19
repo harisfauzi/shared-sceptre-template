@@ -1,0 +1,197 @@
+---
+{%- import 'macros/statement.yaml.j2' as web_acl_statement %}
+Description: WAFv2 WebACL(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for web_acl in sceptre_user_data.web_acls %}
+{%- set web_acl_name = web_acl.name %}
+  {{ web_acl_name }}:
+    Type: AWS::WAFv2::WebACL
+    DeletionPolicy: {{ web_acl.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ web_acl.update_replace_policy | default('Delete') }}
+    Properties:
+      DefaultAction:
+{%- if web_acl.default_action.allow is defined %}
+{%- if not web_acl.default_action.allow.custom_request_handling is defined %}
+        Allow: {}
+{%- else %}
+        Allow:
+          CustomRequestHandling:
+            InsertHeaders:
+{%- for header in web_acl.default_action.allow.custom_request_handling.insert_headers %}
+              -
+                Name: {{ header.name }}
+                Value: {{ header.value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if web_acl.default_action.block is defined %}
+{%- if not web_acl.default_action.block.custom_response is defined %}
+        Block: {}
+{%- else %}
+        Block:
+          CustomResponse:
+            ResponseCode: {{ web_acl.default_action.block.custom_response.response_code }}
+{%- if web_acl.default_action.block.custom_response.custom_response_body_key is defined %}
+            CustomResponseBodyKey: {{ web_acl.default_action.block.custom_response.custom_response_body_key }}
+{%- endif %}
+{%- if web_acl.default_action.block.custom_response.response_headers is defined %}
+            ResponseHeaders:
+{%- for response_header in web_acl.default_action.block.custom_response.response_headers %}
+              -
+                Name: {{ response_header.name }}
+                Value: {{ response_header.value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+      Scope: {{ web_acl.scope }}
+      VisibilityConfig:
+        CloudWatchMetricsEnabled: {{ web_acl.visibility_config.cloud_watch_metrics_enabled }}
+        MetricName: {{ web_acl.visibility_config.metric_name }}
+        SampledRequestsEnabled: {{ web_acl.visibility_config.sampled_requests_enabled }}
+{%- if web_acl.captcha_config is defined %}
+      CaptchaConfig:
+        ImmunityTimeProperty:
+          ImmunityTime: {{ web_acl.captcha_config.immunity_time_property.immunity_time }}
+{%- endif %}
+{%- if web_acl.custom_response_bodies is defined %}
+      CustomResponseBodies:
+{{ web_acl.custom_response_bodies | indent(width=8,first=true) }}
+{%- endif %}
+{%- if web_acl.description is defined %}
+      Description: {{ web_acl.description }}
+{%- endif %}
+{%- if web_acl.web_acl_name is defined %}
+      Name: {{ web_acl.web_acl_name }}
+{%- endif %}
+{%- if web_acl.rules is defined %}
+      Rules:
+{%- for rule in web_acl.rules %}
+        -
+          Name: {{ rule.name }}
+          Priority: {{ rule.priority }}
+          Statement:
+{{ web_acl_statement.prep(rule.statement) | indent(width=12, first=true) }}
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: {{ rule.visibility_config.cloud_watch_metrics_enabled}}
+            MetricName: {{ rule.visibility_config.metric_name }}
+            SampledRequestsEnabled: {{ rule.visibility_config.sampled_requests_enabled }}
+{%- if rule.action is defined %}
+          Action:
+{%- if rule.action.allow is defined %}
+            Allow:
+              CustomRequestHandling:
+                InsertHeaders:
+{%- for insert_header in rule.action.allow.custom_request_handling.insert_headers %}
+                  -
+                    Name: {{ insert_header.name }}
+                    Value: {{ insert_header.value }}
+{%- endfor %}
+{%- endif %}
+{%- if rule.action.block is defined %}
+            Block:
+              CustomResponse:
+                ResponseCode: {{ rule.action.block.custom_response.response_code }}
+{%- if rule.action.block.custom_response.custom_response_body_key is defined %}
+                CustomResponseBodyKey: {{ rule.action.block.custom_response.custom_response_body_key }}
+{%- endif %}
+{%- if rule.action.block.custom_response.response_headers is defined %}
+                ResponseHeaders:
+{%- for response_header in rule.action.block.custom_response.response_headers %}
+                  -
+                    Name: {{ response_header.name }}
+                    Value: {{ response_header.value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if rule.action.captcha is defined %}
+            Captcha:
+              CustomRequestHandling:
+                InsertHeaders:
+{%- for insert_header in rule.action.captcha.custom_request_handling.insert_headers %}
+                  -
+                    Name: {{ insert_header.name }}
+                    Value: {{ insert_header.value }}
+{%- endfor %}
+{%- endif %}
+{%- if rule.action.count is defined %}
+            Count:
+              CustomRequestHandling:
+                InsertHeaders:
+{%- for insert_header in rule.action.count.custom_request_handling.insert_headers %}
+                  -
+                    Name: {{ insert_header.name }}
+                    Value: {{ insert_header.value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if rule.captcha_config is defined %}
+          CaptchaConfig:
+            ImmunityTimeProperty:
+              ImmunityTime: {{ rule.captcha_config.immunity_time_property.immunity_time }}
+{%- endif %}
+{%- if rule.override_action is defined %}
+          OverrideAction:
+{%- if rule.override_action.count is defined %}
+            Count: {{ rule.override_action.count }}
+{%- endif %}
+{%- if rule.override_action.none is defined %}
+            None: {{ rule.override_action.none }}
+{%- endif %}
+{%- endif %}
+{%- if rule.rule_labels is defined %}
+          RuleLabels:
+{%- for rule_label in rule.rule_labels %}
+            - Name: {{ rule_label.name }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if web_acl.tags is defined %}
+{%- for key,value in web_acl.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for web_acl in sceptre_user_data.web_acls %}
+{%- set web_acl_name = web_acl.name %}
+  {{ web_acl_name }}:
+    Description: The Ref of {{ web_acl_name }}
+    Value:
+      Ref: {{ web_acl_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}"
+
+  {{ web_acl_name }}Arn:
+    Description: The ARN of {{ web_acl_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ web_acl_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}-Arn"
+
+  {{ web_acl_name }}Id:
+    Description: The ID of {{ web_acl_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ web_acl_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}-Id"
+
+{%- endfor %}

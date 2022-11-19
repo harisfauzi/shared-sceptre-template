@@ -20,42 +20,58 @@ jobs:
         run: |
           CURRENT_DIR=$(pwd)
           ln -sf "${CURRENT_DIR}/templates" "${CURRENT_DIR}/test/sceptre/templates"
-      - name: Run sceptre generate ssm/parameter.yaml
-        run: >
+      - name: Generate CloudFormation templates
+        run: |
           cd test/sceptre;
-          /usr/bin/sceptre
-          --var-file ./vars/main.yaml
-          --var aws_region=${AWS_DEFAULT_REGION}
-          generate ssm/parameter.yaml > ssm-parameter-template.yaml
-      - name: Run sceptre generate ec2/vpc.yaml
-        run: >
-          cd test/sceptre;
-          /usr/bin/sceptre
-          --var-file ./vars/main.yaml
-          --var aws_region=${AWS_DEFAULT_REGION}
-          generate ec2/vpc.yaml > ec2-vpc-template.yaml
+          for CFNTEST in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+            _jq() {
+              echo "${CFNTEST}" | base64 -d | jq -r "$1"
+            }
+            YAML_DIR=$(_jq .directory)
+            YAML_FILE=$(_jq .file)
+            CFN_TEMPLATE=$(_jq .cfntemplate)
+            /usr/bin/sceptre \
+              --var-file ./vars/main.yaml \
+              --var aws_region=${AWS_DEFAULT_REGION} \
+              generate "${YAML_DIR}/${YAML_FILE}" > "${CFN_TEMPLATE}"
+          done
       - name: Run yamllint
         uses: docker://harisfauzi/hf-sceptre:3.2.0-01
         with:
           entrypoint: /usr/bin/yamllint
           args: test/sceptre/
-      - name: Run cfn-guard ssm-parameter-template.yaml
-        uses: docker://harisfauzi/hf-sceptre:3.2.0-01
-        with:
-          entrypoint: /usr/bin/cfn-guard
-          args: >
-            validate
-            --rules test/sceptre/cfn-guard/
-            --data test/sceptre/ssm-parameter-template.yaml
-            --type CFNTemplate
-            --show-summary all
-      - name: Run cfn-guard ec2-vpc-template.yaml
-        uses: docker://harisfauzi/hf-sceptre:3.2.0-01
-        with:
-          entrypoint: /usr/bin/cfn-guard
-          args: >
-            validate
-            --rules test/sceptre/cfn-guard/
-            --data test/sceptre/ec2-vpc-template.yaml
-            --type CFNTemplate
-            --show-summary all
+      - name: Validate CloudFormatoin
+        run: |
+          cd test/sceptre;
+          for CFNTEST in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+            _jq() {
+              echo "${CFNTEST}" | base64 -d | jq -r "$1"
+            }
+            YAML_DIR=$(_jq .directory)
+            YAML_FILE=$(_jq .file)
+            CFN_TEMPLATE=$(_jq .cfntemplate)
+            CFNGUARD_RULEDIR=$(_jq .cfnguardruledir)
+            echo "Validating ${CFN_TEMPLATE}"
+            /usr/bin/aws \
+              cloudformation validate-template \
+              --template-body file://"${CFN_TEMPLATE}"
+          done
+      - name: Run cfn-guard wafv2-webacl1-template.yaml
+        run: |
+          cd test/sceptre;
+          for CFNTEST in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+            _jq() {
+              echo "${CFNTEST}" | base64 -d | jq -r "$1"
+            }
+            YAML_DIR=$(_jq .directory)
+            YAML_FILE=$(_jq .file)
+            CFN_TEMPLATE=$(_jq .cfntemplate)
+            CFNGUARD_RULEDIR=$(_jq .cfnguardruledir)
+            echo "cfn-guard ${CFN_TEMPLATE}"
+            /usr/bin/cfn-guard \
+              validate \
+              --rules "${CFNGUARD_RULEDIR}" \
+              --data "${CFN_TEMPLATE}" \
+              --type CFNTemplate \
+              --show-summary all
+          done

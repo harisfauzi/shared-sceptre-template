@@ -1,0 +1,35 @@
+let allowed_scope = ['CLOUDFRONT','REGIONAL']
+let allowed_deletion_policy = ['Delete','Retain']
+let allowed_updatereplace_policy = ['Delete','Retain']
+
+let wafv2_webacls = Resources.*[ Type == 'AWS::WAFv2::WebACL' ]
+
+rule wafv2_webacl_valid_scope when %wafv2_webacls !empty {
+  %wafv2_webacls {
+    Properties.Scope[*] in %allowed_scope
+  }
+}
+
+rule wafv2_webacl_valid_defaultaction when %wafv2_webacls !empty {
+  %wafv2_webacls {
+    Properties.DefaultAction[*] exists
+  }
+}
+
+rule wafv2_webacl_valid_defaultaction_option when %wafv2_webacls !empty {
+  %wafv2_webacls {
+    Properties.DefaultAction.Allow[*] exists OR Properties.DefaultAction.Block[*] exists
+  }
+}
+
+rule wafv2_webacl_valid_visibilityconfig when %wafv2_webacls !empty {
+  %wafv2_webacls {
+    Properties.VisibilityConfig[*] exists
+    Properties.VisibilityConfig.CloudWatchMetricsEnabled[*] exists
+    Properties.VisibilityConfig.CloudWatchMetricsEnabled[*] is_bool
+    Properties.VisibilityConfig.MetricName[*] exists
+    Properties.VisibilityConfig.MetricName[*] is_string
+    Properties.VisibilityConfig.SampledRequestsEnabled[*] exists
+    Properties.VisibilityConfig.SampledRequestsEnabled[*] is_bool
+  }
+}

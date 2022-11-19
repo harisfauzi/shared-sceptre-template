@@ -1,0 +1,37 @@
+---
+Description: WAFRegional IPSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for ip_set in sceptre_user_data.ip_sets %}
+{%- set ip_set_name = ip_set.name %}
+  {{ ip_set_name }}:
+    Type: AWS::WAFRegional::IPSet
+    DeletionPolicy: {{ ip_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ ip_set.update_replace_policy | default('Delete') }}
+    Properties: 
+      Name: {{ ip_set.ip_set_name }}
+{%- if ip_set.ip_set_descriptors is defined %}
+      IPSetDescriptors: 
+{%- for ip_set_descriptor in ip_set.ip_set_descriptors %}
+        - Type: {{ ip_set_descriptor.type }}
+          Value: {{ ip_set_descriptor.value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for ip_set in sceptre_user_data.ip_sets %}
+{%- set ip_set_name = ip_set.name %}
+  {{ ip_set_name }}:
+    Description: ID for {{ ip_set_name }}
+    Value:
+      Ref: {{ ip_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ip_set_name }}"
+
+{%- endfor %}
