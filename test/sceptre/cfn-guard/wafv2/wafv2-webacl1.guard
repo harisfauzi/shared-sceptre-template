@@ -1,45 +1,13 @@
 let wafv2_webacl_test1 = Resources.wafv2webacltest1
 let resource_type = 'AWS::WAFv2::WebACL'
-let allowed_scope = ['CLOUDFRONT','REGIONAL']
-let allowed_value = 'one'
 let allowed_deletion_policy = ['Delete','Retain']
 let allowed_updatereplace_policy = ['Delete','Retain']
 let wafv2_webacl_test1_vc_metricname = '/test/test1'
 let git_repo = 'git@github.com:harisfauzi/shared-sceptre-template.git'
-let wafv2_webacl_test1_defaultaction = Resources.wafv2webacltest1.Properties.DefaultAction
-let wafv2_webacl_test1_defaultaction_allow = Resources.wafv2webacltest1.Properties.DefaultAction.Allow
-let wafv2_webacl_test1_defaultaction_block = Resources.wafv2webacltest1.Properties.DefaultAction.Block
 
-let wafv2_webacls = Resources.*[ Type == 'AWS::WAFv2::WebACL']
-
-rule wafv2_webacl_valid_scope when %wafv2_webacls !empty {
-  %wafv2_webacls {
-    Properties.Scope[*] in %allowed_scope
-  }
-}
-
-rule wafv2_webacl_valid_defaultaction when %wafv2_webacls !empty {
-  %wafv2_webacls {
-    Properties.DefaultAction[*] exists
-  }
-}
-
-rule wafv2_webacl_valid_defaultaction_option when %wafv2_webacls !empty {
-  %wafv2_webacls {
-    Properties.DefaultAction.Allow[*] exists OR Properties.DefaultAction.Block[*] exists
-  }
-}
-
-rule wafv2_webacl_valid_visibilityconfig when %wafv2_webacls !empty {
-  %wafv2_webacls {
-    Properties.VisibilityConfig[*] exists
-    Properties.VisibilityConfig.CloudWatchMetricsEnabled[*] exists
-    Properties.VisibilityConfig.CloudWatchMetricsEnabled[*] is_bool
-    Properties.VisibilityConfig.MetricName[*] exists
-    Properties.VisibilityConfig.MetricName[*] is_string
-    Properties.VisibilityConfig.SampledRequestsEnabled[*] exists
-    Properties.VisibilityConfig.SampledRequestsEnabled[*] is_bool
-  }
+rule wafv2_webacl_valid_resource_type when %wafv2_webacl_test1 !empty {
+    let wafv2_webacl_test1_resource_type = %wafv2_webacl_test1.Type
+    %wafv2_webacl_test1_resource_type == %resource_type
 }
 
 rule wafv2_webacl_valid_deletion_policy when %wafv2_webacl_test1 !empty {
