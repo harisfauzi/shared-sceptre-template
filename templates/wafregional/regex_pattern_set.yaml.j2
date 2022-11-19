@@ -1,0 +1,34 @@
+---
+Description: WAFRegional RegexPatternSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for regex_pattern_set in sceptre_user_data.regex_pattern_sets %}
+{%- set regex_pattern_set_name = regex_pattern_set.name %}
+  {{ regex_pattern_set_name }}:
+    Type: AWS::WAFRegional::RegexPatternSet
+    DeletionPolicy: {{ regex_pattern_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ regex_pattern_set.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ regex_pattern_set.regex_pattern_set_name }}
+      RegexPatternStrings:
+{%- for item in regex_pattern_set.regex_pattern_strings %}
+        - {{ item }}
+{%- endfor %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for regex_pattern_set in sceptre_user_data.regex_pattern_sets %}
+{%- set regex_pattern_set_name = regex_pattern_set.name %}
+  {{ regex_pattern_set_name }}:
+    Description: The ID for {{ regex_pattern_set_name }}
+    Value:
+      Ref: {{ regex_pattern_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ regex_pattern_set_name }}"
+
+{%- endfor %}

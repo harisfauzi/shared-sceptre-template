@@ -40,7 +40,7 @@ Resources:
         Destinations:
 {%- for destination in state_machine.logging_configuration.destinations %}
           - CloudWatchLogsLogGroup:
-              LogGroupArn: {{ destination.cloudwatch_logs_loggroup.loggroup_arn }}  {# must end with :* #}
+              LogGroupArn: {{ destination.cloudwatch_logs_loggroup.loggroup_arn }}{# must end with :* #}
 {%- endfor %}
 {%- endif %}
 {%- if state_machine.logging_configuration.include_execution_data is defined %}

@@ -55,7 +55,7 @@ Resources:
           DeadLetterConfig:
             Arn: {{ target.dead_letter_config.arn | trim }}
 {%- endif %}
-{%- if target.ecs_parameters is defined %}  {# BEGIN {%- if target.ecs_parameters is defined %} #}
+{%- if target.ecs_parameters is defined %}{# BEGIN {%- if target.ecs_parameters is defined %} #}
           EcsParameters:
             TaskDefinitionArn: {{ target.ecs_parameters.task_definition_arn | trim }}
 {%- if target.ecs_parameters.capacity_provider_strategy is defined %}
@@ -142,7 +142,7 @@ Resources:
 {%- if target.ecs_parameters.task_count is defined %}
             TaskCount: {{ target.ecs_parameters.task_count }}
 {%- endif %}
-{%- endif %}  {# END {%- if target.ecs_parameters is defined %} #}
+{%- endif %}{# END {%- if target.ecs_parameters is defined %} #}
 {%- if target.http_parameters is defined %}
           HttpParameters:
 {%- if target.http_parameters.header_parameters is defined %}

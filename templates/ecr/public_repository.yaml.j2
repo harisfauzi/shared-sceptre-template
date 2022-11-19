@@ -18,7 +18,7 @@ Resources:
 {{ public_repository.repository_catalog_data | indent(width=8, first=true) }}
 {%- endif %}
 {%- if public_repository.repository_name is defined %}
-      RepositoryName: String
+      RepositoryName: {{ public_repository.repository_name }}
 {%- endif %}
 {%- if public_repository.repository_policy_text_json is defined %}
       RepositoryPolicyText: "{{ public_repository.repository_policy_text_json }}"

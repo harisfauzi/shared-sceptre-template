@@ -1,0 +1,60 @@
+---
+Description: WAF XssMatchSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for xss_match_set in sceptre_user_data.xss_match_sets %}
+{%- set xss_match_set_name = xss_match_set.name %}
+  {{ xss_match_set_name }}:
+    Type: AWS::WAF::XssMatchSet
+    DeletionPolicy: {{ xss_match_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ xss_match_set.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ xss_match_set.xss_match_set_name }}
+      XssMatchTuples:
+{%- for xss_match_tuple in xss_match_set.xss_match_tuples %}
+        -
+          FieldToMatch:
+            Type: {{ xss_match_tuple.field_to_match.type }}
+{%- if xss_match_tuple.field_to_match.data is defined %}
+            Data: {{ xss_match_tuple.field_to_match.data }}
+{%- endif %}
+          TextTransformation: {{ xss_match_tuple.text_transformation }}
+{%- endfor %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for xss_match_set in sceptre_user_data.xss_match_sets %}
+{%- set xss_match_set_name = xss_match_set.name %}
+  {{ xss_match_set_name }}:
+    Description: Role Name for {{ xss_match_set_name }}
+    Value:
+      Ref: {{ xss_match_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ xss_match_set_name }}"
+
+  {{ xss_match_set_name }}Arn:
+    Description: The ARN for {{ xss_match_set_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ xss_match_set_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ xss_match_set_name }}-Arn"
+
+  {{ xss_match_set_name }}RoleId:
+    Description: The Role Id for {{ xss_match_set_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ xss_match_set_name }}
+        - RoleId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ xss_match_set_name }}-RoleId"
+
+{%- endfor %}

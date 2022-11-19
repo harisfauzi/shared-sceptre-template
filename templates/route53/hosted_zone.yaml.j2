@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for hosted_zone in sceptre_user_data.hosted_zones %}  {# BEGIN {%- for hosted_zone in sceptre_user_data.hosted_zones %} #}
+{%- for hosted_zone in sceptre_user_data.hosted_zones %}{# BEGIN {%- for hosted_zone in sceptre_user_data.hosted_zones %} #}
 {%- set hosted_zone_name = hosted_zone.name %}
   {{ hosted_zone_name }}:
     Type: AWS::Route53::HostedZone
@@ -45,7 +45,7 @@ Resources:
         Ref: {{ hosted_zone_name }}
 {%- endif %}
 
-{%- endfor %}  {# END {%- for hosted_zone in sceptre_user_data.hosted_zones %} #}
+{%- endfor %}{# END {%- for hosted_zone in sceptre_user_data.hosted_zones %} #}
 
 Outputs:
 {%- for hosted_zone in sceptre_user_data.hosted_zones %}
@@ -58,7 +58,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}"
 
-{%- if sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %}  {# BEGIN {%- sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %} #}
+{%- if sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %}{# BEGIN {%- sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %} #}
 {%- else %}
   {{ hosted_zone_name }}Id:
     Description: The Hosted Zone ID for {{ hosted_zone_name }}
@@ -70,7 +70,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-Id"
 
-{%- if not hosted_zone.vpcs is defined %}  {# BEGIN {%- if not hosted_zone.vpcs is defined %} #}
+{%- if not hosted_zone.vpcs is defined %}{# BEGIN {%- if not hosted_zone.vpcs is defined %} #}
   {{ hosted_zone_name }}NameServer0:
     Description: The NS Server for {{ hosted_zone_name }}
     Value:
@@ -119,6 +119,6 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer3"
 
-{%- endif %}  {# END {%- if not hosted_zone.vpcs is defined %}#}
-{%- endif %}  {# END {%- sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %} #}
+{%- endif %}{# END {%- if not hosted_zone.vpcs is defined %}#}
+{%- endif %}{# END {%- sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %} #}
 {%- endfor %}

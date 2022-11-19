@@ -42,7 +42,7 @@ Resources:
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- if domain.advanced_security_options is defined %}  {# BEGIN {%- if domain.advanced_security_options is defined %} #}
+{%- if domain.advanced_security_options is defined %}{# BEGIN {%- if domain.advanced_security_options is defined %} #}
       AdvancedSecurityOptions:
 {%- if domain.advanced_security_options.enabled is defined %}
         Enabled: {{ domain.advanced_security_options.enabled }}
@@ -63,8 +63,8 @@ Resources:
             Ref: {{ domain_name }}MasterUserPassword
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if domain.advanced_security_options is defined %} #}
-{%- if domain.cognito_options is defined %}  {# BEGIN {%- if domain.cognito_options is defined %} #}
+{%- endif %}{# END {%- if domain.advanced_security_options is defined %} #}
+{%- if domain.cognito_options is defined %}{# BEGIN {%- if domain.cognito_options is defined %} #}
       CognitoOptions:
 {%- if domain.cognito_options.enabled is defined %}
         Enabled: {{ domain.cognito_options.enabled }}
@@ -78,8 +78,8 @@ Resources:
 {%- if domain.cognito_options.user_pool_id is defined %}
         UserPoolId: {{ domain.cognito_options.user_pool_id | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if domain.cognito_options is defined %} #}
-{%- if domain.domain_endpoint_options is defined %}  {# BEGIN {%- if domain.domain_endpoint_options is defined %} #}
+{%- endif %}{# END {%- if domain.cognito_options is defined %} #}
+{%- if domain.domain_endpoint_options is defined %}{# BEGIN {%- if domain.domain_endpoint_options is defined %} #}
       DomainEndpointOptions:
 {%- if domain.domain_endpoint_options.custom_endpoint is defined %}
         CustomEndpoint: {{ domain.domain_endpoint_options.custom_endpoint }}
@@ -96,11 +96,11 @@ Resources:
 {%- if domain.domain_endpoint_options.tls_security_policy is defined %}
         TLSSecurityPolicy: {{ domain.domain_endpoint_options.tls_security_policy }}
 {%- endif %}
-{%- endif %}  {# END {%- if domain.domain_endpoint_options is defined %} #}
+{%- endif %}{# END {%- if domain.domain_endpoint_options is defined %} #}
 {%- if domain.domain_name is defined %}
       DomainName: {{ domain.domain_name }}
 {%- endif %}
-{%- if domain.ebs_options is defined %}  {# BEGIN {%- if domain.ebs_options is defined %} #}
+{%- if domain.ebs_options is defined %}{# BEGIN {%- if domain.ebs_options is defined %} #}
       EBSOptions:
 {%- if domain.ebs_options.ebs_enabled is defined %}
         EBSEnabled: {{ domain.ebs_options.ebs_enabled }}
@@ -114,8 +114,8 @@ Resources:
 {%- if domain.ebs_options.volume_type is defined %}
         VolumeType: {{ domain.ebs_options.volume_type }}
 {%- endif %}
-{%- endif %}  {# END {%- if domain.ebs_options is defined %} #}
-{%- if domain.elasticsearch_cluster_config is defined %}  {# BEGIN {%- if domain.elasticsearch_cluster_config is defined %} #}
+{%- endif %}{# END {%- if domain.ebs_options is defined %} #}
+{%- if domain.elasticsearch_cluster_config is defined %}{# BEGIN {%- if domain.elasticsearch_cluster_config is defined %} #}
       ElasticsearchClusterConfig:
 {%- if domain.elasticsearch_cluster_config.cold_storage_options is defined %}
         ColdStorageOptions:
@@ -152,11 +152,11 @@ Resources:
 {%- if domain.elasticsearch_cluster_config.zone_awareness_enabled is defined %}
         ZoneAwarenessEnabled: {{ domain.elasticsearch_cluster_config.zone_awareness_enabled }}
 {%- endif %}
-{%- endif %}  {# END {%- if domain.elasticsearch_cluster_config is defined %} #}
+{%- endif %}{# END {%- if domain.elasticsearch_cluster_config is defined %} #}
 {%- if domain.elasticsearch_version is defined %}
       ElasticsearchVersion: {{ domain.elasticsearch_version }}
 {%- endif %}
-{%- if domain.encryption_at_rest_options is defined %}  {# BEGIN {%- if domain.encryption_at_rest_options is defined %} #}
+{%- if domain.encryption_at_rest_options is defined %}{# BEGIN {%- if domain.encryption_at_rest_options is defined %} #}
       EncryptionAtRestOptions:
 {%- if domain.encryption_at_rest_options.enabled is defined %}
         Enabled: {{ domain.encryption_at_rest_options.enabled }}
@@ -164,7 +164,7 @@ Resources:
 {%- if domain.encryption_at_rest_options.kms_key_id is defined %}
         KmsKeyId: {{ domain.encryption_at_rest_options.kms_key_id | trim }}
 {%- endif %}
-{%- endif %}  {# END {%- if domain.encryption_at_rest_options is defined %} #}
+{%- endif %}{# END {%- if domain.encryption_at_rest_options is defined %} #}
 {%- if domain.log_publishing_options is defined %}
       LogPublishingOptions:
 {%- for key, value in domain.log_publishing_options.items() %}
@@ -179,7 +179,7 @@ Resources:
       SnapshotOptions:
         AutomatedSnapshotStartHour: {{ domain.snapshot_options.automated_snapshot_start_hour }}
 {%- endif %}
-{%- if domain.vpc_options is defined %}  {# BEGIN {%- if domain.vpc_options is defined %} #}
+{%- if domain.vpc_options is defined %}{# BEGIN {%- if domain.vpc_options is defined %} #}
       VPCOptions:
 {%- if domain.vpc_options.security_group_ids is defined %}
         SecurityGroupIds:
@@ -193,7 +193,7 @@ Resources:
           - {{ subnet_id | trim }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}  {# END {%- if domain.vpc_options is defined %} #}
+{%- endif %}{# END {%- if domain.vpc_options is defined %} #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}

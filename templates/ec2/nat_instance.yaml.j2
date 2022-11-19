@@ -43,12 +43,13 @@ Resources:
               group: root
               encoding: plain
           services:
-            cfn-hup:
-              enabled: true
-              ensureRunning: true
-              files:
-                - /etc/cfn/cfn-hup.conf
-                - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+            sysvinit:
+              cfn-hup:
+                enabled: true
+                ensureRunning: true
+                files:
+                  - /etc/cfn/cfn-hup.conf
+                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
         config_enable_ip_forward:
           packages:
             yum:
@@ -70,10 +71,29 @@ Resources:
               mode: '000755'
               owner: root
               group: root
+            /root/cleanup.sh:
+              content: |
+                package-cleanup --oldkernels --count=1 -y
+                /sbin/iptables-restore < /etc/sysconfig/iptables
+              encoding: plain
+              mode: '000755'
+              owner: root
+              group: root
+            /root/crontab-reboot.sh:
+              content: |
+                echo "@reboot /root/cleanup.sh" | crontab -
+              encoding: plain
+              mode: '000755'
+              owner: root
+              group: root
           commands:
             01_setup_nat:
               command: /usr/local/bin/setup_nat.sh
-
+            02_update_packages:
+              command: yum -y upgrade
+              ignoreErrorrs: false
+            03_install_crontab:
+              command: /root/crontab-reboot.sh
     CreationPolicy:
       ResourceSignal:
         Timeout: PT10M
@@ -124,12 +144,12 @@ Resources:
               --stack ${AWS::StackName} \
               --resource {{ nat_instance_name }} \
               --region ${AWS::Region}
-
+            shutdown -r now
 {%- if nat_instance.default_route_tables is defined %}
 {%- for route_table in nat_instance.default_route_tables %}
   {{ nat_instance_name }}{{ route_table.name }}:
     Type: AWS::EC2::Route
-    Properties: 
+    Properties:
       RouteTableId: {{ route_table.route_table_id | trim }}
       DestinationCidrBlock: 0.0.0.0/0
       InstanceId:
@@ -180,7 +200,6 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ nat_instance_name }}-PrivateIp"
 
-  
   {{ nat_instance_name }}PublicIp:
     Description: The Public IP Address for {{ nat_instance_name }}
     Value:

@@ -1,0 +1,207 @@
+{%- import 'macros/gt_capacity_autoscaling_settings.yaml.j2' as gt_capacity_autoscaling_settings -%}
+---
+Description: DynamoDB GlobalTable(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for global_table in sceptre_user_data.global_tables %}
+{%- set global_table_name = global_table.name %}
+  {{ global_table_name }}:
+    Type: AWS::DynamoDB::GlobalTable
+    DeletionPolicy: {{ global_table.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ global_table.update_replace_policy | default('Delete') }}
+    Properties:
+      AttributeDefinitions:
+{%- for attribute_definition in global_table.attribute_definitions %}
+        - AttributeName: {{ attribute_definition.attribute_name }}
+          AttributeType: {{ attribute_definition.attribute_type }}
+{%- endfor %}
+      KeySchema:
+{%- for schema in global_table.key_schema %}
+        - AttributeName: {{ schema.attribute_name }}
+          KeyType: {{ schema.key_type }}
+{%- endfor %}
+      Replicas:
+{%- for replica in global_table.replicas %}{# BEGIN {%- for replica in global_table.replicas %} #}
+        - Region: {{ replica.region }}
+{%- if replica.contributor_insights_specification.enabled is defined %}
+          ContributorInsightsSpecification:
+            Enabled: {{ replica.contributor_insights_specification.enabled }}
+{%- endif %}
+{%- if replica.global_secondary_indexes is defined %}
+          GlobalSecondaryIndexes:
+{%- for index in replica.global_secondary_indexes %}
+            - IndexName: {{ index.index_name }}
+{%- if index.contributor_insights_specification.enabled is defined %}
+              ContributorInsightsSpecification:
+                Enabled: {{ index.contributor_insights_specification.enabled }}
+{%- endif %}
+{%- if index.read_provisioned_throughput_settings is defined %}
+              ReadProvisionedThroughputSettings:
+{%- if index.read_provisioned_throughput_settings.read_capacity_auto_scaling_settings is defined %}
+                ReadCapacityAutoScalingSettings:
+{{ gt_capacity_autoscaling_settings.prep(index.read_provisioned_throughput_settings.read_capacity_auto_scaling_settings) | indent(width=18) }}
+{%- endif %}
+{%- if index.read_provisioned_throughput_settings.read_capacity_units is defined %}
+                ReadCapacityUnits: {{ index.read_provisioned_throughput_settings.read_capacity_units }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if replica.point_in_time_recovery_specification.point_in_time_recovery_enabled is defined %}
+          PointInTimeRecoverySpecification:
+            PointInTimeRecoveryEnabled: {{ replica.point_in_time_recovery_specification.point_in_time_recovery_enabled }}
+{%- endif %}
+{%- if replica.read_provisioned_throughput_settings is defined %}
+          ReadProvisionedThroughputSettings:
+{%- if replica.read_provisioned_throughput_settings.read_capacity_auto_scaling_settings is defined %}
+            ReadCapacityAutoScalingSettings:
+{{ gt_capacity_autoscaling_settings.prep(replica.read_provisioned_throughput_settings.read_capacity_auto_scaling_settings) | indent(width=14) }}
+{%- endif %}
+{%- if replica.read_provisioned_throughput_settings.read_capacity_units is defined %}
+            ReadCapacityUnits: {{ replica.read_provisioned_throughput_settings.read_capacity_units }}
+{%- endif %}
+{%- endif %}
+{%- if replica.sse_specification is defined %}
+          SSESpecification:
+            KMSMasterKeyId: {{ replica.sse_specification.kms_master_key_id }}
+{%- endif %}
+{%- if replica.table_class is defined %}
+          TableClass: {{ replica.table_class }}
+{%- endif %}
+{%- if replica.tags is defined %}
+          Tags:
+{%- for key,value in replica.tags.items() %}
+            - Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}{# END {%- for replica in global_table.replicas %} #}
+{%- if global_table.billing_mode is defined %}
+      BillingMode: {{ global_table.billing_mode }}
+{%- endif %}
+{%- if global_table.global_secondary_indexes is defined %}
+      GlobalSecondaryIndexes:
+{%- for index in global_table.global_secondary_indexes %}
+        - IndexName: {{ index.index_name }}
+          KeySchema:
+{%- for schema in index.key_schema %}
+            - AttributeName: {{ schema.attribute_name }}
+              KeyType: {{ schema.key_type }}
+{%- endfor %}
+          Projection:
+{%- if index.projection.non_key_attributes is defined %}
+            NonKeyAttributes:
+{%- for item in index.non_key_attributes %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if index.projection.projection_type is defined %}
+            ProjectionType: {{ index.projection_type }}
+{%- endif %}
+{%- if index.write_provisioned_throughput_settings is defined %}
+          WriteProvisionedThroughputSettings:
+{%- if index.write_provisioned_throughput_settings.write_capacity_auto_scaling_settings is defined %}
+            WriteCapacityAutoScalingSettings:
+{{ gt_capacity_autoscaling_settings.prep(index.write_provisioned_throughput_settings.write_capacity_auto_scaling_settings) | indent(width=14) }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if global_table.local_secondary_indexes is defined %}
+      LocalSecondaryIndexes:
+{%- for index in global_table.local_secondary_indexes %}
+        - IndexName: {{ index.index_name }}
+          KeySchema:
+{%- for schema in index.key_schema %}
+            - AttributeName: {{ schema.attribute_name }}
+              KeyType: {{ schema.key_type }}
+{%- endfor %}
+          Projection:
+{%- if index.projection.non_key_attributes is defined %}
+            NonKeyAttributes:
+{%- for item in index.projection.non_key_attributes %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if index.projection.projection_type is defined %}
+            ProjectionType: {{ index.projection.projection_type }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if global_table.sse_specification is defined %}
+      SSESpecification:
+        SSEEnabled: {{ global_table.sse_specification.sse_enabled }}
+{%- if global_table.sse_specification.sse_type is defined %}
+        SSEType: {{ global_table.sse_specification.sse_type }}
+{%- endif %}
+{%- endif %}
+{%- if global_table.stream_specification is defined %}
+      StreamSpecification:
+        StreamViewType: {{ global_table.stream_specification.stream_view_type }}
+{%- endif %}
+{%- if global_table.table_name is defined %}
+      TableName: {{ global_table.table_name }}
+{%- endif %}
+{%- if global_table.time_to_live_specification is defined %}
+      TimeToLiveSpecification:
+        Enabled: {{ global_table.time_to_live_specification.enabled }}
+{%- if global_table.time_to_live_specification.attribute_name is defined %}
+        AttributeName: {{ global_table.time_to_live_specification.attribute_name }}
+{%- endif %}
+{%- endif %}
+{%- if global_table.write_provisioned_throughput_settings is defined %}
+      WriteProvisionedThroughputSettings:
+{%- if global_table.write_provisioned_throughput_settings.write_capacity_auto_scaling_settings is defined %}
+        WriteCapacityAutoScalingSettings:
+{{ gt_capacity_autoscaling_settings.prep(global_table.write_provisioned_throughput_settings.write_capacity_auto_scaling_settings) | indent(width=10) }}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for global_table in sceptre_user_data.global_tables %}
+{%- set global_table_name = global_table.name %}
+  {{ global_table_name }}:
+    Description: GlobalTable Name for {{ global_table_name }}
+    Value:
+      Ref: {{ global_table_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ global_table_name }}"
+
+  {{ global_table_name }}Arn:
+    Description: The ARN for {{ global_table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ global_table_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ global_table_name }}-Arn"
+
+{%- if global_table.stream_specification is defined %}
+  {{ global_table_name }}StreamArn:
+    Description: The ARN of the DynamoDB stream for {{ global_table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ global_table_name }}
+        - StreamArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ global_table_name }}-StreamArn"
+{%- endif %}
+  {{ global_table_name }}TableId:
+    Description: Unique identifier for the table {{ global_table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ global_table_name }}
+        - TableId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ global_table_name }}-TableId"
+
+{%- endfor %}

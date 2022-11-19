@@ -1,0 +1,39 @@
+let wafv2_webacl_test1 = Resources.wafv2webacltest1
+let resource_type = 'AWS::WAFv2::WebACL'
+let allowed_deletion_policy = ['Delete','Retain']
+let allowed_updatereplace_policy = ['Delete','Retain']
+let wafv2_webacl_test1_vc_metricname = '/test/test1'
+let git_repo = 'git@github.com:harisfauzi/shared-sceptre-template.git'
+
+rule wafv2_webacl_valid_resource_type when %wafv2_webacl_test1 !empty {
+    let wafv2_webacl_test1_resource_type = %wafv2_webacl_test1.Type
+    %wafv2_webacl_test1_resource_type == %resource_type
+}
+
+rule wafv2_webacl_valid_deletion_policy when %wafv2_webacl_test1 !empty {
+    let wafv2_webacl_test1_deletion_policy = %wafv2_webacl_test1.DeletionPolicy
+    %wafv2_webacl_test1_deletion_policy exists
+    %wafv2_webacl_test1_deletion_policy in %allowed_deletion_policy
+}
+
+rule wafv2_webacl_valid_updatereplace_policy when %wafv2_webacl_test1 !empty {
+    let wafv2_webacl_test1_updatereplace_policy = %wafv2_webacl_test1.UpdateReplacePolicy
+    %wafv2_webacl_test1_updatereplace_policy exists
+    %wafv2_webacl_test1_updatereplace_policy in %allowed_updatereplace_policy
+}
+
+rule wafv2_webacl_tag_name_exists when %wafv2_webacl_test1 !empty {
+    let wafv2_webacl_test1_tag_name = %wafv2_webacl_test1.Properties.Tags[ Key == 'Name' ]
+    %wafv2_webacl_test1_tag_name exists
+}
+
+rule wafv2_webacl_tag_sourcerepourl when %wafv2_webacl_test1 !empty {
+    let wafv2_webacl_test1_tag_sourcerepourl = %wafv2_webacl_test1.Properties.Tags[ Key == 'SourceRepoURL' ]
+    %wafv2_webacl_test1_tag_sourcerepourl exists
+    %wafv2_webacl_test1_tag_sourcerepourl.Value == %git_repo
+}
+
+rule wafv2_webacl_check_vc_metricname when %wafv2_webacl_test1 !empty {
+    let metricname = %wafv2_webacl_test1.Properties.VisibilityConfig.MetricName
+    %metricname == %wafv2_webacl_test1_vc_metricname
+}

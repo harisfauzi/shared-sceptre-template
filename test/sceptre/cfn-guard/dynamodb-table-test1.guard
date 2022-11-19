@@ -1,0 +1,7 @@
+let dynamodb_test1 = Resources.tabletest1
+let resource_type = 'AWS::DynamoDB::Table'
+
+rule dynamodb_valid_resource_type when %dynamodb_test1 !empty {
+    let dynamodb_test1_resource_type = %dynamodb_test1.Type
+    %dynamodb_test1_resource_type == %resource_type
+}

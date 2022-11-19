@@ -14,7 +14,7 @@ Parameters:
     NoEcho: true
 
 {%- endif %}
-{%- if file_system.windows_configuration is defined and 
+{%- if file_system.windows_configuration is defined and
   file_system.windows_configuration.self_managed_active_directory_configuration is defined and
   file_system.windows_configuration.self_managed_active_directory_configuration.password is defined %}
   {{ file_system_name }}WCSMADCPassword:
@@ -50,7 +50,7 @@ Resources:
 {%- if file_system.kms_key_id is defined %}
       KmsKeyId: {{ file_system.kms_key_id | trim }}
 {%- endif %}
-{%- if file_system.lustre_configuration is defined %}  {# BEGIN {%- if file_system.lustre_configuration is defined %} #}
+{%- if file_system.lustre_configuration is defined %}{# BEGIN {%- if file_system.lustre_configuration is defined %} #}
       LustreConfiguration:
 {%- if file_system.lustre_configuration.auto_import_policy is defined %}
         AutoImportPolicy: {{ file_system.lustre_configuration.auto_import_policy }}
@@ -88,8 +88,8 @@ Resources:
 {%- if file_system.lustre_configuration.weekly_maintenance_start_time is defined %}
         WeeklyMaintenanceStartTime: {{ file_system.lustre_configuration.weekly_maintenance_start_time }}
 {%- endif %}
-{%- endif %}  {# END {%- if file_system.lustre_configuration is defined %} #}
-{%- if file_system.ontap_configuration is defined %}  {# BEGIN {%- if file_system.ontap_configuration is defined %} #}
+{%- endif %}{# END {%- if file_system.lustre_configuration is defined %} #}
+{%- if file_system.ontap_configuration is defined %}{# BEGIN {%- if file_system.ontap_configuration is defined %} #}
       OntapConfiguration:
         DeploymentType: {{ ile_system.ontap_configuration.deployment_type }}
 {%- if file_system.ontap_configuration.automatic_backup_retention_days is defined %}
@@ -133,8 +133,8 @@ Resources:
 {%- if file_system.ontap_configuration.weekly_maintenance_start_time is defined %}
         WeeklyMaintenanceStartTime: {{ file_system.ontap_configuration.weekly_maintenance_start_time }}
 {%- endif %}
-{%- endif %}  {# END {%- if file_system.ontap_configuration is defined %} #}
-{%- if file_system.open_zfs_configuration is defined %}  {# BEGIN {%- if file_system.open_zfs_configuration is defined %} #}
+{%- endif %}{# END {%- if file_system.ontap_configuration is defined %} #}
+{%- if file_system.open_zfs_configuration is defined %}{# BEGIN {%- if file_system.open_zfs_configuration is defined %} #}
       OpenZFSConfiguration:
         DeploymentType: {{ file_system.open_zfs_configuration.deployment_type }}
 {%- if file_system.open_zfs_configuration.automatic_backup_retention_days is defined %}
@@ -218,7 +218,7 @@ Resources:
 {%- if file_system.open_zfs_configuration.weekly_maintenance_start_time is defined %}
         WeeklyMaintenanceStartTime: {{ file_system.open_zfs_configuration.weekly_maintenance_start_time }}
 {%- endif %}
-{%- endif %}  {# END {%- if file_system.open_zfs_configuration is defined %} #}
+{%- endif %}{# END {%- if file_system.open_zfs_configuration is defined %} #}
 {%- if file_system.security_group_ids is defined %}
       SecurityGroupIds:
 {%- for security_group_id in file_system.security_group_ids %}
@@ -231,7 +231,7 @@ Resources:
 {%- if file_system.storage_type is defined %}
       StorageType: {{ file_system.storage_type }}
 {%- endif %}
-{%- if file_system.windows_configuration is defined %}  {# BEGIN {%- if file_system.windows_configuration is defined %} #}
+{%- if file_system.windows_configuration is defined %}{# BEGIN {%- if file_system.windows_configuration is defined %} #}
       WindowsConfiguration:
 {%- if file_system.windows_configuration.active_directory_id is defined %}
         ActiveDirectoryId: {{ file_system.windows_configuration.active_directory_id | trim }}
@@ -300,7 +300,7 @@ Resources:
 {%- if file_system.windows_configuration.weekly_maintenance_start_time is defined %}
         WeeklyMaintenanceStartTime: {{ file_system.windows_configuration.weekly_maintenance_start_time }}
 {%- endif %}
-{%- endif %}  {# END {%- if file_system.windows_configuration is defined %} #}
+{%- endif %}{# END {%- if file_system.windows_configuration is defined %} #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}

@@ -20,7 +20,7 @@ Resources:
       ResolverEndpointId: {{ resolver_rule.resolver_endpoint_id | trim }}
 {%- endif %}
 {%- if resolver_rule.target_ips is defined %}
-      TargetIps: 
+      TargetIps:
 {%- for target_ip in resolver_rule.target_ips %}
         - Ip: {{ target_ip.ip }}
 {%- if target_ip.port is defined %}

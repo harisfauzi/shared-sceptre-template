@@ -13,7 +13,7 @@ Resources:
     Properties:
       AutoScalingGroupProvider:
         AutoScalingGroupArn: {{ capacity_provider.auto_scaling_group_provider.auto_scaling_group_arn | trim }}
-{%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %}  {# BEGIN {%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %} #}
+{%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %}{# BEGIN {%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %} #}
         ManagedScaling:
 {%- if capacity_provider.auto_scaling_group_provider.managed_scaling.instance_warmup_period is defined %}
           InstanceWarmupPeriod: {{ capacity_provider.auto_scaling_group_provider.managed_scaling.instance_warmup_period }}
@@ -30,7 +30,7 @@ Resources:
 {%- if capacity_provider.auto_scaling_group_provider.managed_scaling.target_capacity is defined %}
           TargetCapacity: {{ capacity_provider.auto_scaling_group_provider.managed_scaling.target_capacity }}
 {%- endif %}
-{%- endif %}  {# END {%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %} #}
+{%- endif %}{# END {%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %} #}
 {%- if capacity_provider.auto_scaling_group_provider.managed_termination_protection is defined %}
         ManagedTerminationProtection: {{ capacity_provider.auto_scaling_group_provider.managed_termination_protection }}
 {%- endif %}

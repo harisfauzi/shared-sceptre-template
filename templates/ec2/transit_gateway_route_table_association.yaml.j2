@@ -9,7 +9,7 @@ Resources:
     Type: AWS::EC2::TransitGatewayRouteTableAssociation
     DeletionPolicy: {{ tgrt_association.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ tgrt_association.update_replace_policy | default('Delete') }}
-    Properties: 
+    Properties:
       TransitGatewayAttachmentId: {{ tgrt_association.transit_gateway_attachment_id | trim }}
       TransitGatewayRouteTableId: {{ tgrt_association.transit_gateway_route_table_id | trim }}
 {%- endfor %}

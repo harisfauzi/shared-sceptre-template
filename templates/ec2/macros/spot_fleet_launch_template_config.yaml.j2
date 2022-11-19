@@ -1,7 +1,7 @@
 {%- import 'macros/splot_fleet_instance_requirements.yaml.j2' as splot_fleet_instance_requirements %}
 {%- macro prep(launch_template_config) %}
 {%- if launch_template_config.launch_template_specification is defined %}
-LaunchTemplateSpecification: 
+LaunchTemplateSpecification:
   Version: {{ launch_template_config.launch_template_specification.version }}
 {%- if launch_template_config.launch_template_specification.launch_template_id is defined %}
   LaunchTemplateId: {{ launch_template_config.launch_template_specification.launch_template_id | trim }}
@@ -10,14 +10,14 @@ LaunchTemplateSpecification:
 {%- endif %}
 {%- endif %}
 {%- if launch_template_config.overrides is defined %}
-Overrides: 
+Overrides:
 {%- for override in launch_template_config.overrides %}
   -
 {%- if override.availability_zone is defined %}
     AvailabilityZone: {{ override.availability_zone }}
 {%- endif %}
 {%- if override.instance_requirements is defined %}
-    InstanceRequirements: 
+    InstanceRequirements:
 {{ splot_fleet_instance_requirements.prep(override.instance_requirements) | indent(width=6, first=true) }}
 {%- endif %}
 {%- if override.instance_type is defined %}

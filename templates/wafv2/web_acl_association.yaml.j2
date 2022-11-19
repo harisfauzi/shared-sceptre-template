@@ -1,0 +1,31 @@
+---
+Description: WAFv2 WebACLAssociation(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for web_acl_association in sceptre_user_data.web_acl_associations %}
+{%- set web_acl_association_name = web_acl_association.name %}
+  {{ web_acl_association_name }}:
+    Type: AWS::WAFv2::WebACLAssociation
+    DeletionPolicy: {{ web_acl_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ web_acl_association.update_replace_policy | default('Delete') }}
+    Properties: 
+      ResourceArn: {{ web_acl_association.resource_arn | trim }}
+      WebACLArn: {{ web_acl_association.web_acl_arn | trim }}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for web_acl_association in sceptre_user_data.web_acl_associations %}
+{%- set web_acl_association_name = web_acl_association.name %}
+  {{ web_acl_association_name }}:
+    Description: The reference of {{ web_acl_association_name }}
+    Value:
+      Ref: {{ web_acl_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ web_acl_association_name }}"
+
+{%- endfor %}

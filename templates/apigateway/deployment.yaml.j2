@@ -12,8 +12,8 @@ Resources:
     DeletionPolicy: {{ deployment.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ deployment.update_replace_policy | default('Delete') }}
     Properties:
-      RestApiId: String
-{%- if deployment.deployment_canary_settings is defined %}  {# BEGIN {%- if deployment.deployment_canary_settings is defined %} #}
+      RestApiId: {{ deployment.rest_api_id | trim }}
+{%- if deployment.deployment_canary_settings is defined %}{# BEGIN {%- if deployment.deployment_canary_settings is defined %} #}
       DeploymentCanarySettings:
 {%- if deployment.deployment_canary_settings.percent_traffic is defined %}
         PercentTraffic: {{ deployment.deployment_canary_settings.percent_traffic }}
@@ -27,11 +27,11 @@ Resources:
 {%- if deployment.deployment_canary_settings.use_stage_cache is defined %}
         UseStageCache: {{ deployment.deployment_canary_settings.use_stage_cache }}
 {%- endif %}
-{%- endif %}  {# END {%- if deployment.deployment_canary_settings is defined %} #}
+{%- endif %}{# END {%- if deployment.deployment_canary_settings is defined %} #}
 {%- if deployment.description is defined %}
       Description: {{ deployment.description }}
 {%- endif %}
-{%- if deployment.stage_description is defined %}  {# BEGIN {%- if deployment.stage_description is defined %} #}
+{%- if deployment.stage_description is defined %}{# BEGIN {%- if deployment.stage_description is defined %} #}
       StageDescription:
 {%- if deployment.stage_description.access_log_setting is defined %}
         AccessLogSetting:
@@ -116,7 +116,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 
-{%- endif %}  {# END {%- if deployment.stage_description is defined %} #}
+{%- endif %}{# END {%- if deployment.stage_description is defined %} #}
 {%- if deployment.stage_name is defined %}
       StageName: {{ deployment.stage_name }}
 {%- endif %}

@@ -1,0 +1,50 @@
+---
+Description: WAF ByteMatchSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for byte_match_set in sceptre_user_data.byte_match_sets %}
+{%- set byte_match_set_name = byte_match_set.name %}
+  {{ byte_match_set_name }}:
+    Type: AWS::WAF::ByteMatchSet
+    DeletionPolicy: {{ byte_match_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ byte_match_set.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ byte_match_set.byte_match_set_name }}
+{%-if byte_match_set.byte_match_tuples is defined %}
+      ByteMatchTuples:
+{%- for byte_match_tuple in byte_match_set.byte_match_tuples %}
+        - FieldToMatch:
+            Type: {{ byte_match_tuple.field_to_match.type }}
+{%- if byte_match_tuple.field_to_match.data is defined %}
+            Data: String
+{%- endif %}
+          PositionalConstraint: {{ byte_match_tuple.positional_constraint }}
+          TextTransformation: {{ byte_match_tuple.text_transformation }}
+{%- if byte_match_tuple.target_string is defined %}
+          TargetString:
+            {{ byte_match_tuple.target_string }}
+{%- endif %}
+{%- if byte_match_tuple.target_string_base64 is defined %}
+          TargetStringBase64:
+            {{ byte_match_tuple.target_string_base64 }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for byte_match_set in sceptre_user_data.byte_match_sets %}
+{%- set byte_match_set_name = byte_match_set.name %}
+  {{ byte_match_set_name }}:
+    Description: ID for {{ byte_match_set_name }}
+    Value:
+      Ref: {{ byte_match_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ byte_match_set_name }}"
+
+{%- endfor %}

@@ -1,0 +1,69 @@
+---
+Description: WAFv2 RegexPatternSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for regex_pattern_set in sceptre_user_data.regex_pattern_sets %}
+{%- set regex_pattern_set_name = regex_pattern_set.name %}
+  {{ regex_pattern_set_name }}:
+    Type: AWS::WAFv2::RegexPatternSet
+    DeletionPolicy: {{ regex_pattern_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ regex_pattern_set.update_replace_policy | default('Delete') }}
+    Properties:
+      RegularExpressionList:
+{%- for regular_expression in regex_pattern_set.regular_expression_list %}
+        - {{ regular_expression }}
+{%- endfor %}
+      Scope: {{ regex_pattern_set.scope }}
+{%- if regex_pattern_set.description is defined %}
+      Description: {{ regex_pattern_set.description }}
+{%- endif %}
+{%- if regex_pattern_set.regex_pattern_set_name is defined %}
+      Name: {{ regex_pattern_set.regex_pattern_set_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if regex_pattern_set.tags is defined %}
+{%- for key,value in regex_pattern_set.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for regex_pattern_set in sceptre_user_data.regex_pattern_sets %}
+{%- set regex_pattern_set_name = regex_pattern_set.name %}
+  {{ regex_pattern_set_name }}:
+    Description: Reference of {{ regex_pattern_set_name }}
+    Value:
+      Ref: {{ regex_pattern_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ regex_pattern_set_name }}"
+
+  {{ regex_pattern_set_name }}Arn:
+    Description: The ARN of {{ regex_pattern_set_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ regex_pattern_set_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ regex_pattern_set_name }}-Arn"
+
+  {{ regex_pattern_set_name }}Id:
+    Description: The ID of {{ regex_pattern_set_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ regex_pattern_set_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ regex_pattern_set_name }}-Id"
+
+{%- endfor %}

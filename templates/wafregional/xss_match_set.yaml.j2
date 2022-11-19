@@ -1,0 +1,42 @@
+---
+Description: WAFRegional XssMatchSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for xss_match_set in sceptre_user_data.xss_match_sets %}
+{%- set xss_match_set_name = xss_match_set.name %}
+  {{ xss_match_set_name }}:
+    Type: AWS::WAFRegional::XssMatchSet
+    DeletionPolicy: {{ xss_match_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ xss_match_set.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ xss_match_set.xss_match_set_name }}
+{%- if xss_match_set.xss_match_tuples is defined %}
+      XssMatchTuples:
+{%- for xss_match_tuple in xss_match_set.xss_match_tuples %}
+        -
+          FieldToMatch:
+            Type: {{ xss_match_tuple.field_to_match.type }}
+{%- if xss_match_tuple.field_to_match.data is defined %}
+            Data: {{ xss_match_tuple.field_to_match.data }}
+{%- endif %}
+          TextTransformation: {{ xss_match_tuple.text_transformation }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for xss_match_set in sceptre_user_data.xss_match_sets %}
+{%- set xss_match_set_name = xss_match_set.name %}
+  {{ xss_match_set_name }}:
+    Description: The ID for {{ xss_match_set_name }}
+    Value:
+      Ref: {{ xss_match_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ xss_match_set_name }}"
+
+{%- endfor %}

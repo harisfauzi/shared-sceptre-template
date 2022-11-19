@@ -17,7 +17,7 @@ Resources:
     DeletionPolicy: {{ launch_template.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ launch_template.update_replace_policy | default('Delete') }}
     Properties:
-{%- if launch_template.launch_template_data is defined %}  {# BEGIN {%- if launch_template.launch_template_data is defined %} #}
+{%- if launch_template.launch_template_data is defined %}{# BEGIN {%- if launch_template.launch_template_data is defined %} #}
       LaunchTemplateData:
 {%- if launch_template.launch_template_data.block_device_mappings is defined %}
 {{ launch_template_blockdevicemapping.prep(launch_template.launch_template_data.block_device_mappings) }}
@@ -37,7 +37,7 @@ Resources:
 {%- endif %}
 {%- endif %}
 {%- endif %}
-{%- if launch_template.launch_template_data.cpu_options is defined %}  {## BEGIN {%- if launch_template.launch_template_data.cpu_options is defined %} ##}}
+{%- if launch_template.launch_template_data.cpu_options is defined %}{## BEGIN {%- if launch_template.launch_template_data.cpu_options is defined %} ##}}
         CpuOptions:
 {%- if launch_template.launch_template_data.cpu_options.core_count is defined %}
           CoreCount: {{ launch_template.launch_template_data.cpu_options.core_count }}
@@ -45,7 +45,7 @@ Resources:
 {%- if launch_template.launch_template_data.cpu_options.threads_per_core is defined %}
           ThreadsPerCore: {{ launch_template.launch_template_data.cpu_options.threads_per_core }}
 {%- endif %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.cpu_options is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.cpu_options is defined %} ##}
 {%- if launch_template.launch_template_data.credit_specification is defined %}
         CreditSpecification:
           CpuCredits: {{ launch_template.launch_template_data.credit_specification.cpu_credits }}
@@ -62,7 +62,7 @@ Resources:
           - Type: {{ specification }}
 {%- endfor %}
 {%- endif %}
-{%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %}  {## BEGIN {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
+{%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %}{## BEGIN {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
         ElasticInferenceAccelerators:
 {%- for elastic_inference_accelerator in launch_template.launch_template_data.elastic_inference_accelerators %}
           -
@@ -73,7 +73,7 @@ Resources:
             Type: {{ elastic_inference_accelerator.type }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
 {%- if launch_template.launch_template_data.enclave_options is defined %}
         EnclaveOptions:
           Enabled: {{ launch_template.launch_template_data.enclave_options.enabled }}
@@ -82,21 +82,21 @@ Resources:
         HibernationOptions:
           Configured: {{ launch_template.launch_template_data.hibernation_options.configured }}
 {%- endif %}
-{%- if launch_template.launch_template_data.iam_instance_profile is defined %}  {## BEGIN {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
+{%- if launch_template.launch_template_data.iam_instance_profile is defined %}{## BEGIN {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
         IamInstanceProfile:
 {%- if launch_template.launch_template_data.iam_instance_profile.arn is defined%}
           Arn: {{ launch_template.launch_template_data.iam_instance_profile.arn | trim }}
 {%- elif launch_template.launch_template_data.iam_instance_profile.name is defined%}
           Name: {{ launch_template.launch_template_data.iam_instance_profile.name }}
 {%- endif %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
 {%- if launch_template.launch_template_data.image_id is defined %}
         ImageId: {{ launch_template.launch_template_data.image_id | trim }}
 {%- endif %}
 {%- if launch_template.launch_template_data.instance_initiated_shutdown_behavior is defined %}
         InstanceInitiatedShutdownBehavior: {{ launch_template.launch_template_data.instance_initiated_shutdown_behavior }}
 {%- endif %}
-{%- if launch_template.launch_template_data.instance_market_options is defined %}  {## BEGIN {%- if launch_template.launch_template_data.instance_market_options is defined %} ##}
+{%- if launch_template.launch_template_data.instance_market_options is defined %}{## BEGIN {%- if launch_template.launch_template_data.instance_market_options is defined %} ##}
         InstanceMarketOptions:
 {%- if launch_template.launch_template_data.instance_market_options.market_type is defined %}
           MarketType: {{ launch_template.launch_template_data.instance_market_options.market_type }}
@@ -119,7 +119,7 @@ Resources:
             ValidUntil: {{ launch_template.launch_template_data.instance_market_options.spot_options.valid_until }}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.instance_market_options is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.instance_market_options is defined %} ##}
 {%- if launch_template.launch_template_data.instance_type is defined %}
         InstanceType: {{ launch_template.launch_template_data.instance_type }}
 {%- endif %}
@@ -135,7 +135,7 @@ Resources:
           - LicenseConfigurationArn: {{ license_specification.license_configuration_arn | trim }}
 {%- endfor %}
 {%- endif %}
-{%- if launch_template.launch_template_data.metadata_options is defined %}  {## BEGIN {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
+{%- if launch_template.launch_template_data.metadata_options is defined %}{## BEGIN {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
         MetadataOptions:
 {%- if launch_template.launch_template_data.metadata_options.http_endpoint is defined %}
           HttpEndpoint: {{ launch_template.launch_template_data.metadata_options.http_endpoint }}
@@ -149,7 +149,7 @@ Resources:
 {%- if launch_template.launch_template_data.metadata_options.http_tokens is defined %}
           HttpTokens: {{ launch_template.launch_template_data.metadata_options.http_tokens }}
 {%- endif %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
 {%- if launch_template.launch_template_data.monitoring is defined %}
         Monitoring:
           Enabled: {{ launch_template.launch_template_data.monitoring.enabled }}
@@ -157,7 +157,7 @@ Resources:
 {%- if launch_template.launch_template_data.network_interfaces is defined %}
 {{ launch_template_networkinterface.prep(launch_template.launch_template_data.network_interfaces) }}
 {%- endif %}
-{%- if launch_template.launch_template_data.placement is defined %}  {## BEGIN {%- if launch_template.launch_template_data.placement is defined %} ##}
+{%- if launch_template.launch_template_data.placement is defined %}{## BEGIN {%- if launch_template.launch_template_data.placement is defined %} ##}
         Placement:
 {%- if launch_template.launch_template_data.placement.affinity is defined %}
           Affinity: {{ launch_template.launch_template_data.placement.affinity }}
@@ -183,7 +183,7 @@ Resources:
 {%- if launch_template.launch_template_data.placement.tenancy is defined %}
           Tenancy: {{ launch_template.launch_template_data.placement.tenancy }}
 {%- endif %}
-{%- endif %}  {## END {%- if launch_template.launch_template_data.placement is defined %} ##}
+{%- endif %}{## END {%- if launch_template.launch_template_data.placement is defined %} ##}
 {%- if launch_template.launch_template_data.ram_disk_id is defined %}
         RamDiskId: {{ launch_template.launch_template_data.ram_disk_id | trim }}
 {%- endif %}
@@ -219,7 +219,7 @@ Resources:
         UserData:
 {{ launch_template.launch_template_data.user_data | indent(width=10, first=true) }}
 {%- endif %}
-{%- endif %}  {# END {%- if launch_template.launch_template_data is defined %} #}
+{%- endif %}{# END {%- if launch_template.launch_template_data is defined %} #}
 {%- if launch_template.launch_template_name is defined %}
       LaunchTemplateName: {{ launch_template.launch_template_name }}
 {%- endif %}

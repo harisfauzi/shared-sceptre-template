@@ -39,7 +39,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 
-{%- if group.users is defined %}  {# BEGIN {%- if group.users is defined %} #}{# Do not use this if you map the user to the group in AWS::IAM::User#}
+{%- if group.users is defined %}{# BEGIN {%- if group.users is defined %} #}{# Do not use this if you map the user to the group in AWS::IAM::User#}
   {{ group_name }}UsersAddition:
     DeletionPolicy: {{ group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ group.update_replace_policy | default('Delete') }}
@@ -51,7 +51,7 @@ Resources:
 {%- for user in group.users %}
         - {{ user }}
 {%- endfor %}
-{%- endif %}  {# END {%- if group.users is defined %} #}
+{%- endif %}{# END {%- if group.users is defined %} #}
 {%- endfor %}
 
 Outputs:

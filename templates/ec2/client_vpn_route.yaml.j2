@@ -15,7 +15,7 @@ Resources:
       DestinationCidrBlock: {{ client_vpn_route.destination_cidr_block }}
       TargetVpcSubnetId: {{ client_vpn_route.target_vpc_subnet_id | trim }}
 {%- if client_vpn_route.description is defined %}
-      Description: String
+      Description: {{ client_vpn_route.description }}
 {%- endif %}
 
 {%- endfor %}

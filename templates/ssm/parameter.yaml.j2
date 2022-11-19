@@ -11,17 +11,25 @@ Resources:
     DeletionPolicy: {{ parameter.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ parameter.update_replace_policy | default('Delete') }}
     Properties:
-      Name: '{{ parameter.parameter_name }}'
-      Type: '{{ parameter.type }}'
-      Value: '{{ parameter.value }}'
+      Type: '{{ parameter.type | trim }}'
+      Value: '{{ parameter.value | trim }}'
+{%- if parameter.parameter_name is defined %}
+      Name: '{{ parameter.parameter_name | trim }}'
+{%- endif %}
 {%- if parameter.allowed_pattern is defined %}
       AllowedPattern: '{{ parameter.allowed_pattern }}'
+{%- endif %}
+{%- if parameter.data_type is defined %}
+      DataType: '{{ parameter.data_type }}'
 {%- endif %}
 {%- if parameter.description is defined %}
       Description: '{{ parameter.description }}'
 {%- endif %}
 {%- if parameter.policies is defined %}
       Policies: '{{ parameter.policies }}'
+{%- endif %}
+{%- if parameter.tier is defined %}
+      Tier: '{{ parameter.tier }}'
 {%- endif %}
       Tags:
         SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}

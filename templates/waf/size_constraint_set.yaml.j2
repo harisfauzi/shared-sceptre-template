@@ -1,0 +1,42 @@
+---
+Description: WAF SizeConstraintSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for size_constraint_set in sceptre_user_data.size_constraint_sets %}
+{%- set size_constraint_set_name = size_constraint_set.name %}
+  {{ size_constraint_set_name }}:
+    Type: AWS::WAF::SizeConstraintSet
+    DeletionPolicy: {{ size_constraint_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ size_constraint_set.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ size_constraint_set.size_constraint_set_name }}
+      SizeConstraints:
+{%- for size_constraint in size_constraint_set.size_constraints %}
+        -
+          ComparisonOperator: {{ size_constraint.comparison_operator }}
+          FieldToMatch:
+            Type: {{ size_constraint.field_to_match.type }}
+{%- if size_constraint.field_to_match.data is defined %}
+            Data: {{ size_constraint.field_to_match.data }}
+{%- endif %}
+          Size: {{ size_constraint.size }}
+          TextTransformation: {{ size_constraint.text_transformation }}
+{%- endfor %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for size_constraint_set in sceptre_user_data.size_constraint_sets %}
+{%- set size_constraint_set_name = size_constraint_set.name %}
+  {{ size_constraint_set_name }}:
+    Description: The ID for {{ size_constraint_set_name }}
+    Value:
+      Ref: {{ size_constraint_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ size_constraint_set_name }}"
+
+{%- endfor %}

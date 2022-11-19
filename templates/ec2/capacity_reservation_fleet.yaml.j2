@@ -21,7 +21,7 @@ Resources:
       InstanceMatchCriteria: {{ capacity_reservation_fleet.instance_match_criteria }}
 {%- endif %}
 {%- if capacity_reservation_fleet.instance_type_specification is defined %}
-      InstanceTypeSpecifications: 
+      InstanceTypeSpecifications:
 {%- for instance_type_specification in capacity_reservation_fleet.instance_type_specification %}
         -
 {%- if instance_type_specification.availability_zone is defined %}
@@ -53,7 +53,7 @@ Resources:
 {%- if capacity_reservation_fleet.remove_end_date is defined %}
       RemoveEndDate: {{ capacity_reservation_fleet.remove_end_date }}
 {%- endif %}
-{%- if capacity_reservation_fleet.tag_specifications is defined %}  {# BEGIN {%- if capacity_reservation_fleet.tag_specifications is defined %} #}
+{%- if capacity_reservation_fleet.tag_specifications is defined %}{# BEGIN {%- if capacity_reservation_fleet.tag_specifications is defined %} #}
       TagSpecifications:
 {%- for tag_specification in capacity_reservation_fleet.tag_specifications %}
         -
@@ -68,7 +68,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if capacity_reservation_fleet.tag_specifications is defined %} #}
+{%- endif %}{# END {%- if capacity_reservation_fleet.tag_specifications is defined %} #}
 {%- if capacity_reservation_fleet.tenancy is defined %}
       Tenancy: {{ capacity_reservation_fleet.tenancy }}
 {%- endif %}

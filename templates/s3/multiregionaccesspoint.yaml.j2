@@ -3,7 +3,7 @@ Description: S3 MultiRegionAccessPoint(s) for {{ sceptre_user_data.project_code 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-{%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %}  {# BEGIN {%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %} #}
+{%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %}{# BEGIN {%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %} #}
 {%- set multi_region_access_point_name = multi_region_access_point.name %}
   {{ multi_region_access_point_name }}:
     Type: AWS::S3::MultiRegionAccessPoint
@@ -33,7 +33,7 @@ Resources:
 {%- endif %}
 {%- endif %}
 
-{%- endfor %}  {# END {%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %} #}
+{%- endfor %}{# END {%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %} #}
 
 Outputs:
 {%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %}

@@ -1,0 +1,77 @@
+---
+name: GitHub Actions Push
+on: [push]
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    container:
+      image: harisfauzi/hf-sceptre:3.2.0-01
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_DEFAULT_REGION: us-west-2
+        SOURCE_REPO_URL: $GITHUB_REPOSITORY
+        SOURCE_REPO_BRANCH: $GITHUB_REF_NAME
+      options: --entrypoint sceptre --cpus 1
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v3
+      - name: Link templates directory
+        run: |
+          CURRENT_DIR=$(pwd)
+          ln -sf "${CURRENT_DIR}/templates" "${CURRENT_DIR}/test/sceptre/templates"
+      - name: Generate CloudFormation templates
+        run: |
+          cd test/sceptre;
+          for CFNTEST in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+            _jq() {
+              echo "${CFNTEST}" | base64 -d | jq -r "$1"
+            }
+            YAML_DIR=$(_jq .directory)
+            YAML_FILE=$(_jq .file)
+            CFN_TEMPLATE=$(_jq .cfntemplate)
+            /usr/bin/sceptre \
+              --var-file ./vars/main.yaml \
+              --var aws_region=${AWS_DEFAULT_REGION} \
+              generate "${YAML_DIR}/${YAML_FILE}" > "${CFN_TEMPLATE}"
+          done
+      - name: Run yamllint
+        uses: docker://harisfauzi/hf-sceptre:3.2.0-01
+        with:
+          entrypoint: /usr/bin/yamllint
+          args: test/sceptre/
+      - name: Validate CloudFormatoin
+        run: |
+          cd test/sceptre;
+          for CFNTEST in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+            _jq() {
+              echo "${CFNTEST}" | base64 -d | jq -r "$1"
+            }
+            YAML_DIR=$(_jq .directory)
+            YAML_FILE=$(_jq .file)
+            CFN_TEMPLATE=$(_jq .cfntemplate)
+            CFNGUARD_RULEDIR=$(_jq .cfnguardruledir)
+            echo "Validating ${CFN_TEMPLATE}"
+            /usr/bin/aws \
+              cloudformation validate-template \
+              --template-body file://"${CFN_TEMPLATE}"
+          done
+      - name: Run cfn-guard wafv2-webacl1-template.yaml
+        run: |
+          cd test/sceptre;
+          for CFNTEST in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+            _jq() {
+              echo "${CFNTEST}" | base64 -d | jq -r "$1"
+            }
+            YAML_DIR=$(_jq .directory)
+            YAML_FILE=$(_jq .file)
+            CFN_TEMPLATE=$(_jq .cfntemplate)
+            CFNGUARD_RULEDIR=$(_jq .cfnguardruledir)
+            echo "cfn-guard ${CFN_TEMPLATE}"
+            /usr/bin/cfn-guard \
+              validate \
+              --rules "${CFNGUARD_RULEDIR}" \
+              --data "${CFN_TEMPLATE}" \
+              --type CFNTemplate \
+              --show-summary all
+          done

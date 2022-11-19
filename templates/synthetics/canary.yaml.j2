@@ -50,7 +50,7 @@ Resources:
 {%- if canary.failure_retention_period is defined %}
       FailureRetentionPeriod: {{ canary.failure_retention_period }}
 {%- endif %}
-{%- if canary.run_config is defined %}  {# BEGIN {%- if canary.run_config is defined %} #}
+{%- if canary.run_config is defined %}{# BEGIN {%- if canary.run_config is defined %} #}
       RunConfig:
 {%- if canary.run_config.active_tracing is defined %}
         ActiveTracing: {{ canary.run_config.active_tracing }}
@@ -67,11 +67,11 @@ Resources:
 {%- if canary.run_config.timeout_in_seconds is defined %}
         TimeoutInSeconds: {{ canary.run_config.timeout_in_seconds }}
 {%- endif %}
-{%- endif %}  {# END {%- if canary.run_config is defined %} #}
+{%- endif %}{# END {%- if canary.run_config is defined %} #}
 {%- if canary.success_retention_period is defined %}
       SuccessRetentionPeriod: {{ canary.success_retention_period }}
 {%- endif %}
-{%- if canary.visual_reference is defined %}  {# BEGIN {%- if canary.visual_reference is defined %} #}
+{%- if canary.visual_reference is defined %}{# BEGIN {%- if canary.visual_reference is defined %} #}
       VisualReference:
 {%- if canary.visual_reference.base_canary_run_id is defined %}
         BaseCanaryRunId: {{ canary.visual_reference.base_canary_run_id }}
@@ -88,8 +88,8 @@ Resources:
 {%- endif %}
 {%- endif %}
 {%- endif %}
-{%- endif %}  {# END {%- if canary.visual_reference is defined %} #}
-{%- if canary.vpc_config is defined %}  {# BEGIN {%- if canary.vpc_config is defined %} #}
+{%- endif %}{# END {%- if canary.visual_reference is defined %} #}
+{%- if canary.vpc_config is defined %}{# BEGIN {%- if canary.vpc_config is defined %} #}
       VPCConfig:
         SecurityGroupIds:
 {%- for security_group_id in canary.vpc_config.security_group_ids %}
@@ -102,7 +102,7 @@ Resources:
 {%- if canary.vpc_config.vpc_id is defined %}
         VpcId: {{ canary.vpc_config.vpc_id }}
 {%- endif %}
-{%- endif %}  {# END {%- if canary.vpc_config is defined %} #}
+{%- endif %}{# END {%- if canary.vpc_config is defined %} #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}

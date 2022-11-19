@@ -1,0 +1,70 @@
+---
+Description: WAFv2 IPSet(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for ip_set in sceptre_user_data.ip_sets %}
+{%- set ip_set_name = ip_set.name %}
+  {{ ip_set_name }}:
+    Type: AWS::WAFv2::IPSet
+    DeletionPolicy: {{ ip_set.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ ip_set.update_replace_policy | default('Delete') }}
+    Properties:
+      Addresses:
+{%- for address in ip_set.addresses %}
+        - {{ address }}
+{%- endfor %}
+      IPAddressVersion: {{ ip_set.ip_address_version }}
+      Scope: {{ ip_set.scope }}
+{%- if ip_set.description is defined %}
+      Description: {{ ip_set.description }}
+{%- endif %}
+{%- if ip_set.ip_set_name is defined %}
+      Name: {{ ip_set.ip_set_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if ip_set.tags is defined %}
+{%- for key,value in ip_set.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for ip_set in sceptre_user_data.ip_sets %}
+{%- set ip_set_name = ip_set.name %}
+  {{ ip_set_name }}:
+    Description: The ref for {{ ip_set_name }}
+    Value:
+      Ref: {{ ip_set_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ip_set_name }}"
+
+  {{ ip_set_name }}Arn:
+    Description: The ARN of {{ ip_set_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ ip_set_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ip_set_name }}-Arn"
+
+  {{ ip_set_name }}Id:
+    Description: The ID of {{ ip_set_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ ip_set_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ip_set_name }}-Id"
+
+{%- endfor %}

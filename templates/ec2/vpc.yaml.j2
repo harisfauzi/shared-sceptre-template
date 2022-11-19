@@ -13,7 +13,7 @@ Resources:
     Properties:
       CidrBlock: {{ vpc.cidr_block }}
       EnableDnsHostnames: {{ vpc.enable_dns_hostnames | default('false') }}
-      EnableDnsSupport: {{ vpc.enable_dns_hostnames | default('true') }}
+      EnableDnsSupport: {{ vpc.enable_dns_support | default('true') }}
       InstanceTenancy: {{ vpc.instance_tenancy | default('default') }}
       Tags:
         - Key: SourceRepoURL
@@ -30,7 +30,7 @@ Resources:
     Type: AWS::EC2::VPCCidrBlock
     DeletionPolicy: {{ vpc.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ vpc.update_replace_policy | default('Delete') }}
-    Properties: 
+    Properties:
       VpcId:
         Ref: {{ vpc_name }}
       AmazonProvidedIpv6CidrBlock: true
@@ -66,8 +66,8 @@ Outputs:
       Fn::Select:
         - 0
         - Fn::GetAtt:
-          - {{ vpc_name }}
-          - Ipv6CidrBlocks
+            - {{ vpc_name }}
+            - Ipv6CidrBlocks
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_name }}-CidrBlockIPv6"

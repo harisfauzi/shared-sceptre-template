@@ -12,9 +12,9 @@ Resources:
     DeletionPolicy: {{ task_definition.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ task_definition.update_replace_policy | default('Delete') }}
     Properties:
-{%- if task_definition.container_definitions is defined %}  {# BEGIN {%- if task_definition.container_definitions is defined %} #}
+{%- if task_definition.container_definitions is defined %}{# BEGIN {%- if task_definition.container_definitions is defined %} #}
       ContainerDefinitions:
-{%- for container_definition in task_definition.container_definitions %}  {# BEGIN {%- for container_definition in task_definition.container_definitions %} #}
+{%- for container_definition in task_definition.container_definitions %}{# BEGIN {%- for container_definition in task_definition.container_definitions %} #}
         -
 {%- if container_definition.command is defined %}
           Command:
@@ -25,7 +25,7 @@ Resources:
 {%- if container_definition.cpu is defined %}
           Cpu: {{ container_definition.cpu }}
 {%- endif %}
-{%- if container_definition.depends_on is defined %}  {# BEGIN {%- if container_definition.depends_on is defined %} #}
+{%- if container_definition.depends_on is defined %}{# BEGIN {%- if container_definition.depends_on is defined %} #}
           DependsOn:
 {%- for depends_on in container_definition.depends_on %}
             -
@@ -36,7 +36,7 @@ Resources:
               ContainerName: {{ depends_on.container_name }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if container_definition.depends_on is defined %} #}
+{%- endif %}{# END {%- if container_definition.depends_on is defined %} #}
 {%- if container_definition.disable_networking is defined %}
           DisableNetworking: {{ container_definition.disable_networking }}
 {%- endif %}
@@ -70,7 +70,7 @@ Resources:
             - {{ entry_point }}
 {%- endfor %}
 {%- endif %}
-{%- if container_definition.environment is defined %}  {# BEGIN {%- if container_definition.environment is defined %} #}
+{%- if container_definition.environment is defined %}{# BEGIN {%- if container_definition.environment is defined %} #}
           Environment:
 {%- for environment in container_definition.environment %}
             -
@@ -81,8 +81,8 @@ Resources:
               Value: {{ environment.value }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if container_definition.environment is defined %} #}
-{%- if container_definition.environment_files is defined %}  {# BEGIN {%- if container_definition.environment_files is defined %} #}
+{%- endif %}{# END {%- if container_definition.environment is defined %} #}
+{%- if container_definition.environment_files is defined %}{# BEGIN {%- if container_definition.environment_files is defined %} #}
           EnvironmentFiles:
 {%- for environment_file in container_definition.environment_files %}
             -
@@ -93,11 +93,11 @@ Resources:
               Value: {{ environment_file.value }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if container_definition.environment_files is defined %} #}
+{%- endif %}{# END {%- if container_definition.environment_files is defined %} #}
 {%- if container_definition.essential is defined %}
           Essential: {{ container_definition.essential }}
 {%- endif %}
-{%- if container_definition.extra_hosts is defined %}  {# BEGIN container_definition.extra_hosts #}
+{%- if container_definition.extra_hosts is defined %}{# BEGIN container_definition.extra_hosts #}
           ExtraHosts:
 {%- for extra_host in container_definition.extra_hosts %}
             -
@@ -108,8 +108,8 @@ Resources:
               IpAddress: {{ extra_host.ip_address }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END container_definition.extra_hosts #}
-{%- if container_definition.firelens_configuration is defined %}  {# BEGIN {%- if container_definition.firelens_configuration is defined %} #}
+{%- endif %}{# END container_definition.extra_hosts #}
+{%- if container_definition.firelens_configuration is defined %}{# BEGIN {%- if container_definition.firelens_configuration is defined %} #}
           FirelensConfiguration:
 {%- if container_definition.firelens_configuration.options is defined %}
             Options:
@@ -120,8 +120,8 @@ Resources:
 {%- if container_definition.firelens_configuration.type is defined %}
             Type: {{ container_definition.firelens_configuration.type }}
 {%- endif %}
-{%- endif %}  {# END {%- if container_definition.firelens_configuration is defined %} #}
-{%- if container_definition.health_check is defined %}  {# BEGIN {%- if container_definition.health_check is defined %} #}
+{%- endif %}{# END {%- if container_definition.firelens_configuration is defined %} #}
+{%- if container_definition.health_check is defined %}{# BEGIN {%- if container_definition.health_check is defined %} #}
           HealthCheck:
 {%- if container_definition.health_check.command is defined %}
             Command:
@@ -141,7 +141,7 @@ Resources:
 {%- if container_definition.health_check.timeout is defined %}
             Timeout: {{container_definition.health_check.timeout }}
 {%- endif %}
-{%- endif %}  {# END {%- if container_definition.health_check is defined %} #}
+{%- endif %}{# END {%- if container_definition.health_check is defined %} #}
 {%- if container_definition.hostname is defined %}
           Hostname: {{ container_definition.hostname }}
 {%- endif %}
@@ -157,9 +157,9 @@ Resources:
             - {{ link }}
 {%- endfor %}
 {%- endif %}
-{%- if container_definition.linux_parameters is defined %}  {# BEGIN {%- if container_definition.linux_parameters is defined %} #}
+{%- if container_definition.linux_parameters is defined %}{# BEGIN {%- if container_definition.linux_parameters is defined %} #}
           LinuxParameters:
-{%- if container_definition.linux_parameters.capabilities is defined %}  {# BEGIN {%- if container_definition.linux_parameters.capabilities is defined %} #}
+{%- if container_definition.linux_parameters.capabilities is defined %}{# BEGIN {%- if container_definition.linux_parameters.capabilities is defined %} #}
             Capabilities:
 {%- if container_definition.linux_parameters.capabilities.add is defined %}
               Add:
@@ -173,8 +173,8 @@ Resources:
                 - {{ item }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}  {# END {%- if container_definition.linux_parameters.capabilities is defined %} #}
-{%- if container_definition.linux_parameters.devices is defined %}  {# BEGIN {%- if container_definition.linux_parameters.devices is defined %} #}
+{%- endif %}{# END {%- if container_definition.linux_parameters.capabilities is defined %} #}
+{%- if container_definition.linux_parameters.devices is defined %}{# BEGIN {%- if container_definition.linux_parameters.devices is defined %} #}
             Devices:
 {%- for device in container_definition.linux_parameters.devices %}
               -
@@ -191,7 +191,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if container_definition.linux_parameters.devices is defined %} #}
+{%- endif %}{# END {%- if container_definition.linux_parameters.devices is defined %} #}
 {%- if container_definition.linux_parameters.init_process_enabled is defined %}
             InitProcessEnabled: {{ container_definition.linux_parameters.init_process_enabled }}
 {%- endif %}
@@ -204,9 +204,9 @@ Resources:
 {%- if container_definition.linux_parameters.swappiness is defined %}
             Swappiness: {{ container_definition.linux_parameters.swappiness }}
 {%- endif %}
-{%- if container_definition.linux_parameters.tmpfs is defined %}  {# BEGIN {%- if container_definition.linux_parameters.tmpfs is defined %} #}
+{%- if container_definition.linux_parameters.tmpfs is defined %}{# BEGIN {%- if container_definition.linux_parameters.tmpfs is defined %} #}
             Tmpfs:
-{%- for tmpfs in container_definition.linux_parameters.tmpfs %}  {# BEGIN {%- for tmpfs in container_definition.linux_parameters.tmpfs %} #}
+{%- for tmpfs in container_definition.linux_parameters.tmpfs %}{# BEGIN {%- for tmpfs in container_definition.linux_parameters.tmpfs %} #}
               - Size: {{ tmpfs.size }}
 {%- if tmpfs.container_path is defined %}
                 ContainerPath: {{ tmpfs.container_path }}
@@ -217,10 +217,10 @@ Resources:
                   - {{ mount_option }}
 {%- endfor %}
 {%- endif %}
-{%- endfor %}  {# END {%- for tmpfs in container_definition.linux_parameters.tmpfs %} #}
-{%- endif %}  {# END {%- if container_definition.linux_parameters.tmpfs is defined %} #}
-{%- endif %}  {# END {%- if container_definition.linux_parameters is defined %} #}
-{%- if container_definition.log_configuration is defined %}  {# BEGIN {%- if container_definition.log_configuration is defined %} #}
+{%- endfor %}{# END {%- for tmpfs in container_definition.linux_parameters.tmpfs %} #}
+{%- endif %}{# END {%- if container_definition.linux_parameters.tmpfs is defined %} #}
+{%- endif %}{# END {%- if container_definition.linux_parameters is defined %} #}
+{%- if container_definition.log_configuration is defined %}{# BEGIN {%- if container_definition.log_configuration is defined %} #}
           LogConfiguration:
             LogDriver: {{ container_definition.log_configuration.log_driver }}
 {%- if container_definition.log_configuration.options is defined %}
@@ -233,14 +233,14 @@ Resources:
             SecretOptions:
 {{ macro_secrets.prep(container_definition.log_configuration.secret_options) | indent(width=14, first=True) }}
 {%- endif %}
-{%- endif %}  {# END {%- if container_definition.log_configuration is defined %} #}
+{%- endif %}{# END {%- if container_definition.log_configuration is defined %} #}
 {%- if container_definition.memory is defined %}
           Memory: {{ container_definition.memory }}
 {%- endif %}
 {%- if container_definition.memory_reservation is defined %}
           MemoryReservation: {{ container_definition.memory_reservation }}
 {%- endif %}
-{%- if container_definition.mount_points is defined %}  {# BEGIN {%- if container_definition.mount_points is defined %} #}
+{%- if container_definition.mount_points is defined %}{# BEGIN {%- if container_definition.mount_points is defined %} #}
           MountPoints:
 {%- for mount_point in container_definition.mount_points %}
             -
@@ -254,11 +254,11 @@ Resources:
               SourceVolume: {{ mount_point.source_volume }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if container_definition.mount_points is defined %} #}
+{%- endif %}{# END {%- if container_definition.mount_points is defined %} #}
 {%- if container_definition.name is defined %}
           Name: {{ container_definition.name }}
 {%- endif %}
-{%- if container_definition.port_mappings is defined %}  {# BEGIN {%- if container_definition.port_mappings is defined %} #}
+{%- if container_definition.port_mappings is defined %}{# BEGIN {%- if container_definition.port_mappings is defined %} #}
           PortMappings:
 {%- for port_mapping in container_definition.port_mappings %}
             -
@@ -272,7 +272,7 @@ Resources:
               Protocol: {{ port_mapping.protocol }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if container_definition.port_mappings is defined %} #}
+{%- endif %}{# END {%- if container_definition.port_mappings is defined %} #}
 {%- if container_definition.privileged is defined %}
           Privileged: {{ container_definition.privileged }}
 {%- endif %}
@@ -286,13 +286,13 @@ Resources:
           RepositoryCredentials:
             CredentialsParameter: {{ container_definition.repository_credentials.credentials_parameter | trim }}
 {%- endif %}
-{%- if container_definition.resource_requirements is defined %}  {# BEGIN {%- if container_definition.resource_requirements is defined %} #}
+{%- if container_definition.resource_requirements is defined %}{# BEGIN {%- if container_definition.resource_requirements is defined %} #}
           ResourceRequirements:
 {%- for resource_requirement in container_definition.resource_requirements %}
             - Type: {{ resource_requirement.type }}
               Value: {{ resource_requirement.value }}
 {%- endfor %}
-{%- endif %}  {# END {%- if container_definition.resource_requirements is defined %} #}
+{%- endif %}{# END {%- if container_definition.resource_requirements is defined %} #}
 {%- if container_definition.secrets is defined %}
           Secrets:
 {{ macro_secrets.prep(container_definition.secrets) | indent(width=12, first=True) }}
@@ -303,7 +303,7 @@ Resources:
 {%- if container_definition.stop_timeout is defined %}
           StopTimeout: {{ container_definition.stop_timeout }}
 {%- endif %}
-{%- if container_definition.system_controls is defined %}  {# BEGIN {%- if container_definition.system_controls is defined %} #}
+{%- if container_definition.system_controls is defined %}{# BEGIN {%- if container_definition.system_controls is defined %} #}
           SystemControls:
 {%- for system_control in container_definition.system_controls %}
             -
@@ -314,19 +314,19 @@ Resources:
               Value: {{ system_control.value }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if container_definition.system_controls is defined %} #}
-{%- if container_definition.ulimits is defined %}  {# BEGIN {%- if container_definition.ulimits is defined %} #}
+{%- endif %}{# END {%- if container_definition.system_controls is defined %} #}
+{%- if container_definition.ulimits is defined %}{# BEGIN {%- if container_definition.ulimits is defined %} #}
           Ulimits:
 {%- for ulimit in container_definition.ulimits %}
             - HardLimit: {{ ulimit.hard_limit }}
               Name: {{ ulimit.name  }}
               SoftLimit: {{ ulimit.soft_limit }}
 {%- endfor %}
-{%- endif %}  {# END {%- if container_definition.ulimits is defined %} #}
+{%- endif %}{# END {%- if container_definition.ulimits is defined %} #}
 {%- if container_definition.user is defined %}
           User: {{ container_definition.user }}
 {%- endif %}
-{%- if container_definition.volumes_from is defined %}  {# BEGIN {%- if container_definition.volumes_from is defined %} #}
+{%- if container_definition.volumes_from is defined %}{# BEGIN {%- if container_definition.volumes_from is defined %} #}
           VolumesFrom:
 {%- for volume_from in container_definition.volumes_from %}
             -
@@ -337,12 +337,12 @@ Resources:
               SourceContainer: {{ volume_from.source_container }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if container_definition.volumes_from is defined %} #}
+{%- endif %}{# END {%- if container_definition.volumes_from is defined %} #}
 {%- if container_definition.working_directory is defined %}
           WorkingDirectory: {{ container_definition.working_directory }}
 {%- endif %}
-{%- endfor %}  {# END {%- for container_definition in task_definition.container_definitions %} #}
-{%- endif %}  {# END {%- if task_definition.container_definitions is defined %} #}
+{%- endfor %}{# END {%- for container_definition in task_definition.container_definitions %} #}
+{%- endif %}{# END {%- if task_definition.container_definitions is defined %} #}
 {%- if task_definition.cpu is defined %}
       Cpu: {{ task_definition.cpu }}
 {%- endif %}
@@ -356,7 +356,7 @@ Resources:
 {%- if task_definition.family is defined %}
       Family: {{ task_definition.family }}
 {%- endif %}
-{%- if task_definition.inference_accelerators is defined %}  {# BEGIN {%- if task_definition.inference_accelerators is defined %} #}
+{%- if task_definition.inference_accelerators is defined %}{# BEGIN {%- if task_definition.inference_accelerators is defined %} #}
       InferenceAccelerators:
 {%- for accelerator in task_definition.inference_accelerators %}
         -
@@ -367,7 +367,7 @@ Resources:
           DeviceType: {{ accelerator.device_type }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if task_definition.inference_accelerators is defined %} #}
+{%- endif %}{# END {%- if task_definition.inference_accelerators is defined %} #}
 {%- if task_definition.ipc_mode is defined %}
       IpcMode: {{ task_definition.ipc_mode }}
 {%- endif %}
@@ -392,7 +392,7 @@ Resources:
 {%- if task_definition.proxy_configuration is defined %}
       ProxyConfiguration:
         ContainerName: {{ task_definition.proxy_configuration.container_name }}
-{%- if task_definition.proxy_configuration.proxy_configuration_properties is defined %}  {# BEGIN {%- if task_definition.proxy_configuration.proxy_configuration_properties is defined %} #}
+{%- if task_definition.proxy_configuration.proxy_configuration_properties is defined %}{# BEGIN {%- if task_definition.proxy_configuration.proxy_configuration_properties is defined %} #}
         ProxyConfigurationProperties:
 {%- for property in task_definition.proxy_configuration.proxy_configuration_properties %}
           -
@@ -403,7 +403,7 @@ Resources:
             Value: {{ property.value }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if task_definition.proxy_configuration.proxy_configuration_properties is defined %} #}
+{%- endif %}{# END {%- if task_definition.proxy_configuration.proxy_configuration_properties is defined %} #}
 {%- if task_definition.proxy_configuration.type is defined %}
         Type: {{ task_definition.proxy_configuration.type }}
 {%- endif %}
@@ -414,7 +414,7 @@ Resources:
         - {{ requires_compatibility }}
 {%- endfor %}
 {%- endif %}
-{%- if task_definition.runtime_platform is defined %}  {# BEGIN {%- if task_definition.runtime_platform is defined %} #}
+{%- if task_definition.runtime_platform is defined %}{# BEGIN {%- if task_definition.runtime_platform is defined %} #}
       RuntimePlatform:
 {%- if task_definition.runtime_platform.cpu_architecture is defined %}
         CpuArchitecture: {{ task_definition.runtime_platform.cpu_architecture }}
@@ -422,15 +422,15 @@ Resources:
 {%- if task_definition.runtime_platform.operating_system_family is defined %}
         OperatingSystemFamily: {{ task_definition.runtime_platform.operating_system_family }}
 {%- endif %}
-{%- endif %}  {# END {%- if task_definition.runtime_platform is defined %} #}
+{%- endif %}{# END {%- if task_definition.runtime_platform is defined %} #}
 {%- if task_definition.task_role_arn is defined %}
       TaskRoleArn: {{ task_definition.task_role_arn | trim }}
 {%- endif %}
-{%- if task_definition.volumes is defined %}  {# BEGIN {%- if task_definition.volumes is defined %} #}
+{%- if task_definition.volumes is defined %}{# BEGIN {%- if task_definition.volumes is defined %} #}
       Volumes:
 {%- for volume in task_definition.volumes %}
         -
-{%- if volume.docker_volume_configuration is defined %}  {# BEGIN {%- if volume.docker_volume_configuration is defined %} #}
+{%- if volume.docker_volume_configuration is defined %}{# BEGIN {%- if volume.docker_volume_configuration is defined %} #}
           DockerVolumeConfiguration:
 {%- if volume.docker_volume_configuration.autoprovision is defined %}
             Autoprovision: {{ volume.docker_volume_configuration.autoprovision }}
@@ -453,11 +453,11 @@ Resources:
 {%- if volume.docker_volume_configuration.scope is defined %}
             Scope: {{ volume.docker_volume_configuration.scope }}
 {%- endif %}
-{%- endif %}  {# END {%- if volume.docker_volume_configuration is defined %} #}
-{%- if volume.efs_volume_configuration is defined %}  {# BEGIN {%- if volume.efs_volume_configuration is defined %} #}
+{%- endif %}{# END {%- if volume.docker_volume_configuration is defined %} #}
+{%- if volume.efs_volume_configuration is defined %}{# BEGIN {%- if volume.efs_volume_configuration is defined %} #}
           EFSVolumeConfiguration:
             FilesystemId: {{ volume.efs_volume_configuration.filesystem_id | trim }}
-{%- if volume.efs_volume_configuration.authorization_config is defined %}  {# BEGIN {%- if volume.efs_volume_configuration.authorization_config is defined %} #}
+{%- if volume.efs_volume_configuration.authorization_config is defined %}{# BEGIN {%- if volume.efs_volume_configuration.authorization_config is defined %} #}
             AuthorizationConfig:
 {%- if volume.efs_volume_configuration.authorization_config.access_point_id is defined %}
               AccessPointId: {{ volume.efs_volume_configuration.authorization_config.access_point_id | trim }}
@@ -465,7 +465,7 @@ Resources:
 {%- if volume.efs_volume_configuration.authorization_config.iam is defined %}
               IAM: {{ volume.efs_volume_configuration.authorization_config.iam }}
 {%- endif %}
-{%- endif %}  {# END {%- if volume.efs_volume_configuration.authorization_config is defined %} #}
+{%- endif %}{# END {%- if volume.efs_volume_configuration.authorization_config is defined %} #}
 {%- if volume.efs_volume_configuration.root_directory is defined %}
             RootDirectory: {{ volume.efs_volume_configuration.root_directory }}
 {%- endif %}
@@ -475,7 +475,7 @@ Resources:
 {%- if volume.efs_volume_configuration.transit_encryption_port is defined %}
             TransitEncryptionPort: {{ volume.efs_volume_configuration.transit_encryption_port }}
 {%- endif %}
-{%- endif %}  {# END {%- if volume.efs_volume_configuration is defined %} #}
+{%- endif %}{# END {%- if volume.efs_volume_configuration is defined %} #}
 {%- if volume.host is defined %}
           Host:
             SourcePath: {{ volume.host.source_path }}
@@ -484,7 +484,7 @@ Resources:
           Name: {{ volume.name }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if task_definition.volumes is defined %} #}
+{%- endif %}{# END {%- if task_definition.volumes is defined %} #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}

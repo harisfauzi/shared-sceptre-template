@@ -1,0 +1,72 @@
+---
+Description: WAFv2 LoggingConfiguration(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for logging_configuration in sceptre_user_data.logging_configurations %}
+{%- set logging_configuration_name = logging_configuration.name %}
+  {{ logging_configuration_name }}:
+    Type: AWS::WAFv2::LoggingConfiguration
+    DeletionPolicy: {{ logging_configuration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ logging_configuration.update_replace_policy | default('Delete') }}
+    Properties:
+      LogDestinationConfigs:
+{%- for log_destination_config in logging_configuration.log_destination_configs %}
+        - {{ log_destination_config }}
+{%- endfor %}
+      ResourceArn: {{ logging_configuration.resource_arn }}
+{%- if logging_configuration.logging_filter is defined %}
+      LoggingFilter: {{ logging_configuration.logging_filter }}
+{%- elif logging_configuration.logging_filter_json is defined %}
+      LoggingFilter: |
+{{ logging_configuration.logging_filter | indent(width=8, first=true) }}
+{%- endif %}
+{%- if logging_configuration.redacted_fields is defined %}
+      RedactedFields:
+{%- for redacted_field in logging_configuration.redacted_fields %}
+        -
+{%- if redacted_field.json_body is defined %}
+          JsonBody:
+            {{ redacted_field.json_body }}
+{%- endif %}
+{%- if redacted_field.method is defined %}
+          Method: {{ redacted_field.method }}
+{%- endif %}
+{%- if redacted_field.query_string is defined %}
+          QueryString: {{ redacted_field.query_string }}
+{%- endif %}
+{%- if redacted_field.single_header is defined %}
+          SingleHeader: {{ redacted_field.single_header }}
+{%- endif %}
+{%- if redacted_field.uri_path is defined %}
+          UriPath: {{ redacted_field.uri_path }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for logging_configuration in sceptre_user_data.logging_configurations %}
+{%- set logging_configuration_name = logging_configuration.name %}
+  {{ logging_configuration_name }}:
+    Description: The ARN of {{ logging_configuration_name }}
+    Value:
+      Ref: {{ logging_configuration_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ logging_configuration_name }}"
+
+  {{ logging_configuration_name }}ManagedByFirewallManager:
+    Description: Indicate if {{ logging_configuration_name }} was created by AWS Firewall Manager
+    Value:
+      Fn::GetAtt:
+        - {{ logging_configuration_name }}
+        - ManagedByFirewallManager
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ logging_configuration_name }}-ManagedByFirewallManager"
+
+{%- endfor %}

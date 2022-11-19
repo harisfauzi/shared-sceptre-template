@@ -1,0 +1,188 @@
+{%- import 'macros/field_to_match.yaml.j2' as macro_field_to_match %}
+{%- macro prep(statement) %}
+{%- if statement.and_statement is defined %}
+AndStatement:
+  Statements:
+{%- for sub_statement in statement.and_statement.statements %}
+    -
+{{ prep(sub_statement) | indent(width=6, first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.byte_match_statement is defined %}
+ByteMatchStatement:
+{%- if statement.byte_match_statement.field_to_match is defined %}
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.byte_match_statement.field_to_match) | indent(width=4,first=true) }}
+{%- endif %}
+{%- if statement.byte_match_statement.positional_constraint is defined %}
+  PositionalConstraint: {{ statement.byte_match_statement.positional_constraint }}
+{%- endif %}
+{%- if statement.byte_match_statement.search_string is defined %}
+  SearchString:
+    {{ statement.byte_match_statement.search_string }}
+{%- endif %}
+{%- if statement.byte_match_statement.search_string_base64 is defined %}
+  SearchStringBase64:
+    {{ statement.byte_match_statement.search_string_base64 }}
+{%- endif %}
+{%- if statement.byte_match_statement.text_transformations is defined %}
+  TextTransformations:
+{%- for text_transformation in statement.byte_match_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if statement.geo_match_statement is defined %}
+GeoMatchStatement:
+{%- if statement.geo_match_statement.country_codes is defined %}
+  CountryCodes:
+{%- for country_code in statement.geo_match_statement.country_codes %}
+    - {{ country_code }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.geo_match_statement.forwarded_ip_config is defined %}
+  ForwardedIPConfig:
+    FallbackBehavior: {{ statement.geo_match_statement.forwarded_ip_config.fallback_behavior }}
+    HeaderName: {{ statement.geo_match_statement.forwarded_ip_config.header_name }}
+{%- endif %}
+{%- endif %}
+{%- if statement.ip_set_reference_statement is defined %}
+IPSetReferenceStatement:
+  Arn: {{ statement.ip_set_reference_statement.arn }}
+{%- if statement.ip_set_reference_statement.ip_set_forwarded_ip_config is defined %}
+  IPSetForwardedIPConfig:
+    FallbackBehavior: {{ statement.ip_set_reference_statement.ip_set_forwarded_ip_config.fallback_behavior }}
+    HeaderName: {{ statement.ip_set_reference_statement.ip_set_forwarded_ip_config.header_name }}
+    Position: {{ statement.ip_set_reference_statement.ip_set_forwarded_ip_config.position }}
+{%- endif %}
+{%- endif %}
+{%- if statement.label_match_statement is defined %}
+LabelMatchStatement:
+  Key: {{ statement.label_match_statement.key }}
+  Scope: {{ statement.label_match_statement.scope }}
+{%- endif %}
+{%- if statement.managed_rule_group_statement is defined %}
+ManagedRuleGroupStatement:
+  Name: {{  statement.managed_rule_group_statement.name }}
+  VendorName: {{  statement.managed_rule_group_statement.vendor_name }}
+{%- if statement.managed_rule_group_statement.excluded_rules is defined %}
+  ExcludedRules:
+{%- for excluded_rule in statement.managed_rule_group_statement.excluded_rules %}
+    - Name: {{ excluded_rule }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.managed_rule_group_statement.managed_rule_group_configs is defined %}
+  ManagedRuleGroupConfigs:
+{%- for managed_rule_group_config in statement.managed_rule_group_statement.managed_rule_group_configs %}
+    -
+{%- if managed_rule_group_config.login_path is defined %}
+      LoginPath: String
+{%- endif %}
+{%- if managed_rule_group_config.password_field is defined %}
+      PasswordField:
+        Identifier: {{ managed_rule_group_config.password_field.Identifier }}
+{%- endif %}
+{%- if managed_rule_group_config.payload_type is defined %}
+      PayloadType: {{ managed_rule_group_config.payload_type }}
+{%- endif %}
+{%- if managed_rule_group_config.username_field is defined %}
+      UsernameField:
+        Identifier: {{ managed_rule_group_config.username_field.Identifier }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if  statement.managed_rule_group_statement.scope_down_statement is defined %}
+  ScopeDownStatement:
+{{ prep(statement.managed_rule_group_statement.scope_down_statement) | indent(width=6, first=true) }}
+{%- endif %}
+{%- if  statement.managed_rule_group_statement.version is defined %}
+  Version: {{ statement.managed_rule_group_statement.version }}
+{%- endif %}
+{%- endif %}
+{%- if statement.not_statement is defined %}
+NotStatement:
+  Statement:
+{{ prep(statement.not_statement.statement) | indent(width=4, first=true) }}
+{%- endif %}
+{%- if statement.or_statement is defined %}
+OrStatement:
+  Statements:
+{%- for sub_statement in statement.or_statement.statements %}
+    -
+{{ prep(sub_statement) | indent(width=6, first=true) }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.rate_based_statement is defined %}
+RateBasedStatement:
+  AggregateKeyType: {{ statement.rate_based_statement.aggregate_key_type }}
+  Limit: {{ statement.rate_based_statement.limit }}
+{%- if statement.rate_based_statement.forwarded_ip_config %}
+  ForwardedIPConfig:
+    FallbackBehavior: {{ statement.rate_based_statement.forwarded_ip_config.fallback_behavior }}
+    HeaderName: {{ statement.rate_based_statement.forwarded_ip_config.header_name }}
+{%- endif %}
+{%- if statement.rate_based_statement.scope_down_statement %}
+  ScopeDownStatement:
+{{ prep(statement.rate_based_statement.scope_down_statement) | indent(width=4, first=true) }}
+{%- endif %}
+{%- endif %}
+{%- if statement.regex_match_statement is defined %}
+RegexMatchStatement:
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.regex_match_statement.field_to_match) | indent(width=4,first=true) }}
+  RegexString:
+    {{ statement.regex_match_statement.regex_string }}
+  TextTransformations:
+{%- for text_transformation in statement.regex_match_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.regex_pattern_set_reference_statement is defined %}
+RegexPatternSetReferenceStatement:
+  Arn: {{ statement.regex_pattern_set_reference_statement.arn }}
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.regex_pattern_set_reference_statement.field_to_match) | indent(width=4,first=true) }}
+  TextTransformations:
+{%- for text_transformation in statement.regex_pattern_set_reference_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.size_constraint_statement is defined %}
+SizeConstraintStatement:
+  ComparisonOperator: {{ statement.size_constraint_statement.comparison_operator }}
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.size_constraint_statement.field_to_match) | indent(width=4,first=true) }}
+  Size: {{ statement.size_constraint_statement.size }}
+  TextTransformations:
+{%- for text_transformation in statement.regex_pattern_set_reference_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.sqli_match_statement is defined %}
+SqliMatchStatement:
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.sqli_match_statement.field_to_match) | indent(width=4,first=true) }}
+  TextTransformations:
+{%- for text_transformation in statement.sqli_match_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
+{%- if statement.sqli_match_statement.sensitivity_level is defined %}
+  SensitivityLevel: {{ statement.sqli_match_statement.sensitivity_level }}
+{%- endif %}
+{%- endif %}
+{%- if statement.xss_match_statement is defined %}
+XssMatchStatement:
+  FieldToMatch:
+{{ macro_field_to_match.prep(statement.xss_match_statement.field_to_match) | indent(width=4,first=true) }}
+  TextTransformations:
+{%- for text_transformation in statement.xss_match_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}

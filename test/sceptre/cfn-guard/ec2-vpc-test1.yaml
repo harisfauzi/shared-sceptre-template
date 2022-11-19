@@ -1,0 +1,100 @@
+---
+- input:
+    Resources:
+      ec2vpctest1:
+        Type: AWS::EC2::VPC
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          CidrBlock: 10.255.252.0/22
+          EnableDnsHostnames: True
+          EnableDnsSupport: True
+          InstanceTenancy: default
+          Tags:
+            - Key: SourceRepoURL
+              Value: 'git@github.com:harisfauzi/shared-sceptre-template.git'
+            - Key: Name
+              Value: ec2vpctest1
+            - Key: Project
+              Value: cfntest
+      ec2vpctest1CidrBlock:
+        Type: AWS::EC2::VPCCidrBlock
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          VpcId:
+            Ref: ec2vpctest1
+          AmazonProvidedIpv6CidrBlock: True
+  expectations:
+    rules:
+      ec2_vpc_valid_resource_type: PASS
+      ec2_vpc_valid_cidr_block: PASS
+      ec2_vpc_valid_enableddnshostnames: PASS
+      ec2_vpc_valid_enablednssupport: PASS
+      ec2_vpc_valid_tenancy: PASS
+      ec2_vpc_valid_deletion_policy: PASS
+      ec2_vpc_valid_updatereplace_policy: PASS
+      ec2_vpc_tag_name_exists: PASS
+      ec2_vpc_tag_sourcerepourl: PASS
+      ec2_vpc_vpccidrblock_valid_vpcid: PASS
+      ec2_vpc_vpccidrblock_ipv6_is_set: PASS
+
+- input:
+    Resources:
+      ec2vpctest1:
+        Type: AWS::EC2::Instance
+        DeletionPolicy: Snapshot
+        Properties:
+          CidrBlock: 10.0.0.0/16
+          EnableDnsHostnames: False
+          EnableDnsSupport: False
+      ec2vpctest1CidrBlock:
+        Type: AWS::EC2::VPCCidrBlock
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          VpcId: ec2vpctest1
+          AmazonProvidedIpv6CidrBlock: false
+  expectations:
+    rules:
+      ec2_vpc_valid_resource_type: FAIL
+      ec2_vpc_valid_cidr_block: FAIL
+      ec2_vpc_valid_enableddnshostnames: FAIL
+      ec2_vpc_valid_enablednssupport: FAIL
+      ec2_vpc_valid_tenancy: FAIL
+      ec2_vpc_valid_deletion_policy: FAIL
+      ec2_vpc_valid_updatereplace_policy: FAIL
+      ec2_vpc_tag_name_exists: FAIL
+      ec2_vpc_tag_sourcerepourl: FAIL
+      ec2_vpc_vpccidrblock_valid_vpcid: FAIL
+      ec2_vpc_vpccidrblock_ipv6_is_set: FAIL
+
+- input:
+    Resources:
+      ec2vpctest1:
+        Type: AWS::EC2::VPC
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          CidrBlock: 10.255.252.0/22
+          EnableDnsHostnames: True
+          EnableDnsSupport: True
+          InstanceTenancy: default
+          Tags:
+            - Key: SourceRepoURL
+              Value: 'git@github.com:harisfauzi/shared-sceptre-template.git'
+            - Key: Name
+              Value: ec2vpctest1
+            - Key: Project
+              Value: cfntest
+  expectations:
+    rules:
+      ec2_vpc_valid_resource_type: PASS
+      ec2_vpc_valid_cidr_block: PASS
+      ec2_vpc_valid_enableddnshostnames: PASS
+      ec2_vpc_valid_enablednssupport: PASS
+      ec2_vpc_valid_tenancy: PASS
+      ec2_vpc_valid_deletion_policy: PASS
+      ec2_vpc_valid_updatereplace_policy: PASS
+      ec2_vpc_tag_name_exists: PASS
+      ec2_vpc_tag_sourcerepourl: PASS

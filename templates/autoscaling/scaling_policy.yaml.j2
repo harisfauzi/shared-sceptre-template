@@ -4,14 +4,14 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for scaling_policy in sceptre_user_data.scaling_policys %}  {# BEGIN {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
+{%- for scaling_policy in sceptre_user_data.scaling_policys %}{# BEGIN {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
 {%- set scaling_policy_name = scaling_policy.name %}
   {{ scaling_policy_name }}:
     Type: AWS::AutoScaling::ScalingPolicy
     DeletionPolicy: {{ scaling_policy.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ scaling_policy.update_replace_policy | default('Delete') }}
     Properties:
-      AutoScalingGroupName: String
+      AutoScalingGroupName: {{ scaling_policy.auto_scaling_group_name | trim }}
 {%- if scaling_policy.adjustment_type is defined %}
       AdjustmentType: {{ scaling_policy.adjustment_type }}
 {%- endif %}
@@ -30,7 +30,7 @@ Resources:
 {%- if scaling_policy.policy_type is defined %}
       PolicyType: {{ scaling_policy.policy_type }}
 {%- endif %}
-{%- if scaling_policy.predictive_scaling_configuration is defined %}  {# BEGIN {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
+{%- if scaling_policy.predictive_scaling_configuration is defined %}{# BEGIN {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
       PredictiveScalingConfiguration:
         MetricSpecifications:
 {%- for metric_specification in scaling_policy.predictive_scaling_configuration.metric_specifications %}
@@ -53,7 +53,7 @@ Resources:
             PredefinedScalingMetricSpecification:
               PredefinedMetricType: {{ metric_specification.predefined_load_metrics_specification.predefined_metric_type }}
 {%- if metric_specification.predefined_load_metrics_specification.resource_label is defined %}
-              ResourceLabel: String
+              ResourceLabel: {{ metric_specification.predefined_load_metrics_specification.resource_label }}
 {%- endif %}
 {%- endif %}
 {%- endfor %}
@@ -69,7 +69,7 @@ Resources:
 {%- if scaling_policy.predictive_scaling_configuration.scheduling_buffer_time is defined %}
         SchedulingBufferTime: {{ scaling_policy.predictive_scaling_configuration.scheduling_buffer_time }}
 {%- endif %}
-{%- endif %}  {# END {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
+{%- endif %}{# END {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
 {%- if scaling_policy.scaling_adjustment is defined %}
       ScalingAdjustment: {{ scaling_policy.scaling_adjustment }}
 {%- endif %}
@@ -94,7 +94,7 @@ Resources:
           Namespace: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.namespace }}
           Statistic: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.statistic }}
           Dimensions:
-{%- for dimension scaling_policy.target_tracking_configuration.customized_metrics_specification.dimensions %}
+{%- for dimension in scaling_policy.target_tracking_configuration.customized_metrics_specification.dimensions %}
             - Name: {{ dimension.name }}
               Value: {{ dimension.value }}
 {%- endfor %}
@@ -107,13 +107,13 @@ Resources:
 {%- endif %}
 {%- if scaling_policy.target_tracking_configuration.predefined_metric_specification is defined %}
         PredefinedMetricSpecification:
-          PredefinedMetricType: {{ scaling_policy.target_tracking_configuration.predefined_metric_type }}
-{%- if scaling_policy.target_tracking_configuration.resource_label is defined %}
-          ResourceLabel: {{ scaling_policy.target_tracking_configuration.resource_label }}
+          PredefinedMetricType: {{ scaling_policy.target_tracking_configuration.predefined_metric_specification.predefined_metric_type }}
+{%- if scaling_policy.target_tracking_configuration.predefined_metric_specification.resource_label is defined %}
+          ResourceLabel: {{ scaling_policy.target_tracking_configuration.predefined_metric_specification.resource_label }}
 {%- endif %}
 {%- endif %}
 {%- endif %}
-{%- endfor %}  {# END {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
+{%- endfor %}{# END {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
 
 Outputs:
 {%- for scaling_policy in sceptre_user_data.scaling_policys %}

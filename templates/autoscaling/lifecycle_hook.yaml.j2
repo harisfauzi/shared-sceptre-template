@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %}  {# BEGIN {%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %} #}
+{%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %}{# BEGIN {%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %} #}
 {%- set lifecycle_hook_name = lifecycle_hook.name %}
   {{ lifecycle_hook_name }}:
     Type: AWS::AutoScaling::LifecycleHook
@@ -31,7 +31,7 @@ Resources:
 {%- if lifecycle_hook.role_arn is defined %}
       RoleARN: {{ lifecycle_hook.role_arn }}
 {%- endif %}
-{%- endfor %}  {# END {%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %} #}
+{%- endfor %}{# END {%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %} #}
 
 Outputs:
 {%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %}

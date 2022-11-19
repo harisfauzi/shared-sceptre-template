@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for repository in sceptre_user_data.repositories %}  {# BEGIN {%- for repository in sceptre_user_data.repositories %} #}
+{%- for repository in sceptre_user_data.repositories %}{# BEGIN {%- for repository in sceptre_user_data.repositories %} #}
 {%- set repository_name = repository.name %}
   {{ repository_name }}:
     Type: AWS::CodeCommit::Repository
@@ -12,51 +12,51 @@ Resources:
     UpdateReplacePolicy: {{ repository.update_replace_policy | default('Delete') }}
     Properties:
       RepositoryName: {{ repository.repository_name }}
-{%- if repository.code is defined %}  {## BEGIN {%- if repository.code is defined %} #}
+{%- if repository.code is defined %}{## BEGIN {%- if repository.code is defined %} #}
       Code:
-{%- if repository.code.branch_name is defined %}  {### BEGIN {%- if repository.code.branch_name is defined %} #}
+{%- if repository.code.branch_name is defined %}{### BEGIN {%- if repository.code.branch_name is defined %} #}
         BranchName: {{ repository.code.branch_name }}
-{%- endif %}  {### END {%- if repository.code.branch_name is defined %} #}
+{%- endif %}{### END {%- if repository.code.branch_name is defined %} #}
         S3:
           Bucket: {{ repository.code.s3.bucket }}
           Key: {{ repository.code.s3.key }}
-{%- if repository.code.s3.object_version is defined %}  {### BEGIN {%- if repository.code.s3.object_version is defined %} #}
+{%- if repository.code.s3.object_version is defined %}{### BEGIN {%- if repository.code.s3.object_version is defined %} #}
           ObjectVersion: {{ repository.code.s3.object_version }}
-{%- endif %}  {### END {%- if repository.code.s3.object_version is defined %} #}
-{%- endif %}  {## END {%- if repository.code is defined %} #}
-{%- if repository.repository_description is defined %}  {## BEGIN {%- if repository.repository_description is defined %} #}
+{%- endif %}{### END {%- if repository.code.s3.object_version is defined %} #}
+{%- endif %}{## END {%- if repository.code is defined %} #}
+{%- if repository.repository_description is defined %}{## BEGIN {%- if repository.repository_description is defined %} #}
       RepositoryDescription: {{ repository.repository_description }}
-{%- endif %}  {## END {%- if repository.repository_description is defined %} #}
+{%- endif %}{## END {%- if repository.repository_description is defined %} #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if repository.tags is defined %}  {## BEGIN {%- if repository.tags is defined %} #}
-{%- for key,value in repository.tags.items() %}  {### BEGIN {%- for key,value in repository.tags.items() %} #}
+{%- if repository.tags is defined %}{## BEGIN {%- if repository.tags is defined %} #}
+{%- for key,value in repository.tags.items() %}{### BEGIN {%- for key,value in repository.tags.items() %} #}
         - Key: {{ key }}
           Value: {{ value }}
-{%- endfor %}  {### END {%- for key,value in repository.tags.items() %} #}
-{%- endif %}  {## END {%- if repository.tags is defined %} #}
-{%- if repository.triggers is defined %}  {## BEGIN {%- if repository.triggers is defined %} #}
+{%- endfor %}{### END {%- for key,value in repository.tags.items() %} #}
+{%- endif %}{## END {%- if repository.tags is defined %} #}
+{%- if repository.triggers is defined %}{## BEGIN {%- if repository.triggers is defined %} #}
       Triggers:
-{%- for repository_trigger in repository.triggers %}  {### BEGIN {%- for repository_trigger in repository.triggers %} #}
+{%- for repository_trigger in repository.triggers %}{### BEGIN {%- for repository_trigger in repository.triggers %} #}
         - Name: {{ repository_trigger.name }}
           DestinationArn: {{ repository_trigger.destination_arn }}
           Events:
-{%- for event in repository_trigger.events %}  {#### BEGIN {%- for event in repository_trigger.events %} #}
+{%- for event in repository_trigger.events %}{#### BEGIN {%- for event in repository_trigger.events %} #}
             - {{ event }}
-{%- endfor %}  {#### END {%- for event in repository_trigger.events %} #}
-{%- if repository_trigger.branches is defined %}   {#### BEGIN {%- if repository_trigger.branches is defined %} #}
+{%- endfor %}{#### END {%- for event in repository_trigger.events %} #}
+{%- if repository_trigger.branches is defined %}{#### BEGIN {%- if repository_trigger.branches is defined %} #}
           Branches:
-{%- for branch in repository_trigger.branches %}  {##### BEGIN {%- for branch in repository_trigger.branches %} #}
+{%- for branch in repository_trigger.branches %}{##### BEGIN {%- for branch in repository_trigger.branches %} #}
             - {{ branch }}
-{%- endfor %}  {##### END {%- for branch in repository_trigger.branches %} #}
-{%- endif %}  {#### END {%- if repository_trigger.branches is defined %} #}
-{%- if repository_trigger.custom_data is defined %}  {#### BEGIN {%- if repository_trigger.custom_data is defined %} #}
+{%- endfor %}{##### END {%- for branch in repository_trigger.branches %} #}
+{%- endif %}{#### END {%- if repository_trigger.branches is defined %} #}
+{%- if repository_trigger.custom_data is defined %}{#### BEGIN {%- if repository_trigger.custom_data is defined %} #}
           CustomData: {{ repository_trigger.custom_data }}
-{%- endif %}  {#### END {%- if repository_trigger.custom_data is defined %} #}
-{%- endfor %}  {### END {%- for repository_trigger in repository.triggers %} #}
-{%- endif %}  {## END {%- if repository.triggers is defined %} #}
-{%- endfor %}  {# END {%- for repository in sceptre_user_data.repositories %} #}
+{%- endif %}{#### END {%- if repository_trigger.custom_data is defined %} #}
+{%- endfor %}{### END {%- for repository_trigger in repository.triggers %} #}
+{%- endif %}{## END {%- if repository.triggers is defined %} #}
+{%- endfor %}{# END {%- for repository in sceptre_user_data.repositories %} #}
 
 Outputs:
 {%- for repository in sceptre_user_data.repositories %}

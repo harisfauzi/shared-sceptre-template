@@ -1,0 +1,45 @@
+---
+Description: WAF WebACL(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for web_acl in sceptre_user_data.web_acls %}
+{%- set web_acl_name = web_acl.name %}
+  {{ web_acl_name }}:
+    Type: AWS::WAF::WebACL
+    DeletionPolicy: {{ web_acl.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ web_acl.update_replace_policy | default('Delete') }}
+    Properties:
+      DefaultAction:
+        Type: {{ web_acl.default_action.type }}
+      MetricName: {{ web_acl.metric_name }}
+      Name: {{ web_acl.web_acl_name }}
+{%- if web_acl.rules is defined %}
+      Rules:
+{%- for rule in web_acl.rules %}
+        -
+          Priority: {{ rule.priority }}
+          RuleId: {{ rule.rule_id | trim }}
+{%- if rule.action is defined %}
+          Action:
+            Type: {{ rule.action.type }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for web_acl in sceptre_user_data.web_acls %}
+{%- set web_acl_name = web_acl.name %}
+  {{ web_acl_name }}:
+    Description: The ID for {{ web_acl_name }}
+    Value:
+      Ref: {{ web_acl_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}"
+
+{%- endfor %}

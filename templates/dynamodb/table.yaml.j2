@@ -1,0 +1,185 @@
+---
+Description: DynamoDB Table(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for table in sceptre_user_data.tables %}
+{%- set table_name = table.name %}
+  {{ table_name }}:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: {{ table.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ table.update_replace_policy | default('Delete') }}
+    Properties:
+      KeySchema:
+{%- for schema in table.key_schema %}
+        - AttributeName: {{ schema.attribute_name }}
+          KeyType: {{ schema.key_type }}
+{%- endfor %}
+      AttributeDefinitions:
+{%- for attribute_definition in table.attribute_definitions %}
+        - AttributeName: {{ attribute_definition.attribute_name }}
+          AttributeType: {{ attribute_definition.attribute_type }}
+{%- endfor %}
+{%- if table.billing_mode is defined %}
+      BillingMode: {{ table.billing_mode }}
+{%- endif %}
+{%- if table.contributor_insights_specification is defined %}
+      ContributorInsightsSpecification:
+        Enabled: {{ table.contributor_insights_specification.enabled }}
+{%- endif %}
+{%- if table.global_secondary_indexes is defined %}
+      GlobalSecondaryIndexes:
+{%- for index in table.global_secondary_indexes %}{# BEGIN {%- for index in table.global_secondary_indexes %} #}
+        - IndexName: {{ index.index_name }}
+          KeySchema:
+{%- for schema in index.key_schema %}
+            - AttributeName: {{ schema.attribute_name }}
+              KeyType: {{ schema.key_type }}
+{%- endfor %}
+          Projection:
+{%- if index.projection.non_key_attributes is defined %}
+            NonKeyAttributes:
+{%- for item in index.non_key_attributes %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if index.projection.projection_type is defined %}
+            ProjectionType: {{ index.projection_type }}
+{%- endif %}
+{%- if index.contributor_insights_specification is defined %}
+          ContributorInsightsSpecification:
+            Enabled: {{ index.contributor_insights_specification }}
+{%- endif %}
+{%- if index.provisioned_throughput is defined %}
+          ProvisionedThroughput:
+            ReadCapacityUnits: {{ index.provisioned_throughput.read_capacity_units }}
+            WriteCapacityUnits: {{ index.provisioned_throughput.write_capacity_units }}
+{%- endif %}
+{%- endfor %}{# END {%- for index in table.global_secondary_indexes %} #}
+{%- endif %}
+{%- if table.import_source_specification is defined %}
+      ImportSourceSpecification:
+        InputFormat: {{ table.import_source_specification.input_format }}
+        S3BucketSource:
+          S3Bucket: {{ table.import_source_specification.s3_bucket_source.s3_bucket }}
+{%- if table.import_source_specification.s3_bucket_source.s3_bucket_owner is defined %}
+          S3BucketOwner: {{ table.import_source_specification.s3_bucket_source.s3_bucket_owner }}
+{%- endif %}
+{%- if table.import_source_specification.s3_bucket_source.s3_key_prefix is defined %}
+          S3KeyPrefix: {{ table.import_source_specification.s3_bucket_source.s3_key_prefix }}
+{%- endif %}
+{%- if table.import_source_specification.input_compression_type is defined %}
+        InputCompressionType: {{ table.import_source_specification.input_compression_type }}
+{%- endif %}
+{%- if table.import_source_specification.input_format_options is defined %}
+        InputFormatOptions:
+{%- if table.import_source_specification.input_format_options.csv is defined %}
+          Csv:
+{%- if table.import_source_specification.input_format_options.csv.delimiter is defined %}
+            Delimiter: {{ table.import_source_specification.input_format_options.csv.delimiter }}
+{%- endif %}
+{%- if table.import_source_specification.input_format_options.csv.header_list is defined %}
+            HeaderList:
+{%- for header in table.import_source_specification.input_format_options.csv.header_list %}
+              - {{ header }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- endif %}
+{%- if table.kinesis_stream_specification is defined %}
+      KinesisStreamSpecification:
+        StreamArn: {{ table.kinesis_stream_specification.stream_arn }}
+{%- endif %}
+{%- if table.local_secondary_indexes is defined %}
+      LocalSecondaryIndexes:
+{%- for index in table.local_secondary_indexes %}
+        - IndexName: {{ index.index_name }}
+          KeySchema:
+{%- for schema in index.key_schema %}
+            - AttributeName: {{ schema.attribute_name }}
+              KeyType: {{ schema.key_type }}
+{%- endfor %}
+          Projection:
+{%- if index.projection.non_key_attributes is defined %}
+            NonKeyAttributes:
+{%- for item in index.projection.non_key_attributes %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if index.projection.projection_type is defined %}
+            ProjectionType: {{ index.projection.projection_type }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if table.point_in_time_recovery_specification is defined %}
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: {{ table.point_in_time_recovery_specification.point_in_time_recovery_enabled }}
+{%- endif %}
+{%- if table.provisioned_throughput is defined %}
+      ProvisionedThroughput:
+        ReadCapacityUnits: {{ table.provisioned_throughput.read_capacity_units }}
+        WriteCapacityUnits: {{ table.provisioned_throughput.write_capacity_units }}
+{%- endif %}
+{%- if table.sse_specification is defined %}
+      SSESpecification:
+        SSEEnabled: {{ table.sse_specification.sse_enabled }}
+{%- if table.sse_specification.kms_master_key_id is defined %}
+        KMSMasterKeyId: {{ table.sse_specification.kms_master_key_id }}
+{%- endif %}
+{%- if table.sse_specification.sse_type is defined %}
+        SSEType: {{ table.sse_specification.sse_type }}
+{%- endif %}
+{%- endif %}
+{%- if table.stream_specification is defined %}
+      StreamSpecification:
+        StreamViewType: {{ table.stream_specification.stream_view_type }}
+{%- endif %}
+{%- if table.table_class is defined %}
+      TableClass: {{ table.table_class }}
+{%- endif %}
+{%- if table.table_name is defined %}
+      TableName: {{ table.table_name }}
+{%- endif %}
+{%- if table.time_to_live_specification is defined %}
+      TimeToLiveSpecification:
+        AttributeName: {{ table.time_to_live_specification.attribute_name }}
+        Enabled: {{ table.time_to_live_specification.enabled }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+{%- for table in sceptre_user_data.tables %}
+{%- set table_name = table.name %}
+  {{ table_name }}:
+    Description: Table Name for {{ table_name }}
+    Value:
+      Ref: {{ table_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ table_name }}"
+
+  {{ table_name }}Arn:
+    Description: The ARN for {{ table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ table_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ table_name }}-Arn"
+
+{%- if table.stream_specification is defined %}
+  {{ table_name }}StreamArn:
+    Description: The ARN of the DynamoDB stream for {{ table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ table_name }}
+        - StreamArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ table_name }}-StreamArn"
+{%- endif %}
+{%- endfor %}

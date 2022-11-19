@@ -32,13 +32,13 @@ Resources:
 {%- endif %}
 {%- endfor %}
 {%- endif %}
-{%- if cluster.configuration is defined %}  {# BEGIN {%- if cluster.configuration is defined %} #}
+{%- if cluster.configuration is defined %}{# BEGIN {%- if cluster.configuration is defined %} #}
       Configuration:
         ExecuteCommandConfiguration:
 {%- if cluster.configuration.execute_command_configuration.kms_key_id is defined %}
           KmsKeyId: {{ cluster.configuration.execute_command_configuration.kms_key_id | trim }}
 {%- endif %}
-{%- if cluster.configuration.execute_command_configuration.log_configuration is defined %}  {# BEGIN {%- if cluster.configuration.execute_command_configuration.log_configuration is defined %} #}
+{%- if cluster.configuration.execute_command_configuration.log_configuration is defined %}{# BEGIN {%- if cluster.configuration.execute_command_configuration.log_configuration is defined %} #}
           LogConfiguration:
 {%- if cluster.configuration.execute_command_configuration.log_configuration.cloud_watch_encryption_enabled is defined %}
             CloudWatchEncryptionEnabled: {{ cluster.configuration.execute_command_configuration.log_configuration.cloud_watch_encryption_enabled }}
@@ -55,12 +55,12 @@ Resources:
 {%- if cluster.configuration.execute_command_configuration.log_configuration.s3_key_prefix is defined %}
             S3KeyPrefix: {{ cluster.configuration.execute_command_configuration.log_configuration.s3_key_prefix }}
 {%- endif %}
-{%- endif %}  {# END {%- if cluster.configuration.execute_command_configuration.log_configuration is defined %} #}
+{%- endif %}{# END {%- if cluster.configuration.execute_command_configuration.log_configuration is defined %} #}
 {%- if cluster.configuration.execute_command_configuration.logging is defined %}
           Logging: {{ cluster.configuration.execute_command_configuration.logging }}
 {%- endif %}
-{%- endif %}  {# END {%- if cluster.configuration is defined %} #}
-{%- if cluster.default_capacity_provider_strategy is defined %}  {# BEGIN {%- if cluster.default_capacity_provider_strategy is defined %} #}
+{%- endif %}{# END {%- if cluster.configuration is defined %} #}
+{%- if cluster.default_capacity_provider_strategy is defined %}{# BEGIN {%- if cluster.default_capacity_provider_strategy is defined %} #}
       DefaultCapacityProviderStrategy:
 {%- for strategy in cluster.default_capacity_provider_strategy %}
         -
@@ -74,7 +74,7 @@ Resources:
           Weight: {{ strategy.weight }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}  {# END {%- if cluster.default_capacity_provider_strategy is defined %} #}
+{%- endif %}{# END {%- if cluster.default_capacity_provider_strategy is defined %} #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}

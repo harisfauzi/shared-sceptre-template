@@ -1,0 +1,39 @@
+---
+Description: WAFRegional Rule(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for rule in sceptre_user_data.rules %}
+{%- set rule_name = rule.name %}
+  {{ rule_name }}:
+    Type: AWS::WAFRegional::Rule
+    DeletionPolicy: {{ rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ rule.update_replace_policy | default('Delete') }}
+    Properties:
+      MetricName: {{ rule.metric_name }}
+      Name: {{ rule.rule_name }}
+{%- if rule.predicates is defined %}
+      Predicates:
+{%- for predicate in rule.predicates %}
+        - DataId: {{ predicate.data_id }}
+          Negated: {{ predicate.negated }}
+          Type: {{ predicate.type }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for rule in sceptre_user_data.rules %}
+{%- set rule_name = rule.name %}
+  {{ rule_name }}:
+    Description: The ID for {{ rule_name }}
+    Value:
+      Ref: {{ rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ rule_name }}"
+
+{%- endfor %}

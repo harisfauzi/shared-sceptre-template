@@ -1,0 +1,42 @@
+---
+Description: WAFRegional RateBasedRule(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for rate_based_rule in sceptre_user_data.rate_based_rules %}
+{%- set rate_based_rule_name = rate_based_rule.name %}
+  {{ rate_based_rule_name }}:
+    Type: AWS::WAFRegional::RateBasedRule
+    DeletionPolicy: {{ rate_based_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ rate_based_rule.update_replace_policy | default('Delete') }}
+    Properties:
+      MetricName: {{ rate_based_rule.metric_name }}
+      Name: {{ rate_based_rule.rate_based_rule_name }}
+      RateKey: {{ rate_based_rule.rate_key }}
+      RateLimit: {{ rate_based_rule.rate_limit }}
+{%- if rate_based_rule.match_predicates is defined %}
+      MatchPredicates:
+{%- for match_predicate in rate_based_rule.match_predicates %}
+        -
+          DataId: {{ match_predicate.data_id | trim }}
+          Negated: {{ match_predicate.negated }}
+          Type: {{ match_predicate.type }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for rate_based_rule in sceptre_user_data.rate_based_rules %}
+{%- set rate_based_rule_name = rate_based_rule.name %}
+  {{ rate_based_rule_name }}:
+    Description: The ID for {{ rate_based_rule_name }}
+    Value:
+      Ref: {{ rate_based_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ rate_based_rule_name }}"
+
+{%- endfor %}

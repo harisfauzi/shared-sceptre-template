@@ -1,0 +1,51 @@
+---
+- input:
+    Resources:
+      wafv2webacltest1:
+        Type: AWS::WAFv2::WebACL
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          DefaultAction:
+            Allow:
+          Scope: REGIONAL
+          VisibilityConfig:
+            CloudWatchMetricsEnabled: False
+            MetricName: /test/test1
+            SampledRequestsEnabled: False
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+            - Key: Name
+              Value: test1
+  expectations:
+    rules:
+      wafv2_webacl_valid_scope: PASS
+      wafv2_webacl_valid_defaultaction: PASS
+      wafv2_webacl_valid_defaultaction_option: PASS
+      wafv2_webacl_valid_visibilityconfig: PASS
+      wafv2_webacl_valid_deletion_policy: PASS
+      wafv2_webacl_valid_updatereplace_policy: PASS
+      wafv2_webacl_tag_name_exists: PASS
+      wafv2_webacl_tag_sourcerepourl: PASS
+      wafv2_webacl_check_vc_metricname: PASS
+
+- input:
+    Resources:
+      wafv2webacltest2:
+        Type: AWS::WAFv2::WebACL
+        Properties:
+          DefaultAction:
+            Block:
+          Scope: REGIONAL
+  expectations:
+    rules:
+      wafv2_webacl_valid_scope: PASS
+      wafv2_webacl_valid_defaultaction: PASS
+      wafv2_webacl_valid_defaultaction_option: PASS
+      wafv2_webacl_valid_visibilityconfig: FAIL
+      wafv2_webacl_valid_deletion_policy: SKIP
+      wafv2_webacl_valid_updatereplace_policy: SKIP
+      wafv2_webacl_tag_name_exists: SKIP
+      wafv2_webacl_tag_sourcerepourl: SKIP
+      wafv2_webacl_check_vc_metricname: SKIP
