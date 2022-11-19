@@ -53,8 +53,8 @@ jobs:
             CFNGUARD_RULEDIR=$(_jq .cfnguardruledir)
             /usr/bin/cfn-guard \
               validate \
-              --rules "test/sceptre/${CFNGUARD_RULEDIR}" \
-              --data "test/sceptre/${CFN_TEMPLATE}" \
+              --rules "${CFNGUARD_RULEDIR}" \
+              --data "${CFN_TEMPLATE}" \
               --type CFNTemplate \
               --show-summary all
           done
