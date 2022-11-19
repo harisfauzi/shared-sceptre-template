@@ -33,7 +33,7 @@ Resources:
     Properties:
       VpcId:
         Ref: {{ vpc_name }}
-      AmazonProvidedIpv6CidrBlock: True
+      AmazonProvidedIpv6CidrBlock: true
 {%- endif %}
 {%- endfor %}
 
@@ -66,8 +66,8 @@ Outputs:
       Fn::Select:
         - 0
         - Fn::GetAtt:
-          - {{ vpc_name }}
-          - Ipv6CidrBlocks
+            - {{ vpc_name }}
+            - Ipv6CidrBlocks
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_name }}-CidrBlockIPv6"
