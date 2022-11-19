@@ -3,8 +3,6 @@ let ec2_vpc_test1_vpccidrblock = Resources.ec2vpctest1CidrBlock
 let resource_type_vpc = 'AWS::EC2::VPC'
 let resource_type_vpccudrblock = 'AWS::EC2::VPCCidrBlock'
 let cidr_block = '10.255.252.0/22'
-let enableddnshostnames = 'True'
-let enablednssupport = 'True'
 let valid_instancetenancy = ['dedicated','default','host']
 let allowed_deletion_policy = ['Delete','Retain']
 let allowed_updatereplace_policy = ['Delete','Retain']
@@ -28,12 +26,12 @@ rule ec2_vpc_valid_cidr_block when %ec2_vpc_test1 !empty {
 
 rule ec2_vpc_valid_enableddnshostnames when %ec2_vpc_test1 !empty {
     let ec2_vpc_test1_enableddnshostnames = %ec2_vpc_test1.Properties.EnableDnsHostnames
-    %ec2_vpc_test1_enableddnshostnames == %enableddnshostnames
+    %ec2_vpc_test1_enableddnshostnames is_bool
 }
 
 rule ec2_vpc_valid_enablednssupport when %ec2_vpc_test1 !empty {
     let ec2_vpc_test1_enablednssupport = %ec2_vpc_test1.Properties.EnableDnsSupport
-    %ec2_vpc_test1_enablednssupport == %enablednssupport
+    %ec2_vpc_test1_enablednssupport is_bool
 }
 
 rule ec2_vpc_valid_tenancy when %ec2_vpc_test1 !empty {
