@@ -1,0 +1,71 @@
+---
+- input:
+    Resources:
+      test1:
+        Type: AWS::SSM::Document
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          Content: {'schemaVersion': '0.3', 'description': 'Run a script on Linux instances.', 'parameters': {'AutomationAssumeRole': {'type': 'String', 'description': '(Optional) The ARN of the role that allows Automation to perform the actions on your behalf.', 'default': ''}, 'commands': {'type': 'String', 'description': '(Required) The commands to run or the path to an existing script on the instance.', 'default': 'echo Hello World'}, 'InstanceId': {'type': 'String', 'description': '(Required) The instance ID you want to run commands on.', 'default': ''}}, 'mainSteps': [{'name': 'sayHello', 'action': 'aws:runCommand', 'inputs': {'DocumentName': 'AWS-RunShellScript', 'Parameters': {'InstanceIds': ['{{InstanceId}}'], 'commands': ['{{ commands }}']}}}]}
+          DocumentType: Automation
+          Name: test1
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+            - Key: Name
+              Value: test1
+
+  expectations:
+    rules:
+      ssm_documents_valid_content: PASS
+      ssm_document_valid_resource_type: PASS
+      ssm_document_tag_sourcerepourl: PASS
+
+- input:
+    Resources:
+      test1:
+        Type: AWS::SSM::Document
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          Content:
+            schemaVersion: '0.3'
+            description: 'Run a script on Linux instances.'
+            parameters:
+              AutomationAssumeRole:
+                type: String
+                description: (Optional) The ARN of the role that allows Automation to perform the actions on your behalf.
+                default: ''
+              commands:
+                type: String
+                description: "(Required) The commands to run or the path to an existing script on the instance."
+                default: 'echo Hello World'
+              InstanceId:
+                type: String
+                description: "(Required) The instance ID you want to run commands on."
+                default: ''
+            mainSteps:
+              - name: sayHello
+                action: 'aws:runCommand'
+                inputs:
+                  DocumentName: AWS-RunShellScript
+                  Parameters:
+                    InstanceIds:
+                      - '{{InstanceId}}'
+                    commands:
+                      - "{{ commands }}"              
+
+          DocumentFormat: YAML
+          DocumentType: Automation
+          Name: test1
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+            - Key: Name
+              Value: test1
+
+  expectations:
+    rules:
+      ssm_documents_valid_content: PASS
+      ssm_document_valid_resource_type: PASS
+      ssm_document_tag_sourcerepourl: PASS

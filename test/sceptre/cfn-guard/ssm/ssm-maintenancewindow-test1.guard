@@ -5,7 +5,6 @@ let allowed_updatereplace_policy = ['Delete','Retain']
 let resource_type = 'AWS::SSM::MaintenanceWindow'
 let ssm_maintenancewindow_test1_description = Resources.test1.Properties.Description
 
-let ssm_maintenancewindows = Resources.*[ Type == 'AWS::SSM::MaintenanceWindow' ]
 let git_repo = 'git@github.com:harisfauzi/shared-sceptre-template.git'
 
 rule ssm_maintenancewindow_valid_resource_type when %ssm_maintenancewindowtest1 !empty {
