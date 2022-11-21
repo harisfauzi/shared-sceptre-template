@@ -1,0 +1,172 @@
+---
+- input:
+    Resources:
+      dynamodbtabletest1:
+        Type: AWS::DynamoDB::Table
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          KeySchema:
+            - AttributeName: Album
+              KeyType: HASH
+            - AttributeName: Artist
+              KeyType: RANGE
+          AttributeDefinitions:
+            - AttributeName: Album
+              AttributeType: S
+            - AttributeName: Artist
+              AttributeType: S
+            - AttributeName: Sales
+              AttributeType: N
+            - AttributeName: NumberOfSongs
+              AttributeType: N
+          TableName: dynamodbtabletest1
+          BillingMode: PAY_PER_REQUEST
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+      dynamodbtabletest2:
+        Type: AWS::DynamoDB::Table
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          KeySchema:
+            - AttributeName: Album
+              KeyType: HASH
+            - AttributeName: Artist
+              KeyType: RANGE
+          AttributeDefinitions:
+            - AttributeName: Album
+              AttributeType: S
+            - AttributeName: Artist
+              AttributeType: S
+            - AttributeName: Sales
+              AttributeType: N
+            - AttributeName: NumberOfSongs
+              AttributeType: N
+          GlobalSecondaryIndexes:
+            - IndexName: myGSI1
+              KeySchema:
+                - AttributeName: Sales
+                  KeyType: HASH
+                - AttributeName: Artist
+                  KeyType: RANGE
+              Projection:
+                NonKeyAttributes:
+                  - Album
+                  - NumberOfSongs
+                ProjectionType: INCLUDE
+              ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
+            - IndexName: myGSI2
+              KeySchema:
+                - AttributeName: NumberOfSongs
+                  KeyType: HASH
+                - AttributeName: Sales
+                  KeyType: RANGE
+              Projection:
+                NonKeyAttributes:
+                  - Album
+                  - Artist
+                ProjectionType: INCLUDE
+              ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
+          LocalSecondaryIndexes:
+            - IndexName: myLSI
+              KeySchema:
+                - AttributeName: Album
+                  KeyType: HASH
+                - AttributeName: Sales
+                  KeyType: RANGE
+              Projection:
+                NonKeyAttributes:
+                  - Artist
+                  - NumberOfSongs
+                ProjectionType: INCLUDE
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+          TableName: dynamodbtabletest2
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+  expectations:
+    rules:
+      dynamodb_tables_valid_value: PASS
+      dynamodb_tables_billingmode: PASS
+- input:
+    Resources:
+      dynamodbtabletest2:
+        Type: AWS::DynamoDB::Table
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          KeySchema:
+            - AttributeName: Album
+              KeyType: HASH
+            - AttributeName: Artist
+              KeyType: RANGE
+          AttributeDefinitions:
+            - AttributeName: Album
+              AttributeType: S
+            - AttributeName: Artist
+              AttributeType: S
+            - AttributeName: Sales
+              AttributeType: N
+            - AttributeName: NumberOfSongs
+              AttributeType: N
+          GlobalSecondaryIndexes:
+            - IndexName: myGSI1
+              KeySchema:
+                - AttributeName: Sales
+                  KeyType: HASH
+                - AttributeName: Artist
+                  KeyType: RANGE
+              Projection:
+                NonKeyAttributes:
+                  - Album
+                  - NumberOfSongs
+                ProjectionType: INCLUDE
+              ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
+            - IndexName: myGSI2
+              KeySchema:
+                - AttributeName: NumberOfSongs
+                  KeyType: HASH
+                - AttributeName: Sales
+                  KeyType: RANGE
+              Projection:
+                NonKeyAttributes:
+                  - Album
+                  - Artist
+                ProjectionType: INCLUDE
+              ProvisionedThroughput:
+                ReadCapacityUnits: 5
+                WriteCapacityUnits: 5
+          LocalSecondaryIndexes:
+            - IndexName: myLSI
+              KeySchema:
+                - AttributeName: Album
+                  KeyType: HASH
+                - AttributeName: Sales
+                  KeyType: RANGE
+              Projection:
+                NonKeyAttributes:
+                  - Artist
+                  - NumberOfSongs
+                ProjectionType: INCLUDE
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+          TableName: dynamodbtabletest2
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+
+  expectations:
+    rules:
+      dynamodb_tables_valid_value: PASS
+      dynamodb_tables_billingmode: SKIP

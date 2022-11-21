@@ -1,0 +1,70 @@
+---
+template_path: ssm/document.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  documents:
+    - name: test1
+      document_name: test1
+      document_type: Automation
+      content_json:
+        schemaVersion: '0.3'
+        description: 'Run a script on Linux instances.'
+        parameters:
+          AutomationAssumeRole:
+            type: String
+            description: (Optional) The ARN of the role that allows Automation to perform the actions on your behalf.
+            default: ''
+          commands:
+            type: String
+            description: "(Required) The commands to run or the path to an existing script on the instance."
+            default: 'echo Hello World'
+          InstanceId:
+            type: String
+            description: "(Required) The instance ID you want to run commands on."
+            default: ''
+        mainSteps:
+          - name: sayHello
+            action: 'aws:runCommand'
+            inputs:
+              DocumentName: AWS-RunShellScript
+              Parameters:
+                InstanceIds:
+                  - '{% raw %}{{InstanceId}}{% endraw %}'
+                commands:
+                  - "{% raw %}{{ commands }}{% endraw %}"              
+
+    - name: test2
+      document_name: test2
+      document_format: YAML
+      document_type: Automation
+      content: |
+        schemaVersion: '0.3'
+        description: 'Run a script on Linux instances.'
+        parameters:
+          AutomationAssumeRole:
+            type: String
+            description: (Optional) The ARN of the role that allows Automation to perform the actions on your behalf.
+            default: ''
+          commands:
+            type: String
+            description: "(Required) The commands to run or the path to an existing script on the instance."
+            default: 'echo Hello World'
+          InstanceId:
+            type: String
+            description: "(Required) The instance ID you want to run commands on."
+            default: ''
+        mainSteps:
+          - name: sayHello
+            action: 'aws:runCommand'
+            inputs:
+              DocumentName: AWS-RunShellScript
+              Parameters:
+                InstanceIds:
+                  - '{% raw %}{{InstanceId}}{% endraw %}'
+                commands:
+                  - "{% raw %}{{ commands }}{% endraw %}"              
+
+stack_tags:
+  Test: ssm-document

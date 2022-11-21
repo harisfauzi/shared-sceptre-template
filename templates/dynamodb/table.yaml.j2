@@ -40,12 +40,12 @@ Resources:
           Projection:
 {%- if index.projection.non_key_attributes is defined %}
             NonKeyAttributes:
-{%- for item in index.non_key_attributes %}
+{%- for item in index.projection.non_key_attributes %}
               - {{ item }}
 {%- endfor %}
 {%- endif %}
 {%- if index.projection.projection_type is defined %}
-            ProjectionType: {{ index.projection_type }}
+            ProjectionType: {{ index.projection.projection_type }}
 {%- endif %}
 {%- if index.contributor_insights_specification is defined %}
           ContributorInsightsSpecification:
@@ -146,6 +146,15 @@ Resources:
       TimeToLiveSpecification:
         AttributeName: {{ table.time_to_live_specification.attribute_name }}
         Enabled: {{ table.time_to_live_specification.enabled }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if table.tags is defined %}
+{%- for key,value in table.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
 {%- endif %}
 
 {%- endfor %}
