@@ -1,0 +1,26 @@
+let dynamodb_tables = Resources.*[ Type == 'AWS::DynamoDB::Table' ]
+#let billing_mode =  Resources.*[ Type == 'AWS::DynamoDB::Table' ].Properties.BillingMode
+let valid_billingmode = ['PROVISIONED','PAY_PER_REQUEST']
+
+rule dynamodb_tables_valid_value when %dynamodb_tables !empty {
+  %dynamodb_tables {
+    Properties.AttributeDefinitions[*] exists
+    Properties.KeySchema[*] exists
+  }
+}
+
+#rule dynamodb_tables_billingmode when  %dynamodb_tables !empty {
+#  %dynamodb_tables {
+#    Properties.BillingMode[*] exists
+#    #Properties.BillingMode[*] in %valid_billingmode
+#  }
+#}
+
+rule dynamodb_tables_billingmode when  %dynamodb_tables !empty {
+  %dynamodb_tables {
+    let billing_mode = some Properties.BillingMode
+    when %billing_mode !empty {
+      %billing_mode in %valid_billingmode
+    }
+  }
+}
