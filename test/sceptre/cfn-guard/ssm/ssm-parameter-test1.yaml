@@ -11,11 +11,12 @@
           Name: '/test/one'
           Tags:
             SourceRepoURL: git@github.com:harisfauzi/shared-sceptre-template.git
-            "Name": "ssmparametertest1"
+            Name: "ssmparametertest1"
   expectations:
     rules:
+      ssm_parameters_valid_type: PASS
+      ssm_parameters_valid_value: PASS
       ssm_parameter_valid_resource_type: PASS
-      ssm_parameter_valid_type: PASS
       ssm_parameter_valid_value: PASS
       ssm_parameter_valid_deletion_policy: PASS
       ssm_parameter_valid_updatereplace_policy: PASS
@@ -32,13 +33,14 @@
           Name: '/test/one'
   expectations:
     rules:
+      ssm_parameters_valid_type: SKIP
+      ssm_parameters_valid_value: SKIP
       ssm_parameter_valid_resource_type: FAIL
-      ssm_parameter_valid_type: FAIL
-      ssm_parameter_valid_value: FAIL
-      ssm_parameter_valid_deletion_policy: FAIL
-      ssm_parameter_valid_updatereplace_policy: FAIL
-      ssm_parameter_tag_name_exists: FAIL
-      ssm_parameter_tag_sourcerepourl: FAIL
+      ssm_parameter_valid_value: SKIP
+      ssm_parameter_valid_deletion_policy: SKIP
+      ssm_parameter_valid_updatereplace_policy: SKIP
+      ssm_parameter_tag_name_exists: SKIP
+      ssm_parameter_tag_sourcerepourl: SKIP
 
 - input:
     Resources:
@@ -54,8 +56,9 @@
             SourceRepoURL: None
   expectations:
     rules:
+      ssm_parameters_valid_type: PASS
+      ssm_parameters_valid_value: PASS
       ssm_parameter_valid_resource_type: PASS
-      ssm_parameter_valid_type: PASS
       ssm_parameter_valid_value: PASS
       ssm_parameter_valid_deletion_policy: PASS
       ssm_parameter_valid_updatereplace_policy: PASS

@@ -1,0 +1,15 @@
+let allowed_type = ['String','StringList']
+let ssm_parameters = Resources.*[ Type == 'AWS::SSM::Parameter' ]
+
+rule ssm_parameters_valid_type when %ssm_parameters !empty {
+  %ssm_parameters {
+    Properties.Type[*] exists
+    Properties.Type[*] in %allowed_type
+  }
+}
+
+rule ssm_parameters_valid_value when %ssm_parameters !empty {
+  %ssm_parameters {
+    Properties.Value[*] exists
+  }
+}

@@ -1,0 +1,45 @@
+---
+template_path: ssm/maintenance_window.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  maintenance_windows:
+    - name: test1
+      allow_unassociated_targets: 'false'
+      cutoff: 1
+      duration: 1
+      maintenance_window_name: test1
+      schedule: 'cron(0 4 ? * SUN *)'
+      description: Test1 description
+
+    - name: test2
+      allow_unassociated_targets: 'true'
+      cutoff: 1
+      duration: 1
+      maintenance_window_name: test1
+      schedule: 'at(2023-05-14T15:55:00)'
+      description: Test2 description
+      end_date: '2022-11-30'
+      schedule_offset: 3
+      schedule_timezone: 'Australia/Brisbane'
+      start_date: '2022-11-01'
+      tags:
+        Name: test2
+
+    - name: test3
+      allow_unassociated_targets: 'true'
+      cutoff: 1
+      duration: 1
+      maintenance_window_name: test1
+      schedule: 'cron(0 4 ? * SUN *)'
+      description: Test3 description
+      end_date: '2022-11-30'
+      schedule_offset: 3
+      schedule_timezone: 'Australia/Brisbane'
+      start_date: '2022-11-01'
+      tags:
+        Name: test3
+
+stack_tags:
+  Test: ssm-maintenancewindow

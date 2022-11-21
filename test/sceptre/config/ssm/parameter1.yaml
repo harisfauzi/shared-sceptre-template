@@ -1,0 +1,36 @@
+---
+template_path: ssm/parameter.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  parameters:
+    - name: ssmparametertest1
+      parameter_name: /test/one
+      type: String
+      value: one
+      tags:
+        Name: test1
+
+    - name: ssmparametertest2
+      allow_pattern: ^ami-\s$
+      data_type: text
+      description: Dummy AMI ID
+      parameter_name: /test/ssmparametertest2
+      policies: '[{"Type":"Expiration","Version":"1.0","Attributes":{"Timestamp":"2022-12-31T22:00:00.000Z"}},{"Type":"ExpirationNotification","Version":"1.0","Attributes":{"Before":"10","Unit":"Days"}},{"Type":"NoChangeNotification","Version":"1.0","Attributes":{"After":"10","Unit":"Days"}}]'
+      type: String
+      value: ami-123456890
+      tags:
+        Name: ssmparametertest2
+
+    - name: ssmparametertest3
+      description: Dummy List
+      parameter_name: /test/ssmparametertest3
+      policies: '[{"Type":"Expiration","Version":"1.0","Attributes":{"Timestamp":"2022-12-31T22:00:00.000Z"}},{"Type":"ExpirationNotification","Version":"1.0","Attributes":{"Before":"10","Unit":"Days"}},{"Type":"NoChangeNotification","Version":"1.0","Attributes":{"After":"10","Unit":"Days"}}]'
+      type: StringList
+      value: 'ami-123456890,not ami,yet another AMI ID'
+      tags:
+        Name: ssmparametertest3
+
+stack_tags:
+  Test: ssm-parameter

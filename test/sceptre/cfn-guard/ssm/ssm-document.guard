@@ -1,0 +1,8 @@
+let allowed_document_format = ['JSON','TEXT','YAML']
+let ssm_documents = Resources.*[ Type == 'AWS::SSM::Document' ]
+
+rule ssm_documents_valid_content when %ssm_documents !empty {
+  %ssm_documents {
+    Properties.Content[*] exists
+  }
+}

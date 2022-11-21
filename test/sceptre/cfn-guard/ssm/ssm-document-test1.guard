@@ -1,0 +1,14 @@
+let resource_type = 'AWS::SSM::Document'
+let ssm_documenttest1 = Resources.ssmdocumenttest1
+let git_repo = 'git@github.com:harisfauzi/shared-sceptre-template.git'
+
+rule ssm_document_valid_resource_type when %ssm_documenttest1 !empty {
+  let ssm_documenttest1_resource_type = %ssm_documenttest1.Type
+  %ssm_documenttest1_resource_type == %resource_type
+}
+
+rule ssm_document_tag_sourcerepourl when ssm_document_valid_resource_type {
+  let ssm_document_test1_tag_sourcerepourl = %ssm_documenttest1.Properties.Tags[ Key == 'SourceRepoURL' ]
+  %ssm_document_test1_tag_sourcerepourl exists
+  %ssm_document_test1_tag_sourcerepourl.Value == %git_repo
+}

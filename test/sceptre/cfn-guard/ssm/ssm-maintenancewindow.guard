@@ -1,0 +1,60 @@
+let allowed_scope = ['CLOUDFRONT','REGIONAL']
+let allowed_deletion_policy = ['Delete','Retain']
+let allowed_updatereplace_policy = ['Delete','Retain']
+let ssm_maintenancewindows = Resources.*[ Type == 'AWS::SSM::MaintenanceWindow' ]
+
+rule ssm_maintenancewindows_valid_aut when %ssm_maintenancewindows !empty {
+  %ssm_maintenancewindows {
+    Properties.AllowUnassociatedTargets[*] exists
+    Properties.AllowUnassociatedTargets[*] is_bool
+  }
+}
+
+rule ssm_maintenancewindows_valid_cutoff when %ssm_maintenancewindows !empty {
+  %ssm_maintenancewindows {
+    Properties.Cutoff[*] exists
+    Properties.Cutoff[*] is_int
+  }
+}
+
+rule ssm_maintenancewindows_valid_duration when %ssm_maintenancewindows !empty {
+  %ssm_maintenancewindows {
+    Properties.Duration[*] exists
+    Properties.Duration[*] is_int
+  }
+}
+
+rule ssm_maintenancewindows_valid_name when %ssm_maintenancewindows !empty {
+  %ssm_maintenancewindows {
+    Properties.Name[*] exists
+    Properties.Name[*] is_string
+  }
+}
+
+rule ssm_maintenancewindows_valid_schedule when %ssm_maintenancewindows !empty {
+  %ssm_maintenancewindows {
+    Properties.Schedule[*] exists
+    Properties.Schedule[*] is_string
+  }
+}
+
+rule ssm_maintenancewindows_valid_description when %ssm_maintenancewindows !empty {
+  %ssm_maintenancewindows {
+    Properties.Description[*] exists
+    Properties.Description[*] is_string
+  }
+}
+
+rule ssm_maintenancewindows_valid_deletion_policy when %ssm_maintenancewindows !empty {
+  %ssm_maintenancewindows {
+    DeletionPolicy[*] exists
+    DeletionPolicy[*] in %allowed_deletion_policy
+  }
+}
+
+rule ssm_maintenancewindow_valid_updatereplace_policy when %ssm_maintenancewindows !empty {
+  %ssm_maintenancewindows {
+    UpdateReplacePolicy[*] exists
+    UpdateReplacePolicy[*] in %allowed_updatereplace_policy
+  }
+}
