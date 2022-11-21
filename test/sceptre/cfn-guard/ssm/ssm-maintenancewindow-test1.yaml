@@ -1,7 +1,7 @@
 ---
 - input:
     Resources:
-      test1:
+      ssmmaintenancewindowtest1:
         Type: AWS::SSM::MaintenanceWindow
         DeletionPolicy: Delete
         UpdateReplacePolicy: Delete
@@ -9,7 +9,7 @@
           AllowUnassociatedTargets: false
           Cutoff: 1
           Duration: 1
-          Name: test1
+          Name: ssmmaintenancewindowtest1
           Schedule: cron(0 4 ? * SUN *)
           Description: Test1 description
           Tags:
@@ -32,7 +32,7 @@
 
 - input:
     Resources:
-      test1:
+      ssmmaintenancewindowtest1:
         Type: AWS::SSM::MaintenanceWindow
         DeletionPolicy: Delete
         UpdateReplacePolicy: Delete
@@ -40,7 +40,7 @@
           AllowUnassociatedTargets: true
           Cutoff: 1
           Duration: 1
-          Name: test1
+          Name: ssmmaintenancewindowtest1
           Schedule: at(2023-05-14T15:55:00)
           Description: Test2 description
           EndDate: 2022-11-30
@@ -51,7 +51,7 @@
             - Key: SourceRepoURL
               Value: git@github.com:harisfauzi/shared-sceptre-template.git
             - Key: Name
-              Value: test1
+              Value: ssmmaintenancewindowtest1
 
   expectations:
     rules:
@@ -69,7 +69,7 @@
 
 - input:
     Resources:
-      test1:
+      ssmmaintenancewindowtest1:
         Type: AWS::SSM::MaintenanceWindow
         DeletionPolicy: Delete
         UpdateReplacePolicy: Delete
@@ -77,7 +77,7 @@
           AllowUnassociatedTargets: true
           Cutoff: 1
           Duration: 1
-          Name: test1
+          Name: ssmmaintenancewindowtest1
           Schedule: cron(0 4 ? * SUN *)
           Description: Test3 description
           EndDate: 2022-11-30
@@ -88,7 +88,7 @@
             - Key: SourceRepoURL
               Value: git@github.com:harisfauzi/shared-sceptre-template.git
             - Key: Name
-              Value: test1
+              Value: ssmmaintenancewindowtest1
 
   expectations:
     rules:
