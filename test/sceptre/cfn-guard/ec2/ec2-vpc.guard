@@ -1,0 +1,15 @@
+let ec2_vpcs = Resources.*[ Type == 'AWS::EC2::VPC' ]
+let vpc_instance_tenancy = Resources.*[ Type == 'AWS::EC2::VPC' ].Properties.InstanceTenancy
+
+let allowed_instance_tenancy = ['dedicated','default','host']
+
+rule ec2_vpcs_required_properties when %ec2_vpcs !empty {
+  let cidr_block = %ec2_vpcs.Properties.CidrBlock
+  let ipv4pam_pool_id = %ec2_vpcs.Properties.Ipv4IpamPoolId
+  %cidr_block exists or
+  %ipv4pam_pool_id exists
+}
+
+rule ec2_vpcs_valid_instance_tenancy when %vpc_instance_tenancy !empty {
+  %vpc_instance_tenancy IN %allowed_instance_tenancy
+}
