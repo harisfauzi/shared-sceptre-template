@@ -8,12 +8,12 @@ sceptre_user_data:
   source_repo_url: '{{git_repo}}'
   internet_gateways:
     - name: vpc1ig
-      vpc_id: !stack_output {{pwd}}/vpc1.yaml::ec2vpctest1
+      vpc_id: !stack_output '{{pwd}}/vpc1.yaml::ec2vpctest1'
       tags:
         Name: mainvpc
         Project: '{{stack_group_config.project_code}}'
     - name: vpc2ig
-      vpc_id: !stack_output {{pwd}}/vpc1.yaml::ec2vpctest2
+      vpc_id: !stack_output '{{pwd}}/vpc1.yaml::ec2vpctest2'
       tags:
         Name: mainvpc
         Project: '{{stack_group_config.project_code}}'
