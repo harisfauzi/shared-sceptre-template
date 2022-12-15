@@ -1,0 +1,73 @@
+---
+Description: Internet Gateway(s) for cfntest
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  vpc1ig:
+    Type: AWS::EC2::InternetGateway
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      Tags:
+        - Key: SourceRepoURL
+          Value: git@github.com:harisfauzi/shared-sceptre-template.git
+        - Key: Name
+          Value: mainvpc
+        - Key: Project
+          Value: cfntest
+  vpc1igVPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        Ref: vpc1ig
+      VpcId: StackOutputec2vpc1yamlec2vpctest1
+  vpc2ig:
+    Type: AWS::EC2::InternetGateway
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      Tags:
+        - Key: SourceRepoURL
+          Value: git@github.com:harisfauzi/shared-sceptre-template.git
+        - Key: Name
+          Value: mainvpc
+        - Key: Project
+          Value: cfntest
+  vpc2igVPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId:
+        Ref: vpc2ig
+      VpcId: StackOutputec2vpc1yamlec2vpctest2
+
+Outputs:
+  vpc1ig:
+    Description: The name for vpc1ig
+    Value:
+      Ref: vpc1ig
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-vpc1ig"
+
+  vpc1igVPCGatewayAttachment:
+    Description: The attachment ID for vpc1igVPCGatewayAttachment
+    Value:
+      Ref: vpc1igVPCGatewayAttachment
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-vpc1igVPCGatewayAttachment"
+  vpc2ig:
+    Description: The name for vpc2ig
+    Value:
+      Ref: vpc2ig
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-vpc2ig"
+
+  vpc2igVPCGatewayAttachment:
+    Description: The attachment ID for vpc2igVPCGatewayAttachment
+    Value:
+      Ref: vpc2igVPCGatewayAttachment
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-vpc2igVPCGatewayAttachment"
