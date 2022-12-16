@@ -1,0 +1,78 @@
+---
+- input:
+    Resources:
+      vpc1ig:
+        Type: AWS::EC2::InternetGateway
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+            - Key: Name
+              Value: mainvpc
+            - Key: Project
+              Value: cfntest
+      vpc1igVPCGatewayAttachment:
+        Type: AWS::EC2::VPCGatewayAttachment
+        Properties:
+          InternetGatewayId:
+            Ref: vpc1ig
+          VpcId: StackOutputec2vpc1yamlec2vpctest1
+
+  expectations:
+    rules:
+      ec2_ig_valid_resource_type: PASS
+      ec2_vpcga_valid_resource_type: PASS
+      vpc_gateway_attachment_required_properties: PASS
+
+- input:
+    Resources:
+      vpc1ig:
+        Type: AWS::EC2::InternetGateway
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+            - Key: Name
+              Value: mainvpc
+            - Key: Project
+              Value: cfntest
+      vpc1igVPCGatewayAttachment:
+        Type: AWS::EC2::TransitGatewayAttachment
+        Properties:
+          VpcId: StackOutputec2vpc1yamlec2vpctest1
+
+  expectations:
+    rules:
+      ec2_ig_valid_resource_type: PASS
+      ec2_vpcga_valid_resource_type: FAIL
+      vpc_gateway_attachment_required_properties: FAIL
+
+- input:
+    Resources:
+      vpc1ig:
+        Type: AWS::EC2::VPNGateway
+        DeletionPolicy: Delete
+        UpdateReplacePolicy: Delete
+        Properties:
+          Tags:
+            - Key: SourceRepoURL
+              Value: git@github.com:harisfauzi/shared-sceptre-template.git
+            - Key: Name
+              Value: mainvpc
+            - Key: Project
+              Value: cfntest
+      vpc1igVPCGatewayAttachment:
+        Type: AWS::EC2::VPCGatewayAttachment
+        Properties:
+          InternetGatewayId:
+            Ref: vpc1ig
+
+  expectations:
+    rules:
+      ec2_ig_valid_resource_type: FAIL
+      ec2_vpcga_valid_resource_type: PASS
+      vpc_gateway_attachment_required_properties: FAIL

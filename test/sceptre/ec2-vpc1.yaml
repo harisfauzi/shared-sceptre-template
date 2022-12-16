@@ -1,0 +1,100 @@
+---
+Description: VPC for cfntest
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  ec2vpctest1:
+    Type: AWS::EC2::VPC
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      CidrBlock: 10.255.252.0/22
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: SourceRepoURL
+          Value: git@github.com:harisfauzi/shared-sceptre-template.git
+        - Key: Name
+          Value: ec2vpctest1
+        - Key: Project
+          Value: cfntest
+  ec2vpctest1CidrBlock:
+    Type: AWS::EC2::VPCCidrBlock
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      VpcId:
+        Ref: ec2vpctest1
+      AmazonProvidedIpv6CidrBlock: true
+  ec2vpctest2:
+    Type: AWS::EC2::VPC
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      CidrBlock: 10.255.252.0/22
+      EnableDnsHostnames: false
+      EnableDnsSupport: false
+      InstanceTenancy: default
+      Tags:
+        - Key: SourceRepoURL
+          Value: git@github.com:harisfauzi/shared-sceptre-template.git
+        - Key: Name
+          Value: ec2vpctest1
+        - Key: Project
+          Value: cfntest
+
+Outputs:
+  ec2vpctest1:
+    Description: VPC ID for ec2vpctest1
+    Value:
+      Ref: ec2vpctest1
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-ec2vpctest1"
+
+  ec2vpctest1CidrBlock:
+    Description: The IPv4 CIDR block for ec2vpctest1
+    Value:
+      Fn::GetAtt:
+        - ec2vpctest1
+        - CidrBlock
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-ec2vpctest1-CidrBlock"
+  ec2vpctest1CidrBlockIPv6:
+    Description: The IPv6 CIDR block for ec2vpctest1
+    Value:
+      Fn::Select:
+        - 0
+        - Fn::GetAtt:
+            - ec2vpctest1
+            - Ipv6CidrBlocks
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-ec2vpctest1-CidrBlockIPv6"
+
+  ec2vpctest1Block:
+    Description: Association ID of VPCCidrBlock for ec2vpctest1
+    Value:
+      Ref: ec2vpctest1CidrBlock
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-ec2vpctest1-Block"
+  ec2vpctest2:
+    Description: VPC ID for ec2vpctest2
+    Value:
+      Ref: ec2vpctest2
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-ec2vpctest2"
+
+  ec2vpctest2CidrBlock:
+    Description: The IPv4 CIDR block for ec2vpctest2
+    Value:
+      Fn::GetAtt:
+        - ec2vpctest2
+        - CidrBlock
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-ec2vpctest2-CidrBlock"
