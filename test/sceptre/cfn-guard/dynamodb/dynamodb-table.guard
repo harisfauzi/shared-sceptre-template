@@ -9,13 +9,6 @@ rule dynamodb_tables_valid_value when %dynamodb_tables !empty {
   }
 }
 
-#rule dynamodb_tables_billingmode when  %dynamodb_tables !empty {
-#  %dynamodb_tables {
-#    Properties.BillingMode[*] exists
-#    #Properties.BillingMode[*] in %valid_billingmode
-#  }
-#}
-
 rule dynamodb_tables_billingmode when  %dynamodb_tables !empty {
   %dynamodb_tables {
     let billing_mode = some Properties.BillingMode

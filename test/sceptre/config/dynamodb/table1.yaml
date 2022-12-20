@@ -1,0 +1,75 @@
+---
+template_path: dynamodb/table.yaml.j2
+
+sceptre_user_data:
+  project_code: '{{ stack_group_config.project_code }}'
+  source_repo_url: '{{git_repo}}'
+  tables:
+    - name: dynamodbtabletest1
+      table_name: dynamodbtabletest1
+      billing_mode: PAY_PER_REQUEST
+      attribute_definitions: 
+        - 
+          attribute_name: 'Album'
+          attribute_type: 'S'
+        - 
+          attribute_name: 'Artist'
+          attribute_type: 'S'
+        - 
+          attribute_name: 'Sales'
+          attribute_type: 'N'
+        - 
+          attribute_name: 'NumberOfSongs'
+          attribute_type: 'N'
+      key_schema:
+        - 
+          attribute_name: 'Album'
+          key_type: 'HASH'
+        - 
+          attribute_name: 'Artist'
+          key_type: 'RANGE'
+      global_secondary_indexes:
+        - index_name: 'myGSI1'
+          key_schema:
+            - attribute_name: 'Sales'
+              key_type: 'HASH'
+            - attribute_name: 'Artist'
+              key_type: 'RANGE'
+          projection:
+            non_key_attributes:
+              - 'Album'
+              - 'NumberOfSongs'
+            projection_type: 'INCLUDE'
+        - index_name: 'myGSI2'
+          key_schema:
+            - attribute_name: 'NumberOfSongs'
+              key_type: 'HASH'
+            - attribute_name: 'Sales'
+              key_type: 'RANGE'
+          projection:
+            non_key_attributes:
+              - 'Album'
+              - 'Artist'
+            projection_type: 'INCLUDE'
+      local_secondary_indexes:
+        - index_name: 'myLSI'
+          key_schema:
+            - attribute_name: 'Album'
+              key_type: 'HASH'
+            - attribute_name: 'Sales'
+              key_type: 'RANGE'
+          projection:
+            non_key_attributes:
+              - 'Artist'
+              - 'NumberOfSongs'
+            projection_type: 'INCLUDE'
+      point_in_time_recovery_specification:
+        point_in_time_recovery_enabled: 'true'
+      table_class: 'STANDARD_INFREQUENT_ACCESS'
+      time_to_live_specification:
+        attribute_name: 'TTLValue'
+        enabled: 'true'
+
+stack_tags:
+  Test: dynamodb-table
+  Name: dynamodb-table-test
