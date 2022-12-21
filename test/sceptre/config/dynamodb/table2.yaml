@@ -1,0 +1,96 @@
+---
+template_path: dynamodb/table.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  tables:
+    - name: dynamodbtabletest2
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      table_name: dynamodbtabletest2
+      billing_mode: PROVISIONED
+      key_schema:
+        - 
+          attribute_name: "Album"
+          key_type: "HASH"
+        - 
+          attribute_name: "Artist"
+          key_type: "RANGE"
+      attribute_definitions: 
+        - 
+          attribute_name: "Album"
+          attribute_type: "S"
+        - 
+          attribute_name: "Artist"
+          attribute_type: "S"
+        - 
+          attribute_name: "Sales"
+          attribute_type: "N"
+        - 
+          attribute_name: "NumberOfSongs"
+          attribute_type: "N"
+      provisioned_throughput:
+        read_capacity_units: 5
+        write_capacity_units: 5
+      global_secondary_indexes:
+        - index_name: "myGSI1"
+          key_schema:
+            - attribute_name: "Sales"
+              key_type: "HASH"
+            - attribute_name: "Artist"
+              key_type: "RANGE"
+          projection:
+            non_key_attributes:
+              - "Album"
+              - "NumberOfSongs"
+            projection_type: "INCLUDE"
+          provisioned_throughput:
+            read_capacity_units: 5
+            write_capacity_units: 5
+          contributor_insights_specification: 'true'
+        - index_name: "myGSI2"
+          key_schema:
+            - attribute_name: "NumberOfSongs"
+              key_type: "HASH"
+            - attribute_name: "Sales"
+              key_type: "RANGE"
+          projection:
+            non_key_attributes:
+              - "Album"
+              - "Artist"
+            projection_type: "INCLUDE"
+          provisioned_throughput:
+            read_capacity_units: 5
+            write_capacity_units: 5
+          contributor_insights_specification: 'true'
+      local_secondary_indexes:
+        - index_name: "myLSI"
+          key_schema:
+            - attribute_name: "Album"
+              key_type: "HASH"
+            - attribute_name: "Sales"
+              key_type: "RANGE"
+          projection:
+            non_key_attributes:
+              - "Artist"
+              - "NumberOfSongs"
+            projection_type: "INCLUDE"
+      contributor_insights_specification:
+        enabled: 'true'
+      point_in_time_recovery_specification:
+        point_in_time_recovery_enabled: 'false'
+      sse_specification:
+        sse_enabled: 'true'
+        sse_type: 'KMS'
+        kms_master_key_id: !stack_output kms/key1.yaml::symetrickey1Alias0
+      stream_specification:
+        stream_view_type: 'KEYS_ONLY'
+      table_class: 'STANDARD'
+      time_to_live_specification:
+        attribute_name: 'TTLValue'
+        enabled: 'true'
+
+stack_tags:
+  Test: dynamodb-table
+  Name: dynamodb-table-test
