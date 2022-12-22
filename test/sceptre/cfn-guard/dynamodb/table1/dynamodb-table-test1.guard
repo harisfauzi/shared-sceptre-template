@@ -1,0 +1,80 @@
+let dynamodb_table_test1 = Resources.dynamodbtabletest1
+
+rule required_values when %dynamodb_table_test1 !empty {
+  let key_schema = %dynamodb_table_test1.Properties.KeySchema
+  %dynamodb_table_test1.Type == 'AWS::DynamoDB::Table'
+  %dynamodb_table_test1.DeletionPolicy == 'Delete'
+  %dynamodb_table_test1.UpdateReplacePolicy == 'Delete'
+  %key_schema exists
+}
+
+rule billingmode_value when %dynamodb_table_test1 !empty {
+  %dynamodb_table_test1.Properties.BillingMode == 'PAY_PER_REQUEST'
+}
+
+rule pitrs_value when %dynamodb_table_test1 !empty {
+  when %dynamodb_table_test1.Properties.PointInTimeRecoverySpecification !empty {
+    %dynamodb_table_test1.Properties.PointInTimeRecoverySpecification.PointInTimeRecoveryEnabled is_bool
+    %dynamodb_table_test1.Properties.PointInTimeRecoverySpecification.PointInTimeRecoveryEnabled == true
+  }
+}
+
+rule tableclass_value when %dynamodb_table_test1 !empty {
+  when %dynamodb_table_test1.Properties.TableClass !empty {
+    %dynamodb_table_test1.Properties.TableClass is_string
+    %dynamodb_table_test1.Properties.TableClass == 'STANDARD_INFREQUENT_ACCESS'
+  }
+}
+
+rule tablename_value when %dynamodb_table_test1 !empty {
+  when %dynamodb_table_test1.Properties.TableName !empty {
+    %dynamodb_table_test1.Properties.TableName is_string
+    %dynamodb_table_test1.Properties.TableName == 'dynamodbtabletest1'
+  }
+}
+
+rule ttlspec_value when %dynamodb_table_test1 !empty {
+  when %dynamodb_table_test1.Properties.TimeToLiveSpecification !empty {
+    %dynamodb_table_test1.Properties.TimeToLiveSpecification.AttributeName is_string
+    %dynamodb_table_test1.Properties.TimeToLiveSpecification.AttributeName == 'TTLValue'
+    %dynamodb_table_test1.Properties.TimeToLiveSpecification.Enabled is_bool
+    %dynamodb_table_test1.Properties.TimeToLiveSpecification.Enabled == true
+  }
+}
+
+rule keyschema_values when %dynamodb_table_test1 !empty {
+  some %dynamodb_table_test1.Properties.KeySchema[*] {
+    AttributeName == 'Album'
+    KeyType == 'HASH'
+  }
+  some %dynamodb_table_test1.Properties.KeySchema[*] {
+    AttributeName == 'Artist'
+    KeyType == 'RANGE'
+  }
+}
+
+rule attributedefinitions_values when %dynamodb_table_test1 !empty {
+  some %dynamodb_table_test1.Properties.AttributeDefinitions[*] {
+    AttributeName == 'Album'
+    AttributeType == 'S'
+  }
+  some %dynamodb_table_test1.Properties.AttributeDefinitions[*] {
+    AttributeName == 'Artist'
+    AttributeType == 'S'
+  }
+  some %dynamodb_table_test1.Properties.AttributeDefinitions[*] {
+    AttributeName == 'Sales'
+    AttributeType == 'N'
+  }
+  some %dynamodb_table_test1.Properties.AttributeDefinitions[*] {
+    AttributeName == 'NumberOfSongs'
+    AttributeType == 'N'
+  }
+}
+
+rule tags_values when %dynamodb_table_test1 !empty {
+  some %dynamodb_table_test1.Properties.Tags[*] {
+    Key == 'SourceRepoURL'
+    Value == 'git@github.com:harisfauzi/shared-sceptre-template.git'
+  }
+}
