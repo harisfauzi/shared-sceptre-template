@@ -1,0 +1,81 @@
+---
+template_path: ec2/security_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: !environment_variable SOURCE_REPO_URL
+  source_repo_branch: !environment_variable SOURCE_REPO_BRANCH
+  security_groups:
+    - name: Test1InstanceSG
+      group_name: Test1InstanceSG
+      group_description: Test Instance Security Group
+      vpc_id: !stack_output '{{pwd}}/vpc1.yaml::ec2vpctest1'
+      tags:
+        Name: Test1Instance-SG
+        Project: '{{stack_group_config.project_code}}'
+      security_group_egress:
+        - ip_protocol: -1
+          description: Allow all auto discovery access to auto configure IP range (169.254.169.0/24)
+          cidr_ip: 169.254.169.0/24
+        - ip_protocol: 17
+          description: Allow DNS outgoing access to VPC IPv4 on UDP:53
+          cidr_ip: !stack_output '{{pwd}}/vpc1.yaml::ec2vpctest1CidrBlock'
+          from_port: 53
+          to_port: 53
+        - ip_protocol: 17
+          description: Allow DNS outgoing access to VPC IPv6 on UDP:53
+          cidr_ipv6: !stack_output '{{pwd}}/vpc1.yaml::ec2vpctest1CidrBlockIPv6'
+          from_port: 53
+          to_port: 53
+        - ip_protocol: 6
+          description: Allow DNS outgoing access to VPC IPv4 on TCP:53
+          cidr_ip: !stack_output '{{pwd}}/vpc1.yaml::ec2vpctest1CidrBlock'
+          from_port: 53
+          to_port: 53
+        - ip_protocol: 6
+          description: Allow DNS outgoing access to VPC IPv6 on TCP:53
+          cidr_ipv6: !stack_output '{{pwd}}/vpc1.yaml::ec2vpctest1CidrBlockIPv6'
+          from_port: 53
+          to_port: 53
+        - ip_protocol: 6
+          description: Allow TCP outgoing access to Internet IPv4 on HTTP (TCP:80)
+          cidr_ip: 0.0.0.0/0
+          from_port: 80
+          to_port: 80
+        - ip_protocol: 6
+          description: Allow TCP outgoing access to Internet IPv6 on HTTP (TCP:80)
+          cidr_ipv6: "::/0"
+          from_port: 80
+          to_port: 80
+        - ip_protocol: 6
+          description: Allow TCP outgoing access to Internet IPv4 on HTTPS (TCP:443)
+          cidr_ip: 0.0.0.0/0
+          from_port: 443
+          to_port: 443
+        - ip_protocol: 6
+          description: Allow TCP outgoing access to Internet IPv6 on HTTPS (TCP:443)
+          cidr_ipv6: "::/0"
+          from_port: 443
+          to_port: 443
+        - ip_protocol: 6
+          description: Allow TCP outgoing access to virtual org range on MySQL/MariaDB (TCP:3306)
+          cidr_ip: '{{var.dummy_office_ip_range}}'
+          from_port: 3306
+          to_port: 3306
+        - ip_protocol: 6
+          description: 'Allow TCP outgoing access to virtual org range on Postgresql (TCP:5432)'
+          cidr_ip: '{{var.dummy_office_ip_range}}'
+          from_port: 5432
+          to_port: 5432
+        - ip_protocol: 6
+          description: Allow TCP outgoing access to virtual org range on Squid Proxy (TCP:3128)
+          cidr_ip: '{{var.dummy_office_ip_range}}'
+          from_port: 3128
+          to_port: 3128
+      security_group_ingress:
+        - ip_protocol: -1
+          description: Allow all incoming from virtual org range
+          cidr_ip: '{{var.dummy_office_ip_range}}'
+
+stack_tags:
+  Test: ec2-securitygroup

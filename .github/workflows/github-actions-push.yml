@@ -65,9 +65,10 @@ jobs:
             CFN_TEMPLATE=$(_jq .cfntemplate)
             CFNGUARD_RULEDIR=$(_jq .cfnguardruledir)
             echo "Validating ${CFN_TEMPLATE}"
-            /usr/bin/aws \
-              cloudformation validate-template \
-              --template-body file://"${CFN_TEMPLATE}"
+            /usr/bin/sceptre \
+              --var-file ./vars/main.yaml \
+              --var aws_region=${AWS_DEFAULT_REGION} \
+              validate "${YAML_DIR}/${YAML_FILE}"
           done
       - name: Run cfn-guard against generated CloudFormation templates
         run: |

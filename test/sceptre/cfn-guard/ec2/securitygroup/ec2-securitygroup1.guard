@@ -1,0 +1,43 @@
+let ec2_securitygroup_test1 = Resources.Test1InstanceSG
+
+let ec2_securitygroup = Resources.*[ Type == 'AWS::EC2::SecurityGroup' ] 
+
+rule required_values when %ec2_securitygroup_test1 !empty {
+  %ec2_securitygroup_test1.Type == 'AWS::EC2::SecurityGroup'
+  %ec2_securitygroup_test1.DeletionPolicy == 'Delete'
+  %ec2_securitygroup_test1.UpdateReplacePolicy == 'Delete'
+  %ec2_securitygroup_test1.Properties.GroupDescription exists
+  %ec2_securitygroup_test1.Properties.GroupDescription !empty
+}
+
+rule groupname_value when %ec2_securitygroup_test1 !empty {
+  when %ec2_securitygroup_test1.Properties.GroupName !empty {
+    %ec2_securitygroup_test1.Properties.GroupName is_string
+  }
+}
+
+rule insecure_rules when %ec2_securitygroup_test1 !empty {
+  some %ec2_securitygroup_test1.Properties.SecurityGroupIngress[*] {
+    when IpProtocol == '-1' {
+      CidrIp != '0.0.0.0/0'
+    }
+  }
+}
+
+rule insecure_dns_sg_rules when %ec2_securitygroup !empty {
+  let targets = %ec2_securitygroup_test1.Properties.SecurityGroupEgress[
+    FromPort == 53
+    ToPort == 53
+  ]
+
+  when %targets !empty {
+    %targets {
+      when CidrIp !empty {
+        CidrIp != '0.0.0.0/0'
+      }
+      when CidrIpv6 !empty {
+        CidrIpv6 != '::/0'
+      }
+    }
+  }
+}
