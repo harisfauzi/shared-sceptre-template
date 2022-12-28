@@ -24,8 +24,21 @@ rule insecure_rules when %ec2_securitygroup_test1 !empty {
   }
 }
 
+rule insecure_incoming_sg_rules when %ec2_securitygroup_test1 !empty {
+  let targets = %ec2_securitygroup_test1.Properties.SecurityGroupIngress[
+    CidrIp == '0.0.0.0/0' OR
+    CidrIpv6 == '::/0'
+  ]
+
+  when %targets !empty {
+    %targets {
+      IpProtocol != -1
+    }
+  }
+}
+
 rule insecure_dns_sg_rules when %ec2_securitygroup !empty {
-  let targets = %ec2_securitygroup_test1.Properties.SecurityGroupEgress[
+  let targets = %ec2_securitygroup.Properties.SecurityGroupEgress[
     FromPort == 53
     ToPort == 53
   ]
