@@ -1,0 +1,101 @@
+let ec2_securitygroup = Resources.*[ Type == 'AWS::EC2::SecurityGroup' ]
+let tcp_sensitive_ports = [ -1, 22, 3389]
+let ec2_sg_ingress = Resources.*[ Type == 'AWS::EC2::SecurityGroupIngress' ]
+
+rule insecure_allow_all_inbound_rule when %ec2_securitygroup !empty {
+  let targets = some %ec2_securitygroup.Properties.SecurityGroupIngress[
+    IpProtocol == '-1'
+  ]
+
+  when %targets !empty {
+    %targets {
+      when CidrIp !empty {
+        CidrIp != '0.0.0.0/0'
+        <<
+          result: NON_COMPLIANT
+          message: Ingress rule that allows everything from all IPv4 address is not allowed.
+        >>
+      }
+      when CidrIpv6 !empty {
+        CidrIpv6 != '::/0'
+        <<
+          result: NON_COMPLIANT
+          message: Ingress rule that allows everything from all IPv4 address is not allowed.
+        >>
+      }
+    }
+  }
+}
+
+rule insecure_sensitive_tcp_ports_inbound_rule when %ec2_securitygroup !empty {
+  let targets = some %ec2_securitygroup.Properties.SecurityGroupIngress[
+    IpProtocol == 'tcp'
+    FromPort == ToPort
+    FromPort in %tcp_sensitive_ports
+    ToPort in %tcp_sensitive_ports
+  ]
+
+  when %targets !empty {
+    %targets {
+      when CidrIp !empty {
+        CidrIp != '0.0.0.0/0'
+        <<
+          result: NON_COMPLIANT
+          message: Ingress rule on sensitive TCP ports from all IPv4 address is not allowed.
+        >>
+      }
+      when CidrIpv6 !empty {
+        CidrIpv6 != '::/0'
+        <<
+          result: NON_COMPLIANT
+          message: Ingress rule on sensitive TCP ports from all IPv6 address is not allowed.
+        >>
+      }
+    }
+  }
+}
+
+rule insecure_allow_all_ingress_rule when %ec2_sg_ingress !empty {
+  let ingress_ipprotocol = some %ec2_sg_ingress.Properties.IpProtocol
+  when %ec2_sg_ingress.Properties.CidrIp !empty {
+    %ec2_sg_ingress.Properties.CidrIp == '0.0.0.0/0'
+    %ingress_ipprotocol != '-1'
+    <<
+      result: NON_COMPLIANT
+      message: Ingress rule on all IP Protocol from all address is not allowed.
+    >>
+  }
+  when %ec2_sg_ingress.Properties.CidrIpv6 !empty {
+    %ec2_sg_ingress.Properties.CidrIpv6 == '::/0'
+    %ingress_ipprotocol != '-1'
+    <<
+      result: NON_COMPLIANT
+      message: Ingress rule on all IP Protocol from all IPv6 address is not allowed.
+    >>
+  }
+}
+
+rule insecure_sensitive_tcp_ports_ingress_rule when %ec2_sg_ingress !empty {
+  %ec2_sg_ingress.Properties {
+    # let targets = some IpProtocol == 'tcp'
+
+    when IpProtocol == 'tcp' {
+      FromPort == ToPort
+      FromPort IN %tcp_sensitive_ports
+      when CidrIp !empty {
+        CidrIp != '0.0.0.0/0'
+        <<
+          result: NON_COMPLIANT
+          message: Sensitve TCP ports must not be accessible from all Internet (IPv4)
+        >>
+      }
+      when CidrIpv6 !empty {
+        CidrIpv6 != '::/0'
+        <<
+          result: NON_COMPLIANT
+          message: Sensitve TCP ports must not be accessible from all Internet (IPv6)
+        >>
+      }
+    }
+  }
+}
