@@ -1,0 +1,9 @@
+let vpc_gateway_attachments = Resources.*[ Type == 'AWS::EC2::VPCGatewayAttachment' ]
+
+rule vpc_gateway_attachment_required_proprties when %vpc_gateway_attachments !empty {
+  let internet_gateway_id = %vpc_gateway_attachments.Properties.InternetGatewayId
+  let vpc_id = %vpc_gateway_attachments.Properties.VpcId
+
+  %internet_gateway_id exists
+  %vpc_id exists
+}

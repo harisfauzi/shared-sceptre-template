@@ -1,0 +1,114 @@
+let dynamodb_table_test2 = Resources.dynamodbtabletest2
+
+rule required_values when %dynamodb_table_test2 !empty {
+  let key_schema = %dynamodb_table_test2.Properties.KeySchema
+  %dynamodb_table_test2.Type == 'AWS::DynamoDB::Table'
+  %dynamodb_table_test2.DeletionPolicy == 'Retain'
+  %dynamodb_table_test2.UpdateReplacePolicy == 'Retain'
+  %key_schema exists
+}
+
+rule billingmode_value when %dynamodb_table_test2 !empty {
+  %dynamodb_table_test2.Properties.BillingMode == 'PROVISIONED'
+}
+
+rule pitrs_value when %dynamodb_table_test2 !empty {
+  when %dynamodb_table_test2.Properties.PointInTimeRecoverySpecification !empty {
+    %dynamodb_table_test2.Properties.PointInTimeRecoverySpecification.PointInTimeRecoveryEnabled is_bool
+    %dynamodb_table_test2.Properties.PointInTimeRecoverySpecification.PointInTimeRecoveryEnabled == false
+  }
+}
+
+rule tableclass_value when %dynamodb_table_test2 !empty {
+  when %dynamodb_table_test2.Properties.TableClass !empty {
+    %dynamodb_table_test2.Properties.TableClass is_string
+    %dynamodb_table_test2.Properties.TableClass == 'STANDARD'
+  }
+}
+
+rule tablename_value when %dynamodb_table_test2 !empty {
+  when %dynamodb_table_test2.Properties.TableName !empty {
+    %dynamodb_table_test2.Properties.TableName is_string
+    %dynamodb_table_test2.Properties.TableName == 'dynamodbtabletest2'
+  }
+}
+
+rule provisionedthroughput_value when %dynamodb_table_test2 !empty {
+  when %dynamodb_table_test2.Properties.ProvisionedThroughput !empty {
+    %dynamodb_table_test2.Properties.ProvisionedThroughput.ReadCapacityUnits is_int
+    %dynamodb_table_test2.Properties.ProvisionedThroughput.ReadCapacityUnits == 5
+    %dynamodb_table_test2.Properties.ProvisionedThroughput.WriteCapacityUnits is_int
+    %dynamodb_table_test2.Properties.ProvisionedThroughput.WriteCapacityUnits == 5
+  }
+}
+
+rule ttlspec_value when %dynamodb_table_test2 !empty {
+  when %dynamodb_table_test2.Properties.TimeToLiveSpecification !empty {
+    %dynamodb_table_test2.Properties.TimeToLiveSpecification.AttributeName is_string
+    %dynamodb_table_test2.Properties.TimeToLiveSpecification.AttributeName == 'TTLValue'
+    %dynamodb_table_test2.Properties.TimeToLiveSpecification.Enabled is_bool
+    %dynamodb_table_test2.Properties.TimeToLiveSpecification.Enabled == true
+  }
+}
+
+rule contributorinsight_value when %dynamodb_table_test2 !empty {
+  when %dynamodb_table_test2.Properties.ContributorInsightsSpecification !empty {
+    %dynamodb_table_test2.Properties.ContributorInsightsSpecification.Enabled is_bool
+    %dynamodb_table_test2.Properties.ContributorInsightsSpecification.Enabled == true
+  }
+}
+
+rule ssespecification_value when %dynamodb_table_test2 !empty {
+  when %dynamodb_table_test2.Properties.SSESpecification !empty {
+    %dynamodb_table_test2.Properties.SSESpecification.SSEEnabled is_bool
+    %dynamodb_table_test2.Properties.SSESpecification.SSEEnabled == true
+    %dynamodb_table_test2.Properties.SSESpecification.KMSMasterKeyId !empty
+    %dynamodb_table_test2.Properties.SSESpecification.KMSMasterKeyId is_string
+    %dynamodb_table_test2.Properties.SSESpecification.SSEType is_string
+    %dynamodb_table_test2.Properties.SSESpecification.SSEType == 'KMS'
+  }
+}
+
+rule streamspecification_value when %dynamodb_table_test2 !empty {
+  when %dynamodb_table_test2.Properties.StreamSpecification !empty {
+    %dynamodb_table_test2.Properties.StreamSpecification.StreamViewType is_string
+    %dynamodb_table_test2.Properties.StreamSpecification.StreamViewType == 'KEYS_ONLY'
+  }
+}
+
+rule keyschema_values when %dynamodb_table_test2 !empty {
+  some %dynamodb_table_test2.Properties.KeySchema[*] {
+    AttributeName == 'Album'
+    KeyType == 'HASH'
+  }
+  some %dynamodb_table_test2.Properties.KeySchema[*] {
+    AttributeName == 'Artist'
+    KeyType == 'RANGE'
+  }
+}
+
+rule attributedefinitions_values when %dynamodb_table_test2 !empty {
+  some %dynamodb_table_test2.Properties.AttributeDefinitions[*] {
+    AttributeName == 'Album'
+    AttributeType == 'S'
+  }
+  some %dynamodb_table_test2.Properties.AttributeDefinitions[*] {
+    AttributeName == 'Artist'
+    AttributeType == 'S'
+  }
+  some %dynamodb_table_test2.Properties.AttributeDefinitions[*] {
+    AttributeName == 'Sales'
+    AttributeType == 'N'
+  }
+  some %dynamodb_table_test2.Properties.AttributeDefinitions[*] {
+    AttributeName == 'NumberOfSongs'
+    AttributeType == 'N'
+  }
+}
+
+rule tags_values when %dynamodb_table_test2 !empty {
+  some %dynamodb_table_test2.Properties.Tags[*] {
+    Key == 'SourceRepoURL'
+    Value == 'git@github.com:harisfauzi/shared-sceptre-template.git'
+  }
+}

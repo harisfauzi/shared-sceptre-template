@@ -1,0 +1,22 @@
+let ec2_vpcig_test1 = Resources.vpc1ig
+let ec2_vpcga_test1 = Resources.vpc1igVPCGatewayAttachment
+let resource_type_internetgateway = 'AWS::EC2::InternetGateway'
+let resource_type_vpcgatewayattachment = 'AWS::EC2::VPCGatewayAttachment'
+
+rule ec2_ig_valid_resource_type when %ec2_vpcig_test1 !empty {
+    let ec2_vpcig_test1_resource_type = %ec2_vpcig_test1.Type
+    %ec2_vpcig_test1_resource_type == %resource_type_internetgateway
+}
+
+rule ec2_vpcga_valid_resource_type when %ec2_vpcga_test1 !empty {
+    let ec2_vpcga_test1_resource_type = %ec2_vpcga_test1.Type
+    %ec2_vpcga_test1_resource_type == %resource_type_vpcgatewayattachment
+}
+
+rule vpc_gateway_attachment_required_properties when %ec2_vpcga_test1 !empty {
+  let internet_gateway_id = %ec2_vpcga_test1.Properties.InternetGatewayId
+  let vpc_id = %ec2_vpcga_test1.Properties.VpcId
+
+  %internet_gateway_id exists
+  %vpc_id exists
+}

@@ -1,0 +1,40 @@
+---
+Description: CloudFormation Macro(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for macro in sceptre_user_data.macros %}
+{%- set macro_name = macro.name %}
+  {{ macro_name }}:
+    Type: AWS::CloudFormation::Macro
+    DeletionPolicy: {{ macro.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ macro.update_replace_policy | default('Delete') }}
+    Properties: 
+      Name: {{ macro.macro_name }}
+      FunctionName: {{ macro.function_name }}
+{%- if macro.description is defined %}
+      Description: {{ macro.description }}
+{%- endif %}
+{%- if macro.log_group_name is defined %}
+      LogGroupName: {{ macro.log_group_name }}
+{%- endif %}
+{%- if macro.log_role_arn is defined %}
+      LogRoleARN: {{ macro.log_role_arn }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for macro in sceptre_user_data.macros %}
+{%- set macro_name = macro.name %}
+  {{ macro_name }}:
+    Description: Macro Name for {{ macro_name }}
+    Value:
+      Ref: {{ macro_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ macro_name }}"
+
+{%- endfor %}

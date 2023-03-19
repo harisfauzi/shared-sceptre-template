@@ -1,0 +1,73 @@
+---
+Description: CloudFormation Publisher(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for publisher in sceptre_user_data.publishers %}
+{%- set publisher_name = publisher.name %}
+  {{ publisher_name }}:
+    Type: AWS::CloudFormation::Publisher
+    DeletionPolicy: {{ publisher.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ publisher.update_replace_policy | default('Delete') }}
+    Properties:
+      AcceptTermsAndConditions: {{ publisher.accept_terms_and_conditions }}
+{%- if publisher.connection_arn is defined %}
+      ConnectionArn: {{ publisher.connection_arn }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for publisher in sceptre_user_data.publishers %}
+{%- set publisher_name = publisher.name %}
+  {{ publisher_name }}:
+    Description: Publisher ID for {{ publisher_name }}
+    Value:
+      Ref: {{ publisher_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ publisher_name }}"
+
+  {{ publisher_name }}IdentityProvider:
+    Description: The type of account used as the identity provider when registering this publisher with CloudFormation for {{ publisher_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ publisher_name }}
+        - IdentityProvider
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ publisher_name }}-IdentityProvider"
+
+  {{ publisher_name }}PublisherId:
+    Description: The ID of the extension publisher for {{ publisher_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ publisher_name }}
+        - PublisherId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ publisher_name }}-PublisherId"
+
+  {{ publisher_name }}PublisherProfile:
+    Description: The URL to the publisher's profile with the identity provider for {{ publisher_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ publisher_name }}
+        - PublisherProfile
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ publisher_name }}-PublisherProfile"
+
+  {{ publisher_name }}PublisherStatus:
+    Description: Whether the publisher is verified for {{ publisher_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ publisher_name }}
+        - PublisherStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ publisher_name }}-PublisherStatus"
+
+{%- endfor %}

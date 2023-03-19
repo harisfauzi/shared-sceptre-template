@@ -1,0 +1,16 @@
+---
+Description: CloudFormation Custom Resource(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for custom_resource in sceptre_user_data.custom_resources %}
+{%- set custom_resource_name = custom_resource.name %}
+  {{ custom_resource_name }}:
+    Type: AWS::CloudFormation::CustomResource
+    DeletionPolicy: {{ hook_default_version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ hook_default_version.update_replace_policy | default('Delete') }}
+    Properties:
+      ServiceToken: {{ custom_resource.service_token }}
+
+{%- endfor %}

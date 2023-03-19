@@ -1,0 +1,74 @@
+---
+Description: CloudFormation PublicTypeVersion(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for public_type_version in sceptre_user_data.public_type_versions %}
+{%- set public_type_version_name = public_type_version.name %}
+  {{ public_type_version_name }}:
+    Type: AWS::CloudFormation::PublicTypeVersion
+    DeletionPolicy: {{ public_type_version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ public_type_version.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if public_type_version.arn is defined %}
+      Arn: {{ public_type_version.arn }}
+{%- endif %}
+{%- if public_type_version.log_delivery_bucket is defined %}
+      LogDeliveryBucket: {{ public_type_version.log_delivery_bucket }}
+{%- endif %}
+{%- if public_type_version.public_version_number is defined %}
+      PublicVersionNumber: {{ public_type_version.public_version_number }}
+{%- endif %}
+{%- if public_type_version.type is defined %}
+      Type: {{ public_type_version.type }}
+{%- endif %}
+{%- if public_type_version.type_name is defined %}
+      TypeName: {{ public_type_version.type_name }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for public_type_version in sceptre_user_data.public_type_versions %}
+{%- set public_type_version_name = public_type_version.name %}
+  {{ public_type_version_name }}:
+    Description: ARN for {{ public_type_version_name }}
+    Value:
+      Ref: {{ public_type_version_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ public_type_version_name }}"
+
+  {{ public_type_version_name }}PublicTypeArn:
+    Description: The ARN assigned to the public extension upon publication for {{ public_type_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ public_type_version_name }}
+        - PublicTypeArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ public_type_version_name }}-PublicTypeArn"
+
+  {{ public_type_version_name }}PublisherId:
+    Description: The publisher ID of the extension publisher for {{ public_type_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ public_type_version_name }}
+        - PublisherId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ public_type_version_name }}-PublisherId"
+
+  {{ public_type_version_name }}TypeVersionArn:
+    Description: The ARN assigned to this version of the extension for {{ public_type_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ public_type_version_name }}
+        - TypeVersionArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ public_type_version_name }}-TypeVersionArn"
+
+{%- endfor %}

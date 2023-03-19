@@ -1,0 +1,27 @@
+---
+template_path: kms/key.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  kms_keys:
+    - name: symetrickey1
+      generic_key_policy:
+        administrator_arns:
+          - "Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:root'"
+        user_arns:
+          - "Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:User/johndoe'"
+      description: Test symmetric key
+      enabled: 'true'
+      enable_key_rotation: 'true'
+      key_spec: 'SYMMETRIC_DEFAULT'
+      key_usage: 'ENCRYPT_DECRYPT'
+      multi_region: 'false'
+      pending_window_in_days: 7
+      tags:
+        Test: kms-key
+      alias_names:
+        - symetrickey1
+
+stack_tags:
+  CfnTest: kms-key

@@ -1,0 +1,48 @@
+---
+Description: CloudFormation Hook Default Version(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for hook_default_version in sceptre_user_data.hook_default_versions %}
+{%- set hook_default_version_name = hook_default_version.name %}
+  {{ hook_default_version_name }}:
+    Type: AWS::CloudFormation::HookDefaultVersion
+    DeletionPolicy: {{ hook_default_version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ hook_default_version.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if hook_default_version.type_name is defined %}
+      TypeName: {{ hook_default_version.type_name }}
+{% endif %}
+{%- if hook_default_version.type_version_arn is defined %}
+      TypeVersionArn: {{ hook_default_version.type_version_arn | trim }}
+{% endif %}
+{%- if hook_default_version.version_id is defined %}
+      VersionId: {{ hook_default_version.version_id | trim }}
+{% endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for hook_default_version in sceptre_user_data.hook_default_versions %}
+{%- set hook_default_version_name = hook_default_version.name %}
+  {{ hook_default_version_name }}:
+    Description: ARN for {{ hook_default_version_name }}
+    Value:
+      Ref: {{ hook_default_version_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hook_default_version_name }}"
+
+  {{ hook_default_version_name }}Arn:
+    Description: The ARN for {{ hook_default_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ hook_default_version_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hook_default_version_name }}-Arn"
+
+{%- endfor %}
