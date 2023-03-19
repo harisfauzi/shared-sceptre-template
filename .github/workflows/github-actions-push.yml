@@ -48,6 +48,9 @@ jobs:
               rm -f "${TMP_CFN_TEMPLATE}"
             fi
           done
+      - name: Check AWS credentials
+        run: |
+          aws sts get-caller-identity
       - name: Run yamllint
         uses: docker://harisfauzi/hf-sceptre:3.2.0-01
         with:

@@ -1,0 +1,38 @@
+---
+Description: CloudFormation Module Default Version(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for module_default_version in sceptre_user_data.module_default_versions %}
+{%- set module_default_version_name = module_default_version.name %}
+  {{ module_default_version_name }}:
+    Type: AWS::CloudFormation::ModuleDefaultVersion
+    DeletionPolicy: {{ module_default_version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ module_default_version.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if module_default_version.arn is defined %}
+      Arn: {{ module_default_version.arn }}
+{%- endif %}
+{%- if module_default_version.module_name is defined %}
+      ModuleName: {{ module_default_version.module_name }}
+{%- endif %}
+{%- if module_default_version.version_id is defined %}
+      VersionId: {{ module_default_version.version_id }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for module_default_version in sceptre_user_data.module_default_versions %}
+{%- set module_default_version_name = module_default_version.name %}
+  {{ module_default_version_name }}:
+    Description: ARN for {{ module_default_version_name }}
+    Value:
+      Ref: {{ module_default_version_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ module_default_version_name }}"
+
+{%- endfor %}

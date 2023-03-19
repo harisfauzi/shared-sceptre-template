@@ -1,0 +1,52 @@
+---
+Description: CloudFormation Stack(s) for {{ sceptre_user_data.project_code }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for stack in sceptre_user_data.stacks %}
+{%- set stack_name = stack.name %}
+  {{ stack_name }}:
+    Type: AWS::CloudFormation::Stack
+    DeletionPolicy: {{ stack.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ stack.update_replace_policy | default('Delete') }}
+    Properties:
+      TemplateURL: {{ stack.template_url }}
+{%- if stack.notification_arns is defined %}
+      NotificationARNs:
+        - String
+{%- endif %}
+{%- if stack.parameters is defined %}
+      Parameters:
+{%- for key,value in stack.parameters.items() %}
+        "{{ key }}": "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if stack.timeout_in_minutes is defined %}
+      TimeoutInMinutes: {{ stack.timeout_in_minutes }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if stack.tags is defined %}
+{%- for key,value in stack.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for stack in sceptre_user_data.stacks %}
+{%- set stack_name = stack.name %}
+  {{ stack_name }}:
+    Description: Stack Id for {{ stack_name }}
+    Value:
+      Ref: {{ stack_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stack_name }}"
+
+{%- endfor %}
