@@ -8,10 +8,11 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 {%- for instance in sceptre_user_data.instances %}
+{%- set instance_name = instance.name %}
 
 {%- if instance.launch_template_spec is defined %}{# BEGIN {%- if instance.launch_template is defined %} #}
 {%- set launch_template = instance.launch_template_spec %}
-{%- set launch_template_name = auto_scaling_group_name ~ 'LaunchTemplate' %}
+{%- set launch_template_name = instance_name ~ 'LaunchTemplate' %}
   {{ launch_template_name }}:
     Type: AWS::EC2::LaunchTemplate
 {%- if launch_template.metadata is defined %}
@@ -248,9 +249,12 @@ Resources:
 {%- endif %}
 {%- endif %}{# END {%- if instance.launch_template_spec is defined %} #}
 
-{%- set instance_name = instance.name %}
   {{ instance_name }}:
     Type: AWS::EC2::Instance
+{%- if instance.launch_template_spec is defined %}{# BEGIN {%- if instance.launch_template is defined %} #}
+{%- set launch_template_name = instance_name ~ 'LaunchTemplate' %}
+    DependsOn: {{ launch_template_name }}
+{%- endif %}{# END {%- if instance.launch_template is defined %} #}
 {%- if instance.metadata is defined %}
     Metadata:
 {{ instance.metadata | indent(width=6,first=True) }}
