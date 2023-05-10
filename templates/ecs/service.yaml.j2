@@ -16,7 +16,7 @@ Resources:
     Properties:
 {%- if service.capacity_provider_strategy is defined %}{# BEGIN {%- if service.capacity_provider_strategy is defined %} #}
       CapacityProviderStrategy:
-{%- for capacity_provider_strategy inservice.capacity_provider_strategy %}
+{%- for capacity_provider_strategy in service.capacity_provider_strategy %}
         -
 {%- if capacity_provider_strategy.base is defined %}
           Base: {{ capacity_provider_strategy.base }}
