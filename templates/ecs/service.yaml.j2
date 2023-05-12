@@ -110,7 +110,7 @@ Resources:
 {{ macro_service_registry.prep(service.service_registries) | indent(width=8, first=True) }}
 {%- endif %}
 {%- if service.task_definition is defined %}
-      TaskDefinition: {{ service.service_name }}
+      TaskDefinition: {{ service.task_definition }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
