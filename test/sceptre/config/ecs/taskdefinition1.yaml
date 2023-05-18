@@ -137,21 +137,21 @@ sceptre_user_data:
       network_mode: bridge
       pid_mode: task
       proxy_configuration:
-        - container_name: definition1
-          proxy_configuration_properties:
-            - name: IgnoredUID
-              value: appuser
-            - name: IgnoredGID
-              value: appgroup
-            - name: AppPorts
-              value: 8080,8081
-            - name: ProxyIngressPort
-              value: 8080
-            - name: ProxyEgressPort
-              value: 9090
-            - name: EgressIgnoredPorts 
-            - name: EgressIgnoredIPs
-          type: APPMESH
+        container_name: definition1
+        proxy_configuration_properties:
+          - name: IgnoredUID
+            value: appuser
+          - name: IgnoredGID
+            value: appgroup
+          - name: AppPorts
+            value: 8080,8081
+          - name: ProxyIngressPort
+            value: 8080
+          - name: ProxyEgressPort
+            value: 9090
+          - name: EgressIgnoredPorts 
+          - name: EgressIgnoredIPs
+        type: APPMESH
       runtime_platform:
         cpu_architecture: X86_64
         operating_system_family: LINUX
