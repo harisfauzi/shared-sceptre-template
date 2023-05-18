@@ -54,8 +54,8 @@ Resources:
 {%- endif %}
 {%- if container_definition.docker_labels is defined %}
           DockerLabels:
-{%- for key, value in container_definition.docker_labels %}
-            "{{ key }}" : "{{ value }}"
+{%- for key, value in container_definition.docker_labels.items() %}
+            "{{ key }}": "{{ value }}"
 {%- endfor %}
 {%- endif %}
 {%- if container_definition.docker_security_options is defined %}
@@ -113,8 +113,8 @@ Resources:
           FirelensConfiguration:
 {%- if container_definition.firelens_configuration.options is defined %}
             Options:
-{%- for key, value in container_definition.firelens_configuration.options %}
-              "{{ key }}" : "{{ value }}"
+{%- for key, value in container_definition.firelens_configuration.options.items() %}
+              "{{ key }}": "{{ value }}"
 {%- endfor %}
 {%- endif %}
 {%- if container_definition.firelens_configuration.type is defined %}
@@ -225,8 +225,8 @@ Resources:
             LogDriver: {{ container_definition.log_configuration.log_driver }}
 {%- if container_definition.log_configuration.options is defined %}
             Options:
-{%- for key, value in container_definition.log_configuration.options %}
-              "{{ key }}" : "{{ value }}"
+{%- for key, value in container_definition.log_configuration.options.items() %}
+              "{{ key }}": "{{ value }}"
 {%- endfor %}
 {%- endif %}
 {%- if container_definition.log_configuration.secret_options is defined %}
@@ -319,7 +319,7 @@ Resources:
           Ulimits:
 {%- for ulimit in container_definition.ulimits %}
             - HardLimit: {{ ulimit.hard_limit }}
-              Name: {{ ulimit.name  }}
+              Name: {{ ulimit.name }}
               SoftLimit: {{ ulimit.soft_limit }}
 {%- endfor %}
 {%- endif %}{# END {%- if container_definition.ulimits is defined %} #}
@@ -440,14 +440,14 @@ Resources:
 {%- endif %}
 {%- if volume.docker_volume_configuration.driver_opts is defined %}
             DriverOpts:
-{%- for key, value in volume.docker_volume_configuration.driver_opts %}
-              "{{ key }}" : "{{ value }}"
+{%- for key, value in volume.docker_volume_configuration.driver_opts.items() %}
+              "{{ key }}": "{{ value }}"
 {%- endfor %}
 {%- endif %}
 {%- if volume.docker_volume_configuration.labels is defined %}
             Labels:
-{%- for key, value in volume.docker_volume_configuration.labels %}
-              "{{ key }}" : "{{ value }}"
+{%- for key, value in volume.docker_volume_configuration.labels.items() %}
+              "{{ key }}": "{{ value }}"
 {%- endfor %}
 {%- endif %}
 {%- if volume.docker_volume_configuration.scope is defined %}
