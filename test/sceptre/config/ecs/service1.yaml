@@ -1,0 +1,83 @@
+---
+template:
+  path: ecs/service.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: {{git_repo}}
+  clusters:
+    - name: test1
+      capacity_provider_strategy:
+        - base: 1
+          capacity_provider: !stack_output ecs/capacityprovider1.yaml::test1
+          weight: 1
+      cluster: !stack_output ecs/cluster1.yaml::test1
+      deployment_configuration:
+        alarms:
+          alarm_names:
+            - dummy-alarm-1
+          enable: True
+          rollback: True
+        deployment_circuit_breaker:
+          enable: True
+          rollback: True
+        maximum_percent: 200
+        minimum_healthy_percent: 50
+      deployment_controller:
+        type: ECS
+      desired_count: 2
+      enable_ecs_managed_tags: True
+      enable_execute_command: True
+      health_check_grace_period_seconds: 60
+      launch_type: EC2
+      load_balancers:
+        - container_name: definition1
+          container_port: 8080
+          load_balancer_name: albtest1
+          target_group_arn: "!Sub arn:${AWS::Partition}:elasticloadbalancing:${AWS::Region}:${AWS::AccountId}:targetgroup/dummy-targetgroup/1234567890123456"
+      network_configuration:
+        aws_vpc_configuration:
+          assign_public_ip: DISABLED
+          security_groups:
+            - sg-01234567890123456
+            - sg-12345678901234567
+          subnets:
+            - subnet-01234567890123456
+            - subnet-12345678901234567
+      placement_strategies:
+        - type: MEMORY
+          field: binpack
+      platform_version: LATEST
+      propagate_tags: TASK_DEFINITION
+      role: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/ecs-service-role"
+      scheduling_strategy: REPLICA
+      service_connect_configuration:
+        enabled: True
+        log_configuration:
+          log_driver: "local"
+          options:
+            option1: value1
+            option2: value2
+          secret_options:
+            - name: secret_token_log1
+              value_from: "!Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:dummy-secret"
+        namespace: dummy-namespace-1
+        services:
+          - port_name: dummy-service-connect
+            client_aliases:
+              - port: 9000
+                dns_name: dummy-client.domain.lan
+            discovery_name: dummy-discovery-name
+            ingress_port_override: 9090
+      service_name: dummy-service-name
+      service_registries:
+        - container_name: definition1
+          container_port: 8100
+          port: 8100
+          registry_arn: "!Sub arn:${AWS::Partition}:servicediscovery:${AWS::Region}:${AWS::AccountId}:service/srv-1234567890123456"
+      task_definition: !stack_output ecs/taskdefinition1.yaml::test1
+      tags:
+        Name: cluster-test
+        Purpose: template test
+stack_tags:
+  Test: ecs-capacityprovider
