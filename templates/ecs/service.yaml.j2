@@ -34,6 +34,15 @@ Resources:
 {%- endif %}
 {%- if service.deployment_configuration is defined %}{# BEGIN {%- if service.deployment_configuration is defined %} #}
       DeploymentConfiguration:
+{%- if service.deployment_configuration.alarms is defined %}
+        Alarms:
+          AlarmNames:
+{%- for alarm_name in service.deployment_configuration.alarms.alarm_names %}
+            - {{ alarm_name }}
+{%- endfor %}
+          Enable: {{ service.deployment_configuration.alarms.alarm_names.enable }}
+          Rollback: {{ service.deployment_configuration.alarms.alarm_names.rollback }}
+{%- endif %}
 {%- if service.deployment_configuration.deployment_circuit_breaker is defined %}
         DeploymentCircuitBreaker:
           Enable: {{ service.deployment_configuration.deployment_circuit_breaker.enable }}
@@ -101,6 +110,53 @@ Resources:
 {%- endif %}
 {%- if service.scheduling_strategy is defined %}
       SchedulingStrategy: {{ service.scheduling_strategy }}
+{%- endif %}
+{%- if service.service_connect_configuration is defined %}
+      ServiceConnectConfiguration:
+        Enabled: {{ service.service_connect_configuration.enabled }}
+{%- if service.service_connect_configuration.log_configuration is defined %}
+        LogConfiguration:
+{%- if service.service_connect_configuration.log_configuration.log_driver is defined %}
+          LogDriver: {{ service.service_connect_configuration.log_configuration.log_driver }}
+{%- endif %}
+{%- if service.service_connect_configuration.log_configuration.options is defined %}
+          Options:
+{%- for key,value in service.service_connect_configuration.log_configuration.options.items() %}
+            "{{ key }}": "{{ value }}"
+{%- endfor %}
+{%- endif %}
+{%- if service.service_connect_configuration.log_configuration.secret_options is defined %}
+          SecretOptions:
+{%- for secret_option in service.service_connect_configuration.log_configuration.secret_options %}
+            - Name: {{ secret_option.name }}
+              ValueFrom: {{ secret_option.value_from }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if service.service_connect_configuration.namespace is defined %}
+        Namespace: {{ service.service_connect_configuration.namespace }}
+{%- endif %}
+{%- if service.service_connect_configuration.services is defined %}
+        Services:
+{%- for service in service.service_connect_configuration.services %}
+          - PortName: {{ service.port_name }}
+{%- if service.client_aliases is defined %}
+            ClientAliases:
+{%- for client_alias in service.client_aliases %}
+              - Port: {{ client_alias.port }}
+{%- if client_alias.dns_name is defined %}
+                DnsName: {{ client_alias.dns_name }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if service.discovery_name is defined %}
+            DiscoveryName: {{ service.discovery_name }}
+{%- endif %}
+{%- if service.ingress_port_override is defined %}
+            IngressPortOverride: {{ service.ingress_port_override }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
 {%- endif %}
 {%- if service.service_name is defined %}
       ServiceName: {{ service.service_name }}
