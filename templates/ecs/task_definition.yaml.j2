@@ -262,11 +262,20 @@ Resources:
           PortMappings:
 {%- for port_mapping in container_definition.port_mappings %}
             -
+{%- if port_mapping.app_protocol is defined %}
+              AppProtocol: {{ port_mapping.app_protocol }}
+{%- endif %}
 {%- if port_mapping.container_port is defined %}
               ContainerPort: {{ port_mapping.container_port }}
 {%- endif %}
+{%- if port_mapping.container_port_range is defined %}
+              ContainerPortRange: {{ port_mapping.container_port_range }}
+{%- endif %}
 {%- if port_mapping.host_port is defined %}
               HostPort: {{ port_mapping.host_port }}
+{%- endif %}
+{%- if port_mapping.name is defined %}
+              Name: {{ port_mapping.name }}
 {%- endif %}
 {%- if port_mapping.protocol is defined %}
               Protocol: {{ port_mapping.protocol }}

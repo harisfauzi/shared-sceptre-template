@@ -97,8 +97,11 @@ sceptre_user_data:
               source_volume: shared-tmp
           name: definition1
           port_mappings:
-            - container_port: 8080
+            - app_protocol: http
+              container_port: 8080
+              container_port_range: 8000-10000
               host_port: 80
+              name: dummy-service-connect
               protocol: tcp
           privileged: False
           pseudo_terminal: False
