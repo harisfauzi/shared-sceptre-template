@@ -149,6 +149,9 @@ Resources:
 {%- if launch_template.launch_template_data.metadata_options.http_tokens is defined %}
           HttpTokens: {{ launch_template.launch_template_data.metadata_options.http_tokens }}
 {%- endif %}
+{%- if launch_template.launch_template_data.metadata_options.instance_metadata_tags is defined %}
+          InstanceMetadataTags: {{ launch_template.launch_template_data.metadata_options.instance_metadata_tags }}
+{%- endif %}
 {%- endif %}{## END {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
 {%- if launch_template.launch_template_data.monitoring is defined %}
         Monitoring:
