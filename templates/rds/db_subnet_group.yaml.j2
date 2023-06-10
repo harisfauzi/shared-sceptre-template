@@ -1,5 +1,5 @@
 ---
-Description: RDS DB Subnet Group(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('RDS DB Subnet Group(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
