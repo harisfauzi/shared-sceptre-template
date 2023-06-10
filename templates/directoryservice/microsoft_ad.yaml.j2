@@ -1,6 +1,6 @@
 ---
 {%- import 'macros/vpc_settings.yaml.j2' as vpc_settings %}
-Description: DirectoryService MicrosoftAD(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('DirectoryService MicrosoftAD(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 {%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
