@@ -1,6 +1,6 @@
 ---
 {%- import 'macros/distribution_cache_behavior.yaml.j2' as macro_distribution_cache_behavior %}
-Description: CloudFront Distribution(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('CloudFront Distribution(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:

@@ -1,7 +1,7 @@
 ---
 {%- import 'macros/launch_template_blockdevicemapping.yaml.j2' as launch_template_blockdevicemapping %}
 {%- import 'macros/launch_template_networkinterface.yaml.j2' as launch_template_networkinterface %}
-Description: EC2 Launch Template(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('EC2 Launch Template(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -148,6 +148,9 @@ Resources:
 {%- endif %}
 {%- if launch_template.launch_template_data.metadata_options.http_tokens is defined %}
           HttpTokens: {{ launch_template.launch_template_data.metadata_options.http_tokens }}
+{%- endif %}
+{%- if launch_template.launch_template_data.metadata_options.instance_metadata_tags is defined %}
+          InstanceMetadataTags: {{ launch_template.launch_template_data.metadata_options.instance_metadata_tags }}
 {%- endif %}
 {%- endif %}{## END {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
 {%- if launch_template.launch_template_data.monitoring is defined %}

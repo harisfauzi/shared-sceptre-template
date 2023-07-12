@@ -3,7 +3,7 @@
 {%- import 'macros/macro_vpc_configuration.yaml.j2' as macro_vpc_configuration %}
 {%- import 'macros/macro_s3_configuration.yaml.j2' as macro_s3_configuration %}
 {%- import 'macros/macro_processing_configuration.yaml.j2' as macro_processing_configuration %}
-Description: KinesisFirehose Delivery Stream(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('KinesisFirehose Delivery Stream(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 {%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
