@@ -1,0 +1,27 @@
+---
+template:
+  path: iam/role.yaml.j2
+
+sceptre_user_data:
+  project_code: '{{stack_group_config.project_code}}'
+  source_repo_url: '{{git_repo}}'
+  roles:
+    - name: RolesAnywhere1
+      role_name: RolesAnywhere1
+      assume_role_policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - rolesanywhere.amazonaws.com
+            Action:
+              - sts:AssumeRole
+              - sts:TagSession
+              - sts:SetSourceIdentity
+      description: IAM Role for ImageBuilderInstance
+      managed_policy_arns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      max_session_duration: 3600
+stack_tags:
+  Test: rolesanywhere-profile

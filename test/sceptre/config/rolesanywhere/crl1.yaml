@@ -1,0 +1,59 @@
+---
+template:
+  path: rolesanywhere/crl.yaml.j2
+
+sceptre_user_data:
+  project_code: '{{stack_group_config.project_code}}'
+  source_repo_url: '{{git_repo}}'
+  crls:
+    - name: rolesanywherecrltest1
+      crl_name: CRL1
+      crl_data: |
+        MIIDBjCCAe4CAQEwDQYJKoZIhvcNAQELBQAwgc8xCzAJBgNVBAYTAkFVMQwwCgYD
+        VQQIEwNOU1cxDzANBgNVBAcTBlN5ZG5leTESMBAGA1UEChMJRmF1emkgT3JnMSow
+        KAYDVQQLEyFGYXV6aSBPUkcgR2VuZXJpYyBJbnRlcm1lZGlhdGUgQ0ExPzA9BgNV
+        BAMTNkZhdXppIE9yZyBHZW5lcmljIEludGVybWVkaWF0ZSBDZXJ0aWZpY2F0aW9u
+        IEF1dGhvcml0eTEgMB4GCSqGSIb3DQEJARYRc3VwcG9ydEBmYXV6aS5vcmcXDTIz
+        MDcxMjA1NTYxMloXDTI0MDEwODA1NTYxMlqggekwgeYwgeMGA1UdIwSB2zCB2IAU
+        TGk0rM3oeFNYCpIEziI1Jv8BeFehgbykgbkwgbYxCzAJBgNVBAYTAkFVMQwwCgYD
+        VQQIEwNOU1cxDzANBgNVBAcTBlN5ZG5leTEaMBgGA1UEChMRRmF1emkgT3JnIFJv
+        b3QgQ0ExGjAYBgNVBAsTEUZhdXppIE9yZyBSb290IENBMS8wLQYDVQQDEyZGYXV6
+        aSBPcmcgUm9vdCBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTEfMB0GCSqGSIb3DQEJ
+        ARYQcm9vdGNhQGZhdXppLm9yZ4IBATANBgkqhkiG9w0BAQsFAAOCAQEAbzKIndgz
+        vgU+aQumV2sHb4uJEbR/RzZUTAbCK+yczLZLzeuHZ4j3Y4XtvLlD5I+y2P96ZFr/
+        UtHqqdG4sU5BAIEegmHjaeivv5U2WlnebCyutNBf+u5ZrtE/V7VhMAzVdWPEYpAC
+        6A9y4879yrOROlh7JrAG1x/YzdonFXMkiF7dih1qPv4qk6YrgfBjWSC3P4t4+rR/
+        DJ4XHCHWBkLeI3g8MLIPQpfN2tGSexC813G0rpIpWvsckpWJ5DLXnNNTSWmpsaTv
+        pvkm5OCWqMo5DI41/SQLRc0a2fPaA6z/F/EYB69baWXSnnMbcgkBuiW25QDyNfnj
+        9WamZ0fioChBFQ==
+      tags:
+        Name: rolesanywherecrltest1
+        Project: '{{stack_group_config.project_code}}'
+    - name: rolesanywherecrltest2
+      crl_name: CRL2
+      crl_data: |
+        MIIDBjCCAe4CAQEwDQYJKoZIhvcNAQELBQAwgc8xCzAJBgNVBAYTAkFVMQwwCgYD
+        VQQIEwNOU1cxDzANBgNVBAcTBlN5ZG5leTESMBAGA1UEChMJRmF1emkgT3JnMSow
+        KAYDVQQLEyFGYXV6aSBPUkcgR2VuZXJpYyBJbnRlcm1lZGlhdGUgQ0ExPzA9BgNV
+        BAMTNkZhdXppIE9yZyBHZW5lcmljIEludGVybWVkaWF0ZSBDZXJ0aWZpY2F0aW9u
+        IEF1dGhvcml0eTEgMB4GCSqGSIb3DQEJARYRc3VwcG9ydEBmYXV6aS5vcmcXDTIz
+        MDcxMjA1NTYxMloXDTI0MDEwODA1NTYxMlqggekwgeYwgeMGA1UdIwSB2zCB2IAU
+        TGk0rM3oeFNYCpIEziI1Jv8BeFehgbykgbkwgbYxCzAJBgNVBAYTAkFVMQwwCgYD
+        VQQIEwNOU1cxDzANBgNVBAcTBlN5ZG5leTEaMBgGA1UEChMRRmF1emkgT3JnIFJv
+        b3QgQ0ExGjAYBgNVBAsTEUZhdXppIE9yZyBSb290IENBMS8wLQYDVQQDEyZGYXV6
+        aSBPcmcgUm9vdCBDZXJ0aWZpY2F0aW9uIEF1dGhvcml0eTEfMB0GCSqGSIb3DQEJ
+        ARYQcm9vdGNhQGZhdXppLm9yZ4IBATANBgkqhkiG9w0BAQsFAAOCAQEAbzKIndgz
+        vgU+aQumV2sHb4uJEbR/RzZUTAbCK+yczLZLzeuHZ4j3Y4XtvLlD5I+y2P96ZFr/
+        UtHqqdG4sU5BAIEegmHjaeivv5U2WlnebCyutNBf+u5ZrtE/V7VhMAzVdWPEYpAC
+        6A9y4879yrOROlh7JrAG1x/YzdonFXMkiF7dih1qPv4qk6YrgfBjWSC3P4t4+rR/
+        DJ4XHCHWBkLeI3g8MLIPQpfN2tGSexC813G0rpIpWvsckpWJ5DLXnNNTSWmpsaTv
+        pvkm5OCWqMo5DI41/SQLRc0a2fPaA6z/F/EYB69baWXSnnMbcgkBuiW25QDyNfnj
+        9WamZ0fioChBFQ==
+      enabled: true
+      trust_anchor_arn: !stack_output rolesanywhere/trustanchor1.yaml::rolesanywheretrustanchortest1TrustAnchorArn
+      tags:
+        Name: rolesanywherecrltest2
+        Project: '{{stack_group_config.project_code}}'
+
+stack_tags:
+  Test: rolesanywhere-crl

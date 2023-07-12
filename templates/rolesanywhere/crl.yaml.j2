@@ -1,0 +1,57 @@
+---
+Description: {{sceptre_user_data.description|default('IAM crls Anywhere CRL(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for crl in sceptre_user_data.crls %}
+{%- set crl_name = crl.name %}
+  {{ crl_name }}:
+    Type: AWS::RolesAnywhere::CRL
+    DeletionPolicy: {{ crl.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ crl.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{crl.crl_name}}
+      CrlData: |
+        {{crl.crl_data|indent(width=8,first=false)}}
+{%- if crl.enabled is defined %}
+      Enabled: {{crl.enabled}}
+{%- endif %}
+{%- if crl.trust_anchor_arn is defined %}
+      TrustAnchorArn: {{crl.trust_anchor_arn}}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if crl.tags is defined %}
+{%- for key,value in crl.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for crl in sceptre_user_data.crls %}
+{%- set crl_name = crl.name %}
+  {{ crl_name }}:
+    Description: The name of the CRL {{ crl_name }}
+    Value:
+      Ref: {{ crl_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ crl_name }}"
+
+  {{ crl_name }}CrlId:
+    Description: The unique primary identifier of the Crl  {{ crl_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ crl_name }}
+        - CrlId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ crl_name }}-CrlId"
+
+{%- endfor %}
