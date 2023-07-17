@@ -35,7 +35,7 @@ Resources:
       Password: {{ simple_ad.password }}
 {%- endif %}
       Size: {{ simple_ad.size }}
-{{ vpc_settings.prep(simple_ad.vpc_settings) }}
+      {{vpc_settings.prep(simple_ad.vpc_settings) | indent(width=6,first=false)}}
 {%- if simple_ad.create_alias is defined %}
       CreateAlias: {{ simple_ad.create_alias }}
 {%- endif %}

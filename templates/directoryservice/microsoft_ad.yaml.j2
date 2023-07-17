@@ -34,7 +34,7 @@ Resources:
 {%- else %}
       Password: {{ microsoft_ad.password }}
 {%- endif %}
-{{ vpc_settings.prep(microsoft_ad.vpc_settings) }}
+      {{vpc_settings.prep(microsoft_ad.vpc_settings) | indent(width=6,first=false)}}
 {%- if microsoft_ad.create_alias is defined %}
       CreateAlias: {{ microsoft_ad.create_alias }}
 {%- endif %}
