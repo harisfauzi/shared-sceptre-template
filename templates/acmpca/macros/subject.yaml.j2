@@ -1,0 +1,52 @@
+{%- macro prep(subject) %}
+{%- if subject.common_name is defined %}
+CommonName: {{subject.common_name}}
+{%- endif %}
+{%- if subject.country is defined %}
+Country: {{subject.country}}
+{%- endif %}
+{%- if subject.custom_attributes is defined %}
+CustomAttributes:
+{%- for attribute in subject.custom_attributes %}
+  -
+    ObjectIdentifier: {{attribute.object_identifier}}
+    Value: {{attribute.value}}
+{%- endfor %}
+{%- endif %}
+{%- if subject.distinguished_name_qualifier is defined %}
+DistinguishedNameQualifier: {{subject.distinguished_name_qualifier}}
+{%- endif %}
+{%- if subject.generation_qualifier is defined %}
+GenerationQualifier: {{subject.generation_qualifier}}
+{%- endif %}
+{%- if subject.given_name is defined %}
+GivenName: {{subject.given_name}}
+{%- endif %}
+{%- if subject.initials is defined %}
+Initials: {{subject.initials}}
+{%- endif %}
+{%- if subject.locality is defined %}
+Locality: {{subject.locality}}
+{%- endif %}
+{%- if subject.organization is defined %}
+Organization: {{subject.organization}}
+{%- endif %}
+{%- if subject.organizational_unit is defined %}
+OrganizationalUnit: {{subject.organizational_unit}}
+{%- endif %}
+{%- if subject.pseudonym is defined %}
+Pseudonym: {{subject.pseudonym}}
+{%- endif %}
+{%- if subject.serial_number is defined %}
+SerialNumber: {{subject.serial_number}}
+{%- endif %}
+{%- if subject.state is defined %}
+State: {{subject.state}}
+{%- endif %}
+{%- if subject.surname is defined %}
+Surname: {{subject.surname}}
+{%- endif %}
+{%- if subject.title is defined %}
+Title: {{subject.title}}
+{%- endif %}
+{%- endmacro %}

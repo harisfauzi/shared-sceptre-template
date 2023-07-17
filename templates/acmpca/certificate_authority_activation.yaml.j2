@@ -1,0 +1,47 @@
+---
+Description: {{sceptre_user_data.description|default('ACMPCA CertificateAuthorityActivation(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for certificate_authority_activation in sceptre_user_data.certificate_authority_activations %}
+{%- set certificate_authority_activation_name = certificate_authority_activation.name %}
+  {{ certificate_authority_activation_name }}:
+    Type: AWS::ACMPCA::CertificateAuthorityActivation
+    DeletionPolicy: {{ certificate_authority_activation.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ certificate_authority_activation.update_replace_policy | default('Delete') }}
+    Properties:
+      Certificate: {{certificate_authority_activation.certificate}}
+      CertificateAuthorityArn: {{certificate_authority_activation.certificate_authority_arn|trim}}
+{%- if certificate_authority_activation.certificate_chain is defined %}
+      CertificateChain: {{certificate_authority_activation.certificate_chain}}
+{%- endif %}
+{%- if certificate_authority_activation.status is defined %}
+      Status: {{certificate_authority_activation.status}}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for certificate_authority_activation in sceptre_user_data.certificate_authority_activations %}
+{%- set certificate_authority_activation_name = certificate_authority_activation.name %}
+  {{ certificate_authority_activation_name }}:
+    Description: The Amazon Resource Name (ARN) of the certificate authority for {{ certificate_authority_activation_name }}.
+    Value:
+      Ref: {{ certificate_authority_activation_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ certificate_authority_activation_name }}"
+
+  {{ certificate_authority_activation_name }}CompleteCertificateChain:
+    Description: The complete Base64 PEM-encoded certificate chain, including the certificate authority certificate for {{ certificate_authority_activation_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ certificate_authority_activation_name }}
+        - CompleteCertificateChain
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ certificate_authority_activation_name }}-CompleteCertificateChain"
+
+{%- endfor %}
