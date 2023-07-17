@@ -34,7 +34,7 @@ Resources:
 {%- else %}
       Password: {{ microsoft_ad.password }}
 {%- endif %}
-{{ vpc_settings.prep(microsoft_ad.vpc_settings) }}
+      {{vpc_settings.prep(microsoft_ad.vpc_settings) | indent(width=6,first=false)}}
 {%- if microsoft_ad.create_alias is defined %}
       CreateAlias: {{ microsoft_ad.create_alias }}
 {%- endif %}
@@ -72,14 +72,28 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}-Alias"
 
-  {{ microsoft_ad_name }}DnsIpAddresses:
-    Description: The DNS IP address for {{ microsoft_ad_name }}
+  {{ microsoft_ad_name }}DnsIpAddress1:
+    Description: The first DNS IP address for {{ microsoft_ad_name }}
     Value:
-      Fn::GetAtt:
-        - {{ microsoft_ad_name }}
-        - DnsIpAddresses
+      Fn::Select:
+        - 0
+        - Fn::GetAtt:
+            - {{ microsoft_ad_name }}
+            - DnsIpAddresses
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}-DnsIpAddresses"
+        Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}-DnsIpAddress1"
+
+  {{ microsoft_ad_name }}DnsIpAddress2:
+    Description: The second DNS IP address for {{ microsoft_ad_name }}
+    Value:
+      Fn::Select:
+        - 1
+        - Fn::GetAtt:
+            - {{ microsoft_ad_name }}
+            - DnsIpAddresses
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}-DnsIpAddress2"
 
 {%- endfor %}
