@@ -1,0 +1,32 @@
+---
+template:
+  type: file
+  path: directoryservice/microsoft_ad.yaml.j2
+
+sceptre_user_data:
+  project_code: '{{stack_group_config.project_code}}'
+  source_repo_url: '{{git_repo}}'
+  microsoft_ads:
+    - name: ad1
+      simple_ad_name: ad1.example.lan
+      password: "{% raw %}'{{resolve:ssm:/ad1/password}}'{% endraw %}"
+      size: Small
+      vpc_settings:
+        vpc_id: vpc-0123456789abcdef0
+        subnet_ids:
+          - subnet-00112233445566778
+          - subnet-11223344556677889
+    - name: ad2
+      simple_ad_name: ad2.example.lan
+      password: "{% raw %}'{{resolve:ssm:/ad2/password}}'{% endraw %}"
+      description: Simple Directory Service Test
+      create_alias: true
+      edition: Standard
+      enable_sso: true
+      short_name: DS2
+      vpc_settings:
+        vpc_id: vpc-0123456789abcdef0
+        subnet_ids:
+          - subnet-00112233445566778
+          - subnet-11223344556677889
+          - subnet-22334455667788990
