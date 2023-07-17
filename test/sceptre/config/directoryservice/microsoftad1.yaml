@@ -8,7 +8,7 @@ sceptre_user_data:
   source_repo_url: '{{git_repo}}'
   microsoft_ads:
     - name: ad1
-      simple_ad_name: ad1.example.lan
+      microsoft_ad_name: ad1.example.lan
       password: "{% raw %}'{{resolve:ssm:/ad1/password}}'{% endraw %}"
       size: Small
       vpc_settings:
@@ -17,7 +17,7 @@ sceptre_user_data:
           - subnet-00112233445566778
           - subnet-11223344556677889
     - name: ad2
-      simple_ad_name: ad2.example.lan
+      microsoft_ad_name: ad2.example.lan
       password: "{% raw %}'{{resolve:ssm:/ad2/password}}'{% endraw %}"
       description: Simple Directory Service Test
       create_alias: true
