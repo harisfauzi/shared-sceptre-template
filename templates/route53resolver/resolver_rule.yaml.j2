@@ -22,9 +22,15 @@ Resources:
 {%- if resolver_rule.target_ips is defined %}
       TargetIps:
 {%- for target_ip in resolver_rule.target_ips %}
-        - Ip: {{ target_ip.ip }}
+        -
+{%- if target_ip.ip is defined %}
+          Ip: {{target_ip.ip}}
+{%- endif %}
+{%- if target_ip.ipv6 is defined %}
+          Ipv6: {{target_ip.ipv6}}
+{%- endif %}
 {%- if target_ip.port is defined %}
-          Port: {{ target_ip.port }}
+          Port: {{target_ip.port}}
 {%- endif %}
 {%- endfor %}
 {%- endif %}
