@@ -14,9 +14,12 @@ Resources:
       Direction: {{ resolver_endpoint.direction }}
       IpAddresses:
 {%- for ip_address in resolver_endpoint.ip_addresses %}
-        - SubnetId: {{ ip_address.subnete_id }}
+        - SubnetId: {{ ip_address.subnet_id }}
 {%- if ip_address.ip is defined %}
           Ip: {{ ip_address.ip }}
+{%- endif %}
+{%- if ip_address.ipv6 is defined %}
+          Ipv6: {{ ip_address.ipv6 }}
 {%- endif %}
 {%- endfor %}
       SecurityGroupIds:
@@ -25,6 +28,9 @@ Resources:
 {%- endfor %}
 {%- if resolver_endpoint.resolver_endpoint_name is defined %}
       Name: {{ resolver_endpoint.resolver_endpoint_name }}
+{%- endif %}
+{%- if resolver_endpoint.resolver_endpoint_type is defined %}
+      ResolverEndpointType: {{resolver_endpoint.resolver_endpoint_type}}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
