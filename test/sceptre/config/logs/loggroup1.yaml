@@ -1,0 +1,52 @@
+---
+template:
+  path: logs/log_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  log_groups:
+    - name: testlog1
+      log_group_name: /testlog1
+      retention_in_days: 1
+    - name: testlog2
+      log_group_name: /testlog2
+      retention_in_days: 7
+      kms_key_id: !stack_output kms/key1.yaml::symetrickey1Alias0
+      tags:
+        project: {{project_code}}
+        costcentre: test
+      data_protection_policy: |
+        Name: data-protection-policy
+        Description: test description
+        Version: '2021-06-01'
+        Statement:
+        - Sid: audit-policy test
+          DataIdentifier:
+          - arn:aws:dataprotection::aws:data-identifier/EmailAddress
+          - arn:aws:dataprotection::aws:data-identifier/DriversLicense-US
+          Operation:
+            Audit:
+              FindingsDestination:
+                CloudWatchLogs:
+                  LogGroup: EXISTING_LOG_GROUP_IN_YOUR_ACCOUNT
+                Firehose:
+                  DeliveryStream: EXISTING_STREAM_IN_YOUR_ACCOUNT
+                S3:
+                  Bucket: EXISTING_BUCKET
+        - Sid: redact-policy
+          DataIdentifier:
+          - arn:aws:dataprotection::aws:data-identifier/EmailAddress
+          - arn:aws:dataprotection::aws:data-identifier/DriversLicense-US
+          Operation:
+            Deidentify:
+              MaskConfig: {}
+    - name: testlog3withstreams
+      log_group_name: /testlog3
+      retention_in_days: 1
+      streams:
+        - i-0123456789abcdef
+        - arn:aws:resource:account:region:/somepath
+
+stack_tags:
+  Test: logs-loggroup
