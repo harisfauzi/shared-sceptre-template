@@ -143,7 +143,7 @@ Resources:
 
 Outputs:
 
-{%- for certificate_authority in sceptre_user_data.certificate_authoritys %}
+{%- for certificate_authority in sceptre_user_data.certificate_authorities %}
 {%- set certificate_authority_name = certificate_authority.name %}
   {{ certificate_authority_name }}:
     Description: The Amazon Resource Name (ARN) of the certificate authority {{ certificate_authority_name }}

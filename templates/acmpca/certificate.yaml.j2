@@ -13,7 +13,8 @@ Resources:
     UpdateReplacePolicy: {{ certificate.update_replace_policy | default('Delete') }}
     Properties:
       CertificateAuthorityArn: {{certificate.certificate_authority_arn|trim}}
-      CertificateSigningRequest: {{certificate.certificate_signing_request}}
+      CertificateSigningRequest: |
+        {{certificate.certificate_signing_request|indent(width=8)}}
       SigningAlgorithm: {{certificate.signing_algorithm}}
       Validity:
         Type: {{certificate.validity.type}}

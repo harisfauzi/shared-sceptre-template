@@ -1,0 +1,45 @@
+---
+template:
+  path: acmpca/certificate_authority.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  certificate_authorities:
+    - name: rootca1
+      key_algorithm: RSA_4096
+      signing_algorithm: SHA512WITHRSA
+      type: ROOT
+      subject:
+        common_name: Test Root CA
+        country: AU
+        state: QLD
+        locality: Brisbane
+        organization: Demo Company
+        organizational_unit: Demo PKI
+      tags:
+        CAType: Root CA
+
+    - name: intermediateca1
+      key_algorithm: RSA_4096
+      signing_algorithm: SHA512WITHRSA
+      type: SUBORDINATE
+      subject:
+        common_name: Test Intermediate CA
+        country: AU
+        state: QLD
+        locality: Brisbane
+        organization: Demo Company
+        organizational_unit: Demo PKI
+      csr_extensions:
+        key_usage:
+          crl_sign: true
+          data_encipherment: true
+          digital_signature: true
+          key_agreement: true
+      usage_mode: GENERAL_PURPOSE
+      tags:
+        CAType: Intermediate CA
+
+stack_tags:
+  Test: acmpca-certificateauthority

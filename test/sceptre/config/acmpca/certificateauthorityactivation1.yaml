@@ -1,0 +1,14 @@
+---
+template:
+  path: acmpca/certificate_authority_activation.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  certificate_authority_activations:
+    - name: activationintermediateca1
+      certificate: !stack_output acmpca/certificate1.yaml::intermediateca1certificate
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca1
+
+stack_tags:
+  Test: acmpca-certificateauthorityactivation

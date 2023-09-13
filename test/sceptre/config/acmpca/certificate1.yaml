@@ -1,0 +1,36 @@
+---
+template:
+  path: acmpca/certificate.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  certificates:
+    - name: intermediateca1certificate
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::rootca1
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA256WITHRSA
+      validity:
+        type: DAYS
+        value: 365
+
+stack_tags:
+  Test: acmpca-certificate
