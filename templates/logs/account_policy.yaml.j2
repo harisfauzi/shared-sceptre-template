@@ -1,0 +1,38 @@
+---
+Description: {{sceptre_user_data.description|default('Logs AccountPolicy(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for account_policy in sceptre_user_data.account_policys %}
+{%- set account_policy_name = account_policy.name %}
+  {{ account_policy_name }}:
+    Type: AWS::Logs::AccountPolicy
+    DeletionPolicy: {{ account_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ account_policy.update_replace_policy | default('Delete') }}
+    Properties: 
+      PolicyDocument: |
+        {{account_policy.policy_document|indent(width=8)}}
+      PolicyName: {{account_policy.policy_name}}
+      PolicyType: {{account_policy.type|default("DATA_PROTECTION_POLICY")}}
+{%- if account_policy.scope is defined %}
+      Scope: {{account_policy.scope}}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for account_policy in sceptre_user_data.account_policys %}
+{%- set account_policy_name = account_policy.name %}
+  {{ account_policy_name }}AccountId:
+    Description: The account ID of the account where this policy -- {{ account_policy_name }} -- was created.
+    Value:
+      Fn::GetAtt:
+        - {{ account_policy_name }}
+        - AccountId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ account_policy_name }}-AccountId"
+
+{%- endfor %}

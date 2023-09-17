@@ -11,6 +11,12 @@ Resources:
     DeletionPolicy: {{ log_group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ log_group.update_replace_policy | default('Delete') }}
     Properties:
+{%- if log_group.data_protection_policy is defined %}
+      DataProtectionPolicy:
+        {{log_group.data_protection_policy|indent(8)}}
+{%- elif log_group.data_protection_policy_json is defined %}
+      DataProtectionPolicy: {{log_group.data_protection_policy_json}}
+{%- endif %}
 {%- if log_group.kms_key_id is defined %}
       KmsKeyId: {{ log_group.kms_key_id | trim }}
 {%- endif %}
@@ -20,13 +26,23 @@ Resources:
 {%- if log_group.retention_in_days is defined %}
       RetentionInDays: {{ log_group.retention_in_days }}
 {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if log_group.tags is defined %}
+{%- for key,value in log_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 
 {%- if log_group.streams is defined %}
-{%- set ii = 0 %}
+{%- set ns1 = namespace() %}
+{%- set ns1.ii = 0 %}
 {%- for stream in log_group.streams %}
-{%- set ii = ii + 1 %}
-{%- set stream_name = log_group_name + ("%03d" % ii) %}
-  {{ stream_name }}:
+{%- set ns1.ii = ns1.ii + 1 %}
+{%- set stream_name = log_group_name + ("%03d" % ns1.ii) %}
+  {{stream_name}}:
     Type: AWS::Logs::LogStream
     DeletionPolicy: {{ log_group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ log_group.update_replace_policy | default('Delete') }}
@@ -60,17 +76,18 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ log_group_name }}-Arn"
 {%- if log_group.streams is defined %}
-{%- set ii = 0 %}
+{%- set ns1 = namespace() %}
+{%- set ns1.ii = 0 %}
 {%- for stream in log_group.streams %}
-{%- set ii = ii + 1 %}
-{%- set stream_name = log_group_name + ("%03d" % ii) %}
+{%- set ns1.ii = ns1.ii + 1 %}
+{%- set stream_name = log_group_name + ("%03d" % ns1.ii) %}
   {{ stream_name }}:
     Description: Stream Name for {{ stream_name }}
     Value:
       Ref: {{ stream_name }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ log_group_name }}-stream{{ "%03d" % ii }}"
+        Fn::Sub: "${AWS::StackName}-{{ log_group_name }}-stream{{ "%03d" % ns1.ii }}"
 
 {%- endfor %}
 {%- endif %}

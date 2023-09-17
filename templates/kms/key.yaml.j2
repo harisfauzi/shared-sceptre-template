@@ -94,10 +94,11 @@ Resources:
 {%- endif %}
 
 {%- if key.alias_names is defined %}
-{%- set ii=0 %}
+{%- set ns1 = namespace() %}
+{%- set ns1.ii=0 %}
 {%- for alias_name in key.alias_names %}
-{%- set ii=ii+1 %}
-  {{ key_name ~ "Alias" ~ ii }}:
+{%- set ns1.ii=ns1.ii+1 %}
+  {{ key_name ~ "Alias" ~ ns1.ii }}:
     Type: AWS::KMS::Alias
     DeletionPolicy: {{ key.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ key.update_replace_policy | default('Delete') }}
@@ -131,16 +132,17 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ key_name }}-Arn"
 
 {%- if key.alias_names is defined %}
-{%- set ii=0 %}
+{%- set ns1 = namespace() %}
+{%- set ns1.ii=0 %}
 {%- for alias_name in key.alias_names %}
-{%- set ii=ii+1 %}
-  {{ key_name ~ "Alias" ~ ii }}:
+{%- set ns1.ii=ns1.ii+1 %}
+  {{ key_name ~ "Alias" ~ ns1.ii }}:
     Description: The Alias for {{ key_name }}
     Value:
-      Ref: {{ key_name ~ "Alias" ~ ii }}
+      Ref: {{ key_name ~ "Alias" ~ ns1.ii }}
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ key_name }}-Alias{{ ii }}"
+        Fn::Sub: "${AWS::StackName}-{{ key_name }}-Alias{{ ns1.ii }}"
 
 {%- endfor %}
 {%- endif %}

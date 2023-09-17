@@ -1,0 +1,14 @@
+---
+template:
+  path: route53resolver/resolver_config.yaml.j2
+
+sceptre_user_data:
+  project_code: '{{stack_group_config.project_code}}'
+  source_repo_url: '{{git_repo}}'
+  resolver_configs:
+    - name: config1
+      autodefined_reverse_flag: DISABLE
+      resource_id: vpc-0123456789abcdef0
+
+stack_tags:
+  Test: route53resolver-resolver-config

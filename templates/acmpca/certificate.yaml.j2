@@ -1,0 +1,171 @@
+---
+{%- import 'macros/subject.yaml.j2' as certificate_subject %}
+Description: {{sceptre_user_data.description|default('ACMPCA Certificate(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for certificate in sceptre_user_data.certificates %}
+{%- set certificate_name = certificate.name %}
+  {{ certificate_name }}:
+    Type: AWS::ACMPCA::Certificate
+    DeletionPolicy: {{ certificate.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ certificate.update_replace_policy | default('Delete') }}
+    Properties:
+      CertificateAuthorityArn: {{certificate.certificate_authority_arn|trim}}
+      CertificateSigningRequest: |
+        {{certificate.certificate_signing_request|indent(width=8)}}
+      SigningAlgorithm: {{certificate.signing_algorithm}}
+      Validity:
+        Type: {{certificate.validity.type}}
+        Value: {{certificate.validity.value}}
+{%- if certificate.validity_not_before is defined %}
+      ValidityNotBefore:
+        Type: {{certificate.validity_not_before.type}}
+        Value: {{certificate.validity_not_before.value}}
+{%- endif %}
+{%- if certificate.api_passthrough is defined %}{# if certificate.api_passthrough is defined #}
+      ApiPassthrough:
+{%- if certificate.api_passthrough.extensions is defined %}
+        Extensions:
+{%- if certificate.api_passthrough.extensions.certificate_policies is defined %}{# if certificate.api_passthrough.extensions.certificate_policies is defined #}
+          CertificatePolicies:
+{%- for certificate_policy in certificate.api_passthrough.extensions.certificate_policies %}
+            -
+              CertPolicyId: {{certificate_policy.cert_policy_id|trim}}
+{%- if certificate_policy.policy_qualifiers is defined %}
+              PolicyQualifiers:
+{%- for policy_qualifier in certificate_policy.policy_qualifiers %}
+                -
+                  PolicyQualifierId: {{policy_qualifier.policy_qualifier_id|trim}}
+                  Qualifier:
+                    CpsUri: {{policy_qualifier.qualifier.cps_uri}}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# endif certificate.api_passthrough.extensions.certificate_policies is defined #}
+{%- if certificate.api_passthrough.extensions.custom_extensions is defined %}{# if certificate.api_passthrough.extensions.custom_extensions is defined #}
+          CustomExtensions:
+{%- for custom_extension in certificate.api_passthrough.extensions.custom_extensions %}
+            -
+              ObjectIdentifier: {{custom_extension.object_identifier}}
+              Value: {{custom_extension.value}}
+{%- if custom_extension.critical is defined %}
+              Critical: {{custom_extension.critical}}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# endif certificate.api_passthrough.extensions.custom_extensions is defined #}
+{%- if certificate.api_passthrough.extensions.extended_key_usage is defined %}{# if certificate.api_passthrough.extensions.extended_key_usage is defined #}
+          ExtendedKeyUsage:
+{%- for key_usage in certificate.api_passthrough.extensions.extended_key_usage %}
+            -
+{%- if key_usage.extended_key_usage_object_identifier is defined %}
+              ExtendedKeyUsageObjectIdentifier: {{key_usage.extended_key_usage_object_identifier}}
+{%- endif %}
+{%- if key_usage.extended_key_usage_type is defined %}
+              ExtendedKeyUsageType: {{key_usage.extended_key_usage_type}}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# endif certificate.api_passthrough.extensions.extended_key_usage is defined #}
+{%- if certificate.api_passthrough.extensions.key_usage is defined %}{# if certificate.api_passthrough.extensions.key_usage is defined #}
+          KeyUsage:
+{%- if certificate.api_passthrough.extensions.key_usage.crl_sign is defined %}
+            CRLSign: {{certificate.api_passthrough.extensions.key_usage.crl_sign}}
+{%- endif %}
+{%- if certificate.api_passthrough.extensions.key_usage.data_encipherment is defined %}
+            DataEncipherment: {{certificate.api_passthrough.extensions.key_usage.data_encipherment}}
+{%- endif %}
+{%- if certificate.api_passthrough.extensions.key_usage.decipher_only is defined %}
+            DecipherOnly: {{certificate.api_passthrough.extensions.key_usage.decipher_only}}
+{%- endif %}
+{%- if certificate.api_passthrough.extensions.key_usage.digital_signature is defined %}
+            DigitalSignature: {{certificate.api_passthrough.extensions.key_usage.digital_signature}}
+{%- endif %}
+{%- if certificate.api_passthrough.extensions.key_usage.encipher_only is defined %}
+            EncipherOnly: {{certificate.api_passthrough.extensions.key_usage.encipher_only}}
+{%- endif %}
+{%- if certificate.api_passthrough.extensions.key_usage.key_agreement is defined %}
+            KeyAgreement: {{certificate.api_passthrough.extensions.key_usage.key_agreement}}
+{%- endif %}
+{%- if certificate.api_passthrough.extensions.key_usage.key_cert_sign is defined %}
+            KeyCertSign: {{certificate.api_passthrough.extensions.key_usage.key_cert_sign}}
+{%- endif %}
+{%- if certificate.api_passthrough.extensions.key_usage.key_encipherment is defined %}
+            KeyEncipherment: {{certificate.api_passthrough.extensions.key_usage.key_encipherment}}
+{%- endif %}
+{%- if certificate.api_passthrough.extensions.key_usage.non_repudiation is defined %}
+            NonRepudiation: {{certificate.api_passthrough.extensions.key_usage.non_repudiation}}
+{%- endif %}
+{%- endif %}{# endif certificate.api_passthrough.extensions.key_usage is defined #}
+{%- if certificate.api_passthrough.extensions.subject_alternative_names is defined %}{# if certificate.api_passthrough.extensions.subject_alternative_names is defined #}
+          SubjectAlternativeNames:
+{%- for san in certificate.api_passthrough.extensions.subject_alternative_names %}
+            -
+{%- if san.directory_name is defined %}
+              DirectoryName:
+                {{certificate_subject.prep(san.directory_name)|indent(width=16,first=false)}}
+{%- endif %}
+{%- if san.dns_name is defined %}
+              DnsName: {{san.dns_name}}
+{%- endif %}
+{%- if san.edi_party_name is defined %}
+              EdiPartyName:
+                NameAssigner: {{san.edi_party_name.name_assigner}}
+                PartyName: {{san.edi_party_name.party_name}}
+{%- endif %}
+{%- if san.ip_address is defined %}
+              IpAddress: {{san.ip_address}}
+{%- endif %}
+{%- if san.other_name is defined %}
+              OtherName:
+                TypeId: {{san.other_name.type_id}}
+                Value: {{san.other_name.value}}
+{%- endif %}
+{%- if san.registered_id is defined %}
+              RegisteredId: {{san.registered_id}}
+{%- endif %}
+{%- if san.rfc822_name is defined %}
+              Rfc822Name: {{san.rfc822_name}}
+{%- endif %}
+{%- if san.uniform_resource_identifier is defined %}
+              UniformResourceIdentifier: {{san.uniform_resource_identifier}}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# endif certificate.api_passthrough.extensions.subject_alternative_names is defined #}
+{%- endif %}
+{%- if certificate.api_passthrough.subject is defined %}
+        Subject:
+          {{certificate_subject.prep(certificate.api_passthrough.subject)|indent(width=10,first=false)}}
+{%- endif %}
+{%- endif %}{# endif certificate.api_passthrough is defined #}
+{%- if certificate.template_arn is defined %}
+      TemplateArn: {{certificate.template_arn|trim}}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for certificate in sceptre_user_data.certificates %}
+{%- set certificate_name = certificate.name %}
+  {{ certificate_name }}Arn:
+    Description: The Amazon Resource Name (ARN) of the issued certificate for {{ certificate_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ certificate_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ certificate_name }}-Arn"
+
+  {{ certificate_name }}Certificate:
+    Description: The issued Base64 PEM-encoded certificate for {{ certificate_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ certificate_name }}
+        - Certificate
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ certificate_name }}-Certificate"
+
+{%- endfor %}

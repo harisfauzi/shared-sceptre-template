@@ -11,11 +11,17 @@ Resources:
     DeletionPolicy: {{ subscription_filter.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ subscription_filter.update_replace_policy | default('Delete') }}
     Properties:
-      DestinationArn: {{ subscription_filter.destination_arn }}
+      DestinationArn: {{ subscription_filter.destination_arn | trim }}
       FilterPattern: {{ subscription_filter.filter_pattern }}
       LogGroupName: {{ subscription_filter.log_group_name }}
+{%- if subscription_filter.distribution is defined %}
+      Distribution: {{ subscription_filter.distribution }}
+{%- endif %}
+{%- if subscription_filter.filter_name is defined %}
+      FilterName: {{ subscription_filter.filter_name }}
+{%- endif %}
 {%- if subscription_filter.role_arn is defined %}
-      RoleArn: {{ subscription_filter.role_arn }}
+      RoleArn: {{ subscription_filter.role_arn | trim }}
 {%- endif %}
 {%- endfor %}
 
