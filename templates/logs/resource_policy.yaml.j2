@@ -1,5 +1,5 @@
 ---
-Description: Logs Resource Policy(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('Logs Resource Policy(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -13,9 +13,9 @@ Resources:
     Properties:
 {%- if resource_policy.policy_document_json is defined %}
       PolicyDocument: {{ resource_policy.policy_document_json }}
-{%- else %}
-      PolicyDocument:
-{{ resource_policy.policy_document | indent(width=8, first=true) }}
+{%- elif resource_policy.policy_document is defined %}
+      PolicyDocument: |
+        {{ resource_policy.policy_document | indent(width=8) }}
 {%- endif %}
       PolicyName: {{ resource_policy.policy_name }}
 {%- endfor %}

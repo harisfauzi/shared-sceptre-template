@@ -1,0 +1,175 @@
+---
+template:
+  path: ecs/task_definition.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: {{git_repo}}
+  task_definitions:
+    - name: test1
+      container_definitions:
+        - command:
+            - bash
+          cpu: 2
+          depends_on:
+            - condition: HEALTHY
+              container_name: alt-definition
+          disable_networking: False
+          dns_search_domains:
+            - test.example.com
+          dns_servers:
+            - "10.100.64.2"
+            - "10.100.128.2"
+          docker_labels:
+            dummy_key1: dummy_value1
+            dummy_key2: another dummy value 2
+          docker_security_options:
+            - "no-new-privileges"
+            - "somelabel:somevalue"
+          entry_point:
+            - /bin/bash
+          environment:
+            - name: STAGE
+              value: test
+            - name: SSM_PARAM1
+              value: /test/param1
+          environment_files:
+            - type: s3
+              value: s3://dummy-bucket/task-test1/environment-file1.env
+          essential: False
+          extra_hosts:
+            - hostname: dummy1.domain.lan
+              ip_address: 172.31.128.65
+            - hostname: dummy2.domain.lan
+              ip_address: 172.31.128.66
+          firelens_configuration:
+            options:
+              enable-ecs-log-metadata: true
+              config-file-type: s3
+              config-file-value: s3://dummy-bucket/task-test1/test1-config.conf
+            type: fluentd
+          health_check:
+            command:
+              - "CMD-SHELL"
+              - "curl -L http://somecheck.domain.lan/test1"
+            interval: 60
+            retries: 2
+            start_period: 120
+            timeout: 3
+          hostname: dummy-host
+          image: ubuntu:latest
+          interactive: False
+          linux_parameters:
+            capabilities:
+              add:
+                - "SYSLOG"
+                - "KILL"
+              drop:
+                - "SYS_CHROOT"
+                - "MKNOD"
+            devices:
+              - container_path: /dev/xvda
+                host_path: /dev/xvda
+                permissions:
+                  - read
+                  - write
+            init_process_enabled: True
+            max_swap: 1024
+            shared_memory_size: 1024
+            swappiness: 0
+            tmpfs:
+              - size: 256
+                container_path: /home/tmp
+                mount_options:
+                  - "defaults"
+          log_configuration:
+            log_driver: awslogs
+            options:
+              option1: value1
+            secret_options:
+              - name: secret_token_log1
+                value_from: "!Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:dummy-secret"
+          memory: 1024
+          memory_reservation: 10
+          mount_points:
+            - container_path: /var/tmp
+              read_only: False
+              source_volume: shared-tmp
+          name: definition1
+          port_mappings:
+            - app_protocol: http
+              container_port: 8080
+              container_port_range: 8000-10000
+              host_port: 80
+              name: dummy-service-connect
+              protocol: tcp
+          privileged: False
+          pseudo_terminal: False
+          readonly_root_filesystem: False
+          repository_credentials:
+            credentials_parameter: "!Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:dummy-repo-credentials"
+          resource_requirements:
+            - type: GPU
+              value: 1
+          secrets:
+            - name: secret_token_access1
+              value_from: "!Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:dummy-secret"
+          start_timeout: 30
+          stop_timeout: 30
+          system_controls:
+            - namespace: net
+              value: ip_forwarding=0
+          ulimits:
+            - hard_limit: 8192
+              name: nofile
+              soft_limit: 2048
+          user: "testuser:testgroup"
+          volumes_from:
+            - read_only: True
+              source_container: alt-definition
+          working_directory: /data
+        - image: ubuntu:latest
+          name: alt-definition
+      cpu: 4096
+      ephemeral_storage:
+        size_in_gb: 20
+      execute_role_arn: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/test-execute-role"
+      family: definition1
+      ipc_mode: none
+      memory: 8192
+      network_mode: bridge
+      pid_mode: task
+      proxy_configuration:
+        container_name: definition1
+        proxy_configuration_properties:
+          - name: IgnoredUID
+            value: appuser
+          - name: IgnoredGID
+            value: appgroup
+          - name: AppPorts
+            value: 8080,8081
+          - name: ProxyIngressPort
+            value: 8080
+          - name: ProxyEgressPort
+            value: 9090
+          - name: EgressIgnoredPorts 
+          - name: EgressIgnoredIPs
+        type: APPMESH
+      runtime_platform:
+        cpu_architecture: X86_64
+        operating_system_family: LINUX
+      tags:
+        Name: Definition1
+        Purpose: Test Template
+      task_role_arn: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/test-task-role"
+      volumes:
+        - docker_volume_configuration:
+            autoprovision: False
+            driver: local
+            scope: task
+          host:
+            source_path: /var/tmp
+          name: shared-tmp
+
+stack_tags:
+  Test: ecs-taskdefinition

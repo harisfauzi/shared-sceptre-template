@@ -1,5 +1,5 @@
 ---
-Description: Route53Resolver ResolverRuleAssociation(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('Route53Resolver ResolverRuleAssociation(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -59,7 +59,7 @@ Outputs:
         - {{ resover_rule_association_name }}
         - ResolverRuleId
     Export:
-      ResolverRuleId:
+      Name:
         Fn::Sub: "${AWS::StackName}-{{ resover_rule_association_name }}-ResolverRuleId"
 
   {{ resover_rule_association_name }}VPCId:

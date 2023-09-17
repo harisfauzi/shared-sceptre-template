@@ -1,5 +1,5 @@
 ---
-Description: Route53Resolver ResolverRule(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('Route53Resolver ResolverRule(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -22,9 +22,15 @@ Resources:
 {%- if resolver_rule.target_ips is defined %}
       TargetIps:
 {%- for target_ip in resolver_rule.target_ips %}
-        - Ip: {{ target_ip.ip }}
+        -
+{%- if target_ip.ip is defined %}
+          Ip: {{target_ip.ip}}
+{%- endif %}
+{%- if target_ip.ipv6 is defined %}
+          Ipv6: {{target_ip.ipv6}}
+{%- endif %}
 {%- if target_ip.port is defined %}
-          Port: {{ target_ip.port }}
+          Port: {{target_ip.port}}
 {%- endif %}
 {%- endfor %}
 {%- endif %}
@@ -73,6 +79,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-DomainName"
 
+{%- if resolver_rule.resolver_rule_name is defined %}
   {{ resolver_rule_name }}Name:
     Description: >
       A friendly name for {{ resolver_rule_name }} that lets you
@@ -85,6 +92,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-Name"
 
+{%- endif %}
   {{ resolver_rule_name }}ResolverEndpointId:
     Description: >
       The ID of the outbound endpoint that {{ resolver_rule_name }} is associated with.
@@ -106,18 +114,4 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-ResolverRuleId"
 
-{%- if resolver_rule.rule_type == 'FORWARD' %}
-  {{ resolver_rule_name }}TargetIps:
-    Description: >
-      When the value of RuleType is FORWARD,
-      the IP addresses that the outbound endpoint forwards DNS queries to.
-    Value:
-      Fn::GetAtt:
-        - {{ resolver_rule_name }}
-        - TargetIps
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-TargetIps"
-
-{%- endif %}
 {%- endfor %}

@@ -1,0 +1,82 @@
+---
+Description: {{sceptre_user_data.description|default('IAM Roles Anywhere Profile(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for profile in sceptre_user_data.profiles %}
+{%- set profile_name = profile.name %}
+  {{ profile_name }}:
+    Type: AWS::RolesAnywhere::Profile
+    DeletionPolicy: {{ profile.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ profile.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{profile.profile_name}}
+      RoleArns:
+{%- for role_arn in profile.role_arns %}
+        - {{role_arn}}
+{%- endfor %}
+{%- if profile.duration_seconds is defined %}
+      DurationSeconds: {{profile.duration_seconds}}
+{%- endif %}
+{%- if profile.enabled is defined %}
+      Enabled: {{profile.enabled}}
+{%- endif %}
+{%- if profile.managed_policy_arns is defined %}
+      ManagedPolicyArns:
+{%- for managed_policy_arn in profile.managed_policy_arns %}
+        - {{managed_policy_arn}}
+{%- endfor %}
+{%- endif %}
+{%- if profile.require_instance_properties is defined %}
+      RequireInstanceProperties: {{profile.require_instance_properties}}
+{%- endif %}
+{%- if profile.session_policy is defined %}
+      SessionPolicy: |
+        {{profile.session_policy|indent(widht=8)}}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if profile.tags is defined %}
+{%- for key,value in profile.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for profile in sceptre_user_data.profiles %}
+{%- set profile_name = profile.name %}
+  {{ profile_name }}:
+    Description: The name of the Profile for {{ profile_name }}
+    Value:
+      Ref: {{ profile_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ profile_name }}"
+
+  {{ profile_name }}ProfileArn:
+    Description: The ARN of the profile {{ profile_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ profile_name }}
+        - ProfileArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ profile_name }}-ProfileArn"
+
+  {{ profile_name }}ProfileId:
+    Description: The unique primary identifier of the Profile {{ profile_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ profile_name }}
+        - ProfileId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ profile_name }}-ProfileId"
+
+{%- endfor %}

@@ -2,7 +2,7 @@
 {%- import 'macros/macro_load_balancer.yaml.j2' as macro_load_balancer %}
 {%- import 'macros/macro_network_configuration.yaml.j2' as macro_network_configuration %}
 {%- import 'macros/macro_service_registry.yaml.j2' as macro_service_registry %}
-Description: ECS Task Set(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('ECS Task Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:

@@ -1,0 +1,75 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFormation TypeActivation(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for type_activation in sceptre_user_data.type_activations %}
+{%- set type_activation_name = type_activation.name %}
+  {{ type_activation_name }}:
+    Type: AWS::CloudFormation::TypeActivation
+    DeletionPolicy: {{ type_activation.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ type_activation.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if type_activation.auto_update is defined %}
+      AutoUpdate: {{ type_activation.auto_update }}
+{%- endif %}
+{%- if type_activation.execution_role_arn is defined %}
+      ExecutionRoleArn: {{ type_activation.execution_role_arn | trim }}
+{%- endif %}
+{%- if type_activation.logging_config is defined %}
+      LoggingConfig:
+{%- if type_activation.logging_config.log_group_name is defined %}
+        LogGroupName: {{ type_activation.logging_config.log_group_name }}
+{%- endif %}
+{%- if type_activation.logging_config.log_role_arn is defined %}
+        LogRoleArn: {{ type_activation.logging_config.log_role_arn | trim }}
+{%- endif %}
+{%- endif %}
+{%- if type_activation.major_version is defined %}
+      MajorVersion: {{ type_activation.major_version }}
+{%- endif %}
+{%- if type_activation.public_type_arn is defined %}
+      PublicTypeArn: {{ type_activation.public_type_arn | trim }}
+{%- endif %}
+{%- if type_activation.publisher_id is defined %}
+      PublisherId: {{ type_activation.publisher_id | trim }}
+{%- endif %}
+{%- if type_activation.type is defined %}
+      Type: {{ type_activation.type }}
+{%- endif %}
+{%- if type_activation.type_name is defined %}
+      TypeName: {{ type_activation.type_name }}
+{%- endif %}
+{%- if type_activation.type_name_alias is defined %}
+      TypeNameAlias: {{ type_activation.type_name_alias }}
+{%- endif %}
+{%- if type_activation.version_bump is defined %}
+      VersionBump: {{ type_activation.version_bump }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for type_activation in sceptre_user_data.type_activations %}
+{%- set type_activation_name = type_activation.name %}
+  {{ type_activation_name }}:
+    Description: ARN for {{ type_activation_name }}
+    Value:
+      Ref: {{ type_activation_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ type_activation_name }}"
+
+  {{ type_activation_name }}Arn:
+    Description: The ARN for {{ type_activation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ type_activation_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ type_activation_name }}-Arn"
+
+{%- endfor %}

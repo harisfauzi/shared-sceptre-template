@@ -2,7 +2,7 @@
 VpcSettings:
   SubnetIds:
 {%- for subnet_id in vpc_settings.subnet_ids %}
-    - {{ subnet_id }trim }}
+    - {{ subnet_id | trim }}
 {%- endfor %}
   VpcId: {{ vpc_settings.vpc_id | trim }}
 {%- endmacro %}

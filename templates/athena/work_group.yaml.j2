@@ -1,7 +1,7 @@
 ---
 {%- import 'macros/macro_encryption_configuration.yaml.j2' as macro_encryption_configuration %}
 {%- import 'macros/macro_engine_version.yaml.j2' as macro_engine_version %}
-Description: Athena Work Group(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('Athena Work Group(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:

@@ -1,0 +1,57 @@
+---
+template:
+  path: rolesanywhere/trust_anchor.yaml.j2
+
+sceptre_user_data:
+  project_code: '{{stack_group_config.project_code}}'
+  source_repo_url: '{{git_repo}}'
+  trust_anchors:
+    - name: rolesanywheretrustanchortest1
+      trust_anchor_name: TrustAnchor1
+      source:
+        source_type: CERTIFICATE_BUNDLE
+        source_data:
+          x509_certificate_data: |
+            MIIFHzCCBAegAwIBAgIJALBRi6kXr6ZDMA0GCSqGSIb3DQEBCwUAMIG2MQswCQYD
+            VQQGEwJBVTEMMAoGA1UECBMDTlNXMQ8wDQYDVQQHEwZTeWRuZXkxGjAYBgNVBAoT
+            EUZhdXppIE9yZyBSb290IENBMRowGAYDVQQLExFGYXV6aSBPcmcgUm9vdCBDQTEv
+            MC0GA1UEAxMmRmF1emkgT3JnIFJvb3QgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkx
+            HzAdBgkqhkiG9w0BCQEWEHJvb3RjYUBmYXV6aS5vcmcwHhcNMTYwNDEwMDcxNTQy
+            WhcNMzYwNDEwMDcxNTQyWjCBtjELMAkGA1UEBhMCQVUxDDAKBgNVBAgTA05TVzEP
+            MA0GA1UEBxMGU3lkbmV5MRowGAYDVQQKExFGYXV6aSBPcmcgUm9vdCBDQTEaMBgG
+            A1UECxMRRmF1emkgT3JnIFJvb3QgQ0ExLzAtBgNVBAMTJkZhdXppIE9yZyBSb290
+            IENlcnRpZmljYXRpb24gQXV0aG9yaXR5MR8wHQYJKoZIhvcNAQkBFhByb290Y2FA
+            ZmF1emkub3JnMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAskR1p4dN
+            odRNEa8l+1YvxF9KNbUnJ22mHKw/smyq3AeDZZSoDFD4uyZ1HYt02p8y2HKaMEDW
+            bEeqsh6/Vpng131Ap+LHz55MYqggVrYyH3UWkkO4R+yCzNrvTcWhkS5vpFn3NC4Z
+            Jeomb8HwXkBDgcFz7/lG6pKHrgFH9wEyXUqK6op4T5/EOsaZzeYN+xLyhjhVbcUW
+            JJvm2EPa5wYLXTlTlYBC+g98QOvY2rNKsDSX/wALCZeYG+zKdtfcxj1cv2HT6i40
+            NXiD9dB2StFEiVCnGlWWXH7LgRY36roify/ujpGglDQEbTgQJTcupuzZ7hMgeO7I
+            sI6siVyOXGyQywIDAQABo4IBLDCCASgwHQYDVR0OBBYEFEH2NTNNXDXUuypilRoW
+            el1p8792MIHrBgNVHSMEgeMwgeCAFEH2NTNNXDXUuypilRoWel1p8792oYG8pIG5
+            MIG2MQswCQYDVQQGEwJBVTEMMAoGA1UECBMDTlNXMQ8wDQYDVQQHEwZTeWRuZXkx
+            GjAYBgNVBAoTEUZhdXppIE9yZyBSb290IENBMRowGAYDVQQLExFGYXV6aSBPcmcg
+            Um9vdCBDQTEvMC0GA1UEAxMmRmF1emkgT3JnIFJvb3QgQ2VydGlmaWNhdGlvbiBB
+            dXRob3JpdHkxHzAdBgkqhkiG9w0BCQEWEHJvb3RjYUBmYXV6aS5vcmeCCQCwUYup
+            F6+mQzAMBgNVHRMEBTADAQH/MAsGA1UdDwQEAwIBBjANBgkqhkiG9w0BAQsFAAOC
+            AQEACpLOHMUIiVy0lBxKvC9yZASLsz0gS8GVdciDGiRs6hV5T7rXPvIDglG4jLDw
+            jomdkPryi7XF0WtNfI8OT9V8drR7fjMtL1gbJO7nA6kvCbKm0LQvkEPvTE7PUjwM
+            1gVuM+60K8SJNm55pGuQ3mpXLpbuULVjfbGoovxq8u4G+hZyJdqNCzYw9JWps0Zw
+            ychsC9HCraDwUFHMQh3m+Y96+pv3C+WtE7RXJzcGsxL1XpzngzrtpArhkY7brzQh
+            f0FGEwsAK9dHEAED141VVGz+0vU7B3Q/bBc4D79uKcfJVE1zTw3JdIjf127LLbXb
+            xA1U6UW/RQyuYzICfFJUdP676Q==
+      tags:
+        Name: rolesanywheretrustanchortest1
+        Project: '{{stack_group_config.project_code}}'
+    - name: rolesanywheretrustanchortest2
+      trust_anchor_name: TrustAnchor2
+      source:
+        source_type: AWS_ACM_PCA
+        source_data:
+          acm_pca_arn: "!Sub arn:${AWS::Partition}:acm-pca:${AWS::Region}:${AWS::AccountId}:certificate-authority/12345678-1234-1234-1234-123456789012"
+      tags:
+        Name: rolesanywheretrustanchortest2
+        Project: '{{stack_group_config.project_code}}'
+
+stack_tags:
+  Test: rolesanywhere-trustanchor

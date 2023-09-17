@@ -1,5 +1,5 @@
 ---
-Description: Logs Destination(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('Logs Destination(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -12,9 +12,10 @@ Resources:
     UpdateReplacePolicy: {{ destination.update_replace_policy | default('Delete') }}
     Properties:
       DestinationName: {{ destination.destination_name }}
-      DestinationPolicy: {{ destination.destination_policy }}
-      RoleArn: {{ destination.role_arn }}
-      TargetArn: {{ destination.target_arn }}
+      DestinationPolicy: |
+        {{destination.destination_policy | indent(width=8)}}
+      RoleArn: {{ destination.role_arn | trim }}
+      TargetArn: {{ destination.target_arn | trim }}
 {%- endfor %}
 
 Outputs:

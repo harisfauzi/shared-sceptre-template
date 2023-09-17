@@ -1,0 +1,103 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFormation ResourceVersion(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for resource_version in sceptre_user_data.resource_versions %}
+{%- set resource_version_name = resource_version.name %}
+  {{ resource_version_name }}:
+    Type: AWS::CloudFormation::ResourceVersion
+    DeletionPolicy: {{ resource_version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resource_version.update_replace_policy | default('Delete') }}
+    Properties:
+      SchemaHandlerPackage: {{ resource_version.schema_handler_package }}
+      TypeName: {{ resource_version.type_name }}
+{%- if resource_version.execution_role_arn is defined %}
+      ExecutionRoleArn: {{ resource_version.execution_role_arn }}
+{%- endif %}
+{%- if resource_version.logging_config is defined %}
+      LoggingConfig:
+{%- if resource_version.logging_config.log_group_name is defined %}
+        LogGroupName: {{ resource_version.logging_config.log_group_name }}
+{%- endif %}
+{%- if resource_version.logging_config.log_role_arn is defined %}
+        LogRoleArn: {{ resource_version.logging_config.log_role_arn }}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for resource_version in sceptre_user_data.resource_versions %}
+{%- set resource_version_name = resource_version.name %}
+  {{ resource_version_name }}:
+    Description: ARN for {{ resource_version_name }}
+    Value:
+      Ref: {{ resource_version_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}"
+
+  {{ resource_version_name }}Arn:
+    Description: The ARN for {{ resource_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resource_version_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-Arn"
+
+  {{ resource_version_name }}IsDefaultVersion:
+    Description: Whether the resource version is set as the default version for {{ resource_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resource_version_name }}
+        - IsDefaultVersion
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-IsDefaultVersion"
+
+  {{ resource_version_name }}ProvisioningType:
+    Description: The provisioning behavior of the resource type for {{ resource_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resource_version_name }}
+        - ProvisioningType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-ProvisioningType"
+
+  {{ resource_version_name }}TypeArn:
+    Description: The Amazon Resource Name (ARN) of the resource for {{ resource_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resource_version_name }}
+        - TypeArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-TypeArn"
+
+  {{ resource_version_name }}VersionId:
+    Description: The ID of a specific version of the resource for {{ resource_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resource_version_name }}
+        - VersionId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-VersionId"
+
+  {{ resource_version_name }}Visibility:
+    Description: The scope at which the resource is visible and usable in CloudFormation operations for {{ resource_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resource_version_name }}
+        - Visibility
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-Visibility"
+
+{%- endfor %}

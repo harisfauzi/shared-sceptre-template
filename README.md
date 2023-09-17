@@ -1,13 +1,14 @@
 # README
 
-These are reusable Jinja2 templates for [sceptre](https://sceptre.cloudreach.com/2.6.3/) use. Usage:
+These are reusable Jinja2 templates for [sceptre](https://github.com/Sceptre/sceptre/) use. Usage:
 
 1. Download this git repo to your sceptre project.
 
 2. Invoke one of the templates from your sceptre config and supply the required variables for the selected templates in `sceptre_user_data` variable, e.g.:
 
    ```
-   template_path: ec2/vpc.yaml.j2
+   template:
+     path: ec2/vpc.yaml.j2
    
    sceptre_user_data:
      project_code: "{{ stack_group_config.project_code }}"

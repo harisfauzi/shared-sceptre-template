@@ -1,5 +1,5 @@
 ---
-Description: Logs Metric Filter(s) for {{ sceptre_user_data.project_code }}
+Description: {{sceptre_user_data.description|default('Logs Metric Filter(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -18,6 +18,21 @@ Resources:
         - MetricName: {{ metric_transformation.metric_name }}
           MetricNamespace: {{ metric_transformation.metric_namespace }}
           MetricValue: {{ metric_transformation.metric_value }}
+{%- if metric_transformation.default_value is defined %}
           DefaultValue: {{ metric_transformation.default_value }}
+{%- endif %}
+{%- if metric_transformation.default_value is defined %}
+          Dimensions:
+{%- for dimension in metric_transformation.dimensions %}
+            - Key: {{ dimension.key }}
+              Value: {{ dimension.value }}
 {%- endfor %}
+{%- endif %}
+{%- if metric_transformation.default_value is defined %}
+          Unit: {{ metric_transformation.unit }}
+{%- endif %}
+{%- endfor %}
+{%- if metric_filter.filter_name is defined %}
+      FilterName: {{ metric_filter.filter_name }}
+{%- endif %}
 {%- endfor %}

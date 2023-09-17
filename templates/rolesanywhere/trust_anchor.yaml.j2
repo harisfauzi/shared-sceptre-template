@@ -1,0 +1,74 @@
+---
+Description: {{sceptre_user_data.description|default('IAM Roles Anywhere Trust Anchor(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for trust_anchor in sceptre_user_data.trust_anchors %}
+{%- set trust_anchor_name = trust_anchor.name %}
+  {{ trust_anchor_name }}:
+    Type: AWS::RolesAnywhere::TrustAnchor
+    DeletionPolicy: {{ trust_anchor.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ trust_anchor.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{trust_anchor.trust_anchor_name}}
+      Source:
+{%- if trust_anchor.source.source_type is defined %}
+        SourceType: {{trust_anchor.source.source_type}}
+{%- endif %}
+        SourceData:
+{%- if trust_anchor.source.source_data.acm_pca_arn is defined %}
+          AcmPcaArn: {{trust_anchor.source.source_data.acm_pca_arn}}
+{%- endif %}
+{%- if trust_anchor.source.source_data.x509_certificate_data is defined %}
+          X509CertificateData: |
+            {{trust_anchor.source.source_data.x509_certificate_data|indent(width=12)}}
+{%- endif %}
+{%- if trust_anchor.enabled is defined %}
+      Enabled: {{trust_anchor.enabled}}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if trust_anchor.tags is defined %}
+{%- for key,value in trust_anchor.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for trust_anchor in sceptre_user_data.trust_anchors %}
+{%- set trust_anchor_name = trust_anchor.name %}
+  {{ trust_anchor_name }}:
+    Description: The TrustAnchorId for {{ trust_anchor_name }}
+    Value:
+      Ref: {{ trust_anchor_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ trust_anchor_name }}"
+
+  {{ trust_anchor_name }}TrustAnchorArn:
+    Description: The ARN of the trust anchor {{ trust_anchor_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ trust_anchor_name }}
+        - TrustAnchorArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ trust_anchor_name }}-TrustAnchorArn"
+
+  {{ trust_anchor_name }}TrustAnchorId:
+    Description: The unique identifier of the trust anchor {{ trust_anchor_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ trust_anchor_name }}
+        - TrustAnchorId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ trust_anchor_name }}-TrustAnchorId"
+
+{%- endfor %}

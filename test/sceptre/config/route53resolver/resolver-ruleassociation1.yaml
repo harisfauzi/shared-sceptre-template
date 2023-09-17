@@ -1,0 +1,18 @@
+---
+template:
+  path: route53resolver/resolver_rule_association.yaml.j2
+
+sceptre_user_data:
+  project_code: '{{stack_group_config.project_code}}'
+  source_repo_url: '{{git_repo}}'
+  resover_rule_associations:
+    - name: association1
+      resolver_rule_id: rslvr-out-d5e5920e37example
+      vpc_id: vpc-0123456789abcdef0
+    - name: association2
+      resolver_rule_id: rslvr-in-d5e5920e37example
+      vpc_id: vpc-0123456789abcdef0
+      resover_rule_association_name: resolver-in-association2
+
+stack_tags:
+  Test: route53resolver-resolver-rule-association

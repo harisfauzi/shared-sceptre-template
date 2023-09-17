@@ -1,6 +1,6 @@
-{%- import 'macros/gt_capacity_autoscaling_settings.yaml.j2' as gt_capacity_autoscaling_settings -%}
 ---
-Description: DynamoDB GlobalTable(s) for {{ sceptre_user_data.project_code }}
+{%- import 'macros/gt_capacity_autoscaling_settings.yaml.j2' as gt_capacity_autoscaling_settings -%}
+Description: {{sceptre_user_data.description|default('DynamoDB GlobalTable(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
