@@ -55,7 +55,7 @@ Resources:
 {%- if container_definition.docker_labels is defined %}
           DockerLabels:
 {%- for key, value in container_definition.docker_labels.items() %}
-            "{{ key }}": "{{ value }}"
+            {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if container_definition.docker_security_options is defined %}
@@ -114,7 +114,7 @@ Resources:
 {%- if container_definition.firelens_configuration.options is defined %}
             Options:
 {%- for key, value in container_definition.firelens_configuration.options.items() %}
-              "{{ key }}": "{{ value }}"
+              {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if container_definition.firelens_configuration.type is defined %}
@@ -226,7 +226,7 @@ Resources:
 {%- if container_definition.log_configuration.options is defined %}
             Options:
 {%- for key, value in container_definition.log_configuration.options.items() %}
-              "{{ key }}": "{{ value }}"
+              {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if container_definition.log_configuration.secret_options is defined %}
@@ -450,13 +450,13 @@ Resources:
 {%- if volume.docker_volume_configuration.driver_opts is defined %}
             DriverOpts:
 {%- for key, value in volume.docker_volume_configuration.driver_opts.items() %}
-              "{{ key }}": "{{ value }}"
+              {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if volume.docker_volume_configuration.labels is defined %}
             Labels:
 {%- for key, value in volume.docker_volume_configuration.labels.items() %}
-              "{{ key }}": "{{ value }}"
+              {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if volume.docker_volume_configuration.scope is defined %}
