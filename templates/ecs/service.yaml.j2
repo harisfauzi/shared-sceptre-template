@@ -122,7 +122,7 @@ Resources:
 {%- if service.service_connect_configuration.log_configuration.options is defined %}
           Options:
 {%- for key,value in service.service_connect_configuration.log_configuration.options.items() %}
-            "{{ key }}": "{{ value }}"
+            {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if service.service_connect_configuration.log_configuration.secret_options is defined %}

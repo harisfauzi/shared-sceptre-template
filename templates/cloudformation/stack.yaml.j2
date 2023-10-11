@@ -19,7 +19,7 @@ Resources:
 {%- if stack.parameters is defined %}
       Parameters:
 {%- for key,value in stack.parameters.items() %}
-        "{{ key }}": "{{ value }}"
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if stack.timeout_in_minutes is defined %}
