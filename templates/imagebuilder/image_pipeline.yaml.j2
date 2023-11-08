@@ -53,7 +53,7 @@ Resources:
         "SourceRepoURL": "{{ sceptre_user_data.source_repo_url | default('unknown') }}"
 {%- if image_pipeline.tags is defined %}
 {%- for key,value in image_pipeline.tags.items() %}
-        "{{ key }}": "{{ value }}"
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 
