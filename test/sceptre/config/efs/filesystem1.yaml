@@ -1,0 +1,36 @@
+---
+template:
+  path: efs/file_system.yaml.j2
+
+sceptre_user_data:
+  project_code: {{stack_group_config.project_code}}
+  source_repo_url: {{git_repo}}
+  file_systems:
+    - name: test1
+      availability_zone_name: "!Join ['', [!Sub '${AWS::Region}', 'a']]"
+      backup_policy:
+        status: ENABLED
+      bypass_policy_lockout_safety_check: True
+      encrypted: True
+      file_system_policy_json: |
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:role/Testing_Role
+              Action:
+                - elasticfilesystem:ClientWrite
+                - elasticfilesystem:ClientMount
+              Resource: !Ref test1
+              Condition:
+                Bool:
+                  elasticfilesystem:AccessedViaMountTarget: true
+      file_system_tags:
+        Name: test1
+      kms_key_id: !stack_output kms/key1.yaml::symetrickey1Alias0
+      lifecycle_policies:
+        - transition_to_ia: AFTER_1_DAY
+        - transition_to_primary_storage_class: AFTER_1_ACCESS
+
+stack_tags:
+  Test: efs-filesystem

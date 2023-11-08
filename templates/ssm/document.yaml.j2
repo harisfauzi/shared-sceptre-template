@@ -13,7 +13,7 @@ Resources:
 {%- if document.content_json is defined %}
       Content: {{ document.content_json }}
 {%- else %}
-      Content:
+      Content: |
 {{ document.content | indent(width=8, first=true) }}
 {%- endif %}
 {%- if document.attachments is defined %}{# BEGIN {%- if document.attachments is defined %} #}
