@@ -24,64 +24,64 @@ Resources:
 {%- if file_system.encrypted is defined %}
       Encrypted: {{file_system.encrypted}}
 {%- endif %}
-{%- if file_system.file_system_policy is defined %}
+{%- if file_system.file_system_policy is defined %}{#BEGIN{%- if file_system.file_system_policy is defined %}#}
       FileSystemPolicy: {{file_system.file_system_policy}}
-{%- if file_system.file_system_policy_json is defined %}
+{%- elif file_system.file_system_policy_json is defined %}{#ELSEIF{%- if file_system.file_system_policy_json is defined %}#}
       FileSystemPolicy: |
         {{file_system.file_system_policy_json | indent(width=8, first=false)}}
-{%- endif %}
-{%- if file_system.file_system_tags is defined %}
+{%- endif %}{#END{%- if file_system.file_system_policy is defined %}#}
+{%- if file_system.file_system_tags is defined %}{#BEGIN{%- if file_system.file_system_tags is defined %}#}
       FileSystemTags:
 {%- for key,value in file_system.file_system_tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- if file_system.kms_key_id is defined %}
+{%- endif %}{#END{%- if file_system.file_system_tags is defined %}#}
+{%- if file_system.kms_key_id is defined %}{#BEGIN{%- if file_system.kms_key_id is defined %}#}
       KmsKeyId: {{file_system.kms_key_id | trim}}
-{%- endif %}
-{%- if file_system.lifecycle_policies is defined %}
+{%- endif %}{#END{%- if file_system.kms_key_id is defined %}#}
+{%- if file_system.lifecycle_policies is defined %}{#BEGIN{%- if file_system.lifecycle_policies is defined %}#}
       LifecyclePolicies:
-{%- for policy in file_system.lifecycle_policies %}
+{%- for policy in file_system.lifecycle_policies %}{#BEGIN{%- for policy in file_system.lifecycle_policies %}#}
         -
-{%- if policy.transition_to_ia is defined %}
+{%- if policy.transition_to_ia is defined %}{#BEGIN{%- if policy.transition_to_ia is defined %}#}
           TransitionToIA: {{policy.transition_to_ia}}
-{%- endif %}
-{%- if policy.transition_to_primary_storage_class is defined %}
+{%- endif %}{#END{%- if policy.transition_to_ia is defined %}#}
+{%- if policy.transition_to_primary_storage_class is defined %}{#BEGIN{%- if policy.transition_to_primary_storage_class is defined %}#}
           TransitionToPrimaryStorageClass: {{policy.transition_to_primary_storage_class}}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if file_system.performance_mode is defined %}
+{%- endif %}{#END{%- if policy.transition_to_primary_storage_class is defined %}#}
+{%- endfor %}{#END{%- for policy in file_system.lifecycle_policies %}#}
+{%- endif %}{#END{%- if file_system.lifecycle_policies is defined %}#}
+{%- if file_system.performance_mode is defined %}{#BEGIN{%- if file_system.performance_mode is defined %}#}
       PerformanceMode: {{file_system.performance_mode}}
-{%- endif %}
-{%- if file_system.provisioned_throughput_in_mibps is defined %}
+{%- endif %}{#END{%- if file_system.performance_mode is defined %}#}
+{%- if file_system.provisioned_throughput_in_mibps is defined %}{#BEGIN{%- if file_system.provisioned_throughput_in_mibps is defined %}#}
       ProvisionedThroughputInMibps: {{file_system.provisioned_throughput_in_mibps}}
-{%- endif %}
-{%- if file_system.replication_configuration is defined %}
+{%- endif %}{#END{%- if file_system.provisioned_throughput_in_mibps is defined %}#}
+{%- if file_system.replication_configuration is defined %}{#BEGIN{%- if file_system.replication_configuration is defined %}#}
       ReplicationConfiguration:
-{%- if file_system.replication_configuration.destinations is defined %}
+{%- if file_system.replication_configuration.destinations is defined %}{#BEGIN{%- if file_system.replication_configuration.destinations is defined %}#}
         Destinations:
-{%- for destination in file_system.replication_configuration.destinations %}
+{%- for destination in file_system.replication_configuration.destinations %}{#BEGIN{%- for destination in file_system.replication_configuration.destinations %}#}
           -
-{%- if destination.availability_zone_name is defined %}
+{%- if destination.availability_zone_name is defined %}{#BEGIN{%- if destination.availability_zone_name is defined %}#}
             AvailabilityZoneName: {{destination.availability_zone_name}}
-{%- endif %}
-{%- if destination.file_system_id is defined %}
+{%- endif %}{#END{%- if destination.availability_zone_name is defined %}#}
+{%- if destination.file_system_id is defined %}{#BEGIN{%- if destination.file_system_id is defined %}#}
             FileSystemId: {{destination.file_system_id | trim}}
-{%- endif %}
-{%- if destination.kms_key_id is defined %}
+{%- endif %}{#END{%- if destination.file_system_id is defined %}#}
+{%- if destination.kms_key_id is defined %}{#BEGIN{%- if destination.kms_key_id is defined %}#}
             KmsKeyId: {{destination.kms_key_id | trim}}
-{%- endif %}
-{%- if destination.region is defined %}
+{%- endif %}{#END{%- if destination.kms_key_id is defined %}#}
+{%- if destination.region is defined %}{#BEGIN{%- if destination.region is defined %}#}
             Region: {{destination.region}}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- endif %}
-{%- if file_system.throughput_mode is defined %}
+{%- endif %}{#END{%- if destination.region is defined %}#}
+{%- endfor %}{#END{%- for destination in file_system.replication_configuration.destinations %}#}
+{%- endif %}{#END{%- if file_system.replication_configuration.destinations is defined %}#}
+{%- endif %}{#END{%- if file_system.replication_configuration is defined %}#}
+{%- if file_system.throughput_mode is defined %}{#BEGIN{%- if file_system.throughput_mode is defined %}#}
       ThroughputMode: {{file_system.throughput_mode}}
-{%- endif %}
+{%- endif %}{#END{%- if file_system.throughput_mode is defined %}#}
 
 {%- endfor %}
 
