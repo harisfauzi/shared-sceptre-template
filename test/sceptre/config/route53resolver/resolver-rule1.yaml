@@ -1,0 +1,29 @@
+---
+template:
+  path: route53resolver/resolver_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: '{{stack_group_config.project_code}}'
+  source_repo_url: '{{git_repo}}'
+  resolver_rules:
+    - name: rule1
+      domain_name: example.lan
+      rule_type: FORWARD
+      resolver_endpoint_id: rslvr-out-d5e5920e37example
+      target_ips:
+        - ip: "10.255.211.11"
+          port: 53
+        - ip: "10.255.207.11"
+          port: 53
+    - name: rule2
+      domain_name: internal.lan
+      rule_type: SYSTEM
+      resolver_endpoint_id: rslvr-in-d5e5920e37example
+      target_ips:
+        - ip: "10.255.203.11"
+          port: 53
+        - ip: "10.255.201.11"
+          port: 53
+
+stack_tags:
+  Test: route53resolver-resolver-rule

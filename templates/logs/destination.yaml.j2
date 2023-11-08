@@ -12,9 +12,10 @@ Resources:
     UpdateReplacePolicy: {{ destination.update_replace_policy | default('Delete') }}
     Properties:
       DestinationName: {{ destination.destination_name }}
-      DestinationPolicy: {{ destination.destination_policy }}
-      RoleArn: {{ destination.role_arn }}
-      TargetArn: {{ destination.target_arn }}
+      DestinationPolicy: |
+        {{destination.destination_policy | indent(width=8)}}
+      RoleArn: {{ destination.role_arn | trim }}
+      TargetArn: {{ destination.target_arn | trim }}
 {%- endfor %}
 
 Outputs:

@@ -1,0 +1,176 @@
+---
+{%- import 'macros/subject.yaml.j2' as ca_subject %}
+Description: {{sceptre_user_data.description|default('ACMPCA CertificateAuthority(es) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for certificate_authority in sceptre_user_data.certificate_authorities %}
+{%- set certificate_authority_name = certificate_authority.name %}
+  {{ certificate_authority_name }}:
+    Type: AWS::ACMPCA::CertificateAuthority
+    DeletionPolicy: {{ certificate_authority.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ certificate_authority.update_replace_policy | default('Delete') }}
+    Properties:
+      Subject:
+        {{ca_subject.prep(certificate_authority.subject)|indent(width=8,first=false)}}
+      Type: {{certificate_authority.type}}
+      SigningAlgorithm: {{certificate_authority.signing_algorithm}}
+      KeyAlgorithm: {{certificate_authority.key_algorithm}}
+{%- if certificate_authority.csr_extensions is defined %}{# if certificate_authority.csr_extensions is defined #}
+      CsrExtensions:
+{%- if certificate_authority.csr_extensions.key_usage is defined %}{# if certificate_authority.csr_extensions.key_usage is defined #}
+        KeyUsage:
+{%- if certificate_authority.csr_extensions.key_usage.crl_sign is defined %}
+          CRLSign: {{certificate_authority.csr_extensions.key_usage.crl_sign}}
+{%- endif %}
+{%- if certificate_authority.csr_extensions.key_usage.data_encipherment is defined %}
+          DataEncipherment: {{certificate_authority.csr_extensions.key_usage.data_encipherment}}
+{%- endif %}
+{%- if certificate_authority.csr_extensions.key_usage.decipher_only is defined %}
+          DecipherOnly: {{certificate_authority.csr_extensions.key_usage.decipher_only}}
+{%- endif %}
+{%- if certificate_authority.csr_extensions.key_usage.digital_signature is defined %}
+          DigitalSignature: {{certificate_authority.csr_extensions.key_usage.digital_signature}}
+{%- endif %}
+{%- if certificate_authority.csr_extensions.key_usage.encipher_only is defined %}
+          EncipherOnly: {{certificate_authority.csr_extensions.key_usage.encipher_only}}
+{%- endif %}
+{%- if certificate_authority.csr_extensions.key_usage.key_agreement is defined %}
+          KeyAgreement: {{certificate_authority.csr_extensions.key_usage.key_agreement}}
+{%- endif %}
+{%- if certificate_authority.csr_extensions.key_usage.key_cert_sign is defined %}
+          KeyCertSign: {{certificate_authority.csr_extensions.key_usage.key_cert_sign}}
+{%- endif %}
+{%- if certificate_authority.csr_extensions.key_usage.key_encipherment is defined %}
+          KeyEncipherment: {{certificate_authority.csr_extensions.key_usage.key_encipherment}}
+{%- endif %}
+{%- if certificate_authority.csr_extensions.key_usage.non_repudiation is defined %}
+          NonRepudiation: {{certificate_authority.csr_extensions.key_usage.non_repudiation}}
+{%- endif %}
+{%- endif %}{# endif certificate_authority.csr_extensions.key_usage is defined #}
+{%- if certificate_authority.csr_extensions.subject_information_access is defined %}{# if certificate_authority.csr_extensions.subject_information_access is defined #}
+        SubjectInformationAccess:
+{%- for access in certificate_authority.csr_extensions.subject_information_access %}
+          -
+            AccessLocation:
+{%- if access.directory_name is defined %}
+              DirectoryName:
+                {{ca_subject.prep(access.directory_name)|indent(width=16,first=false)}}
+{%- endif %}
+{%- if access.dns_name is defined %}
+              DnsName: {{access.dns_name}}
+{%- endif %}
+{%- if access.edi_party_name is defined %}
+              EdiPartyName:
+                NameAssigner: {{access.edi_party_name.name_assigner}}
+                PartyName: {{access.edi_party_name.party_name}}
+{%- endif %}
+{%- if access.ip_address is defined %}
+              IpAddress: {{access.ip_address}}
+{%- endif %}
+{%- if access.other_name is defined %}
+              OtherName:
+                TypeId: {{access.other_name.type_id}}
+                Value: {{access.other_name.value}}
+{%- endif %}
+{%- if access.registered_id is defined %}
+              RegisteredId: {{access.registered_id}}
+{%- endif %}
+{%- if access.rfc822_name is defined %}
+              Rfc822Name: {{access.rfc822_name}}
+{%- endif %}
+{%- if access.uniform_resource_identifier is defined %}
+              UniformResourceIdentifier: {{access.uniform_resource_identifier}}
+{%- endif %}
+            AccessMethod:
+{%- if access.access_method.access_method_type is defined %}
+              AccessMethodType: {{access.access_method.access_method_type}}
+{%- endif %}
+{%- if access.access_method.custom_object_identifier is defined %}
+              CustomObjectIdentifier: {{access.access_method.custom_object_identifier}}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# endif certificate_authority.csr_extensions.subject_information_access is defined #}
+{%- endif %}{# endif certificate_authority.csr_extensions is defined #}
+{%- if certificate_authority.key_storage_security_standard is defined %}
+      KeyStorageSecurityStandard: {{certificate_authority.key_storage_security_standard}}
+{%- endif %}
+{%- if certificate_authority.revocation_configuration is defined %}{# if certificate_authority.revocation_configuration is defined #}
+      RevocationConfiguration:
+{%- if certificate_authority.revocation_configuration.crl_configuration is defined %}
+        CrlConfiguration:
+{%- if certificate_authority.revocation_configuration.crl_configuration.custom_cname is defined %}
+          CustomCname: {{certificate_authority.revocation_configuration.crl_configuration.custom_cname}}
+{%- endif %}
+{%- if certificate_authority.revocation_configuration.crl_configuration.enabled is defined %}
+          Enabled: {{certificate_authority.revocation_configuration.crl_configuration.enabled}}
+{%- endif %}
+{%- if certificate_authority.revocation_configuration.crl_configuration.expiration_in_days is defined %}
+          ExpirationInDays: {{certificate_authority.revocation_configuration.crl_configuration.expiration_in_days}}
+{%- endif %}
+{%- if certificate_authority.revocation_configuration.crl_configuration.s3_bucket_name is defined %}
+          S3BucketName: {{certificate_authority.revocation_configuration.crl_configuration.s3_bucket_name}}
+{%- endif %}
+{%- if certificate_authority.revocation_configuration.crl_configuration.s3_object_acl is defined %}
+          S3ObjectAcl: {{certificate_authority.revocation_configuration.crl_configuration.s3_object_acl}}
+{%- endif %}
+{%- endif %}
+{%- if certificate_authority.revocation_configuration.ocsp_configuration is defined %}
+        OcspConfiguration:
+{%- if certificate_authority.revocation_configuration.ocsp_configuration.enabled is defined %}
+          Enabled: {{certificate_authority.revocation_configuration.ocsp_configuration.enabled}}
+{%- endif %}
+{%- if certificate_authority.revocation_configuration.ocsp_configuration.ocsp_custom_name is defined %}
+          OcspCustomCname: {{certificate_authority.revocation_configuration.ocsp_configuration.ocsp_custom_name}}
+{%- endif %}
+{%- endif %}
+{%- endif %}{# endif certificate_authority.revocation_configuration is defined #}
+{%- if certificate_authority.usage_mode is defined %}
+      UsageMode: {{certificate_authority.usage_mode}}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if certificate_authority.tags is defined %}
+{%- for key,value in certificate_authority.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for certificate_authority in sceptre_user_data.certificate_authorities %}
+{%- set certificate_authority_name = certificate_authority.name %}
+  {{ certificate_authority_name }}:
+    Description: The Amazon Resource Name (ARN) of the certificate authority {{ certificate_authority_name }}
+    Value:
+      Ref: {{ certificate_authority_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ certificate_authority_name }}"
+
+  {{ certificate_authority_name }}Arn:
+    Description: The Amazon Resource Name (ARN) for the private CA {{ certificate_authority_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ certificate_authority_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ certificate_authority_name }}-Arn"
+
+  {{ certificate_authority_name }}CertificateSigningRequest:
+    Description: The Base64 PEM-encoded certificate signing request (CSR) for the certificate of the CA {{ certificate_authority_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ certificate_authority_name }}
+        - CertificateSigningRequest
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ certificate_authority_name }}-CertificateSigningRequest"
+
+{%- endfor %}

@@ -1,0 +1,53 @@
+---
+template:
+  path: route53resolver/resolver_endpoint.yaml.j2
+
+sceptre_user_data:
+  project_code: '{{stack_group_config.project_code}}'
+  source_repo_url: '{{git_repo}}'
+  resolver_endpoints:
+    - name: outbound1
+      direction: OUTBOUND
+      ip_addresses:
+        - subnet_id: subnet-00112233445566778
+        - subnet_id: subnet-11223344556677889
+      security_group_ids:
+        - sg-01234567
+        - sg-abcdef01
+      resolver_endpoint_name: OutboundResolver1
+      tags:
+        Name: resolver-endpoint
+        Project: '{{stack_group_config.project_code}}'
+    - name: outbound2
+      direction: OUTBOUND
+      ip_addresses:
+        - subnet_id: subnet-00112233445566778
+          ip: "10.255.255.123"
+          ipv6: fe80::df52:684b:0:0
+        - subnet_id: subnet-11223344556677889
+          ip: "10.255.251.123"
+          ipv6: fe80::df52:684b:f:0
+      security_group_ids:
+        - sg-01234567
+        - sg-abcdef01
+      resolver_endpoint_name: OutboundResolver2
+      preferred_instance_type: 
+      resolver_endpoint_type: DUALSTACK
+      tags:
+        Name: resolver-endpoint
+        Project: '{{stack_group_config.project_code}}'
+    - name: inbound1
+      direction: INBOUND
+      ip_addresses:
+        - subnet_id: subnet-00112233445566778
+        - subnet_id: subnet-11223344556677889
+      security_group_ids:
+        - sg-01234567
+        - sg-abcdef01
+      resolver_endpoint_name: InboundResolver1
+      tags:
+        Name: resolver-endpoint
+        Project: '{{stack_group_config.project_code}}'
+
+stack_tags:
+  Test: route53resolver-resolver-endpoint
