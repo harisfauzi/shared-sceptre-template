@@ -1,0 +1,83 @@
+---
+Description: {{sceptre_user_data.description|default('EFS AccessPoint(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for access_point in sceptre_user_data.access_points %}
+{%- set access_point_name = access_point.name %}
+  {{ access_point_name }}:
+    Type: AWS::EFS::AccessPoint
+    DeletionPolicy: {{ access_point.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ access_point.update_replace_policy | default('Delete') }}
+    Properties:
+      FileSystemId: {{access_point.file_system_id | trim}}
+{%- if access_point.access_point_tags is defined %}
+      AccessPointTags:
+{%- for key,value in access_point.access_point_tags.items() %}
+        -
+          Key: {{ key }}
+          Value: {{ value }}
+{%- endif %}
+{%- if access_point.client_token is defined %}
+      ClientToken: {{access_point.client_token}}
+{%- endif %}
+{%- if access_point.posix_user is defined %}
+      PosixUser:
+        Gid: {{access_point.posix_user.gid}}
+        Uid: {{access_point.posix_user.uid}}
+{%- if access_point.posix_user.secondary_gids is defined %}
+        SecondaryGids:
+{%- for secondary_gid in access_point.posix_user.secondary_gids %}
+          - {{secondary_gid}}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if access_point.root_directory is defined %}
+      RootDirectory:
+{%- if access_point.root_directory.creation_info is defined %}
+        CreationInfo:
+          OwnerGid: {{access_point.root_directory.creation_info.owner_gid}}
+          OwnerUid: {{access_point.root_directory.creation_info.owner_uid}}
+          Permissions: {{access_point.root_directory.creation_info.permissions}}
+{%- endif %}
+{%- if access_point.root_directory.path is defined %}
+        Path: {{access_point.root_directory.path}}
+{%- endif %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for access_point in sceptre_user_data.access_points %}
+{%- set access_point_name = access_point.name %}
+  {{ access_point_name }}:
+    Description: The AccessPoint ID for {{ access_point_name }}
+    Value:
+      Ref: {{ access_point_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}"
+
+  {{ access_point_name }}Arn:
+    Description: The ARN for {{ access_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_point_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-Arn"
+
+  {{ access_point_name }}AccessPointId:
+    Description: The AccessPoint ID for {{ access_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_point_name }}
+        - AccessPointId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-AccessPointId"
+
+{%- endfor %}

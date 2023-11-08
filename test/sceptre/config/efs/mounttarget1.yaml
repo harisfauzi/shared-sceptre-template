@@ -1,0 +1,16 @@
+---
+template:
+  path: efs/mount_target.yaml.j2
+
+sceptre_user_data:
+  project_code: {{stack_group_config.project_code}}
+  source_repo_url: {{git_repo}}
+  mount_targets:
+    - name: test1
+      file_system_id: !stack_output efs/filesystem1.yaml::test1
+      security_groups:
+        - sg-12345678ab
+
+
+stack_tags:
+  Test: efs-mounttarget

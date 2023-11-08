@@ -1,0 +1,58 @@
+---
+Description: {{sceptre_user_data.description|default('EFS MountTarget(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for mount_target in sceptre_user_data.mount_targets %}
+{%- set mount_target_name = mount_target.name %}
+  {{ mount_target_name }}:
+    Type: AWS::EFS::MountTarget
+    DeletionPolicy: {{ mount_target.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ mount_target.update_replace_policy | default('Delete') }}
+    Properties:
+      FileSystemId: {{mount_target.file_system_id | trim}}
+      SecurityGroups:
+{%- for security_group in mount_target.security_groups %}
+        - {{security_group | trim}}
+{%- endfor %}
+      SubnetId: {{mount_target.subnet_id | trim}}
+{%- if mount_target.ip_address is defined %}
+      IpAddress: {{mount_target.ip_address}}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for mount_target in sceptre_user_data.mount_targets %}
+{%- set mount_target_name = mount_target.name %}
+  {{ mount_target_name }}:
+    Description: The MountTarget ID for {{ mount_target_name }}
+    Value:
+      Ref: {{ mount_target_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}"
+
+  {{ mount_target_name }}Id:
+    Description: The FileSystem ID for {{ mount_target_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mount_target_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}-Id"
+
+  {{ mount_target_name }}IpAddress:
+    Description: The IPv4 address of the mount target for {{ mount_target_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mount_target_name }}
+        - IpAddress
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}-IpAddress"
+
+{%- endfor %}
