@@ -7,7 +7,7 @@ sceptre_user_data:
   source_repo_url: {{git_repo}}
   file_systems:
     - name: test1
-      availability_zone_name: "!Join ['', [!Sub ${AWS::Region}, 'a']]"
+      availability_zone_name: "!Join ['', [!Sub '${AWS::Region}', 'a']]"
       backup_policy:
         status: ENABLED
       bypass_policy_lockout_safety_check: True
