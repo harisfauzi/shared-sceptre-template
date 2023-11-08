@@ -10,7 +10,14 @@ sceptre_user_data:
       file_system_id: !stack_output efs/filesystem1.yaml::test1
       security_groups:
         - sg-12345678ab
+      subnet_id: subnet-abcd5678
 
+    - name: test2
+      file_system_id: !stack_output efs/filesystem1.yaml::test1
+      security_groups:
+        - sg-abcdefgh12
+      subnet_id: subnet-1234efgh
+      ip_address: "172.16.15.5"
 
 stack_tags:
   Test: efs-mounttarget
