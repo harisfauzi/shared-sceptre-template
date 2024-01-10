@@ -83,6 +83,9 @@ Resources:
 {%- if pipeline.pipeline_name is defined %}{## BEGIN {%- if pipeline.pipeline_name is defined %} #}
       Name: {{ pipeline.pipeline_name }}
 {%- endif %}{## END {%- if pipeline.pipeline_name is defined %} #}
+{%- if pipeline.pipeline_type is defined %}
+      PipelineType: {{ pipeline.pipeline_type }}
+{%- endif %}
 {%- if pipeline.restart_execution_on_update is defined %}{## BEGIN {%- if pipeline.restart_execution_on_update is defined %} #}
       RestartExecutionOnUpdate: {{ pipeline.restart_execution_on_update }}
 {%- endif %}{## END {%- if pipeline.restart_execution_on_update is defined %} #}
@@ -95,6 +98,46 @@ Resources:
           Value: {{ value }}
 {%- endfor %}{### END {%- for key,value in pipeline.tags.items() %} #}
 {%- endif %}{## END {%- if pipeline.tags is defined %} #}
+{%- if pipeline.triggers is defined %}{## BEGIN {%- if pipeline.triggers is defined %} #}
+      Triggers:
+{%- for trigger in pipeline.triggers %}{### BEGIN {%- for trigger in pipeline.triggers %} #}
+        - ProviderType: {{trigger.provider_type}}
+{%- if trigger.git_configuration is defined %}{#### BEGIN {%- if trigger.git_configuration is defined %} #}
+          GitConfiguration:
+            SourceActionName: {{trigger.git_configuration.source_action_name}}
+{%- if trigger.git_configuration.push is defined %}{##### BEGIN {%- if trigger.git_configuration.push is defined %} #}
+            Push:
+{%- for git_push_filter in trigger.git_configuration.push %}{###### BEGIN {%- for git_push_filter in trigger.git_configuration.push %} #}
+              - Tags:
+{%- if git_push_filter.tags.excludes is defined %}
+                  Excludes:
+{%- for exclude in git_push_filter.tags.excludes %}
+                    - {{exclude}}
+{%- endfor %}
+{%- endif %}
+{%- if git_push_filter.tags.includes is defined %}
+                  Includes:
+{%- for include in git_push_filter.tags.includes %}
+                    -
+{%- endfor %}
+{%- endif %}
+{%- endfor %}{###### END {%- for git_push_filter in trigger.git_configuration.push %} #}
+{%- endif %}{##### END {%- if trigger.git_configuration.push is defined %} #}
+{%- endif %}{#### END {%- if trigger.git_configuration is defined %} #}
+{%- endfor %}{### END {%- for trigger in pipeline.triggers %} #}
+{%- endif %}{## END {%- if pipeline.triggers is defined %} #}
+{%- if pipeline.variables is defined %}{## BEGIN {%- if pipeline.variables is defined %} #}
+      Variables:
+{%- for pipeline_variable in pipeline.variables %}      
+        - Name: {{pipeline_variable.name}}
+{%- if pipeline_variable.default_value is defined %}
+          DefaultValue: {{pipeline_variable.default_value}}
+{%- endif %}
+{%- if pipeline_variable.description is defined %}
+          Description: {{pipeline_variable.description}}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{## END {%- if pipeline.variables is defined %} #}
 {%- endfor %}{# END {%- for pipeline in sceptre_user_data.pipelines %} #}
 
 Outputs:

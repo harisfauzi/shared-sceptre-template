@@ -1,0 +1,101 @@
+---
+template:
+  type: file
+  path: codepipeline/pipeline.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  pipelines:
+    - name: simplepipeline
+      pipeline_name: simple-pipeline
+      role_arn: !stack_output "{{pwd}}/iamrole.yaml::pipelineArn"
+      stages:
+        - name: SourceStage
+          actions:
+            - name: GetS3Source
+              action_type_id:
+                category: Source
+                owner: AWS
+                provider: S3
+                version: 1
+              configuration: |
+                S3Bucket: dummy-s3-bucket
+                S3ObjectKey: no-exist.zip
+                PollForSourceChanges: "false"
+              output_artifcats:
+                - name: ZipSource
+        - name: DeployStage
+          actions:
+            - name: DeployToCodeDeploy
+              action_type_id:
+                category: Deploy
+                owner: AWS
+                provider: CodeDeploy
+                version: 1
+              configuration: |
+                ApplicationName: DummyApplication
+                DeploymentGroupName: DummyApplicationDefaultGroup
+              input_artifacts:
+                - name: ZipSource
+      artifact_store:
+        location: dummmy-artifact-store
+        type: S3
+
+    - name: moderatepipeline
+      pipeline_name: moderate-pipeline
+      role_arn: !stack_output "{{pwd}}/iamrole.yaml::pipelineArn"
+      stages:
+        - name: SourceStage
+          actions:
+            - name: GetRepoSource
+              action_type_id:
+                category: Source
+                owner: AWS
+                provider: CodeStarSourceConnection
+                version: 1
+              configuration: |
+                # See https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-CodestarConnectionSource.html#action-reference-CodestarConnectionSource-config
+                # for reference
+                ConnectionArn: !Sub arn:${AWS::Partition}:codestar-connections:${AWS::Region}:${AWS::AccountId}:connection/39e4c34d-e13a-4e94-a886-ea67651bf042
+                FullRepositoryId: sample-user/sample-repo
+                BranchName: main
+                OutputArtifactFormat: CODE_ZIP
+                DetectChanges: "false"
+              output_artifcats:
+                - name: RepoSource
+        - name: BuildStage
+          actions:
+            - name: CompileSource
+              action_type_id:
+                category: Build
+                owner: AWS
+                provider: CodeBuild
+                version: 1
+              configuration: |
+                ProjectName: dummy-project
+                PrimarySource: RepoSource
+              output_artifcats:
+                - name: BuildSource
+        - name: DeployStage
+          actions:
+            - name: DeployToCodeDeploy
+              action_type_id:
+                category: Deploy
+                owner: AWS
+                provider: CodeDeploy
+                version: 1
+              configuration: |
+                ApplicationName: DummyApplication
+                DeploymentGroupName: DummyApplicationDefaultGroup
+              input_artifacts:
+                - name: BuildSource
+      artifact_store:
+        location: dummmy-artifact-store
+        type: S3
+      restart_execution_on_update: True
+      pipeline_type: V2
+      variables:
+        - name: Environment
+          default_value: Test
+          description: Target environment

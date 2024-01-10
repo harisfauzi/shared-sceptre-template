@@ -1,0 +1,19 @@
+---
+template:
+  type: file
+  path: codepipeline/webhook.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  webhooks:
+    - name: SimpleWebhook
+      authentication: GITHUB_HMAC
+      authentication_configuration:
+        secret_token: 0123456789ABCDEF
+      filters:
+        - json_path: "$.ref"
+          match_equals: "refs/heads/{Branch}"
+      target_pipeline: !stack_output "{{pwd}}/pipeline1.yaml::moderatepipeline"
+      target_action: GetRepoSource
+      target_pipeline_version: 1
