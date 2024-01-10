@@ -1,0 +1,64 @@
+---
+Description: {{sceptre_user_data.description|default('CodePipeline Webhook(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for webhook in sceptre_user_data.webhooks %}
+{%- set webhook_name = webhook.name %}
+  {{ webhook_name }}:
+    Type: AWS::CodePipeline::Webhook
+    DeletionPolicy: {{ webhook.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ webhook.update_replace_policy | default('Delete') }}
+    Properties:
+      Authentication: {{webhook.authentication}}
+      AuthenticationConfiguration:
+{%- if webhook.authentication_configuration.allowed_ip_range is defined %}
+        AllowedIPRange: {{webhook.authentication_configuration.allowed_ip_range}}
+{%- endif %}
+{%- if webhook.authentication_configuration.secret_token is defined %}
+        SecretToken: {{webhook.authentication_configuration.secret_token}}
+{%- endif %}
+      Filters:
+{%- for webhook_filter in webhook.filters %}
+        -
+          JsonPath: {{webhook_filter.json_path}}
+{%- if webhook_filter.match_equals is defined %}
+          MatchEquals: {{webhook_filter.match_equals}}
+{%- endif %}
+{%- endfor %}
+      TargetAction: {{webhook.target_action}}
+      TargetPipeline: {{webhook.target_pipeline}}
+      TargetPipelineVersion: {{webhook.target_pipeline_version}}
+{%- if webhook.webhook_name is defined %}
+      Name: {{webhook.webhook_name}}
+{%- endif %}
+{%- if webhook.register_with_third_party is defined %}
+      RegisterWithThirdParty: {{webhook.register_with_third_party}}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for webhook in sceptre_user_data.webhooks %}
+{%- set webhook_name = webhook.name %}
+  {{ webhook_name }}:
+    Description: Webhook name for {{ webhook_name }}
+    Value:
+      Ref: {{ webhook_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ webhook_name }}"
+
+  {{ webhook_name }}Url:
+    Description: The generated webhook URL for {{ webhook_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ webhook_name }}
+        - Url
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ webhook_name }}-Url"
+
+{%- endfor %}
