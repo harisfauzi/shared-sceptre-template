@@ -10,7 +10,7 @@ sceptre_user_data:
     - name: SimpleWebhook
       authentication: GITHUB_HMAC
       authentication_configuration:
-        secret_token: "{% raw %}{{resolve:secretsmanager:MyGitHubSecret:SecretString:token}}{% endraw %}"
+        secret_token: 0123456789ABCDEF
       filters:
         - json_path: "$.ref"
           match_equals: "refs/heads/{Branch}"
