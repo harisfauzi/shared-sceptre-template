@@ -1,0 +1,80 @@
+---
+Description: {{sceptre_user_data.description|default('CodePipeline CustomActionType(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for custom_action_type in sceptre_user_data.custom_action_types %}
+{%- set custom_action_type_name = custom_action_type.name %}
+  {{ custom_action_type_name }}:
+    Type: AWS::CodePipeline::CustomActionType
+    DeletionPolicy: {{ custom_action_type.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ custom_action_type.update_replace_policy | default('Delete') }}
+    Properties:
+      Category: {{custom_action_type.category}}
+      InputArtifactDetails:
+        MaximumCount: {{custom_action_type.input_artifact_details.maximum_count}}
+        MinimumCount: {{custom_action_type.input_artifact_details.minimum_count}}
+      OutputArtifactDetails:
+        MaximumCount: {{custom_action_type.output_artifact_details.maximum_count}}
+        MinimumCount: {{custom_action_type.output_artifact_details.minimum_count}}
+      Provider: {{custom_action_type.provider}}
+      Version: {{custom_action_type.version}}
+{%- if custom_action_type.configuration_properties is defined %}{# BEGIN {%- if custom_action_type.configuration_properties is defined %} #}
+      ConfigurationProperties:
+{%- for configuration_property in custom_action_type.configuration_properties %}{## BEGIN {%- for configuration_property in custom_action_type.configuration_properties %} #}
+        - Key: {{configuration_property.key}}
+          Name: {{configuration_property.name}}
+          Required: {{configuration_property.required}}
+          Secret: {{configuration_property.secret}}
+{%- if configuration_property.description is defined %}
+          Description: {{configuration_property.description}}
+{%- endif %}
+{%- if configuration_property.queryable is defined %}
+          Queryable: {{configuration_property.queryable}}
+{%- endif %}
+{%- if configuration_property.type is defined %}
+          Type: {{configuration_property.type}}
+{%- endif %}
+{%- endfor %}{## END {%- for configuration_property in custom_action_type.configuration_properties %} #}
+{%- endif %}{# END {%- if custom_action_type.configuration_properties is defined %} #}
+{%- if custom_action_type.settings is defined %}{# BEGIN {%- if custom_action_type.settings is defined %} #}
+      Settings:
+{%- if custom_action_type.settings.entity_url_template is defined %}
+        EntityUrlTemplate: {{custom_action_type.settings.entity_url_template}}
+{%- endif %}
+{%- if custom_action_type.settings.execution_url_template is defined %}
+        ExecutionUrlTemplate: {{custom_action_type.settings.execution_url_template}}
+{%- endif %}
+{%- if custom_action_type.settings.revision_url_template is defined %}
+        RevisionUrlTemplate: {{custom_action_type.settings.revision_url_template}}
+{%- endif %}
+{%- if custom_action_type.settings.third_party_configuration_url is defined %}
+        ThirdPartyConfigurationUrl: {{custom_action_type.settings.third_party_configuration_url}}
+{%- endif %}
+{%- endif %}{# END {%- if custom_action_type.settings is defined %} #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if custom_action_type.tags is defined %}
+{%- for key,value in custom_action_type.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for custom_action_type in sceptre_user_data.custom_action_types %}
+{%- set custom_action_type_name = custom_action_type.name %}
+  {{ custom_action_type_name }}:
+    Description: Custom Action Name for {{ custom_action_type_name }}
+    Value:
+      Ref: {{ custom_action_type_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ custom_action_type_name }}"
+
+{%- endfor %}
