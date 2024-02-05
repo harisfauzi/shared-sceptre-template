@@ -63,7 +63,7 @@ Resources:
 {%- endif %}
 {%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
           MasterUserPassword: !Ref {{ domain_name }}MasterUserPassword  # Need to supply the password in `Parameters` section
-{%- elf domain.advanced_security_options.master_user_options.master_user_password is defined  %}
+{%- elif domain.advanced_security_options.master_user_options.master_user_password is defined  %}
           MasterUserPassword: {{ domain.advanced_security_options.master_user_options.master_user_password }}
 {%- endif %}
 {%- endif %}{# END {%- if domain.advanced_security_options.master_user_options is defined %} #}
