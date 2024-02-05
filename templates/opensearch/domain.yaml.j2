@@ -8,7 +8,7 @@ Parameters:
 {%- set domain_name = domain.name %}
   {{ domain_name }}MasterUserPassword:
     Type: String
-    Description: Password for {{ user_name }}
+    Description: MasterUserPassword under AdvancedSecurityOptions.MasterUserOptions for {{ domain_name }}
     Default: ''
     NoEcho: true
 {%- endfor %}
