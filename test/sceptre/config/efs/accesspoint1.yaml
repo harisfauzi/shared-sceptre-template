@@ -1,0 +1,33 @@
+---
+template:
+  path: efs/access_point.yaml.j2
+
+sceptre_user_data:
+  project_code: {{stack_group_config.project_code}}
+  source_repo_url: {{git_repo}}
+  access_points:
+    - name: test1
+      file_system_id: !stack_output efs/filesystem1.yaml::test1
+      access_point_tags:
+        Name: test1
+
+    - name: test2
+      file_system_id: !stack_output efs/filesystem1.yaml::test1
+      access_point_tags:
+        Name: test2
+      client_token: abcdefghij1234567890
+      posix_user:
+        gid: "1000"
+        uid: "1000"
+        secondary_gids:
+          - "10"
+          - "20"
+      root_directory:
+        creation_info:
+          owner_gid: "20000"
+          owner_uid: "20000"
+          permissions: "0644"
+        path: "/project/root"
+
+stack_tags:
+  Test: efs-accesspoint

@@ -1,0 +1,120 @@
+---
+Description: {{sceptre_user_data.description|default('EFS FileSystem(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for file_system in sceptre_user_data.file_systems %}
+{%- set file_system_name = file_system.name %}
+  {{ file_system_name }}:
+    Type: AWS::EFS::FileSystem
+    DeletionPolicy: {{ file_system.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ file_system.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if file_system.availability_zone_name is defined %}
+      AvailabilityZoneName: {{file_system.availability_zone_name}}
+{%- endif %}
+{%- if file_system.backup_policy is defined %}
+      BackupPolicy:
+        Status: {{file_system.backup_policy.status}}
+{%- endif %}
+{%- if file_system.bypass_policy_lockout_safety_check is defined %}
+      BypassPolicyLockoutSafetyCheck: {{file_system.bypass_policy_lockout_safety_check}}
+{%- endif %}
+{%- if file_system.encrypted is defined %}
+      Encrypted: {{file_system.encrypted}}
+{%- endif %}
+{%- if file_system.file_system_policy is defined %}{#BEGIN{%- if file_system.file_system_policy is defined %}#}
+      FileSystemPolicy: {{file_system.file_system_policy}}
+{%- elif file_system.file_system_policy_json is defined %}{#ELSEIF{%- if file_system.file_system_policy_json is defined %}#}
+      FileSystemPolicy: |
+        {{file_system.file_system_policy_json | indent(width=8, first=false)}}
+{%- endif %}{#END{%- if file_system.file_system_policy is defined %}#}
+{%- if file_system.file_system_tags is defined %}{#BEGIN{%- if file_system.file_system_tags is defined %}#}
+      FileSystemTags:
+{%- for key,value in file_system.file_system_tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}{#END{%- if file_system.file_system_tags is defined %}#}
+{%- if file_system.kms_key_id is defined %}{#BEGIN{%- if file_system.kms_key_id is defined %}#}
+      KmsKeyId: {{file_system.kms_key_id | trim}}
+{%- endif %}{#END{%- if file_system.kms_key_id is defined %}#}
+{%- if file_system.lifecycle_policies is defined %}{#BEGIN{%- if file_system.lifecycle_policies is defined %}#}
+      LifecyclePolicies:
+{%- for policy in file_system.lifecycle_policies %}{#BEGIN{%- for policy in file_system.lifecycle_policies %}#}
+        -
+{%- if policy.transition_to_ia is defined %}{#BEGIN{%- if policy.transition_to_ia is defined %}#}
+          TransitionToIA: {{policy.transition_to_ia}}
+{%- endif %}{#END{%- if policy.transition_to_ia is defined %}#}
+{%- if policy.transition_to_primary_storage_class is defined %}{#BEGIN{%- if policy.transition_to_primary_storage_class is defined %}#}
+          TransitionToPrimaryStorageClass: {{policy.transition_to_primary_storage_class}}
+{%- endif %}{#END{%- if policy.transition_to_primary_storage_class is defined %}#}
+{%- endfor %}{#END{%- for policy in file_system.lifecycle_policies %}#}
+{%- endif %}{#END{%- if file_system.lifecycle_policies is defined %}#}
+{%- if file_system.performance_mode is defined %}{#BEGIN{%- if file_system.performance_mode is defined %}#}
+      PerformanceMode: {{file_system.performance_mode}}
+{%- endif %}{#END{%- if file_system.performance_mode is defined %}#}
+{%- if file_system.provisioned_throughput_in_mibps is defined %}{#BEGIN{%- if file_system.provisioned_throughput_in_mibps is defined %}#}
+      ProvisionedThroughputInMibps: {{file_system.provisioned_throughput_in_mibps}}
+{%- endif %}{#END{%- if file_system.provisioned_throughput_in_mibps is defined %}#}
+{%- if file_system.replication_configuration is defined %}{#BEGIN{%- if file_system.replication_configuration is defined %}#}
+      ReplicationConfiguration:
+{%- if file_system.replication_configuration.destinations is defined %}{#BEGIN{%- if file_system.replication_configuration.destinations is defined %}#}
+        Destinations:
+{%- for destination in file_system.replication_configuration.destinations %}{#BEGIN{%- for destination in file_system.replication_configuration.destinations %}#}
+          -
+{%- if destination.availability_zone_name is defined %}{#BEGIN{%- if destination.availability_zone_name is defined %}#}
+            AvailabilityZoneName: {{destination.availability_zone_name}}
+{%- endif %}{#END{%- if destination.availability_zone_name is defined %}#}
+{%- if destination.file_system_id is defined %}{#BEGIN{%- if destination.file_system_id is defined %}#}
+            FileSystemId: {{destination.file_system_id | trim}}
+{%- endif %}{#END{%- if destination.file_system_id is defined %}#}
+{%- if destination.kms_key_id is defined %}{#BEGIN{%- if destination.kms_key_id is defined %}#}
+            KmsKeyId: {{destination.kms_key_id | trim}}
+{%- endif %}{#END{%- if destination.kms_key_id is defined %}#}
+{%- if destination.region is defined %}{#BEGIN{%- if destination.region is defined %}#}
+            Region: {{destination.region}}
+{%- endif %}{#END{%- if destination.region is defined %}#}
+{%- endfor %}{#END{%- for destination in file_system.replication_configuration.destinations %}#}
+{%- endif %}{#END{%- if file_system.replication_configuration.destinations is defined %}#}
+{%- endif %}{#END{%- if file_system.replication_configuration is defined %}#}
+{%- if file_system.throughput_mode is defined %}{#BEGIN{%- if file_system.throughput_mode is defined %}#}
+      ThroughputMode: {{file_system.throughput_mode}}
+{%- endif %}{#END{%- if file_system.throughput_mode is defined %}#}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for file_system in sceptre_user_data.file_systems %}
+{%- set file_system_name = file_system.name %}
+  {{ file_system_name }}:
+    Description: The FileSystem ID for {{ file_system_name }}
+    Value:
+      Ref: {{ file_system_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}"
+
+  {{ file_system_name }}Arn:
+    Description: The ARN for {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-Arn"
+
+  {{ file_system_name }}FileSystemId:
+    Description: The FileSystem ID for {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - FileSystemId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-FileSystemId"
+
+{%- endfor %}
