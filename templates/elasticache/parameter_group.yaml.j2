@@ -1,0 +1,60 @@
+---
+Description: {{sceptre_user_data.description|default('ElastiCache ParameterGroup(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for parameter_group in sceptre_user_data.parameter_groups %}
+{%- set parameter_group_name = parameter_group.name %}
+  {{ parameter_group_name }}:
+    Type: AWS::ElastiCache::ParameterGroup
+    DeletionPolicy: {{ parameter_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ parameter_group.update_replace_policy | default('Delete') }}
+    Properties:
+      CacheParameterGroupFamily: {{cache_parameter_group.family}}
+{%- if parameter_group.description is defined %}
+      Description: {{parameter_group.description}}
+{%- endif %}
+{%- if parameter_group.properties_json is defined %}
+      Properties: {{parameter_group.properties_json}}
+{%- elif parameter_group.properties is defined %}
+      Properties:
+{%- for key,value in parameter_group.properties.items() %}
+        {{key}}: {{value}}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if parameter_group.tags is defined %}
+{%- for key,value in parameter_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for parameter_group in sceptre_user_data.parameter_groups %}
+{%- set parameter_group_name = parameter_group.name %}
+  {{ parameter_group_name }}:
+    Description: The resource name of {{ parameter_group_name }}
+    Value:
+      Ref: {{ parameter_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ parameter_group_name }}"
+
+  {{ parameter_group_name }}Arn:
+    Description: The ARN for {{ parameter_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ parameter_group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ parameter_group_name }}-Arn"
+
+{%- endfor %}

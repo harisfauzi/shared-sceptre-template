@@ -1,0 +1,63 @@
+---
+Description: {{sceptre_user_group_data.description|default('ElastiCache UserGroup(s) for '+sceptre_user_group_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for user_group in sceptre_user_group_data.user_groups %}
+{%- set user_group_name = user_group.name %}
+  {{ user_group_name }}:
+    Type: AWS::ElastiCache::UserGroup
+    DeletionPolicy: {{ user_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ user_group.update_replace_policy | default('Delete') }}
+    Properties:
+      Engine: {{user_group.engine}}
+      UserGroupId: {{user_group.user_group_id}}
+      UserIds:
+{%- for user_id in user_group.user_ids %}
+        - {{user_id}}
+{%- endfor %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_group_data.source_repo_url | default('unknown') }}
+{%- if user_group.tags is defined %}
+{%- for key,value in user_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for user_group in sceptre_user_group_data.user_groups %}
+{%- set user_group_name = user_group.name %}
+  {{ user_group_name }}Arn:
+    Description: The ARN for {{ user_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ user_group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ user_group_name }}-Arn"
+
+  {{ user_group_name }}UserGroupId:
+    Description: User group ID for {{ user_group_name }}
+    Value: {{user_group.user_group_id}}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ user_group_name }}-UserGroupId"
+
+  {{ user_group_name }}Status:
+    Description: The Status for {{ user_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ user_group_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ user_group_name }}-Status"
+
+{%- endfor %}

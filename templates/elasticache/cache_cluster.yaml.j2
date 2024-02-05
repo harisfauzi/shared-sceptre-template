@@ -1,0 +1,170 @@
+---
+Description: {{sceptre_user_data.description|default('ElastiCache CacheCluster(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for cache_cluster in sceptre_user_data.cache_clusters %}
+{%- set cache_cluster_name = cache_cluster.name %}
+  {{ cache_cluster_name }}:
+    Type: AWS::ElastiCache::CacheCluster
+    DeletionPolicy: {{ cache_cluster.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ cache_cluster.update_replace_policy | default('Delete') }}
+    Properties:
+      CacheNodeType: {{cache_cluster.cache_node_type}}
+      Engine: {{cache_cluster.engine}}
+      NumCacheNodes: {{cache_cluster.num_cache_nodes}}
+{%- if cache_cluster.auto_minor_version_upgrade is defined %}
+      AutoMinorVersionUpgrade: {{cache_cluster.auto_minor_version_upgrade}}
+{%- endif %}
+{%- if cache_cluster.az_mode is defined %}
+      AZMode: {{cache_cluster.az_mode}}
+{%- endif %}
+{%- if cache_cluster.cache_parameter_group_name is defined %}
+      CacheParameterGroupName: {{cache_cluster.cache_parameter_group_name}}
+{%- endif %}
+{%- if cache_cluster.cache_security_group_names is defined %}
+      CacheSecurityGroupNames:
+{%- for security_group_name in cache_cluster.cache_security_group_names %}
+        - {{security_group_name}}
+{%- endfor %}
+{%- endif %}
+{%- if cache_cluster.cache_subnet_group_name is defined %}
+      CacheSubnetGroupName: {{cache_cluster.cache_subnet_group_name}}
+{%- endif %}
+{%- if cache_cluster.cluster_name is defined %}
+      ClusterName: {{cache_cluster.cluster_name}}
+{%- endif %}
+{%- if cache_cluster.engine_version is defined %}
+      EngineVersion: {{cache_cluster.engine_version}}
+{%- endif %}
+{%- if cache_cluster.ip_discovery is defined %}
+      IpDiscovery: {{cache_cluster.ip_discovery}}
+{%- endif %}
+{%- if cache_cluster.log_delivery_configurations is defined %}{# BEGIN {%- if cache_cluster.log_delivery_configurations is defined %} #}
+      LogDeliveryConfigurations:
+{%- for log_configuration in cache_cluster.log_delivery_configurations %}
+        -
+          DestinationDetails:
+{%- if log_configuration.cloud_watch_logs_details is defined %}
+            CloudWatchLogsDetails:
+              LogGroup: {{log_configuration.cloud_watch_logs_details.log_group}}
+{%- endif %}
+{%- if log_configuration.kinesis_firehose_details is defined %}
+            KinesisFirehoseDetails:
+              DeliveryStream: {{log_configuration.kinesis_firehose_details.delivery_stream}}
+{%- endif %}
+          DestinationType: {{log_configuration.destination_type}}
+          LogFormat: {{log_configuration.log_format}}
+          LogType: {{log_configuration.log_type}}
+{%- endfor %}
+{%- endif %}{# END {%- if cache_cluster.log_delivery_configurations is defined %} #}
+{%- if cache_cluster.network_type is defined %}
+      NetworkType: {{cache_cluster.network_type}}
+{%- endif %}
+{%- if cache_cluster.notification_topic_arn is defined %}
+      NotificationTopicArn: {{cache_cluster.notification_topic_arn}}
+{%- endif %}
+{%- if cache_cluster.port is defined %}
+      Port: {{cache_cluster.port}}
+{%- endif %}
+{%- if cache_cluster.preferred_availability_zone is defined %}
+      PreferredAvailabilityZone: {{cache_cluster.preferred_availability_zone}}
+{%- endif %}
+{%- if cache_cluster.preferred_availability_zones is defined %}
+      PreferredAvailabilityZones:
+{%- for availability_zone in cache_cluster.preferred_availability_zones %}
+        - {{availability_zone}}
+{%- endfor %}
+{%- endif %}
+{%- if cache_cluster.preferred_maintenance_window is defined %}
+      PreferredMaintenanceWindow: {{cache_cluster.preferred_maintenance_window}}
+{%- endif %}
+{%- if cache_cluster.snapshot_arns is defined %}
+      SnapshotArns:
+{%- for snapshot_arn in cache_cluster.snapshot_arns %}
+        - {{snapshot_arn}}
+{%- endfor %}
+{%- endif %}
+{%- if cache_cluster.snapshot_name is defined %}
+      SnapshotName: {{cache_cluster.snapshot_name}}
+{%- endif %}
+{%- if cache_cluster.snapshot_retention_limit is defined %}
+      SnapshotRetentionLimit: {{cache_cluster.snapshot_retention_limit}}
+{%- endif %}
+{%- if cache_cluster.snapshot_window is defined %}
+      SnapshotWindow: {{cache_cluster.snapshot_window}}
+{%- endif %}
+{%- if cache_cluster.transit_encryption_enabled is defined %}
+      TransitEncryptionEnabled: {{cache_cluster.transit_encryption_enabled}}
+{%- endif %}
+{%- if cache_cluster.vpc_security_group_ids is defined %}
+      VpcSecurityGroupIds:
+{%- for security_group_id in cache_cluster.vpc_security_group_ids %}
+        - {{security_group_id}}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if cache_cluster.tags is defined %}
+{%- for key,value in cache_cluster.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for cache_cluster in sceptre_user_data.cache_clusters %}
+{%- set cache_cluster_name = cache_cluster.name %}
+  {{ cache_cluster_name }}Address:
+    Description: The address for {{ cache_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cache_cluster_name }}
+        - Address
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-Arn"
+
+  {{ cache_cluster_name }}ARN:
+    Description: The ARN for {{ cache_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cache_cluster_name }}
+        - ARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-ARN"
+
+  {{ cache_cluster_name }}Name:
+    Description: The Name of {{ cache_cluster_name }}
+    Value: {{cache_cluster.cache_cluster_name}}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-Name"
+
+  {{ cache_cluster_name }}ParameterGroupStatus:
+    Description: The status of the parameter group used by the cache_cluster {{ cache_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cache_cluster_name }}
+        - ParameterGroupStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-ParameterGroupStatus"
+
+  {{ cache_cluster_name }}Status:
+    Description: The status of the cache_cluster {{ cache_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cache_cluster_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-Status"
+
+{%- endfor %}

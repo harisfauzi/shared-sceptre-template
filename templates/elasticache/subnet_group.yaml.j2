@@ -1,0 +1,56 @@
+---
+Description: {{sceptre_user_data.description|default('ElastiCache SubnetGroup(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for subnet_group in sceptre_user_data.subnet_groups %}
+{%- set subnet_group_name = subnet_group.name %}
+  {{ subnet_group_name }}:
+    Type: AWS::ElastiCache::SubnetGroup
+    DeletionPolicy: {{ subnet_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ subnet_group.update_replace_policy | default('Delete') }}
+    Properties:
+      Description: {{subnet_group.description}}
+      SubnetIds:
+{%- for subnet_id in subnet_group.subnet_ids %}
+        - {{subnet_id}}
+{%- endfor %}
+{%- if subnet_group.cache_subnet_group_name is defined %}
+      CacheSubnetGroupName: {{subnet_group.cache_subnet_group_name}}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if subnet_group.tags is defined %}
+{%- for key,value in subnet_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for subnet_group in sceptre_user_data.subnet_groups %}
+{%- set subnet_group_name = subnet_group.name %}
+  {{ subnet_group_name }}:
+    Description: Resource name of {{ subnet_group_name }}
+    Value:
+      Ref: {{ subnet_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ subnet_group_name }}"
+
+  {{ subnet_group_name }}Arn:
+    Description: The ARN for {{ subnet_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ subnet_group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ subnet_group_name }}-Arn"
+
+{%- endfor %}

@@ -1,0 +1,66 @@
+---
+Description: {{sceptre_user_data.description|default('ElastiCache SecurityGroup(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for security_group in sceptre_user_data.security_groups %}
+{%- set security_group_name = security_group.name %}
+  {{ security_group_name }}:
+    Type: AWS::ElastiCache::SecurityGroup
+    DeletionPolicy: {{ security_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ security_group.update_replace_policy | default('Delete') }}
+    Properties:
+      Description: {{security_group.description}}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if security_group.tags is defined %}
+{%- for key,value in security_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- if security_group.ingress is defined %}{# BEGIN {%- if security_group.ingress is defined %} #}
+{%- for ingress in security_group.ingress %}{# BEGIN {%- for ingress in security_group.ingress %} #}
+{%- set ns1 = namespace() %}
+{%- set ns1.ii = 0 %}
+{%- set ingress_name = security_group_name + ("Ingress%03d" % ns1.ii) %}
+{%- set ns1.ii = ns1.ii + 1 %}
+  {{ingress_name}}:
+    Type: AWS::ElastiCache::SecurityGroupIngress
+    Properties:
+      CacheSecurityGroupName:
+        Ref: {{ security_group_name }}
+      EC2SecurityGroupName: {{ingress.ec2_security_group_name}}
+{%- if ingress.ec2_security_group_owner_id is defined %}
+      EC2SecurityGroupOwnerId: {{ingress.ec2_security_group_owner_id}}
+{%- endif %}
+{%- endfor %}{# END {%- for ingress in security_group.ingress %} #}
+{%- endif %}{# END {%- if security_group.ingress is defined %} #}
+{%- endfor %}
+
+Outputs:
+
+{%- for security_group in sceptre_user_data.security_groups %}
+{%- set security_group_name = security_group.name %}
+  {{ security_group_name }}:
+    Description: The resource name for {{ security_group_name }}
+    Value:
+      Ref: {{ security_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_group_name }}"
+
+  {{ security_group_name }}Arn:
+    Description: The ARN of {{ security_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ user_group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_group_name }}-Arn"
+
+{%- endfor %}
