@@ -1,0 +1,74 @@
+---
+Description: {{sceptre_user_data.description|default('MemoryDB User(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for user in sceptre_user_data.users %}
+{%- set user_name = user.name %}
+  {{ user_name }}:
+    Type: AWS::MemoryDB::User
+    DeletionPolicy: {{ user.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ user.update_replace_policy | default('Delete') }}
+    Properties:
+      UserName: {{user.user_name}}
+{%- if user.access_string is defined %}
+      AccessString:
+        {{user.access_string|indent(width=8,first=false)}}
+{%- endif %}
+{%- if user.authentication_mode is defined %}
+      AuthenticationMode:
+{%- if user.authentication_mode.passwords is defined %}
+        Passwords: 
+{%- for password in user.authentication_mode.passwords %}
+          - {{password}}
+{%- endfor %}
+{%- endif %}
+{%- if user.authentication_mode.type is defined %}
+        Type: {{user.authentication_mode.type}}
+{%- endif %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if user.tags is defined %}
+{%- for key,value in user.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for user in sceptre_user_data.users %}
+{%- set user_name = user.name %}
+  {{ user_name }}Arn:
+    Description: The ARN for {{ user_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ user_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ user_name }}-Arn"
+
+  {{ user_name }}Name:
+    Description: User name for {{ user_name }}
+    Value: {{user.user_name}}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ user_name }}-Name"
+
+  {{ user_name }}Status:
+    Description: The Status for {{ user_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ user_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ user_name }}-Status"
+
+{%- endfor %}

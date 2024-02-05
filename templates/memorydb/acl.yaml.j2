@@ -1,0 +1,64 @@
+---
+Description: {{sceptre_user_data.description|default('MemoryDB ACL(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for acl in sceptre_user_data.acls %}
+{%- set acl_name = acl.name %}
+  {{ acl_name }}:
+    Type: AWS::MemoryDB::ACL
+    DeletionPolicy: {{ acl.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ acl.update_replace_policy | default('Delete') }}
+    Properties:
+      ACLName: {{ acl.acl_name }}
+{%- if acl.user_names is defined %}
+      UserNames:
+{%- for user_name in acl.user_names %}
+        - {{ user_name }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if acl.tags is defined %}
+{%- for key,value in acl.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for acl in sceptre_user_data.acls %}
+{%- set acl_name = acl.name %}
+  {{ acl_name }}Arn:
+    Description: The ARN for {{ acl_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ acl_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ acl_name }}-Arn"
+
+  {{ acl_name }}Name:
+    Description: ACL Name for {{ acl_name }}
+    Value: {{ acl.acl_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ acl_name }}-Name"
+
+  {{ acl_name }}Status:
+    Description: Status for {{ acl_name }} (creating | active | modifying | deleting)
+    Value:
+      Fn::GetAtt:
+        - {{ acl_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ acl_name }}-Status"
+
+{%- endfor %}
