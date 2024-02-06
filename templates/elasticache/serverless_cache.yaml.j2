@@ -1,0 +1,148 @@
+---
+Description: {{sceptre_user_data.description|default('ElastiCache ServerlessCache(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for serverless_cache in sceptre_user_data.serverless_caches %}
+{%- set serverless_cache_name = serverless_cache.name %}
+  {{ serverless_cache_name }}:
+    Type: AWS::ElastiCache::ServerlessCache
+    DeletionPolicy: {{ serverless_cache.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ serverless_cache.update_replace_policy | default('Delete') }}
+    Properties:
+      Engine: {{serverless_cache.engine}}
+      ServerlessCacheName: {{serverless_cache.serverless_cache_name}}
+{%- if serverless_cache.cache_usage_limits is defined %}
+      CacheUsageLimits:
+{%- if serverless_cache.cache_usage_limits.data_storage is defined %}
+        DataStorage:
+          Maximum: {{serverless_cache.cache_usage_limits.data_storage.maximum}}
+          Unit: {{serverless_cache.cache_usage_limits.data_storage.unit}}
+{%- endif %}
+{%- if serverless_cache.cache_usage_limits.ecpu_per_second is defined %}
+        ECPUPerSecond:
+          Maximum: {{serverless_cache.cache_usage_limits.ecpu_per_second.maximum}}
+{%- endif %}
+{%- endif %}
+{%- if serverless_cache.daily_snapshot_time is defined %}
+      DailySnapshotTime: {{serverless_cache.daily_snapshot_time}}
+{%- endif %}
+{%- if serverless_cache.description is defined %}
+      Description: {{serverless_cache.description}}
+{%- endif %}
+{%- if serverless_cache.endpoint is defined %}
+      Endpoint:
+{%- if serverless_cache.endpoint.address is defined %}
+        Address: {{serverless_cache.endpoint.address}}
+{%- endif %}
+{%- if serverless_cache.endpoint.port is defined %}
+        Port: {{serverless_cache.endpoint.port}}
+{%- endif %}
+{%- endif %}
+{%- if serverless_cache.final_snapshot_name is defined %}
+      FinalSnapshotName: {{serverless_cache.final_snapshot_name}}
+{%- endif %}
+{%- if serverless_cache.kms_key_id is defined %}
+      KmsKeyId: {{serverless_cache.kms_key_id}}
+{%- endif %}
+{%- if serverless_cache.major_engine_version is defined %}
+      MajorEngineVersion: {{serverless_cache.major_engine_version}}
+{%- endif %}
+{%- if serverless_cache.reader_endpoint is defined %}
+      ReaderEndpoint:
+{%- if serverless_cache.reader_endpoint.address is defined %}
+        Address: {{serverless_cache.reader_endpoint.address}}
+{%- endif %}
+{%- if serverless_cache.reader_endpoint.port is defined %}
+        Port: {{serverless_cache.reader_endpoint.port}}
+{%- endif %}
+{%- endif %}
+{%- if serverless_cache.security_group_ids is defined %}
+      SecurityGroupIds:
+{%- for security_group_id in serverless_cache.security_group_ids %}
+        - {{security_group_id}}
+{%- endfor %}
+{%- endif %}
+{%- if serverless_cache.snapshot_arns_to_restore is defined %}
+      SnapshotArnsToRestore:
+{%- for snapshot_arn in serverless_cache.snapshot_arns_to_restore %}
+        - {{snapshot_arn}}
+{%- endfor %}
+{%- endif %}
+{%- if serverless_cache.snapshot_retention_limit is defined %}
+      SnapshotRetentionLimit: {{serverless_cache.snapshot_retention_limit}}
+{%- endif %}
+{%- if serverless_cache.subnet_ids is defined %}
+      SubnetIds:
+{%- for subnet_id in serverless_cache.subnet_ids %}
+        - {{subnet_id}}
+{%- endfor %}
+{%- endif %}
+{%- if serverless_cache.user_group_id is defined %}
+      UserGroupId: {{serverless_cache.user_group_id}}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if serverless_cache.tags is defined %}
+{%- for key,value in serverless_cache.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for serverless_cache in sceptre_user_data.serverless_caches %}
+{%- set serverless_cache_name = serverless_cache.name %}
+  {{ serverless_cache_name }}:
+    Description: The serverless cache name for {{ serverless_cache_name }}
+    Value:
+      Ref: {{ serverless_cache_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ serverless_cache_name }}"
+  {{ serverless_cache_name }}ARN:
+    Description: The ARN for {{ serverless_cache_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ serverless_cache_name }}
+        - ARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ serverless_cache_name }}-ARN"
+
+  {{ serverless_cache_name }}CreateTime:
+    Description: The date time the serverless cache {{ serverless_cache_name }} was created
+    Value:
+      Fn::GetAtt:
+        - {{ serverless_cache_name }}
+        - CreateTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ serverless_cache_name }}-CreateTime"
+
+  {{ serverless_cache_name }}FullEngineVersion:
+    Description: The name and version number of the engine the serverless cache {{ serverless_cache_name }} is compatible with
+    Value:
+      Fn::GetAtt:
+        - {{ serverless_cache_name }}
+        - FullEngineVersion
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ serverless_cache_name }}-FullEngineVersion"
+
+  {{ serverless_cache_name }}Status:
+    Description: The current status of the serverless cache {{ serverless_cache_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ serverless_cache_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ serverless_cache_name }}-Status"
+
+{%- endfor %}

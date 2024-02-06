@@ -1,0 +1,20 @@
+---
+template:
+  type: file
+  path: elasticache/security_group.yaml.j2
+
+# dependencies:
+#   - elasticache/ec2-securitygroup1.yaml
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  security_groups:
+    - name: securitygroup1
+      description: Test security group group
+      ingress:
+        - ec2_security_group_name: ElastiCacheSGInAnotherAccount
+          ec2_security_group_owner_id: 111111111111
+
+stack_tags:
+  Test: elasticache-securitygroup
