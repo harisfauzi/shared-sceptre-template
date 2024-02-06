@@ -43,14 +43,4 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ subnet_group_name }}"
 
-  {{ subnet_group_name }}Arn:
-    Description: The ARN for {{ subnet_group_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ subnet_group_name }}
-        - Arn
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ subnet_group_name }}-Arn"
-
 {%- endfor %}

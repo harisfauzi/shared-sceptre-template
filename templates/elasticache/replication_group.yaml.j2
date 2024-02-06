@@ -195,15 +195,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}"
 
-  {{ replication_group_name }}Arn:
-    Description: The resource name of {{ replication_group_name }}
-    Value:
-      Ref: {{ replication_group_name }}
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}-Arn"
-
-{%- if replication_group.cluster_mode is defined and lower(replication_group.cluster_mode) != 'disabled' %}
+{%- if replication_group.cluster_mode is defined and replication_group.cluster_mode|lower == 'enabled' %}
   {{ replication_group_name }}ConfigurationEndPointAddress:
     Description: The DNS hostname of the cache node for {{ replication_group_name }}
     Value:
@@ -224,7 +216,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}-ConfigurationEndPoint-Port"
 
-{%- endif %}
+{%- elif replication_group.cluster_mode is defined and replication_group.cluster_mode|lower == 'disabled' %}
   {{ replication_group_name }}PrimaryEndPointAddress:
     Description: The DNS address of the primary read-write cache node for {{ replication_group_name }}
     Value:
@@ -265,14 +257,5 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}-ReaderEndPoint-Port"
 
-  {{ replication_group_name }}ReplicationGroupId:
-    Description: The ReplicationGroupId for {{ replication_group_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ replication_group_name }}
-        - ReplicationGroupId
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}-ReplicationGroupId"
-
+{%- endif %}
 {%- endfor %}

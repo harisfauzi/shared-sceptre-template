@@ -1,10 +1,10 @@
 ---
-Description: {{sceptre_user_group_data.description|default('ElastiCache UserGroup(s) for '+sceptre_user_group_data.project_code)}}
+Description: {{sceptre_user_data.description|default('ElastiCache UserGroup(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for user_group in sceptre_user_group_data.user_groups %}
+{%- for user_group in sceptre_user_data.user_groups %}
 {%- set user_group_name = user_group.name %}
   {{ user_group_name }}:
     Type: AWS::ElastiCache::UserGroup
@@ -19,7 +19,7 @@ Resources:
 {%- endfor %}
       Tags:
         - Key: SourceRepoURL
-          Value: {{ sceptre_user_group_data.source_repo_url | default('unknown') }}
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if user_group.tags is defined %}
 {%- for key,value in user_group.tags.items() %}
         - Key: {{ key }}
@@ -31,7 +31,7 @@ Resources:
 
 Outputs:
 
-{%- for user_group in sceptre_user_group_data.user_groups %}
+{%- for user_group in sceptre_user_data.user_groups %}
 {%- set user_group_name = user_group.name %}
   {{ user_group_name }}Arn:
     Description: The ARN for {{ user_group_name }}

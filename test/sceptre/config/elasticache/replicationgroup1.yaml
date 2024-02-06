@@ -1,0 +1,40 @@
+---
+template:
+  type: file
+  path: elasticache/replication_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  replication_groups:
+    - name: redisrg1
+      replication_group_description: Test replication group using redis
+      cache_node_type: cache.t3.small
+      engine: redis
+      engine_version: 7.1
+      num_cache_nodes: 1
+      automatic_failover_enabled: false
+      num_cache_clusters: 1
+      cache_subnet_group_name: TestSubnetGroup
+      cluster_mode: disabled
+      security_group_ids:
+        - sg-085dcee4bce513db7
+
+    - name: redisrg2
+      replication_group_description: Test replication group using redis6
+      cache_node_type: cache.t3.small
+      cache_parameter_group_name: 
+      engine: redis
+      engine_version: 6.2
+      cache_parameter_group_name: !stack_output elasticache/parametergroup1.yaml::parametergroup1
+      num_cache_nodes: 2
+      automatic_failover_enabled: true
+      num_node_groups: 2
+      replicas_per_node_group: 3
+      cache_subnet_group_name: TestSubnetGroup
+      cluster_mode: enabled
+      security_group_ids:
+        - sg-085dcee4bce513db7
+
+stack_tags:
+  Test: elasticache-replicationgroup

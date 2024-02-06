@@ -11,7 +11,7 @@ Resources:
     DeletionPolicy: {{ parameter_group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ parameter_group.update_replace_policy | default('Delete') }}
     Properties:
-      CacheParameterGroupFamily: {{cache_parameter_group.family}}
+      CacheParameterGroupFamily: {{parameter_group.cache_parameter_group_family}}
 {%- if parameter_group.description is defined %}
       Description: {{parameter_group.description}}
 {%- endif %}
@@ -46,15 +46,5 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ parameter_group_name }}"
-
-  {{ parameter_group_name }}Arn:
-    Description: The ARN for {{ parameter_group_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ parameter_group_name }}
-        - Arn
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ parameter_group_name }}-Arn"
 
 {%- endfor %}

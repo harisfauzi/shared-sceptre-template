@@ -4,31 +4,37 @@ template:
   path: elasticache/user.yaml.j2
 
 sceptre_user_data:
-  project_code: "{{ stack_group_config.project_code }}"
-  source_repo_url: {{ git_repo }}
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
   users:
     - name: user1
       engine: redis
-      user_id: ID001
-      user_name: usertest1
+      user_id: id001
+      user_name: default
+      access_string: on ~app1::* &* -@all +@read
+      no_password_required: True
+      authentication_mode:
+        type: no-password-required
     - name: user2
       engine: redis
-      user_id: ID002
-      user_name: usertest2
+      user_id: id002
+      user_name: default
+      access_string: on ~app2::* &* -@all +@read
       authentication_mode:
         type: no-password-required
       no_password_required: true
     - name: user3
       engine: redis
-      user_id: ID003
+      user_id: id003
       user_name: usertest3
+      access_string: on ~app::* &* -@all +@read
       authentication_mode:
         passwords:
           - abcdef0123456789
         type: password
     - name: user4
       engine: redis
-      user_id: ID004
+      user_id: id004
       user_name: usertest4
       access_string: on ~* &* +@all
       authentication_mode:
@@ -37,8 +43,9 @@ sceptre_user_data:
         type: password
     - name: user5
       engine: redis
-      user_id: ID005
+      user_id: id005
       user_name: usertest5
+      access_string: on ~* &* +@all
       passwords:
         - abcdef0123456789
       no_password_required: false

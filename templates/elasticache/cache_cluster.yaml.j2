@@ -4,6 +4,8 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
+{%- set nsg = namespace() %}
+{%- set nsg.print_output = false %}
 {%- for cache_cluster in sceptre_user_data.cache_clusters %}
 {%- set cache_cluster_name = cache_cluster.name %}
   {{ cache_cluster_name }}:
@@ -14,6 +16,9 @@ Resources:
       CacheNodeType: {{cache_cluster.cache_node_type}}
       Engine: {{cache_cluster.engine}}
       NumCacheNodes: {{cache_cluster.num_cache_nodes}}
+{%- if cache_cluster.engine|lower == 'redis' %}
+{%- set nsg.print_output = true %}
+{%- endif %}
 {%- if cache_cluster.auto_minor_version_upgrade is defined %}
       AutoMinorVersionUpgrade: {{cache_cluster.auto_minor_version_upgrade}}
 {%- endif %}
@@ -116,55 +121,32 @@ Resources:
 
 {%- endfor %}
 
+{%- if nsg.print_output %}
 Outputs:
+{%- endif %}
 
 {%- for cache_cluster in sceptre_user_data.cache_clusters %}
 {%- set cache_cluster_name = cache_cluster.name %}
-  {{ cache_cluster_name }}Address:
-    Description: The address for {{ cache_cluster_name }}
+{%- if cache_cluster.engine|lower == 'redis' %}
+  {{ cache_cluster_name }}RedisEndpointAddress:
+    Description: The address of the reader endpoint for {{ cache_cluster_name }}
     Value:
       Fn::GetAtt:
         - {{ cache_cluster_name }}
-        - Address
+        - RedisEndpoint.Address
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-Arn"
+        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-RedisEndpoint-Address"
 
-  {{ cache_cluster_name }}ARN:
-    Description: The ARN for {{ cache_cluster_name }}
+  {{ cache_cluster_name }}RedisEndpointPort:
+    Description: The port used by the reader endpoint for {{ cache_cluster_name }}
     Value:
       Fn::GetAtt:
         - {{ cache_cluster_name }}
-        - ARN
+        - RedisEndpoint.Port
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-ARN"
+        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-RedisEndpoint-Port"
 
-  {{ cache_cluster_name }}Name:
-    Description: The Name of {{ cache_cluster_name }}
-    Value: {{cache_cluster.cache_cluster_name}}
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-Name"
-
-  {{ cache_cluster_name }}ParameterGroupStatus:
-    Description: The status of the parameter group used by the cache_cluster {{ cache_cluster_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ cache_cluster_name }}
-        - ParameterGroupStatus
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-ParameterGroupStatus"
-
-  {{ cache_cluster_name }}Status:
-    Description: The status of the cache_cluster {{ cache_cluster_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ cache_cluster_name }}
-        - Status
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-Status"
-
+{%- endif %}
 {%- endfor %}

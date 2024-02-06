@@ -16,13 +16,13 @@ Resources:
 {%- if serverless_cache.cache_usage_limits is defined %}
       CacheUsageLimits:
 {%- if serverless_cache.cache_usage_limits.data_storage is defined %}
-				DataStorage:
-					Maximum: {{serverless_cache.cache_usage_limits.data_storage.maximum}}
-					Unit: {{serverless_cache.cache_usage_limits.data_storage.unit}}
+        DataStorage:
+          Maximum: {{serverless_cache.cache_usage_limits.data_storage.maximum}}
+          Unit: {{serverless_cache.cache_usage_limits.data_storage.unit}}
 {%- endif %}
 {%- if serverless_cache.cache_usage_limits.ecpu_per_second is defined %}
-				ECPUPerSecond:
-					Maximum: {{serverless_cache.cache_usage_limits.ecpu_per_second.maximum}}
+        ECPUPerSecond:
+          Maximum: {{serverless_cache.cache_usage_limits.ecpu_per_second.maximum}}
 {%- endif %}
 {%- endif %}
 {%- if serverless_cache.daily_snapshot_time is defined %}
@@ -34,10 +34,10 @@ Resources:
 {%- if serverless_cache.endpoint is defined %}
       Endpoint:
 {%- if serverless_cache.endpoint.address is defined %}
-				Address: {{serverless_cache.endpoint.address}}
+        Address: {{serverless_cache.endpoint.address}}
 {%- endif %}
 {%- if serverless_cache.endpoint.port is defined %}
-				Port: {{serverless_cache.endpoint.port}}
+        Port: {{serverless_cache.endpoint.port}}
 {%- endif %}
 {%- endif %}
 {%- if serverless_cache.final_snapshot_name is defined %}
@@ -52,10 +52,10 @@ Resources:
 {%- if serverless_cache.reader_endpoint is defined %}
       ReaderEndpoint:
 {%- if serverless_cache.reader_endpoint.address is defined %}
-				Address: {{serverless_cache.reader_endpoint.address}}
+        Address: {{serverless_cache.reader_endpoint.address}}
 {%- endif %}
 {%- if serverless_cache.reader_endpoint.port is defined %}
-				Port: {{serverless_cache.reader_endpoint.port}}
+        Port: {{serverless_cache.reader_endpoint.port}}
 {%- endif %}
 {%- endif %}
 {%- if serverless_cache.security_group_ids is defined %}
@@ -101,31 +101,10 @@ Outputs:
   {{ serverless_cache_name }}:
     Description: The serverless cache name for {{ serverless_cache_name }}
     Value:
-			Ref: {{ serverless_cache_name }}
+      Ref: {{ serverless_cache_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ serverless_cache_name }}"
-
-  {{ serverless_cache_name }}Address:
-    Description: The address for {{ serverless_cache_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ serverless_cache_name }}
-        - Address
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ serverless_cache_name }}-Address"
-
-  {{ serverless_cache_name }}Port:
-    Description: The port number for {{ serverless_cache_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ serverless_cache_name }}
-        - Port
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ serverless_cache_name }}-Port"
-
   {{ serverless_cache_name }}ARN:
     Description: The ARN for {{ serverless_cache_name }}
     Value:

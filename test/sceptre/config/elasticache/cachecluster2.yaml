@@ -1,0 +1,21 @@
+---
+template:
+  type: file
+  path: elasticache/cache_cluster.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  cache_clusters:
+    - name: memcachedcluster1
+      cluster_name: memcachedcluster1
+      cache_node_type: cache.t3.small
+      engine: memcached
+      engine_version: 1.6.17
+      num_cache_nodes: 2
+      cache_subnet_group_name: TestSubnetGroup
+      vpc_security_group_ids:
+        - sg-085dcee4bce513db7
+
+stack_tags:
+  Test: elasticache-cachecluster

@@ -1,0 +1,23 @@
+---
+template:
+  type: file
+  path: elasticache/parameter_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  parameter_groups:
+    - name: parametergroup1
+      cache_parameter_group_family: redis6.x
+      description: Custom parameter group for redis6.x
+      properties:
+        cluster-allow-reads-when-down: "'yes'"
+        cluster-enabled: "'yes'"
+    - name: parametergroup2
+      cache_parameter_group_family: redis7
+      description: Custom parameter group for redis7
+      properties:
+        cluster-allow-pubsubshard-when-down: "'yes'"
+
+stack_tags:
+  Test: elasticache-parametergroup
