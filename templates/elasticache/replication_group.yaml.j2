@@ -1,0 +1,261 @@
+---
+Description: {{sceptre_user_data.description|default('ElastiCache ReplicationGroup(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for replication_group in sceptre_user_data.replication_groups %}
+{%- set replication_group_name = replication_group.name %}
+  {{ replication_group_name }}:
+    Type: AWS::ElastiCache::ReplicationGroup
+    DeletionPolicy: {{ replication_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ replication_group.update_replace_policy | default('Delete') }}
+    Properties:
+      ReplicationGroupDescription: {{replication_group.replication_group_description}}
+{%- if replication_group.at_rest_encryption_enabled is defined %}
+      AtRestEncryptionEnabled: {{replication_group.at_rest_encryption_enabled}}
+{%- endif %}
+{%- if replication_group.auth_token is defined %}
+      AuthToken: {{replication_group.auth_token}}
+{%- endif %}
+{%- if replication_group.automatic_failover_enabled is defined %}
+      AutomaticFailoverEnabled: {{replication_group.automatic_failover_enabled}}
+{%- endif %}
+{%- if replication_group.auto_minor_version_upgrade is defined %}
+      AutoMinorVersionUpgrade: {{replication_group.auto_minor_version_upgrade}}
+{%- endif %}
+{%- if replication_group.cache_node_type is defined %}
+      CacheNodeType: {{replication_group.cache_node_type}}
+{%- endif %}
+{%- if replication_group.cache_parameter_group_name is defined %}
+      CacheParameterGroupName: {{replication_group.cache_parameter_group_name}}
+{%- endif %}
+{%- if replication_group.cache_security_group_names is defined %}
+      CacheSecurityGroupNames:
+{%- for security_group_name in replication_group.cache_security_group_names %}
+        - {{security_group_name}}
+{%- endfor %}
+{%- endif %}
+{%- if replication_group.cache_subnet_group_name is defined %}
+      CacheSubnetGroupName: {{replication_group.cache_subnet_group_name}}
+{%- endif %}
+{%- if replication_group.cluster_mode is defined %}
+      ClusterMode: {{replication_group.cluster_mode}}
+{%- endif %}
+{%- if replication_group.data_tiering_enabled is defined %}
+      DataTieringEnabled: {{replication_group.data_tiering_enabled}}
+{%- endif %}
+{%- if replication_group.engine is defined %}
+      Engine: {{replication_group.engine}}
+{%- endif %}
+{%- if replication_group.engine_version is defined %}
+      EngineVersion: {{replication_group.engine_version}}
+{%- endif %}
+{%- if replication_group.global_replication_group_id is defined %}
+      GlobalReplicationGroupId: {{replication_group.global_replication_group_id}}
+{%- endif %}
+{%- if replication_group.ip_discovery is defined %}
+      IpDiscovery: {{replication_group.ip_discovery}}
+{%- endif %}
+{%- if replication_group.kms_key_id is defined %}
+      KmsKeyId: {{replication_group.kms_key_id}}
+{%- endif %}
+{%- if replication_group.log_delivery_configurations is defined %}{# BEGIN {%- if replication_group.log_delivery_configurations is defined %} #}
+      LogDeliveryConfigurations:
+{%- for config in replication_group.log_delivery_configurations %}
+        -
+          DestinationDetails:
+{%- if config.destination_details.cloud_watch_logs_details is defined %}
+            CloudWatchLogsDetails:
+              LogGroup: {{config.destination_details.cloud_watch_logs_details.log_group}}
+{%- endif %}
+{%- if config.destination_details.kinesis_firehose_details is defined %}
+            KinesisFirehoseDetails:
+              DeliveryStream: {{config.destination_details.kinesis_firehose_details.delivery_stream}}
+{%- endif %}
+          DestinationType: {{config.destination_type}}
+          LogFormat: {{config.log_format}}
+          LogType: {{config.log_type}}
+{%- endfor %}
+{%- endif %}{# END {%- if replication_group.log_delivery_configurations is defined %} #}
+{%- if replication_group.multi_az_enabled is defined %}
+      MultiAZEnabled: {{replication_group.multi_az_enabled}}
+{%- endif %}
+{%- if replication_group.network_type is defined %}
+      NetworkType: {{replication_group.network_type}}
+{%- endif %}
+{%- if replication_group.node_group_configuration is defined %}{# BEGIN {%- if replication_group.node_group_configuration is defined %} #}
+      NodeGroupConfiguration:
+{%- for config in replication_group.node_group_configuration %}
+        -
+{%- if config.node_group_id is defined %}
+          NodeGroupId: {{config.node_group_id}}
+{%- endif %}
+{%- if config.primary_availability_zone is defined %}
+          PrimaryAvailabilityZone: {{config.primary_availability_zone}}
+{%- endif %}
+{%- if config.replica_availability_zones is defined %}
+          ReplicaAvailabilityZones:
+{%- for zone in config.replica_availability_zones %}
+            - {{zone}}
+{%- endfor %}
+{%- endif %}
+{%- if config.replica_count is defined %}
+          ReplicaCount: {{config.replica_count}}
+{%- endif %}
+{%- if config.slots is defined %}
+          Slots: {{config.slots}}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END {%- if replication_group.node_group_configuration is defined %} #}
+{%- if replication_group.notification_topic_arn is defined %}
+      NotificationTopicArn: {{replication_group.notification_topic_arn}}
+{%- endif %}
+{%- if replication_group.num_cache_clusters is defined %}
+      NumCacheClusters: {{replication_group.num_cache_clusters}}
+{%- endif %}
+{%- if replication_group.num_node_groups is defined %}
+      NumNodeGroups: {{replication_group.num_node_groups}}
+{%- endif %}
+{%- if replication_group.port is defined %}
+      Port: {{replication_group.port}}
+{%- endif %}
+{%- if replication_group.preferred_cache_cluster_azs is defined %}
+      PreferredCacheClusterAZs:
+{%- for preference in replication_group.preferred_cache_cluster_azs %}
+        - {{preference}}
+{%- endfor %}
+{%- endif %}
+{%- if replication_group.preferred_maintenance_window is defined %}
+      PreferredMaintenanceWindow: {{replication_group.preferred_maintenance_window}}
+{%- endif %}
+{%- if replication_group.primary_cluster_id is defined %}
+      PrimaryClusterId: {{replication_group.primary_cluster_id}}
+{%- endif %}
+{%- if replication_group.replicas_per_node_group is defined %}
+      ReplicasPerNodeGroup: {{replication_group.replicas_per_node_group}}
+{%- endif %}
+{%- if replication_group.security_group_ids is defined %}
+      SecurityGroupIds:
+{%- for security_group_id in replication_group.security_group_ids %}
+        - {{security_group_id}}
+{%- endfor %}
+{%- endif %}
+{%- if replication_group.snapshot_arns is defined %}
+      SnapshotArns:
+{%- for snapshot_arn in replication_group.snapshot_arns %}
+        - {{snapshot_arn}}
+{%- endfor %}
+{%- endif %}
+{%- if replication_group.snapshot_name is defined %}
+      SnapshotName: {{replication_group.snapshot_name}}
+{%- endif %}
+{%- if replication_group.snapshot_retention_limit is defined %}
+      SnapshotRetentionLimit: {{replication_group.snapshot_retention_limit}}
+{%- endif %}
+{%- if replication_group.snapshotting_cluster_id is defined %}
+      SnapshottingClusterId: {{replication_group.snapshotting_cluster_id}}
+{%- endif %}
+{%- if replication_group.snpashot_window is defined %}
+      SnapshotWindow: {{replication_group.snpashot_window}}
+{%- endif %}
+{%- if replication_group.transit_encryption_enabled is defined %}
+      TransitEncryptionEnabled: {{replication_group.transit_encryption_enabled}}
+{%- endif %}
+{%- if replication_group.transit_encryption_mode is defined %}
+      TransitEncryptionMode: {{replication_group.transit_encryption_mode}}
+{%- endif %}
+{%- if replication_group.user_group_ids is defined %}
+      UserGroupIds:
+{%- for user_group_id in replication_group.user_group_ids %}
+        - {{user_group_id}}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if replication_group.tags is defined %}
+{%- for key,value in replication_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for replication_group in sceptre_user_data.replication_groups %}
+{%- set replication_group_name = replication_group.name %}
+  {{ replication_group_name }}:
+    Description: Resource name of {{ replication_group_name }}
+    Value:
+      Ref: {{ replication_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}"
+
+{%- if replication_group.cluster_mode is defined and replication_group.cluster_mode|lower == 'enabled' %}
+  {{ replication_group_name }}ConfigurationEndPointAddress:
+    Description: The DNS hostname of the cache node for {{ replication_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ replication_group_name }}
+        - ConfigurationEndPoint.Address
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}-ConfigurationEndPoint-Address"
+
+  {{ replication_group_name }}ConfigurationEndPointPort:
+    Description: The port number that the cache engine is listening on for {{ replication_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ replication_group_name }}
+        - ConfigurationEndPoint.Port
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}-ConfigurationEndPoint-Port"
+
+{%- elif replication_group.cluster_mode is defined and replication_group.cluster_mode|lower == 'disabled' %}
+  {{ replication_group_name }}PrimaryEndPointAddress:
+    Description: The DNS address of the primary read-write cache node for {{ replication_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ replication_group_name }}
+        - PrimaryEndPoint.Address
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}-PrimaryEndPoint-Address"
+
+  {{ replication_group_name }}PrimaryEndPointPort:
+    Description: The port number that the primary read-write cache engine is listening on for {{ replication_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ replication_group_name }}
+        - PrimaryEndPoint.Port
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}-PrimaryEndPoint-Port"
+
+  {{ replication_group_name }}ReaderEndPointAddress:
+    Description: The address of the reader endpoint for {{ replication_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ replication_group_name }}
+        - ReaderEndPoint.Address
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}-ReaderEndPoint-Address"
+
+  {{ replication_group_name }}ReaderEndPointPort:
+    Description: The port used by the reader endpoint for {{ replication_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ replication_group_name }}
+        - ReaderEndPoint.Port
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_group_name }}-ReaderEndPoint-Port"
+
+{%- endif %}
+{%- endfor %}

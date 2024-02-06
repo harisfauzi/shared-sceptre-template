@@ -6,14 +6,11 @@ AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
 {%- for domain in sceptre_user_data.domains %}
 {%- set domain_name = domain.name %}
-{%- if domain.master_user_password is defined %}
   {{ domain_name }}MasterUserPassword:
     Type: String
-    Description: Password for {{ user_name }}
+    Description: MasterUserPassword under AdvancedSecurityOptions.MasterUserOptions for {{ domain_name }}
     Default: ''
     NoEcho: true
-
-{%- endif %}
 {%- endfor %}
 {%- endif %}
 
@@ -44,13 +41,19 @@ Resources:
 {%- endif %}
 {%- if domain.advanced_security_options is defined %}{# BEGIN {%- if domain.advanced_security_options is defined %} #}
       AdvancedSecurityOptions:
+{%- if domain.advanced_security_options.anonymous_auth_disable_date is defined %}
+        AnonymousAuthDisableDate: {{ domain.advanced_security_options.anonymous_auth_disable_date }}
+{%- endif %}
+{%- if domain.advanced_security_options.anonymous_auth_enabled is defined %}
+        AnonymousAuthEnabled: {{ domain.advanced_security_options.anonymous_auth_enabled }}
+{%- endif %}
 {%- if domain.advanced_security_options.enabled is defined %}
         Enabled: {{ domain.advanced_security_options.enabled }}
 {%- endif %}
 {%- if domain.advanced_security_options.internal_user_database_enabled is defined %}
         InternalUserDatabaseEnabled: {{ domain.advanced_security_options.internal_user_database_enabled }}
 {%- endif %}
-{%- if domain.advanced_security_options.master_user_options is defined %}
+{%- if domain.advanced_security_options.master_user_options is defined %}{# BEGIN {%- if domain.advanced_security_options.master_user_options is defined %} #}
         MasterUserOptions:
 {%- if domain.advanced_security_options.master_user_options.master_user_arn is defined %}
           MasterUserARN: {{ domain.advanced_security_options.master_user_options.master_user_arn | trim }}
@@ -58,14 +61,45 @@ Resources:
 {%- if domain.advanced_security_options.master_user_options.master_user_name is defined %}
           MasterUserName: {{ domain.advanced_security_options.master_user_options.master_user_name }}
 {%- endif %}
-{%- if domain.advanced_security_options.master_user_options.master_user_password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+          MasterUserPassword: !Ref {{ domain_name }}MasterUserPassword  # Need to supply the password in `Parameters` section
+{%- elif domain.advanced_security_options.master_user_options.master_user_password is defined  %}
           MasterUserPassword: {{ domain.advanced_security_options.master_user_options.master_user_password }}
-            Ref: {{ domain_name }}MasterUserPassword
 {%- endif %}
+{%- endif %}{# END {%- if domain.advanced_security_options.master_user_options is defined %} #}
+{%- if domain.advanced_security_options.saml_options is defined %}{# BEGIN {%- if domain.advanced_security_options.saml_options is defined %} #}
+        SAMLOptions:
+{%- if domain.advanced_security_options.saml_options.enabled is defined %}
+          Enabled: {{ domain.advanced_security_options.saml_options.enabled }}
 {%- endif %}
+{%- if domain.advanced_security_options.saml_options.idp is defined %}
+          Idp:
+            EntityId: {{ domain.advanced_security_options.saml_options.idp.entity_id }}
+            MetadataContent: {{ domain.advanced_security_options.saml_options.idp.metadata_content }}
+{%- endif %}
+{%- if domain.advanced_security_options.saml_options.master_backend_role is defined %}
+          MasterBackendRole: {{ domain.advanced_security_options.saml_options.master_backend_role }}
+{%- endif %}
+{%- if domain.advanced_security_options.saml_options.master_user_name is defined %}
+          MasterUserName: {{ domain.advanced_security_options.saml_options.master_user_name }}
+{%- endif %}
+{%- if domain.advanced_security_options.saml_options.roles_key is defined %}
+          RolesKey: {{ domain.advanced_security_options.saml_options.roles_key }}
+{%- endif %}
+{%- if domain.advanced_security_options.saml_options.session_timeout_minutes is defined %}
+          SessionTimeoutMinutes: {{ domain.advanced_security_options.saml_options.session_timeout_minutes }}
+{%- endif %}
+{%- if domain.advanced_security_options.saml_options.subject_key is defined %}
+          SubjectKey: {{ domain.advanced_security_options.saml_options.subject_key }}
+{%- endif %}
+{%- endif %}{# END {%- if domain.advanced_security_options.saml_options is defined %} #}
 {%- endif %}{# END {%- if domain.advanced_security_options is defined %} #}
 {%- if domain.cluster_config is defined %}{# BEGIN {%- if domain.cluster_config is defined %} #}
       ClusterConfig:
+{%- if domain.cluster_config.cold_storage_options is defined %}
+        ColdStorageOptions:
+          Enabled: {{ domain.cluster_config.cold_storage_options.enabled }}
+{%- endif %}
 {%- if domain.cluster_config.dedicated_master_count is defined %}
         DedicatedMasterCount: {{ domain.cluster_config.dedicated_master_count }}
 {%- endif %}
@@ -80,6 +114,9 @@ Resources:
 {%- endif %}
 {%- if domain.cluster_config.instance_type is defined %}
         InstanceType: {{ domain.cluster_config.instance_type }}
+{%- endif %}
+{%- if domain.cluster_config.multi_az_with_standby_enabled is defined %}
+        MultiAZWithStandbyEnabled: {{ domain.cluster_config.multi_az_with_standby_enabled }}
 {%- endif %}
 {%- if domain.cluster_config.warm_count is defined %}
         WarmCount: {{ domain.cluster_config.warm_count }}
@@ -142,6 +179,9 @@ Resources:
 {%- if domain.ebs_options.iops is defined %}
         Iops: {{ domain.ebs_options.iops }}
 {%- endif %}
+{%- if domain.ebs_options.throughput is defined %}
+        Throughput: {{ domain.ebs_options.throughput }}
+{%- endif %}
 {%- if domain.ebs_options.volume_size is defined %}
         VolumeSize: {{ domain.ebs_options.volume_size }}
 {%- endif %}
@@ -161,19 +201,71 @@ Resources:
 {%- if domain.engine_version is defined %}
       EngineVersion: {{ domain.engine_version }}
 {%- endif %}
-{%- if domain.log_publishing_options is defined %}
-      LogPublishingOptions:
-{%- for key, value in domain.log_publishing_options.items() %}
-        {{ key }}: {{ value }}
-{%- endfor %}
+{%- if domain.ip_address_type is defined %}
+      IPAddressType: {{ domain.ip_address_type }}
 {%- endif %}
+{%- if domain.log_publishing_options is defined %}{# BEGIN {%- if domain.log_publishing_options is defined %} #}
+      LogPublishingOptions:
+{%- if domain.log_publishing_options.search_slow_logs is defined %}{# BEGIN {%- if domain.log_publishing_options.search_slow_logs is defined %} #}
+        SEARCH_SLOW_LOGS:
+{%- if domain.log_publishing_options.search_slow_logs.cloud_watch_logs_log_group_arn is defined %}
+          CloudWatchLogsLogGroupArn: {{ domain.log_publishing_options.search_slow_logs.cloud_watch_logs_log_group_arn }}
+{%- endif %}
+{%- if domain.log_publishing_options.search_slow_logs.enabled is defined %}
+          Enabled: {{ domain.log_publishing_options.search_slow_logs.enabled }}
+{%- endif %}
+{%- endif %}{# END {%- if domain.log_publishing_options.search_slow_logs is defined %} #}
+{%- if domain.log_publishing_options.es_application_logs is defined %}{# BEGIN {%- if domain.log_publishing_options.es_application_logs is defined %} #}
+        ES_APPLICATION_LOGS:
+{%- if domain.log_publishing_options.es_application_logs.cloud_watch_logs_log_group_arn is defined %}
+          CloudWatchLogsLogGroupArn: {{ domain.log_publishing_options.es_application_logs.cloud_watch_logs_log_group_arn }}
+{%- endif %}
+{%- if domain.log_publishing_options.es_application_logs.enabled is defined %}
+          Enabled: {{ domain.log_publishing_options.es_application_logs.enabled }}
+{%- endif %}
+{%- endif %}{# END {%- if domain.log_publishing_options.es_application_logs is defined %} #}
+{%- if domain.log_publishing_options.index_slow_logs is defined %}{# BEGIN {%- if domain.log_publishing_options.index_slow_logs is defined %} #}
+        INDEX_SLOW_LOGS:
+{%- if domain.log_publishing_options.index_slow_logs.cloud_watch_logs_log_group_arn is defined %}
+          CloudWatchLogsLogGroupArn: {{ domain.log_publishing_options.search_slow_logs.cloud_watch_logs_log_group_arn }}
+{%- endif %}
+{%- if domain.log_publishing_options.index_slow_logs.enabled is defined %}
+          Enabled: {{ domain.log_publishing_options.index_slow_logs.enabled }}
+{%- endif %}
+{%- endif %}{# END {%- if domain.log_publishing_options.index_slow_logs is defined %} #}
+{%- if domain.log_publishing_options.audit_logs is defined %}{# BEGIN {%- if domain.log_publishing_options.audit_logs is defined %} #}
+        AUDIT_LOGS:
+{%- if domain.log_publishing_options.audit_logs.cloud_watch_logs_log_group_arn is defined %}
+          CloudWatchLogsLogGroupArn: {{ domain.log_publishing_options.audit_logs.cloud_watch_logs_log_group_arn }}
+{%- endif %}
+{%- if domain.log_publishing_options.audit_logs.enabled is defined %}
+          Enabled: {{ domain.log_publishing_options.audit_logs.enabled }}
+{%- endif %}
+{%- endif %}{# END {%- if domain.log_publishing_options.audit_logs is defined %} #}
+{%- endif %}{# END {%- if domain.log_publishing_options is defined %} #}
 {%- if domain.node_to_node_encryption_options is defined %}
       NodeToNodeEncryptionOptions:
         Enabled: {{ domain.node_to_node_encryption_options.enabled }}
 {%- endif %}
+{%- if domain.off_peak_window_options is defined %}
+      OffPeakWindowOptions:
+{%- if domain.off_peak_window_options.enabled is defined %}
+        Enabled: {{ domain.off_peak_window_options.enabled }}
+{%- endif %}
+{%- if domain.off_peak_window_options.off_peak_window is defined %}
+        OffPeakWindow:
+          WindowStartTime:
+            Hours: {{ domain.off_peak_window_options.off_peak_window.windows_start_time.hours }}
+            Minutes: {{ domain.off_peak_window_options.off_peak_window.windows_start_time.minutes }}
+{%- endif %}
+{%- endif %}
 {%- if domain.snapshot_options is defined %}
       SnapshotOptions:
         AutomatedSnapshotStartHour: {{ domain.snapshot_options.automated_snapshot_start_hour }}
+{%- endif %}
+{%- if domain.software_update_options is defined %}
+      SoftwareUpdateOptions:
+        AutoSoftwareUpdateEnabled: {{ domain.software_update_options.auto_software_updated_enabled }}
 {%- endif %}
 {%- if domain.vpc_options is defined %}{# BEGIN {%- if domain.vpc_options is defined %} #}
       VPCOptions:
@@ -215,7 +307,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ domain_name }}"
 
   {{ domain_name }}Arn:
-    Description: The ARN for for the domain {{ domain_name }}
+    Description: The ARN for for the CloudFormation stack
     Value:
       Fn::GetAtt:
         - {{ domain_name }}
@@ -223,6 +315,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ domain_name }}-Arn"
+
+  {{ domain_name }}DomainArn:
+    Description: The ARN for for the domain {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - DomainArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-DomainArn"
 
   {{ domain_name }}DomainEndpoint:
     Description: The domain-specific endpoint that's used for requests to the OpenSearch APIs for {{ domain_name }}
@@ -234,6 +336,18 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ domain_name }}-DomainEndpoint"
 
+{%- if domain.ip_address_type is defined and domain.ip_address_type == 'dualstack' %}
+  {{ domain_name }}DomainEndpointV2:
+    Description: The dualstack support endpoint for {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - DomainEndpointV2
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-DomainEndpointV2"
+
+{%- endif %}
   {{ domain_name }}Id:
     Description: The resource ID for {{ domain_name }}
     Value:

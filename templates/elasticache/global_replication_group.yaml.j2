@@ -1,0 +1,102 @@
+---
+Description: {{sceptre_user_data.description|default('ElastiCache GlobalReplicationGroup(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for global_replication_group in sceptre_user_data.global_replication_groups %}
+{%- set global_replication_group_name = global_replication_group.name %}
+  {{ global_replication_group_name }}:
+    Type: AWS::ElastiCache::GlobalReplicationGroup
+    DeletionPolicy: {{ global_replication_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ global_replication_group.update_replace_policy | default('Delete') }}
+    Properties:
+      Members:
+{%- for member in global_replication_group.members %}{# BEGIN {%- for member in global_replication_group.members %} #}
+        -
+{%- if member.replication_group_id is defined %}
+          ReplicationGroupId: {{member.replication_group_id}}
+{%- endif %}
+{%- if member.replication_group_region is defined %}
+          ReplicationGroupRegion: {{member.replication_group_region}}
+{%- endif %}
+{%- if member.role is defined %}
+          Role: {{member.role}}
+{%- endif %}
+{%- endfor %}{# END {%- for member in global_replication_group.members %} #}
+{%- if global_replication_group.automatic_failver_enabled is defined %}
+      AutomaticFailoverEnabled: {{global_replication_group.automatic_failver_enabled}}
+{%- endif %}
+{%- if global_replication_group.cache_node_type is defined %}
+      CacheNodeType: {{global_replication_group.cache_node_type}}
+{%- endif %}
+{%- if global_replication_group.cache_parameter_group_name is defined %}
+      CacheParameterGroupName: {{global_replication_group.cache_parameter_group_name}}
+{%- endif %}
+{%- if global_replication_group.engine_version is defined %}
+      EngineVersion: {{global_replication_group.engine_version}}
+{%- endif %}
+{%- if global_replication_group.global_node_group_count is defined %}
+      GlobalNodeGroupCount: {{global_replication_group.global_node_group_count}}
+{%- endif %}
+{%- if global_replication_group.global_replication_group_description is defined %}
+      GlobalReplicationGroupDescription: {{global_replication_group.global_replication_group_description}}
+{%- endif %}
+{%- if global_replication_group.global_replication_group_id_suffix is defined %}
+      GlobalReplicationGroupIdSuffix: {{global_replication_group.global_replication_group_id_suffix}}
+{%- endif %}
+{%- if global_replication_group.regional_configurations is defined %}{# BEGIN {%- if global_replication_group.regional_configurations is defined %} #}
+      RegionalConfigurations:
+{%- for regional_configuration in global_replication_group.regional_configurations %}{## BEGIN {%- for regional_configuration in global_replication_group.regional_configurations %} #}
+        -
+{%- if regional_configuration.replication_group_id is defined %}
+          ReplicationGroupId: {{regional_configuration.replication_group_id}}
+{%- endif %}
+{%- if regional_configuration.replication_group_region is defined %}
+          ReplicationGroupRegion: {{regional_configuration.replication_group_region}}
+{%- endif %}
+{%- if regional_configuration.resharding_configurations is defined %}
+          ReshardingConfigurations:
+{%- for resharding_configuration in regional_configuration.resharding_configurations %}
+            -
+{%- if resharding_configuration.node_group_id is defined %}
+              NodeGroupId: {{resharding_configuration.node_group_id}}
+{%- endif %}
+{%- if resharding_configuration.preferred_availability_zones is defined %}
+              PreferredAvailabilityZones:
+{%- for availability_zone in resharding_configuration.preferred_availability_zones %}
+                - {{availability_zone}}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}{## END {%- for regional_configuration in global_replication_group.regional_configurations %} #}
+{%- endif %}{# END {%- if global_replication_group.regional_configurations is defined %} #}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for global_replication_group in sceptre_user_data.global_replication_groups %}
+{%- set global_replication_group_name = global_replication_group.name %}
+  {{ global_replication_group_name }}GlobalReplicationGroupId:
+    Description: The ID used to associate a secondary cluster to the Global Replication Group for {{ global_replication_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ global_replication_group_name }}
+        - GlobalReplicationGroupId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ global_replication_group_name }}-GlobalReplicationGroupId"
+
+  {{ global_replication_group_name }}Status:
+    Description: Status of the Global Datastore for {{ global_replication_group_name }} (Creating, Modifying, Available, Deleting or Primary-Only)
+    Value:
+      Fn::GetAtt:
+        - {{ global_replication_group_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ global_replication_group_name }}-Status"
+
+{%- endfor %}

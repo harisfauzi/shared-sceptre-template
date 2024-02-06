@@ -1,0 +1,155 @@
+---
+Description: {{sceptre_user_data.description|default('MemoryDB Cluster(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for cluster in sceptre_user_data.clusters %}
+{%- set cluster_name = cluster.name %}
+  {{ cluster_name }}:
+    Type: AWS::MemoryDB::Cluster
+    DeletionPolicy: {{ cluster.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ cluster.update_replace_policy | default('Delete') }}
+    Properties:
+      ACLName: {{cluster.acl_name}}
+      ClusterName: {{cluster.cluster_name}}
+      NodeType: {{cluster.node_type}}
+{%- if cluster.auto_minor_version_upgrade is defined %}
+      AutoMinorVersionUpgrade: {{cluster.auto_minor_version_upgrade}}
+{%- endif %}
+{%- if cluster.cluster_endpoint is defined %}
+      ClusterEndpoint:
+{%- if cluster.cluster_endpoint.address is defined %}
+        Address: {{cluster.cluster_endpoint.address}}
+{%- endif %}
+{%- if cluster.cluster_endpoint.port is defined %}
+        Port: {{cluster.cluster_endpoint.port}}
+{%- endif %}
+{%- endif %}
+{%- if cluster.data_tiering is defined %}
+      DataTiering: {{cluster.data_tiering}}
+{%- endif %}
+{%- if cluster.description is defined %}
+      Description: {{cluster.description}}
+{%- endif %}
+{%- if cluster.engine_version is defined %}
+      EngineVersion: {{cluster.engine_version}}
+{%- endif %}
+{%- if cluster.final_snapshot_name is defined %}
+      FinalSnapshotName: {{cluster.final_snapshot_name}}
+{%- endif %}
+{%- if cluster.kms_key_id is defined %}
+      KmsKeyId: {{cluster.kms_key_id}}
+{%- endif %}
+{%- if cluster.maintenance_window is defined %}
+      MaintenanceWindow: {{cluster.maintenance_window}}
+{%- endif %}
+{%- if cluster.num_replicas_per_shard is defined %}
+      NumReplicasPerShard: {{cluster.num_replicas_per_shard}}
+{%- endif %}
+{%- if cluster.num_shards is defined %}
+      NumShards: {{cluster.num_shards}}
+{%- endif %}
+{%- if cluster.parameter_group_name is defined %}
+      ParameterGroupName: {{cluster.parameter_group_name}}
+{%- endif %}
+{%- if cluster.port is defined %}
+      Port: {{cluster.port}}
+{%- endif %}
+{%- if cluster.security_group_ids is defined %}
+      SecurityGroupIds:
+{%- for security_group_id in cluster.security_group_ids %}
+        - {{security_group_id}}
+{%- endfor %}
+{%- endif %}
+{%- if cluster.snapshot_arns is defined %}
+      SnapshotArns:
+{%- for snapshot_arn in cluster.snapshot_arns %}
+        - {{snapshot_arn}}
+{%- endfor %}
+{%- endif %}
+{%- if cluster.snapshot_name is defined %}
+      SnapshotName: {{cluster.snapshot_name}}
+{%- endif %}
+{%- if cluster.snapshot_retention_limit is defined %}
+      SnapshotRetentionLimit: {{cluster.snapshot_retention_limit}}
+{%- endif %}
+{%- if cluster.snapshot_window is defined %}
+      SnapshotWindow: {{cluster.snapshot_window}}
+{%- endif %}
+{%- if cluster.sns_topic_arn is defined %}
+      SnsTopicArn: {{cluster.sns_topic_arn}}
+{%- endif %}
+{%- if cluster.sns_topic_status is defined %}
+      SnsTopicStatus: {{cluster.sns_topic_status}}
+{%- endif %}
+{%- if cluster.subnet_group_name is defined %}
+      SubnetGroupName: {{cluster.subnet_group_name}}
+{%- endif %}
+{%- if cluster.tls_enabled is defined %}
+      TLSEnabled: {{cluster.tls_enabled}}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if cluster.tags is defined %}
+{%- for key,value in cluster.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for cluster in sceptre_user_data.clusters %}
+{%- set cluster_name = cluster.name %}
+  {{ cluster_name }}Address:
+    Description: The address for {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - Address
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Arn"
+
+  {{ cluster_name }}ARN:
+    Description: The ARN for {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - ARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-ARN"
+
+  {{ cluster_name }}Name:
+    Description: The Name of {{ cluster_name }}
+    Value: {{cluster.cluster_name}}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Name"
+
+  {{ cluster_name }}ParameterGroupStatus:
+    Description: The status of the parameter group used by the cluster {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - ParameterGroupStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-ParameterGroupStatus"
+
+  {{ cluster_name }}Status:
+    Description: The status of the cluster {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Status"
+
+{%- endfor %}

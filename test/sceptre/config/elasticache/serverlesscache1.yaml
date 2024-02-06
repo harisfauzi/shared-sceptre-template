@@ -1,0 +1,35 @@
+---
+template:
+  type: file
+  path: elasticache/serverless_cache.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  serverless_caches:
+    - name: serverless1
+      description: Test serverless cache redis
+      engine: redis
+      serverless_cache_name: redisserverless1
+
+    - name: serverless2
+      description: Test serverless cache redis
+      engine: redis
+      major_engine_version: "'7'"
+      serverless_cache_name: redisserverless2
+      snapshot_retention_limit: 3
+      subnet_ids:
+        - subnet-0641ef0e9f72c616e
+        - subnet-05ce75983f46ebd3d
+      security_group_ids:
+        - sg-085dcee4bce513db7
+      user_group_id: gid0012
+      cache_usage_limits:
+        data_storage:
+          maximum: 100
+          unit: GB
+        ecpu_per_second:
+          maximum: 1000
+
+stack_tags:
+  Test: elasticache-cachecluster

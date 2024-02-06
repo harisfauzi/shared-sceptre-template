@@ -1,0 +1,18 @@
+---
+template:
+  type: file
+  path: elasticache/subnet_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  subnet_groups:
+    - name: subnetgroup1
+      cache_subnet_group_name: TestSubnetGroup
+      description: Test subnet group
+      subnet_ids:
+        - subnet-0641ef0e9f72c616e
+        - subnet-05ce75983f46ebd3d
+
+stack_tags:
+  Test: elasticache-subnetgroup

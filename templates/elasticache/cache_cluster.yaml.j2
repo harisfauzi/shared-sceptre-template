@@ -1,0 +1,152 @@
+---
+Description: {{sceptre_user_data.description|default('ElastiCache CacheCluster(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- set nsg = namespace() %}
+{%- set nsg.print_output = false %}
+{%- for cache_cluster in sceptre_user_data.cache_clusters %}
+{%- set cache_cluster_name = cache_cluster.name %}
+  {{ cache_cluster_name }}:
+    Type: AWS::ElastiCache::CacheCluster
+    DeletionPolicy: {{ cache_cluster.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ cache_cluster.update_replace_policy | default('Delete') }}
+    Properties:
+      CacheNodeType: {{cache_cluster.cache_node_type}}
+      Engine: {{cache_cluster.engine}}
+      NumCacheNodes: {{cache_cluster.num_cache_nodes}}
+{%- if cache_cluster.engine|lower == 'redis' %}
+{%- set nsg.print_output = true %}
+{%- endif %}
+{%- if cache_cluster.auto_minor_version_upgrade is defined %}
+      AutoMinorVersionUpgrade: {{cache_cluster.auto_minor_version_upgrade}}
+{%- endif %}
+{%- if cache_cluster.az_mode is defined %}
+      AZMode: {{cache_cluster.az_mode}}
+{%- endif %}
+{%- if cache_cluster.cache_parameter_group_name is defined %}
+      CacheParameterGroupName: {{cache_cluster.cache_parameter_group_name}}
+{%- endif %}
+{%- if cache_cluster.cache_security_group_names is defined %}
+      CacheSecurityGroupNames:
+{%- for security_group_name in cache_cluster.cache_security_group_names %}
+        - {{security_group_name}}
+{%- endfor %}
+{%- endif %}
+{%- if cache_cluster.cache_subnet_group_name is defined %}
+      CacheSubnetGroupName: {{cache_cluster.cache_subnet_group_name}}
+{%- endif %}
+{%- if cache_cluster.cluster_name is defined %}
+      ClusterName: {{cache_cluster.cluster_name}}
+{%- endif %}
+{%- if cache_cluster.engine_version is defined %}
+      EngineVersion: {{cache_cluster.engine_version}}
+{%- endif %}
+{%- if cache_cluster.ip_discovery is defined %}
+      IpDiscovery: {{cache_cluster.ip_discovery}}
+{%- endif %}
+{%- if cache_cluster.log_delivery_configurations is defined %}{# BEGIN {%- if cache_cluster.log_delivery_configurations is defined %} #}
+      LogDeliveryConfigurations:
+{%- for log_configuration in cache_cluster.log_delivery_configurations %}
+        -
+          DestinationDetails:
+{%- if log_configuration.cloud_watch_logs_details is defined %}
+            CloudWatchLogsDetails:
+              LogGroup: {{log_configuration.cloud_watch_logs_details.log_group}}
+{%- endif %}
+{%- if log_configuration.kinesis_firehose_details is defined %}
+            KinesisFirehoseDetails:
+              DeliveryStream: {{log_configuration.kinesis_firehose_details.delivery_stream}}
+{%- endif %}
+          DestinationType: {{log_configuration.destination_type}}
+          LogFormat: {{log_configuration.log_format}}
+          LogType: {{log_configuration.log_type}}
+{%- endfor %}
+{%- endif %}{# END {%- if cache_cluster.log_delivery_configurations is defined %} #}
+{%- if cache_cluster.network_type is defined %}
+      NetworkType: {{cache_cluster.network_type}}
+{%- endif %}
+{%- if cache_cluster.notification_topic_arn is defined %}
+      NotificationTopicArn: {{cache_cluster.notification_topic_arn}}
+{%- endif %}
+{%- if cache_cluster.port is defined %}
+      Port: {{cache_cluster.port}}
+{%- endif %}
+{%- if cache_cluster.preferred_availability_zone is defined %}
+      PreferredAvailabilityZone: {{cache_cluster.preferred_availability_zone}}
+{%- endif %}
+{%- if cache_cluster.preferred_availability_zones is defined %}
+      PreferredAvailabilityZones:
+{%- for availability_zone in cache_cluster.preferred_availability_zones %}
+        - {{availability_zone}}
+{%- endfor %}
+{%- endif %}
+{%- if cache_cluster.preferred_maintenance_window is defined %}
+      PreferredMaintenanceWindow: {{cache_cluster.preferred_maintenance_window}}
+{%- endif %}
+{%- if cache_cluster.snapshot_arns is defined %}
+      SnapshotArns:
+{%- for snapshot_arn in cache_cluster.snapshot_arns %}
+        - {{snapshot_arn}}
+{%- endfor %}
+{%- endif %}
+{%- if cache_cluster.snapshot_name is defined %}
+      SnapshotName: {{cache_cluster.snapshot_name}}
+{%- endif %}
+{%- if cache_cluster.snapshot_retention_limit is defined %}
+      SnapshotRetentionLimit: {{cache_cluster.snapshot_retention_limit}}
+{%- endif %}
+{%- if cache_cluster.snapshot_window is defined %}
+      SnapshotWindow: {{cache_cluster.snapshot_window}}
+{%- endif %}
+{%- if cache_cluster.transit_encryption_enabled is defined %}
+      TransitEncryptionEnabled: {{cache_cluster.transit_encryption_enabled}}
+{%- endif %}
+{%- if cache_cluster.vpc_security_group_ids is defined %}
+      VpcSecurityGroupIds:
+{%- for security_group_id in cache_cluster.vpc_security_group_ids %}
+        - {{security_group_id}}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if cache_cluster.tags is defined %}
+{%- for key,value in cache_cluster.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+{%- if nsg.print_output %}
+Outputs:
+{%- endif %}
+
+{%- for cache_cluster in sceptre_user_data.cache_clusters %}
+{%- set cache_cluster_name = cache_cluster.name %}
+{%- if cache_cluster.engine|lower == 'redis' %}
+  {{ cache_cluster_name }}RedisEndpointAddress:
+    Description: The address of the reader endpoint for {{ cache_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cache_cluster_name }}
+        - RedisEndpoint.Address
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-RedisEndpoint-Address"
+
+  {{ cache_cluster_name }}RedisEndpointPort:
+    Description: The port used by the reader endpoint for {{ cache_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cache_cluster_name }}
+        - RedisEndpoint.Port
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-RedisEndpoint-Port"
+
+{%- endif %}
+{%- endfor %}
