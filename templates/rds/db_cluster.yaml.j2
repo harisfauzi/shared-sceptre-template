@@ -24,7 +24,6 @@ Resources:
     DeletionPolicy: {{ db_cluster.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ db_cluster.update_replace_policy | default('Delete') }}
     Properties:
-      Engine: {{ db_cluster.engine }}
 {%- if db_cluster.allocated_storage is defined %}
       AllocatedStorage: {{ db_cluster.allocated_storage }}
 {%- endif %}

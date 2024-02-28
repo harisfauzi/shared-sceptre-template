@@ -24,8 +24,6 @@ Resources:
     DeletionPolicy: {{ db_instance.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ db_instance.update_replace_policy | default('Delete') }}
     Properties:
-      DBInstanceClass: {{ db_instance.db_instance_class }}
-      Engine: {{ db_instance.engine }}
 {%- if db_instance.allocated_storage is defined %}
       AllocatedStorage: {{ db_instance.allocated_storage }}
 {%- endif %}
@@ -155,6 +153,9 @@ Resources:
 {%- if db_instance.endpoint.port is defined %}
         Port: {{ db_instance.endpoint.port }}
 {%- endif %}
+{%- endif %}
+{%- if db_instance.engine is defined %}
+      Engine: {{ db_instance.engine }}
 {%- endif %}
 {%- if db_instance.engine_version is defined %}
       EngineVersion: {{ db_instance.engine_version }}
