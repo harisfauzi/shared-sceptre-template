@@ -1,0 +1,15 @@
+---
+template:
+  type: file
+  path: rds/db_security_group_ingress.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  db_security_group_ingresss:
+    - name: ingress1
+      db_security_group_name: !stack_output rds/dbsecuritygroup1.yaml::dbsg1
+      cidr_ip: "127.0.0.1/32"
+
+stack_tags:
+  Test: rds-dbsecuritygroupingress

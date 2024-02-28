@@ -17,6 +17,9 @@ Resources:
 {%- if auth.auth_scheme is defined %}
           AuthScheme: {{ auth.auth_scheme }}
 {%- endif %}
+{%- if auth.client_password_auth_type is defined %}
+          ClientPasswordAuthType: {{ auth.client_password_auth_type }}
+{%- endif %}
 {%- if auth.description is defined %}
           Description: {{ auth.description }}
 {%- endif %}
@@ -25,9 +28,6 @@ Resources:
 {%- endif %}
 {%- if auth.secret_arn is defined %}
           SecretArn: {{ auth.secret_arn | trim }}
-{%- endif %}
-{%- if auth.user_name is defined %}
-          UserName: {{ auth.user_name }}
 {%- endif %}
 {%- endfor %}
       DBProxyName: {{ db_proxy.db_proxy_name }}

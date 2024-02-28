@@ -14,6 +14,9 @@ Resources:
       EngineName: {{ option_group.engine_name }}
       MajorEngineVersion: {{ option_group.major_engine_version }}
       OptionGroupDescription: {{ option_group.option_group_description }}
+{%- if option_group.option_group_name is defined %}
+      OptionGroupName: {{ option_group.option_group_name }}
+{%- endif %}
 {%- if option_group.option_configurations is defined %}
       OptionConfigurations:
 {%- for option_configuration in option_group.option_configurations %}

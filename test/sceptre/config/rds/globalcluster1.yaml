@@ -1,0 +1,16 @@
+---
+template:
+  type: file
+  path: rds/global_cluster.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  global_clusters:
+    - name: cluster1
+      engine: aurora-mysql
+      global_cluster_identifier: aurora-mysql-global-01
+      storage_encrypted: true
+
+stack_tags:
+  Test: rds-globalcluster

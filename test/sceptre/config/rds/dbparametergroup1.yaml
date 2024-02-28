@@ -1,0 +1,20 @@
+---
+template:
+  type: file
+  path: rds/db_parameter_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  db_parameter_groups:
+    - name: mysql8pg
+      db_parameter_group_name: mysql8pg
+      description: MySQL8 parameter group custom
+      family: mysql8.0
+      parameters:
+        time_zone: Australia/Sydney
+      tags:
+        Purpose: Test
+
+stack_tags:
+  Test: rds-dbparametergroup

@@ -1,0 +1,25 @@
+---
+template:
+  type: file
+  path: rds/event_subscription.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  event_subscriptions:
+    - name: subscription1
+      subscription_name: subscription1
+      sns_topic_arn: "!Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:dummy-topic"
+      enabled: true
+      source_type: db-instance
+      source_ids:
+        - "!Sub arn:${AWS::Partition}:rds:${AWS::Region}:${AWS::AccountId}:db:test-rds"
+      event_categories:
+        # Run `aws rds describe-event-categories`
+        # to see available categories
+        - security patching
+        - security
+        - configuration change
+
+stack_tags:
+  Test: rds-eventsubscription

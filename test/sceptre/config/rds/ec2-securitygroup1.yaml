@@ -1,0 +1,52 @@
+---
+template:
+  path: ec2/security_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  security_groups:
+    - name: MariaDBRDS
+      group_name: MariaDBRDSSG
+      group_description: MariaDBRDS server security group
+      vpc_id: vpc-099ae6b55dc95617c
+      tags:
+        Name: MariaDBRDS-SG
+        Project: {{ stack_group_config.project_code }}
+      security_group_egress:
+        - ip_protocol: -1
+          description: Allow all outgoing access to Internet IPv4
+          cidr_ip: 0.0.0.0/0
+        - ip_protocol: -1
+          description: Allow all outgoing access to Internet IPv6
+          cidr_ipv6: "::/0"
+      security_group_ingress:
+        - ip_protocol: 6  # TCP
+          description: Allow MariaDB TCP port incoming from a subnet
+          cidr_ip: 10.222.0.0/20
+          from_port: 3306
+          to_port: 3306
+
+    - name: MySQLRDS
+      group_name: MySQLRDSSG
+      group_description: MySQLRDS server security group
+      vpc_id: vpc-099ae6b55dc95617c
+      tags:
+        Name: MySQLRDS-SG
+        Project: {{ stack_group_config.project_code }}
+      security_group_egress:
+        - ip_protocol: -1
+          description: Allow all outgoing access to Internet IPv4
+          cidr_ip: 0.0.0.0/0
+        - ip_protocol: -1
+          description: Allow all outgoing access to Internet IPv6
+          cidr_ipv6: "::/0"
+      security_group_ingress:
+        - ip_protocol: 6  # TCP
+          description: Allow MySQL TCP port incoming from a subnet
+          cidr_ip: 10.222.0.0/20
+          from_port: 3306
+          to_port: 3306
+
+stack_tags:
+  Test: RDS-SecurityGroup

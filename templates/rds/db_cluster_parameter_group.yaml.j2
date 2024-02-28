@@ -19,6 +19,9 @@ Resources:
       Parameters:
 {{ db_cluster_parameter_group.parameters | indent(width=8, first=true) }}
 {%- endif %}
+{%- if db_cluster_parameter_group.db_cluster_parameter_group_name is defined %}
+      DBClusterParameterGroupName: {{ db_cluster_parameter_group.db_cluster_parameter_group_name }}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
