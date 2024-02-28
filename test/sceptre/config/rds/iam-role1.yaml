@@ -1,0 +1,51 @@
+---
+template:
+  type: file
+  path: iam/role.yaml.j2
+
+dependencies:
+  - rds/secretsmanager-secret1.yaml
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  roles:
+    - name: RDSProxy1
+      role_name: "!Sub ${AWS::StackName}-${AWS::Region}-RDSProxy1"
+      assume_role_policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - rds.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      description: IAM Role for RDS Proxy
+      max_session_duration: 3600
+      policies:
+        - policy_name: RDSProxyAccess
+          policy_document: |
+            Version: 2012-10-17
+            Statement:
+              - Sid: SecretsAccess
+                Effect: Allow
+                Resource:
+                  - Fn::ImportValue: {{project_code}}-rds-secretsmanager-secret::rdsuser1
+                  - Fn::ImportValue: {{project_code}}-rds-secretsmanager-secret::rdsuser2
+                Action:
+                  - secretsmanager:GetSecretValue
+              - Sid: KMSAccess
+                Effect: Allow
+                Resource:
+                  - Fn::Sub: arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/secretsmanager
+                Action:
+                  - kms:Decrypt
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub secretsmanager.${AWS::Region}.amazonaws.com
+      tags:
+        Purpose: Test
+
+stack_tags:
+  Name: rds-iamrole

@@ -1,0 +1,29 @@
+---
+template:
+  type: file
+  path: rds/db_instance.yaml.j2
+
+parameters:
+  mysql1MasterUserPassword: SuperSecretPassword
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  use_parameter_for_password: True
+  db_instances:
+    - name: mysql1
+      db_instance_class: db.t4g.medium
+      engine: mysql
+      engine_version: "8.0.36"
+      allocated_storage: 100
+      auto_minor_version_upgrade: True
+      master_username: dbadmin
+      db_subnet_group_name: !stack_output rds/dbsubnetgroup1.yaml::group1
+      db_parameter_group_name: !stack_output rds/dbparametergroup1.yaml::mysql8pg
+      vpc_security_groups:
+        - sg-0b1340adde5bd3641
+      tags:
+        Purpose: Test
+
+stack_tags:
+  Test: rds-dbinstance

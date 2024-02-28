@@ -16,8 +16,11 @@ Resources:
 {%- if db_parameter_group.parameters is defined %}
       Parameters:
 {%- for key, value in db_parameter_group.parameters.items() %}
-        "{{ key }}" : "{{ value}}"
+        {{ key }} : {{ value}}
 {%- endfor %}
+{%- endif %}
+{%- if db_parameter_group.db_parameter_group_name is defined %}
+      DBParameterGroupName: {{ db_parameter_group.db_parameter_group_name }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
