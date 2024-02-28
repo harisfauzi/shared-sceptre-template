@@ -4,8 +4,6 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- set nsg = namespace() %}
-{%- set nsg.print_output = false %}
 {%- for cache_cluster in sceptre_user_data.cache_clusters %}
 {%- set cache_cluster_name = cache_cluster.name %}
   {{ cache_cluster_name }}:
@@ -16,9 +14,6 @@ Resources:
       CacheNodeType: {{cache_cluster.cache_node_type}}
       Engine: {{cache_cluster.engine}}
       NumCacheNodes: {{cache_cluster.num_cache_nodes}}
-{%- if cache_cluster.engine|lower == 'redis' %}
-{%- set nsg.print_output = true %}
-{%- endif %}
 {%- if cache_cluster.auto_minor_version_upgrade is defined %}
       AutoMinorVersionUpgrade: {{cache_cluster.auto_minor_version_upgrade}}
 {%- endif %}
@@ -121,15 +116,13 @@ Resources:
 
 {%- endfor %}
 
-{%- if nsg.print_output %}
 Outputs:
-{%- endif %}
 
 {%- for cache_cluster in sceptre_user_data.cache_clusters %}
 {%- set cache_cluster_name = cache_cluster.name %}
 {%- if cache_cluster.engine|lower == 'redis' %}
   {{ cache_cluster_name }}RedisEndpointAddress:
-    Description: The address of the reader endpoint for {{ cache_cluster_name }}
+    Description: The address of the redis endpoint for {{ cache_cluster_name }}
     Value:
       Fn::GetAtt:
         - {{ cache_cluster_name }}
@@ -139,7 +132,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-RedisEndpoint-Address"
 
   {{ cache_cluster_name }}RedisEndpointPort:
-    Description: The port used by the reader endpoint for {{ cache_cluster_name }}
+    Description: The port used by the redis endpoint for {{ cache_cluster_name }}
     Value:
       Fn::GetAtt:
         - {{ cache_cluster_name }}
@@ -151,7 +144,7 @@ Outputs:
 {%- endif %}
 {%- if cache_cluster.engine|lower == 'memcached' %}
   {{ cache_cluster_name }}ConfigurationEndpointAddress:
-    Description: The address of the reader endpoint for {{ cache_cluster_name }}
+    Description: The address of the memcached endpoint for {{ cache_cluster_name }}
     Value:
       Fn::GetAtt:
         - {{ cache_cluster_name }}
@@ -161,7 +154,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ cache_cluster_name }}-ConfigurationEndpoint-Address"
 
   {{ cache_cluster_name }}ConfigurationEndpointPort:
-    Description: The port used by the reader endpoint for {{ cache_cluster_name }}
+    Description: The port used by the memcached endpoint for {{ cache_cluster_name }}
     Value:
       Fn::GetAtt:
         - {{ cache_cluster_name }}
