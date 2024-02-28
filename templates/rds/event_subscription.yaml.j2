@@ -30,6 +30,9 @@ Resources:
 {%- if event_subscription.source_type is defined %}
       SourceType: {{ event_subscription.source_type }}
 {%- endif %}
+{%- if event_subscription.subscription_name is defined %}
+      SubscriptionName: {{ event_subscription.subscription_name }}
+{%- endif %}
 
 {%- endfor %}
 

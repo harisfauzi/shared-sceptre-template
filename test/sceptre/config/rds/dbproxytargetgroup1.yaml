@@ -1,0 +1,20 @@
+---
+template:
+  type: file
+  path: rds/db_proxy_target_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  db_proxy_target_groups:
+    - name: targetgroup1
+      db_proxy_name: !stack_output rds/dbproxy1.yaml::proxy1
+      target_group_name: default
+      db_instance_identifiers:
+        - !stack_output rds/dbinstance1.yaml::mysql1
+      connection_pool_configuration_info:
+        max_connections_percent: 80
+        max_idle_connections_percent: 40
+
+stack_tags:
+  Test: rds-dbproxytargetgroup

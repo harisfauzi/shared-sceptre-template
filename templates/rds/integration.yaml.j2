@@ -1,0 +1,62 @@
+---
+Description: {{sceptre_user_data.description|default('RDS Integration(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for integration in sceptre_user_data.integrations %}
+{%- set integration_name = integration.name %}
+  {{ integration_name }}:
+    Type: AWS::RDS::Integration
+    DeletionPolicy: {{ integration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ integration.update_replace_policy | default('Delete') }}
+    Properties:
+      SourceArn: {{ integration.source_arn | trim }}
+      TargetArn: {{ integration.target_arn | trim }}
+{%- if integration.additional_encryption_context is defined %}
+      AdditionalEncryptionContext:
+{%- for key,value in integration.additional_encryption_context.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if integration.integration_name is defined %}
+      IntegrationName: {{ integration.integration_name }}
+{%- endif %}
+{%- if integration.kms_key_id is defined %}
+      KMSKeyId: {{ integration.kms_key_id }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if integration.tags is defined %}
+{%- for key,value in integration.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for integration in sceptre_user_data.integrations %}
+{%- set integration_name = integration.name %}
+  {{ integration_name }}:
+    Description: The ARN of the integration {{ integration_name }}
+    Value:
+      Ref: {{ integration_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ integration_name }}"
+
+  {{ integration_name }}CreateTime:
+    Description: The ARN of the integration {{ integration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ integration_name }}
+        - CreateTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ integration_name }}-CreateTime"
+
+{%- endfor %}

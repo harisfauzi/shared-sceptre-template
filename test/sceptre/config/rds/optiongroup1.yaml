@@ -1,0 +1,47 @@
+---
+template:
+  type: file
+  path: rds/option_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  option_groups:
+    - name: optionmariadb01
+      engine_name: mariadb
+      major_engine_version: "'10.11'"
+      option_group_description: Test Option Group MariaDB
+    - name: optionmariadb02  # See https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.MariaDB.Options.html
+      option_group_name: custom-mariadb-10-audit
+      engine_name: mariadb
+      major_engine_version: "'10.11'"
+      option_group_description: Test Option Group MariaDB
+      option_configurations:
+        # Run `aws rds describe-option-group-options --engine-name mariadb --major-engine-version 10.11`
+        # to see valid options
+        - option_name: MARIADB_AUDIT_PLUGIN
+          option_settings:
+            - name: SERVER_AUDIT_EVENTS
+              value: CONNECT,QUERY,TABLE,QUERY_DDL,QUERY_DML,QUERY_DCL,QUERY_DML_NO_SELECT
+            - name: SERVER_AUDIT_FILE_ROTATE_SIZE
+              value: "1000000"
+      tags:
+        Purpose: Test
+    - name: optionsqlserverse01
+      engine_name: sqlserver-se
+      major_engine_version: "'16.00'"
+      option_group_description: Test Option Group SQLServer-SE
+    - name: optionsqlserverse02  # See https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Appendix.SQLServer.Options.html
+      option_group_name: custom-sqlserver-se-16-tde
+      engine_name: sqlserver-se
+      major_engine_version: "'16.00'"
+      option_group_description: Test Option Group SQLServer-SE
+      option_configurations:
+        # Run `aws rds describe-option-group-options --engine-name sqlserver-se --major-engine-version 16.00`
+        # to see valid options
+        - option_name: TDE
+      tags:
+        Purpose: Test
+
+stack_tags:
+  Test: rds-optiongroup

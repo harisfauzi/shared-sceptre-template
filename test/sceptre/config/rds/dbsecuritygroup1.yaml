@@ -1,0 +1,19 @@
+---
+template:
+  type: file
+  path: rds/db_security_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  db_security_groups:
+    - name: dbsg1
+      group_description: Test DB Security Group
+      db_security_group_ingress:
+        - ec2_security_group_id: sg-0b1340adde5bd3641
+      ec2_vpc_id: vpc-099ae6b55dc95617c
+      tags:
+        Purpose: Test
+
+stack_tags:
+  Test: rds-dbsecuritygroup
