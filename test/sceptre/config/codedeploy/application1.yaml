@@ -1,0 +1,19 @@
+---
+template:
+  type: file
+  path: codedeploy/application.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  applications:
+    - name: application1
+      application_name: application1
+    - name: application2
+      application_name: application2
+      compute_platform: Server
+      tags:
+        StackName: "!Sub ${AWS::StackName}"
+
+stack_tags:
+  Test: codedeploy-application
