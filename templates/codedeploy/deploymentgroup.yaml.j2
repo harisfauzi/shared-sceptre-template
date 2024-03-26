@@ -152,6 +152,36 @@ Resources:
           - Name: {{ target_group_info.name }}
 {%- endfor %}
 {%- endif %}
+{%- if deployment_group.load_balancer_info.target_group_pair_info_list is defined %}
+        TargetGroupPairInfoList:
+{%- for target_group_pair_info in deployment_group.load_balancer_info.target_group_pair_info_list %}
+          -
+{%- if target_group_pair_info.prod_traffic_route is defined %}
+            ProdTrafficRoute:
+{%- if target_group_pair_info.prod_traffic_route.listener_arns is defined %}
+              ListenerArns:
+{%- for listener_arn in target_group_pair_info.prod_traffic_route.listener_arns %}
+                - {{listener_arn }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- if target_group_pair_info.target_groups is defined %}
+            TargetGroups:
+{%- for target_group in target_group_pair_info.target_groups %}
+              - Name: {{ target_group.name }}
+{%- endfor %}
+{%- endif %}
+{%- if target_group_pair_info.test_traffic_route is defined %}
+            TestTrafficRoute:
+{%- if target_group_pair_info.test_traffic_route.listener_arns is defined %}
+              ListenerArns:
+{%- for listener_arn in target_group_pair_info.test_traffic_route.listener_arns %}
+                - {{ listener_arn }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
 {%- endif %}
 {%- if deployment_group.on_premises_instance_tag_filters is defined %}
       OnPremisesInstanceTagFilters:
@@ -164,6 +194,21 @@ Resources:
           - OnPremisesTagGroup:
 {{ tag_filter_macro.prep(on_premises_tag_set) | indent(width=12, first=True) }}
 {%- endfor %}
+{%- endif %}
+{%- if deployment_group.outdated_instances_strategy is defined %}
+      OutdatedInstancesStrategy: {{ deployment_group.outdated_instances_strategy }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if deployment_group.tags is defined %}
+{%- for key,value in deployment_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if deployment_group.termination_hook_enabled is defined %}
+      TerminationHookEnabled: {{ deployment_group.termination_hook_enabled }}
 {%- endif %}
 {%- if deployment_group.trigger_configurations is defined %}
       TriggerConfigurations:
