@@ -1,0 +1,45 @@
+---
+template:
+  type: file
+  path: codedeploy/deploymentconfig.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  deployment_configs:
+    - name: configserver1
+      deployment_config_name: configserver1
+      compute_platform: Server
+      minimum_healthy_hosts:
+        type: HOST_COUNT
+        value: 1
+      traffic_routing_config:
+        type: AllAtOnce
+    - name: configlambda1
+      deployment_config_name: configlambda1
+      compute_platform: Lambda
+      traffic_routing_config:
+        type: TimeBasedLinear
+        time_based_linear:
+          linear_interval: 10
+          linear_percentage: 50
+    - name: configecs1
+      deployment_config_name: configecs1
+      compute_platform: ECS
+      minimum_healthy_hosts:
+        type: HOST_COUNT
+        value: 1
+      traffic_routing_config:
+        type: TimeBasedCanary
+        time_based_canary:
+          canary_interval: 10
+          canary_percentage: 50
+      zonal_config:
+        first_zone_monitor_duration_in_seconds: 30
+        minimum_healthy_hosts_per_zone:
+          type: FLEET_PERCENT
+          value: 50
+        monitor_duration_in_seconds: 60
+
+stack_tags:
+  Test: codedeploy-application

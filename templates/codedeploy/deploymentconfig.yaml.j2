@@ -36,6 +36,20 @@ Resources:
           LinearPercentage: {{ deployment_config.traffic_routing_config.time_based_linear.linear_percentage }}
 {%- endif %}
 {%- endif %}
+{%- if deployment_config.zonal_config is defined %}
+      ZonalConfig:
+{%- if deployment_config.zonal_config.first_zone_monitor_duration_in_seconds is defined %}
+        FirstZoneMonitorDurationInSeconds: {{ deployment_config.zonal_config.first_zone_monitor_duration_in_seconds }}
+{%- endif %}
+{%- if deployment_config.zonal_config.minimum_healthy_hosts_per_zone is defined %}
+        MinimumHealthyHostsPerZone:
+          Type: {{ deployment_config.zonal_config.minimum_healthy_hosts_per_zone.type }}
+          Value: {{ deployment_config.zonal_config.minimum_healthy_hosts_per_zone.value }}
+{%- endif %}
+{%- if deployment_config.zonal_config.monitor_duration_in_seconds is defined %}
+        MonitorDurationInSeconds: {{ deployment_config.zonal_config.monitor_duration_in_seconds }}
+{%- endif %}
+{%- endif %}
 
 {%- endfor %}
 
