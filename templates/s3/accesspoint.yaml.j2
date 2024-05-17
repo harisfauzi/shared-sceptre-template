@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('S3 AccessPoint(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('S3 Access Point(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -14,17 +14,14 @@ Resources:
 {%- if access_point.access_point_name is defined %}
       Name: {{ access_point.access_point_name }}
 {%- endif %}
+{%- if access_point.bucket_account_id is defined %}
+      BucketAccountId: {{ access_point.bucket_account_id }}
+{%- endif %}
 {%- if access_point.policy_json is defined %}
       Policy: '{{ access_point.policy_json }}'
 {%- elif access_point.policy is defined %}
-      Policy: |
+      Policy:
 {{ access_point.policy | indent(width=8, first=True) }}
-{%- endif %}
-{%- if access_point.policy_status_json is defined %}
-      PolicyStatus: '{{ access_point.policy_status_json }}'
-{%- elif access_point.policy_status is defined %}
-      PolicyStatus: |
-{{ access_point.policy_status | indent(width=8, first=True) }}
 {%- endif %}
 {%- if access_point.public_access_block_configuration is defined %}
       PublicAccessBlockConfiguration:

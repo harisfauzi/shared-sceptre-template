@@ -1,0 +1,24 @@
+---
+template:
+  type: file
+  path: s3/accessgrant.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  description: CloudFormation template to test Jinja2 template.
+  access_grants:
+    - name: bucket3grants
+      access_grants_location_id: !stack_output "s3/accessgrantlocation1.yaml::AGLocation2"
+      grantee:
+        grantee_identifier: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/s3-admin"
+        grantee_type: IAM
+      permission: READWRITE
+      s3_prefix_type: Object
+      access_grants_location_configuration:
+        s3_sub_prefix: admin/
+      tags:
+        Name: bucket3grants
+
+stack_tags:
+  Test: s3-accessgrant

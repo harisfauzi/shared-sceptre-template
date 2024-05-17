@@ -1,0 +1,82 @@
+---
+Description: {{sceptre_user_data.description|default('S3 Access Grant(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for access_grant in sceptre_user_data.access_grants %}{# BEGIN {%- for access_grant in sceptre_user_data.access_grants %} #}
+{%- set access_grant_name = access_grant.name %}
+  {{ access_grant_name }}:
+    Type: AWS::S3::AccessGrant
+    DeletionPolicy: {{ access_grant.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ access_grant.update_replace_policy | default('Delete') }}
+    Properties:
+      AccessGrantsLocationId: {{ access_grant.access_grants_location_id }}
+      Grantee:
+        GranteeIdentifier: {{ access_grant.grantee.grantee_identifier }}
+        GranteeType: {{ access_grant.grantee.grantee_type }}
+      Permission: {{ access_grant.permission }}
+{%- if access_grant.access_grants_location_configuration is defined %}
+      AccessGrantsLocationConfiguration:
+        S3SubPrefix: {{ access_grant.access_grants_location_configuration.s3_sub_prefix }}
+{%- endif %}
+{%- if access_grant.application_arn is defined %}
+      ApplicationArn: {{ access_grant.application_arn }}
+{%- endif %}
+{%- if access_grant.s3_prefix_type is defined %}
+      S3PrefixType: Object
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if access_grant.tags is defined %}
+{%- for key,value in access_grant.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}{# END {%- for access_grant in sceptre_user_data.access_grants %} #}
+
+Outputs:
+{%- for access_grant in sceptre_user_data.access_grants %}
+{%- set access_grant_name = access_grant.name %}
+
+  {{ access_grant_name }}:
+    Description: Access Grant Id for {{ access_grant_name }}
+    Value:
+      Ref: {{ access_grant_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_grant_name }}"
+
+  {{ access_grant_name }}AccessGrantId:
+    Description: The Access Grant Id for {{ access_grant_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_grant_name }}
+        - AccessGrantId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_grant_name }}-AccessGrantId"
+
+  {{ access_grant_name }}AccessGrantArn:
+    Description: The Access Grant ARN for {{ access_grant_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_grant_name }}
+        - AccessGrantArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_grant_name }}-AccessGrantArn"
+
+  {{ access_grant_name }}GrantScope:
+    Description: The S3 path of the data to which you are granting access for {{ access_grant_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ access_grant_name }}
+        - GrantScope
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_grant_name }}-GrantScope"
+
+{%- endfor %}

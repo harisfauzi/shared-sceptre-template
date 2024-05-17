@@ -1,0 +1,40 @@
+{%- macro prep(filterobject) %}
+{%- if filterobject.match_any_prefix is defined %}
+MatchAnyPrefix:
+{%- for prefix in filterobject.match_any_prefix %}
+  - {{ prefix }}
+{%- endfor %}
+{%- endif %}
+{%- if filterobject.match_any_suffix is defined %}
+MatchAnySuffix:
+{%- for suffix in filterobject.match_any_suffix %}
+  - {{ suffix }}
+{%- endfor %}
+{%- endif %}
+{%- if filterobject.match_any_tag is defined %}
+MatchAnyTag:
+{%- for key,value in filterobject.match_any_tag.items() %}
+  -
+    Key: {{ key }}
+    Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if filterobject.match_object_age is defined %}
+MatchObjectAge:
+{%- if filterobject.match_object_age.days_greater_than is defined %}
+  DaysGreaterThan: {{ filterobject.match_object_age.days_greater_than }}
+{%- endif %}
+{%- if filterobject.match_object_age.days_less_than is defined %}
+  DaysLessThan: {{ filterobject.match_object_age.days_less_than }}
+{%- endif %}
+{%- endif %}
+{%- if filterobject.match_object_size is defined %}
+MatchObjectSize:
+{%- if filterobject.match_object_size.bytes_greater_than is defined %}
+  BytesGreaterThan: {{ filterobject.match_object_size.bytes_greater_than }}
+{%- endif %}
+{%- if filterobject.match_object_size.bytes_less_than is defined %}
+  BytesLessThan: {{ filterobject.match_object_size.bytes_less_than }}
+{%- endif %}
+{%- endif %}
+{%- endmacro %}
