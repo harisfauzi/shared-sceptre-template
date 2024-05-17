@@ -1,9 +1,9 @@
 ---
-Description: {{sceptre_user_data.description|default('S3 MultiRegionAccessPointPolicy(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('S3 Multi Region Access Point Policy(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-{%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policys %}{# BEGIN {%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policys %} #}
+{%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policies %}{# BEGIN {%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policies %} #}
 {%- set multi_region_access_point_policy_name = multi_region_access_point_policy.name %}
   {{ multi_region_access_point_policy_name }}:
     Type: AWS::S3::MultiRegionAccessPointPolicy
@@ -14,14 +14,14 @@ Resources:
 {%- if multi_region_access_point_policy.policy_json is defined %}
       Policy: '{{ multi_region_access_point_policy.policy_json }}'
 {%- else %}
-      Policy: |
+      Policy:
 {{ multi_region_access_point_policy.policy | indent(width=8, first=True) }}
 {%- endif %}
 
-{%- endfor %}{# END {%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policys %} #}
+{%- endfor %}{# END {%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policies %} #}
 
 Outputs:
-{%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policys %}
+{%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policies %}
 {%- set multi_region_access_point_policy_name = multi_region_access_point_policy.name %}
 
   {{ multi_region_access_point_policy_name }}:

@@ -1,0 +1,186 @@
+---
+Description: {{sceptre_user_data.description|default('S3 Storage Lens(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for storage_lens in sceptre_user_data.storage_lenses %}{# BEGIN {%- for storage_lens in sceptre_user_data.storage_lenses %} #}
+{%- set storage_lens_name = storage_lens.name %}
+  {{ storage_lens_name }}:
+    Type: AWS::S3::StorageLens
+    DeletionPolicy: {{ storage_lens.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ storage_lens.update_replace_policy | default('Delete') }}
+    Properties:
+      StorageLensConfiguration:
+        AccountLevel:
+          BucketLevel:
+{%- if storage_lens.storage_lens_configuration.account_level.bucket_level.activity_metrics is defined %}
+            ActivityMetrics:
+              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.activity_metrics.is_enabled }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.bucket_level.advanced_cost_optimization_metrics is defined %}
+            AdvancedCostOptimizationMetrics:
+              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.advanced_cost_optimization_metrics.is_enabled }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.bucket_level.advanced_data_protection_metrics is defined %}
+            AdvancedDataProtectionMetrics:
+              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.advanced_data_protection_metrics.is_enabled }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.bucket_level.detailed_status_codes_metrics is defined %}
+            DetailedStatusCodesMetrics:
+              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.detailed_status_codes_metrics.is_enabled }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level is defined %}{# {%- if storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level is defined %} #}
+            PrefixLevel:
+              StorageMetrics:
+{%- if storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.is_enabled is defined %}
+                IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.is_enabled }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.selection_criteria is defined %}
+                SelectionCriteria:
+{%- if storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.selection_criteria.delimiter is defined %}
+                  Delimiter: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.selection_criteria.delimiter }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.selection_criteria.max_depth is defined %}
+                  MaxDepth: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.selection_criteria.max_depth }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.selection_criteria.min_storage_bytes_percentage is defined %}
+                  MinStorageBytesPercentage: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.selection_criteria.min_storage_bytes_percentage }}
+{%- endif %}
+{%- endif %}
+{%- endif %}{# {%- endif storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level is defined %} #}
+{%- if storage_lens.storage_lens_configuration.account_level.activity_metrics is defined %}
+          ActivityMetrics:
+            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.activity_metrics.is_enabled }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.advanced_cost_optimization_metrics is defined %}
+          AdvancedCostOptimizationMetrics:
+            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.advanced_cost_optimization_metrics.is_enabled }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.advanced_data_protection_metrics is defined %}
+          AdvancedDataProtectionMetrics:
+            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.advanced_data_protection_metrics.is_enabled }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.detailed_status_codes_metrics is defined %}
+          DetailedStatusCodesMetrics:
+            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.detailed_status_codes_metrics.is_enabled }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level is defined %}{# {%- if storage_lens.storage_lens_configuration.account_level.xxxxxxx is defined %} #}
+          StorageLensGroupLevel:
+{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria is defined %}
+            StorageLensGroupSelectionCriteria:
+{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.exclude is defined %}
+              Exclude:
+{%- for item in storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.exclude %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.include is defined %}
+              Include:
+{%- for item in storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.include %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}
+{%- endif %}{# {%- endif storage_lens.storage_lens_configuration.account_level.xxxxxxx is defined %} #}
+        Id: {{ storage_lens.storage_lens_configuration.id }}
+        IsEnabled: {{ storage_lens.storage_lens_configuration.is_enabled }}
+{%- if storage_lens.storage_lens_configuration.aws_org is defined %}
+        AwsOrg:
+          Arn: {{ storage_lens.storage_lens_configuration.aws_org.arn | trim }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.data_export is defined %}{# {%- if storage_lens.storage_lens_configuration.data_export is defined %} #}
+        DataExport:
+{%- if storage_lens.storage_lens_configuration.data_export.cloud_watch_metrics is defined %}
+          CloudWatchMetrics:
+            IsEnabled: {{ storage_lens.storage_lens_configuration.data_export.cloud_watch_metrics.is_enabled }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.data_export.s3_bucket_destination is defined %}
+          S3BucketDestination:
+            AccountId: {{ storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.account_id | trim  }}
+            Arn: {{ storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.arn | trim }}
+            Format: {{ storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.format }}
+            OutputSchemaVersion: {{ storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.output_schema_version }}
+{%- if storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption is defined %}
+            Encryption:
+{%- if storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption.sse_kms is defined %}
+              SSEKMS:
+                KeyId: {{ storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption.sse_kms.key_id }}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption.sse_s3 is defined %}
+              SSES3:
+{{ storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption.sse_s3 | indent(width=16, first=true)}}
+{%- endif %}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.prefix is defined %}
+            Prefix: {{ storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.prefix }}
+{%- endif %}
+{%- endif %}
+{%- endif %}{# {%- endif storage_lens.storage_lens_configuration.data_export is defined %} #}
+{%- if storage_lens.storage_lens_configuration.exclude is defined %}{# {%- if storage_lens.storage_lens_configuration.exclude is defined %} #}
+        Exclude:
+{%- if storage_lens.storage_lens_configuration.exclude.buckets is defined %}
+          Buckets:
+{%- for bucket in storage_lens.storage_lens_configuration.exclude.buckets %}
+            - {{ bucket }}
+{%- endfor %}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.exclude.regions is defined %}
+          Regions:
+{%- for region in storage_lens.storage_lens_configuration.exclude.regions %}
+            - {{ region }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# {%- endif storage_lens.storage_lens_configuration.exclude is defined %} #}
+{%- if storage_lens.storage_lens_configuration.include is defined %}{# {%- if storage_lens.storage_lens_configuration.include is defined %} #}
+        Include:
+{%- if storage_lens.storage_lens_configuration.include.buckets is defined %}
+          Buckets:
+{%- for bucket in storage_lens.storage_lens_configuration.include.buckets %}
+            - {{ bucket }}
+{%- endfor %}
+{%- endif %}
+{%- if storage_lens.storage_lens_configuration.include.regions is defined %}
+          Regions:
+{%- for region in storage_lens.storage_lens_configuration.include.regions %}
+            - {{ region }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# {%- endif storage_lens.storage_lens_configuration.include is defined %} #}
+{%- if storage_lens.storage_lens_configuration.storage_lens_arn is defined %}
+        StorageLensArn: {{ storage_lens.storage_lens_configuration.storage_lens_arn }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if storage_lens.tags is defined %}
+{%- for key,value in storage_lens.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}{# END {%- for storage_lens in sceptre_user_data.storage_lenses %} #}
+
+Outputs:
+{%- for storage_lens in sceptre_user_data.storage_lenses %}
+{%- set storage_lens_name = storage_lens.name %}
+
+  {{ storage_lens_name }}:
+    Description: Storage Lens Configuration Id for {{ storage_lens_name }}
+    Value:
+      Ref: {{ storage_lens_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ storage_lens_name }}"
+
+  {{ storage_lens_name }}Arn:
+    Description: The ARN for {{ storage_lens_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ storage_lens_name }}
+        - StorageLensConfiguration.StorageLensArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ storage_lens_name }}-Arn"
+
+{%- endfor %}

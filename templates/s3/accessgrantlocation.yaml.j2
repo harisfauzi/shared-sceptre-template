@@ -1,0 +1,63 @@
+---
+Description: {{sceptre_user_data.description|default('S3 Access Grant Location(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for access_grant_location in sceptre_user_data.access_grant_locations %}{# BEGIN {%- for access_grant_location in sceptre_user_data.access_grant_locations %} #}
+{%- set access_grant_location_name = access_grant_location.name %}
+  {{ access_grant_location_name }}:
+    Type: AWS::S3::AccessGrantsLocation
+    DeletionPolicy: {{ access_grant_location.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ access_grant_location.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if access_grant_location.iam_role_arn is defined %}
+      IamRoleArn: {{ access_grant_location.iam_role_arn }}
+{%- endif %}
+{%- if access_grant_location.location_scope is defined %}
+      LocationScope: {{ access_grant_location.location_scope }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if access_grant_location.tags is defined %}
+{%- for key,value in access_grant_location.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}{# END {%- for access_grant_location in sceptre_user_data.access_grant_locations %} #}
+
+Outputs:
+{%- for access_grant_location in sceptre_user_data.access_grant_locations %}
+{%- set access_grant_location_name = access_grant_location.name %}
+
+  {{ access_grant_location_name }}:
+    Description: Access Grant Location Id for {{ access_grant_location_name }}
+    Value:
+      Ref: {{ access_grant_location_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_grant_location_name }}"
+
+  {{ access_grant_location_name }}AccessGrantsLocationId:
+    Description: The Access Grant Location Id for {{ access_grant_location_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_grant_location_name }}
+        - AccessGrantsLocationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_grant_location_name }}-AccessGrantsLocationId"
+
+  {{ access_grant_location_name }}AccessGrantsLocationArn:
+    Description: The Access Grant Location ARN for {{ access_grant_location_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_grant_location_name }}
+        - AccessGrantsLocationArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_grant_location_name }}-AccessGrantsLocationArn"
+
+{%- endfor %}

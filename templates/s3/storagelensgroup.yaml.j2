@@ -1,0 +1,61 @@
+---
+{%- import 'macros/s3-storagelensgroup-commonfilter.yaml.j2' as commonfilter %}
+Description: {{sceptre_user_data.description|default('S3 Storage Lens Group(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for storage_lens_group in sceptre_user_data.storage_lens_groups %}{# BEGIN {%- for storage_lens_group in sceptre_user_data.storage_lens_groups %} #}
+{%- set storage_lens_group_name = storage_lens_group.name %}
+  {{ storage_lens_group_name }}:
+    Type: AWS::S3::StorageLensGroup
+    DeletionPolicy: {{ storage_lens_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ storage_lens_group.update_replace_policy | default('Delete') }}
+    Properties:
+      Filter:
+{%- if storage_lens_group.filter.and is defined %}
+        And:
+          {{ commonfilter.prep(storage_lens_group.filter.and) | indent(width=10,first=True) }}
+{%- endif %}
+{%- if storage_lens_group.filter.or is defined %}
+        Or:
+          {{ commonfilter.prep(storage_lens_group.filter.or) | indent(width=10,first=True) }}
+{%- endif %}
+        {{ commonfilter.prep(storage_lens_group.filter) | indent(width=8,first=True) }}
+      Name: {{ storage_lens_group.storage_lens_group_name }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if storage_lens_group.tags is defined %}
+{%- for key,value in storage_lens_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+
+{%- endfor %}{# END {%- for storage_lens_group in sceptre_user_data.storage_lens_groups %} #}
+
+Outputs:
+{%- for storage_lens_group in sceptre_user_data.storage_lens_groups %}
+{%- set storage_lens_group_name = storage_lens_group.name %}
+
+  {{ storage_lens_group_name }}:
+    Description: Storage Lens Group ARN for {{ storage_lens_group_name }}
+    Value:
+      Ref: {{ storage_lens_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ storage_lens_group_name }}"
+
+  {{ storage_lens_group_name }}StorageLensGroupArn:
+    Description: The ARN for {{ storage_lens_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ storage_lens_group_name }}
+        - StorageLensGroupArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ storage_lens_group_name }}-StorageLensGroupArn"
+
+
+{%- endfor %}

@@ -1,0 +1,29 @@
+---
+template:
+  type: file
+  path: s3/multiregionaccesspoint.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  description: CloudFormation template to test Jinja2 template.
+  multi_region_access_points:
+    - name: ap1
+      regions:
+        -
+          bucket: sample-bucket-874jab
+          bucket_account_id: "!Sub ${AWS::AccountId}"
+    - name: ap2
+      regions:
+        -
+          bucket: sample-bucket-hym1398
+          bucket_account_id: "!Sub ${AWS::AccountId}"
+      multi_region_access_point_name: bucket2-mrap
+      public_access_block_configuration:
+        block_public_acls: true
+        block_public_policy: true
+        ignore_public_acls: true
+        restrict_public_buckets: true
+
+stack_tags:
+  Test: s3-multiregionaccesspoint

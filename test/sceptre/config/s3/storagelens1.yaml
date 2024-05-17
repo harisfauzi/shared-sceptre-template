@@ -1,0 +1,90 @@
+---
+template:
+  type: file
+  path: s3/storagelens.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  description: CloudFormation template to test Jinja2 template.
+  storage_lenses:
+    - name: lens1
+      storage_lens_configuration:
+        account_level:
+          bucket_level:
+            prefix_level:
+              storage_metrics:
+                is_enabled: true
+        id: lens-config-01
+        is_enabled: false
+      tags:
+        Name: lens1
+    - name: lens2
+      storage_lens_configuration:
+        account_level:
+          bucket_level:
+            activity_metrics:
+              is_enabled: true
+            advanced_cost_optimization_metrics:
+              is_enabled: true
+            advanced_data_protection_metrics:
+              is_enabled: true
+            detailed_status_codes_metrics:
+              is_enabled: true
+            prefix_level:
+              storage_metrics:
+                is_enabled: true
+                selection_criteria:
+                  delimiter: /
+                  max_depth: 2
+                  min_storage_bytes_percentage: 2
+          activity_metrics:
+            is_enabled: true
+          advanced_cost_optimization_metrics:
+            is_enabled: true
+          advanced_data_protection_metrics:
+            is_enabled: true
+          detailed_status_codes_metrics:
+            is_enabled: true
+          storage_lens_group_level:
+            storage_lens_group_selection_criteria:
+              exclude:
+                - "!Sub arn:${AWS::Partition}:s3:${AWS::Region}:${AWS::AccountId}:storage-lens-group/storage-lens-group-99"
+              include:
+                - "!Sub arn:${AWS::Partition}:s3:${AWS::Region}:${AWS::AccountId}:storage-lens-group/storage-lens-group-01"
+        id: lens-config-02
+        is_enabled: true
+        aws_org:
+          arn: o-abcdef
+        data_export:
+          cloud_watch_metrics:
+            is_enabled: true
+          s3_bucket_destination:
+            account_id: "!Sub ${AWS::AccountId}"
+            arn: "!Sub arn:${AWS::Partition}:s3:::storage-lens-export-${AWS::AccountId}"
+            format: Parquet
+            output_schema_version: V_1
+            encryption:
+              sse_kms:
+                key_id: alias/some-s3-key
+            prefix: storage-lens-exports/
+        exclude:
+          buckets:
+            - "!Sub arn:${AWS::Partition}:s3:::storage-lens-export-${AWS::AccountId}"
+          regions:
+            - us-east-1
+            - us-east-2
+            - us-west-1
+            - us-west-2
+        include:
+          buckets:
+            - "!Sub arn:${AWS::Partition}:s3:::storage-monitor-${AWS::AccountId}"
+          regions:
+            - ap-southeast-2
+            - ap-southeast-4
+
+      tags:
+        Name: lens1
+
+stack_tags:
+  Test: s3-storagelens
