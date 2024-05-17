@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('S3 MultiRegionAccessPoint(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('S3 Multi Region Access Point(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -13,9 +13,12 @@ Resources:
       Regions:
 {%- for region in multi_region_access_point.regions %}
         - Bucket: {{ region.bucket }}
+{%- if region.bucket_account_id is defined %}
+          BucketAccountId: {{ region.bucket_account_id }}
+{%- endif %}
 {%- endfor %}
-{%- if multi_region_access_point.name is defined %}
-      Name: {{ multi_region_access_point.name }}
+{%- if multi_region_access_point.multi_region_access_point_name is defined %}
+      Name: {{ multi_region_access_point.multi_region_access_point_name }}
 {%- endif %}
 {%- if multi_region_access_point.public_access_block_configuration is defined %}
       PublicAccessBlockConfiguration:

@@ -1,0 +1,287 @@
+---
+template:
+  type: file
+  path: s3/bucket.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  description: CloudFormation template to test Jinja2 template.
+  buckets:
+    - name: testbucket1
+      tags:
+        Name: testbucket1
+    - name: testbucket2manyoptions
+      accelerate_configuration:
+        acceleration_status: Suspended
+      access_control: Private
+      analytics_configurations:
+        - id: default-analytic
+          prefix: important/
+          storage_class_analysis:
+            data_export:
+              destination:
+                bucket_account_id: "!Sub ${AWS::AccountId}"
+                bucket_arn: "!Sub arn:${AWS::Partition}:s3:::sample-bucket-jrn163"
+                format: Parquet
+                prefix: exported-analytic-source/
+          tag_filters:
+            test:analytics: "yes"
+            test:demo: "yes"
+      bucket_encryption:
+        server_side_encryption_configuration:
+          - server_side_encryption_by_default:
+              sse_algorithm: AES256
+          - bucket_key_enabled: true
+            server_side_encryption_by_default:
+              kms_master_key_id: alias/cmk-default-s3-bucket
+              sse_algorithm: aws:kms
+      bucket_name: sample-bucket-hym1398
+      cors_configuration:
+        cors_rules:
+          - allowed_methods:
+              - GET
+              - HEAD
+            allowed_origins:
+              - "'null'"
+            allowed_headers:
+              - X-BUCKET
+            exposed_headers:
+              - XMLHttpRequest
+            id: testcors
+            max_age: 3600
+      intelligent_tiering_configurations:
+        - id: rule-it1
+          status: Enabled
+          tierings:
+            - access_tier: ARCHIVE_ACCESS
+              days: 90
+          prefix: archive/
+          tag_filters:
+            ObjectClass: IA
+      inventory_configurations:
+        - destination:
+            bucket_arn: "!Sub arn:${AWS::Partition}:s3:::sample-bucket-jrn163"
+            format: Parquet
+            bucket_account_id: "!Sub ${AWS::AccountId}"
+            prefix: inventoryconfig/
+          enabled: true
+          id: inventory-config-1
+          included_object_versions: Current
+          schedule_frequency: Daily
+          optional_fields:
+            - Size
+            - LastModifiedDate
+            - StorageClass
+            - ETag
+            - IsMultipartUploaded
+            - ReplicationStatus
+            - EncryptionStatus
+            - ObjectLockRetainUntilDate
+            - ObjectLockMode
+            - ObjectLockLegalHoldStatus
+            - IntelligentTieringAccessTier
+            - BucketKeyStatus
+            - ChecksumAlgorithm
+            - ObjectAccessControlList
+            - ObjectOwner
+          prefix: inventory-this/
+      lifecycle_configuration:
+        rules:
+          - status: Enabled
+            id: rule-01
+            abort_incomplete_multipart_upload:
+              days_after_initiation: 1
+          - status: Enabled
+            id: rule-02
+            expiration_date: "2024-12-31T23:59:59Z"
+            prefix: delete-at-eoy/
+          - status: Enabled
+            id: rule-03
+            expiration_in_days: 1
+            prefix: delete-after-one-day/
+          - status: Enabled
+            id: rule-04
+            expiration_in_days: 2
+            prefix: delete-after-two-days/
+            noncurrent_version_expiration:
+              noncurrent_days: 1
+              newer_noncurrent_versions: 0
+          - status: Enabled
+            id: rule-05
+            prefix: transition-objects/
+            transitions:
+              - storage_class: STANDARD_IA
+                transition_in_days: 1
+              - storage_class: ONEZONE_IA
+                transition_in_days: 2
+              - storage_class: GLACIER
+                transition_in_days: 7
+              - storage_class: DEEP_ARCHIVE
+                transition_in_days: 7
+            tag_filters:
+              AllowTransition: OK
+            expiration_in_days: 365
+            noncurrent_version_transitions:
+              - storage_class: STANDARD_IA
+                transition_in_days: 1
+              - storage_class: ONEZONE_IA
+                transition_in_days: 2
+              - storage_class: GLACIER
+                transition_in_days: 7
+              - storage_class: DEEP_ARCHIVE
+                transition_in_days: 7
+            noncurrent_version_expiration:
+              noncurrent_days: 365
+              newer_noncurrent_versions: 0
+          - status: Enabled
+            id: rule-06
+            expiration_in_days: 1
+            object_size_less_than: "1000000"
+            prefix: delete-small-objects/
+          - status: Enabled
+            id: rule-07
+            expiration_in_days: 1
+            object_size_greater_than: "999999999999999"
+            prefix: delete-large-objects/
+      logging_configuration:
+        destination_bucket_name: "!Sub s3accesslog-${AWS::AccountId}"
+        log_file_prefix: logs/
+        target_object_key_format:
+          partitioned_prefix:
+            partition_data_source: EventTime
+          # simple_prefix: true
+      metrics_configuration:
+        - id: metrics-config-01
+          prefix: metrics-this/
+        - id: metrics-config-02
+          tag_filters:
+            MetricsThis: OK
+      notification_configuration:
+        event_bridge_configuration:
+          event_bridge_enabled: true
+        lambda_configurations:
+          - event: s3:ObjectCreated:*
+            function: "!Sub arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:dummy-lambda-01"
+            filter:
+              s3_key:
+                rules:
+                  - name: prefix
+                    value: watched-objects/
+                  - name: suffix
+                    value: .zip
+        queue_configurations:
+          - event: s3:ObjectCreated:*
+            queue: "!Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:dummy-queue-01"
+            filter:
+              s3_key:
+                rules:
+                  - name: prefix
+                    value: watched-objects/
+                  - name: suffix
+                    value: .zip
+        topic_configurations:
+          - event: s3:ObjectCreated:*
+            topic: "!Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:dummy-sns-01"
+            filter:
+              s3_key:
+                rules:
+                  - name: prefix
+                    value: watched-objects/
+                  - name: suffix
+                    value: .zip
+      object_lock_configuration:
+        object_lock_enabled: Enabled
+        rule:
+          default_retention:
+            mode: COMPLIANCE
+            days: 3
+      object_lock_enabled: true
+      ownership_controls:
+        rules:
+          - object_ownership: ObjectWriter
+          - object_ownership: BucketOwnerPreferred
+      public_access_block_configuration:
+        block_public_acls: true
+        block_public_policy: true
+        ignore_public_acls: true
+        restrict_public_buckets: true
+      replication_configuration:
+        role: arn:aws:iam::111111111111:role/s3-replication-role
+        rules:
+          - status: Enabled
+            destination: 
+              bucket: "!Sub arn:${AWS::Partition}:s3:::replication-bucket-111111111111"
+              access_control_translation: true
+              account: "111111111111"
+              encryption_configuration:
+                replica_kms_key_id: "!Sub arn:${AWS::Partition}:kms:${AWS::Region}:111111111111:key/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+              metrics:
+                event_threshold: true
+                status: Enabled
+              replication_time:
+                status: Enabled
+              storage_class: ONEZONE_IA
+      tags:
+        SourceRepoURL: "{{stack_group_config.git_repo}}"
+      versioning_configuration:
+        status: Enabled
+      website_configuration:
+        error_document: error.html
+        index_document: index.html
+        routing_rules:
+          -
+            routing_rule_condition:
+              key_prefix_equals: documents/
+            redirect_rule:
+              replace_key_prefix_with: docs/
+          -
+            routing_rule_condition:
+              key_prefix_equals: gotosample/
+            redirect_rule:
+              hostname: sample.com
+              http_redirect_code: "301"
+              protocol: https
+          -
+            routing_rule_condition:
+              http_error_code_returned_equals: "404"
+            redirect_rule:
+              hostname: default.com
+              http_redirect_code: "301"
+              protocol: https
+    - name: testbucket3withbucketpolicy
+      bucket_name: sample-bucket-874jab
+      bucket_policy:
+        policy_document: |
+          Version: "2012-10-17"
+          Id: BucketPolicy
+          Statement:
+            - Sid: AllowSSLRequestsOnly
+              Action: "s3:*"
+              Effect: Deny
+              Resource:
+                - !GetAtt testbucket3withbucketpolicy.Arn
+                - !Join ['/', [!GetAtt testbucket3withbucketpolicy.Arn, '*']]
+              Condition:
+                Bool:
+                  "aws:SecureTransport": false
+              Principal: "*"
+            - Sid: AllowSSLRequestsOnly
+              Action:
+                - s3:PutObject
+              Effect: Allow
+              Resource:
+                - !GetAtt testbucket2manyoptions.Arn
+                - !Join ['/', [!GetAtt testbucket2manyoptions.Arn, '*']]
+              Condition:
+                ArnLike:
+                  aws:SourceArn: !GetAtt testbucket2manyoptions.Arn
+                StringEquals:
+                  aws:SourceAccount: !Sub ${AWS::AccountId}
+              Principal:
+                Service: logging.s3.amazonaws.com
+      tags:
+        SourceRepoURL: "{{stack_group_config.git_repo}}"          
+
+stack_tags:
+  Test: s3-bucket

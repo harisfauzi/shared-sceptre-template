@@ -179,17 +179,29 @@ Resources:
 {%- if rule.noncurrent_version_expiration_in_days is defined %}
             NoncurrentVersionExpirationInDays: {{ rule.noncurrent_version_expiration_in_days }}
 {%- endif %}
-{%- if rule.noncurrent_version_transitions is defined %}
+{%- if rule.noncurrent_version_transition is defined %}
             NoncurrentVersionTransition:
-              StorageClass: {{ rule.noncurrent_version_transitions.storage_class }}
-              TransitionInDays: {{ rule.noncurrent_version_transitions.transition_in_days }}
+              StorageClass: {{ rule.noncurrent_version_transition.storage_class }}
+              TransitionInDays: {{ rule.noncurrent_version_transition.transition_in_days }}
+{%- if rule.noncurrent_version_transition.newer_noncurrent_versions is defined %}
+              NewerNoncurrentVersions: {{ rule.noncurrent_version_transition.newer_noncurrent_versions }}
+{%- endif %}
 {%- endif %}
 {%- if rule.noncurrent_version_transitions is defined %}
             NoncurrentVersionTransitions:
 {%- for noncurrent_version_transition in rule.noncurrent_version_transitions %}
               - StorageClass: {{ noncurrent_version_transition.storage_class }}
                 TransitionInDays: {{ noncurrent_version_transition.transition_in_days }}
+{%- if noncurrent_version_transition.newer_noncurrent_versions is defined %}
+                NewerNoncurrentVersions: {{ noncurrent_version_transition.newer_noncurrent_versions }}
+{%- endif %}
 {%- endfor %}
+{%- endif %}
+{%- if rule.object_size_greater_than is defined %}
+            ObjectSizeGreaterThan: {{ rule.object_size_greater_than }}
+{%- endif %}
+{%- if rule.object_size_less_than is defined %}
+            ObjectSizeLessThan: {{ rule.object_size_less_than  }}
 {%- endif %}
 {%- if rule.prefix is defined %}
             Prefix: {{ rule.prefix }}
@@ -233,11 +245,23 @@ Resources:
 {%- if bucket.logging_configuration.log_file_prefix is defined %}
         LogFilePrefix: {{ bucket.logging_configuration.log_file_prefix }}
 {%- endif %}
+{%- if bucket.logging_configuration.target_object_key_format is defined %}
+        TargetObjectKeyFormat:
+{%- if bucket.logging_configuration.target_object_key_format.partitioned_prefix is defined %}
+          PartitionedPrefix:
+            PartitionDateSource: {{ bucket.logging_configuration.target_object_key_format.partitioned_prefix.partition_data_source}}
+{%- elif bucket.logging_configuration.target_object_key_format.simple_prefix is defined %}
+          SimplePrefix: {}
+{%- endif %}
+{%- endif %}
 {%- endif %}
 {%- if bucket.metrics_configuration is defined %}
       MetricsConfigurations:
 {%- for metrics_configuration in bucket.metrics_configuration %}
         - Id: {{ metrics_configuration.id }}
+{%- if metrics_configuration.access_point_arn is defined %}
+          AccessPointArn: {{ metrics_configuration.access_point_arn }}
+{%- endif %}
 {%- if metrics_configuration.prefix is defined %}
           Prefix: {{ metrics_configuration.prefix }}
 {%- endif %}
@@ -290,9 +314,9 @@ Resources:
 {%- endif %}{# if bucket.notification_configuration.queue_configurations is defined #}
 {%- if bucket.notification_configuration.topic_configurations is defined %}
         TopicConfigurations:
-{%- for topic_configuration in bucket.notification_configuration.queue_configurations %}
+{%- for topic_configuration in bucket.notification_configuration.topic_configurations %}
           - Event: {{ topic_configuration.event }}
-            Queue: {{ topic_configuration.queue }}
+            Topic: {{ topic_configuration.topic }}
 {%- if topic_configuration.filter is defined %}
             Filter:
               S3Key:
@@ -356,7 +380,7 @@ Resources:
 {%- for rule in bucket.replication_configuration.rules %}
           - Destination:
               Bucket: {{ rule.destination.bucket }}
-{%- if rule.destination.AccessControlTranslation is defined %}
+{%- if rule.destination.access_control_translation is defined %}
               AccessControlTranslation:
                 Owner: Destination
 {%- endif %}
