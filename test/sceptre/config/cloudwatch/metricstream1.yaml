@@ -1,0 +1,42 @@
+---
+template:
+  type: file
+  path: cloudwatch/metric_stream.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  metric_streams:
+    - name: stream1
+      firehose_arn: "!Sub arn:${AWS::Partition}:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/MyDeliveryStream"
+      output_format: json
+      role_arn: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/service-role/MyRole"
+      include_filters:
+        - namespace: AWS/ELB
+        - namespace: AWS/EC2
+      tags:
+        CostCentre: Test001
+    - name: stream2
+      metric_stream_name: stream2
+      firehose_arn: "!Sub arn:${AWS::Partition}:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/MyDeliveryStream"
+      output_format: opentelemetry1.0
+      role_arn: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/service-role/MyRole"
+      exclude_filters:
+        - namespace: AWS/ELB
+        - namespace: AWS/EC2
+      statistics_configurations:
+        - include_metrics:
+            - metric_name: TargetResponseTime
+              namespace: AWS/ApplicationELB
+            - metric_name: Latency
+              namespace: AWS/ELB
+          additional_statistics:
+            - tm90
+            - p90
+            - p99
+            - p99.9
+      tags:
+        CostCentre: Test001
+
+stack_tags:
+  Test: cloudwatch-metricstream

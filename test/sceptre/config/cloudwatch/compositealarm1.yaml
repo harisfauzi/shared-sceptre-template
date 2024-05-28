@@ -1,0 +1,33 @@
+---
+template:
+  type: file
+  path: cloudwatch/composite_alarm.yaml.j2
+
+dependencies:
+  - cloudwatch/alarm2.yaml
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  composite_alarms:
+    - name: DeploymentInProgress
+      alarm_name: DeploymentInProgress
+      alarm_rule: False
+      alarm_description: Manually updated to TRUE/FALSE to disable other alarms
+      tags:
+        CostCentre: Test001
+    - name: HighResourceUsage
+      alarm_name: HighResourceUsage
+      alarm_rule: '!Sub "(ALARM(\"HighCPUUsage\") OR ALARM(\"HighMemoryUsage\")) AND NOT ALARM(${DeploymentInProgress})"'
+      alarm_description: Manually updated to TRUE/FALSE to disable other alarms
+      alarm_actions:
+        - "!Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:my-sns-topic"
+      ok_actions:
+        - "!Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:my-sns-topic"
+      insufficient_data_actions:
+        - "!Sub arn:${AWS::Partition}:sns:${AWS::Region}:${AWS::AccountId}:my-sns-topic"
+      tags:
+        CostCentre: Test001
+
+stack_tags:
+  Test: cloudwatch-compositealarm
