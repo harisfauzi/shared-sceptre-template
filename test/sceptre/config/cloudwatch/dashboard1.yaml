@@ -1,0 +1,56 @@
+---
+template:
+  type: file
+  path: cloudwatch/dashboard.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  dashboards:
+    - name: dashboard1
+      dashboard_name: dashboard1
+      dashboard_body: |
+        {
+          "start": "-PT6H",
+          "periodOverride": "inherit",
+          "widgets": [
+              {
+                "type":"metric",
+                "x":0,
+                "y":0,
+                "width":12,
+                "height":6,
+                "properties":{
+                    "metrics":[
+                      [
+                          "AWS/EC2",
+                          "CPUUtilization",
+                          "InstanceId",
+                          "i-012345"
+                      ]
+                    ],
+                    "period":300,
+                    "stat":"Average",
+                    "region":"us-east-1",
+                    "title":"EC2 Instance CPU",
+                    "liveData": false,
+                    "legend": {
+                        "position": "right"
+                      }
+                }
+              },
+              {
+                "type":"text",
+                "x":0,
+                "y":7,
+                "width":3,
+                "height":3,
+                "properties":{
+                    "markdown":"Hello world"
+                }
+              }
+          ]
+        }
+
+stack_tags:
+  Test: cloudwatch-dashboard

@@ -111,6 +111,15 @@ Resources:
 {%- if alarm.statistic is defined %}
       Statistic: {{ alarm.statistic }}
 {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if alarm.tags is defined %}
+{%- for key,value in alarm.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- if alarm.threshold is defined %}
       Threshold: {{ alarm.threshold }}
 {%- endif %}

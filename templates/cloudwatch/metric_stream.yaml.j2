@@ -18,17 +18,47 @@ Resources:
       ExcludeFilters:
 {%- for filter in metric_stream.exclude_filters %}
         - Namespace: {{ filter.namespace }}
+{%- if filter.metric_names is defined %}
+          MetricNames:
+{%- for metric_name in filter.metric_names %}
+            - {{ metric_name }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 {%- endif %}
 {%- if metric_stream.include_filters is defined %}
       IncludeFilters:
 {%- for filter in metric_stream.include_filters %}
         - Namespace: {{ filter.namespace }}
+{%- if filter.metric_names is defined %}
+          MetricNames:
+{%- for metric_name in filter.metric_names %}
+            - {{ metric_name }}
 {%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if metric_stream.include_linked_accounts_metrics is defined %}
+      IncludeLinkedAccountsMetrics: {{ metric_stream.include_linked_accounts_metrics }}
 {%- endif %}
 {%- if metric_stream.metric_stream_name is defined %}
       Name: {{ metric_stream.metric_stream_name }}
 {%- endif %}
+{%- if metric_stream.statistics_configurations is defined %}{# BEGIN {%- if metric_stream.statistics_configurations is defined %} #}
+      StatisticsConfigurations:
+{%- for statistics_configuration in metric_stream.statistics_configurations %}
+        -
+          AdditionalStatistics:
+{%- for additional_statistic in statistics_configuration.additional_statistics %}
+            - {{ additional_statistic }}
+{%- endfor %}
+          IncludeMetrics:
+{%- for include_metric in statistics_configuration.include_metrics %}
+            - MetricName: {{ include_metric.metric_name }}
+              Namespace: {{ include_metric.namespace }}
+{%- endfor %}
+{%- endfor %}
+{%- endif %}{# END {%- if metric_stream.statistics_configurations is defined %} #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
