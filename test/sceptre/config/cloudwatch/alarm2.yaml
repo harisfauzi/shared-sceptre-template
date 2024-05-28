@@ -1,0 +1,41 @@
+---
+template:
+  type: file
+  path: cloudwatch/alarm.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  alarms:
+    - name: HighCPUUsage
+      alarm_name: HighCPUUsage
+      comparison_operator: GreaterThanThreshold
+      evaluation_period: 1
+      period: 60
+      alarm_description: CPU usage is high
+      namespace: CustomNamespace
+      metric_name: CPUUsage
+      statistic: Average
+      threshold: 70
+      treat_missing_data: notBreaching
+      tags:
+        CostCentre: Test002
+        AlarmSourceType: MetricName
+
+    - name: HighMemoryUsage
+      alarm_name: HighMemoryUsage
+      comparison_operator: GreaterThanThreshold
+      evaluation_period: 1
+      period: 60
+      alarm_description: Memory usage is high
+      namespace: CustomNamespace
+      metric_name: MemoryUsage
+      statistic: Average
+      threshold: 65
+      treat_missing_data: breaching
+      tags:
+        CostCentre: Test002
+        AlarmSourceType: MetricName
+
+stack_tags:
+  Test: cloudwatch-alarm

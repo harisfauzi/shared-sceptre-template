@@ -1,0 +1,92 @@
+---
+template:
+  type: file
+  path: cloudwatch/alarm.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  alarms:
+    - name: alarm1
+      alarm_name: TLS Certificate for example.com will expire in less than 30 days
+      comparison_operator: LessThanOrEqualToThreshold
+      evaluation_period: 1
+      period: 86400
+      alarm_description: TLS Certificate for example.com will expire in less than 30 days [DaysToExpiry <= 30]
+      namespace: AWS/CertificateManager
+      metric_name: DaysToExpiry
+      dimensions:
+        CertificateArn: "!Sub arn:${AWS::Partition}:acm:${AWS::Region}:${AWS::AccountId}:certificate/11111111-2222-3333-4444-555555555555"
+      statistic: Average
+      threshold: 30
+      tags:
+        CostCentre: Test001
+        AlarmSourceType: Dimensions
+    - name: alarm2
+      alarm_name: Metrics based alarm
+      comparison_operator: LessThanThreshold
+      evaluation_period: 5
+      datapoints_to_alarm: 5
+      period: 60
+      alarm_description: FSX ONTAP 
+      namespace: AWS/CertificateManager
+      metric_name: DaysToExpiry
+      metrics:
+        - id: m1
+          metric_stat:
+            metric:
+              namespace: AWS/FSx
+              metric_name: StorageCapacity
+              dimensions:
+                FileSystemId: fs-abcd1234
+                VolumeId: fsvol-1111111111
+            period: 300
+            stat: Sum
+          return_data: False
+        - id: m2
+          metric_stat:
+            metric:
+              namespace: AWS/FSx
+              metric_name: StorageUsed
+              dimensions:
+                FileSystemId: fs-abcd1234
+                VolumeId: fsvol-1111111111
+            period: 300
+            stat: Sum
+          return_data: False
+        - id: e1
+          expression: m1 - m2
+          return_data: True
+      treat_missing_data: missing
+      statistic: Average
+      threshold: 524288000 # 500 MB
+      tags:
+        CostCentre: Test001
+        AlarmSourceType: Metrics
+    - name: alarm3
+      alarm_name: Anomaly detector based alarm
+      comparison_operator: LessThanLowerOrGreaterThanUpperThreshold
+      evaluation_period: 1
+      datapoints_to_alarm: 1
+      period: 60
+      alarm_description: FSX ONTAP 
+      namespace: AWS/CertificateManager
+      metric_name: DaysToExpiry
+      metrics:
+        - id: m1
+          metric_stat:
+            metric:
+              namespace: AWS/Lambda
+              metric_name: Invocations
+            period: "!!int 86400"
+            stat: Sum
+        - id: ad1
+          expression: ANOMALY_DETECTION_BAND(m1, 2)
+      threshold_metric_id: ad1
+      treat_missing_data: breaching
+      tags:
+        CostCentre: Test001
+        AlarmSourceType: Metrics with Anomaly Detection
+
+stack_tags:
+  Test: cloudwatch-alarm

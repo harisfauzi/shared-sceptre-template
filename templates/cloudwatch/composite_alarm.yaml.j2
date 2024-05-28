@@ -11,10 +11,21 @@ Resources:
     DeletionPolicy: {{ composite_alarm.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ composite_alarm.update_replace_policy | default('Delete') }}
     Properties:
-      AlarmName: {{ composite_alarm.alarm_name }}
       AlarmRule: {{ composite_alarm.alarm_rule}}
 {%- if composite_alarm.actions_enabled is defined %}
       ActionsEnabled: {{ composite_alarm.actions_enabled }}
+{%- endif %}
+{%- if composite_alarm.actions_supressor is defined %}
+      ActionsSuppressor: {{ composite_alarm.actions_supressor }}
+{%- endif %}
+{%- if composite_alarm.actions_supressor_extension_period is defined %}
+      ActionsSuppressorExtensionPeriod: {{ composite_alarm.actions_supressor_extension_period }}
+{%- endif %}
+{%- if composite_alarm.actions_supressor_wait_period is defined %}
+      ActionsSuppressorWaitPeriod: {{ composite_alarm.actions_supressor_wait_period }}
+{%- endif %}
+{%- if composite_alarm.alarm_name is defined %}
+      AlarmName: {{ composite_alarm.alarm_name }}
 {%- endif %}
 {%- if composite_alarm.alarm_actions is defined %}
       AlarmActions:
@@ -37,6 +48,15 @@ Resources:
         - {{ ok_action }}
 {%- endfor %}
 {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if composite_alarm.tags is defined %}
+{%- for key,value in composite_alarm.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -50,7 +70,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ composite_alarm_name }}"
-
   {{ composite_alarm_name }}Arn:
     Description: The ARN for {{ composite_alarm_name }}
     Value:
