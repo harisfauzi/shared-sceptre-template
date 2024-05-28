@@ -11,9 +11,6 @@ Resources:
     DeletionPolicy: {{ anomaly_detector.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ anomaly_detector.update_replace_policy | default('Delete') }}
     Properties:
-      MetricName: {{ anomaly_detector.metric_name }}
-      Namespace: {{ anomaly_detector.namespace }}
-      Stat: {{ anomaly_detector.stat }}
 {%- if anomaly_detector.configuration is defined %}
       Configuration:
 {%- if anomaly_detector.configuration.excluded_time_ranges is defined %}
