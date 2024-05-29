@@ -15,7 +15,7 @@ Resources:
 {%- for component in image_recipe.components %}
         -
 {%- if component.component_arn is defined %}
-          ComponentArn: {{ component.component_arn }}
+          ComponentArn: {{ component.component_arn | trim }}
 {%- endif %}
 {%- if component.parameters is defined %}
           Parameters:
@@ -90,7 +90,7 @@ Resources:
       WorkingDirectory: {{ image_recipe.working_directory }}
 {%- endif %}
       Tags:
-        "SourceRepoURL": "{{ sceptre_user_data.source_repo_url | default('unknown') }}"
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if image_recipe.tags is defined %}
 {%- for key,value in image_recipe.tags.items() %}
         {{ key }}: {{ value }}

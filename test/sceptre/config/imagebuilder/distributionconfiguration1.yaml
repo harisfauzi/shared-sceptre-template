@@ -1,0 +1,33 @@
+---
+template:
+  type: file
+  path: imagebuilder/distribution_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  distribution_configurations:
+    - name: Distribution1
+      distribution_configuration_name: Distribution1
+      distributions:
+        - region: "!Sub ${AWS::Region}"
+          ami_distribution_configuration:
+            name: "{% raw %}'ami-dist-config-name-1 {{ imagebuilder:buildDate }}'{% endraw %}"
+            description: Set launch permissions and specify a license configuration for destination Region.
+            ami_tags:
+              AmiTagKey: ami-tag-key
+            launch_permission_configuration:
+              user_groups:
+                - ExampleGroup1
+                - ExampleGroup2
+              user_ids:
+                - "'123123123123'" # Example user Id A
+                - "'321321321321'" # Example user Id B
+          license_configuration_arns:
+            - example-license-configuration-arn
+      tags:
+        Name: Distribution1
+        Project: {{ stack_group_config.project_code }}
+
+stack_tags:
+  Test: imagebuilder-distributionconfiguration

@@ -1,0 +1,57 @@
+---
+Description: {{sceptre_user_data.description|default('ImageBuilder Workflow(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for workflow in sceptre_user_data.workflows %}
+{%- set workflow_name = workflow.name %}
+  {{ workflow_name }}:
+    Type: AWS::ImageBuilder::Workflow
+    DeletionPolicy: {{ workflow.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ workflow.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ workflow.workflow_name }}
+      Type: {{ workflow.type }}
+      Version: {{ workflow.version }}
+{%- if workflow.change_description is defined %}
+      ChangeDescription: {{ workflow.change_description }}
+{%- endif %}
+{%- if workflow.data is defined %}
+      Data: |
+        {{ workflow.data | indent(width=8, first=false) }}
+{%- endif %}
+{%- if workflow.description is defined %}
+      Description: {{ workflow.description }}
+{%- endif %}
+{%- if workflow.kms_key_id is defined %}
+      KmsKeyId: {{ workflow.kms_key_id }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if workflow.tags is defined %}
+{%- for key,value in workflow.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if workflow.uri is defined %}
+      Uri: {{ workflow.uri }}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for workflow in sceptre_user_data.workflows %}
+{%- set workflow_name = workflow.name %}
+  {{ workflow_name }}Arn:
+    Description: The ARN for {{ workflow_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ workflow_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ workflow_name }}-Arn"
+
+{%- endfor %}

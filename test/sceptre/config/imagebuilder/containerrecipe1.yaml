@@ -1,0 +1,24 @@
+---
+template:
+  type: file
+  path: imagebuilder/container_recipe.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  container_recipes:
+    - name: Recipe1
+      container_recipe_name: Recipe1
+      version: "1.0.0"
+      container_type: DOCKER
+      dockerfile_template_uri: "!Sub s3://some-bucket-${AWS::AccountId}/{{project_code}}/Dockerfile"
+      kms_key_id: alias/test-kms
+      target_repository:
+        service: ECR
+        repository_name: myrepo
+      tags:
+        Name: Recipe1
+        Project: {{ stack_group_config.project_code }}
+
+stack_tags:
+  Test: imagebuilder-containerrecipe
