@@ -19,7 +19,7 @@ Resources:
 {%- if distribution.ami_distribution_configuration.ami_tags is defined %}
             AmiTags:
 {%- for key,value in distribution.ami_distribution_configuration.ami_tags.items() %}
-              "{{ key }}" : "{{ value }}"
+              {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if distribution.ami_distribution_configuration.description is defined %}
@@ -86,6 +86,37 @@ Resources:
 {%- endif %}
 {%- endif %}
 {%- endif %}{# END {%- if distribution.container_distribution_configuration is defined %} #}
+{%- if distribution.fast_launch_configurations is defined %}{# BEGIN {%- if distribution.fast_launch_configurations is defined %} #}
+          FastLaunchConfigurations:
+{%- for fast_launch_configuration in distribution.fast_launch_configurations %}{# BEGIN {%- for fast_launch_configuration in distribution.fast_launch_configurations %} #}
+            -
+{%- if fast_launch_configuration.account_id is defined %}
+              AccountId: {{ fast_launch_configuration.account_id }}
+{%- endif %}
+{%- if fast_launch_configuration.enabled is defined %}
+              Enabled: {{ fast_launch_configuration.enabled }}
+{%- endif %}
+{%- if fast_launch_configuration.launch_template is defined %}{# BEGIN {%- if fast_launch_configuration.launch_template is defined %} #}
+              LaunchTemplate:
+{%- if fast_launch_configuration.launch_template.launch_template_id is defined %}
+                LaunchTemplateId: {{fast_launch_configuration.launch_template.launch_template_id }}
+{%- endif %}
+{%- if fast_launch_configuration.launch_template.launch_template_name is defined %}
+                LaunchTemplateName: {{ fast_launch_configuration.launch_template.launch_template_name }}
+{%- endif %}
+{%- if fast_launch_configuration.launch_template.launch_template_version is defined %}
+                LaunchTemplateVersion: {{ fast_launch_configuration.launch_template.launch_template_version }}
+{%- endif %}
+{%- endif %}{# END {%- if fast_launch_configuration.launch_template is defined %} #}
+{%- if fast_launch_configuration.max_parallel_launches is defined %}
+              MaxParallelLaunches: {{ fast_launch_configuration.max_parallel_launches }}
+{%- endif %}
+{%- if fast_launch_configuration.snapshot_configuration is defined %}
+              SnapshotConfiguration:
+                TargetResourceCount: {{ fast_launch_configuration.snapshot_configuration.target_resource_count }}
+{%- endif %}
+{%- endfor %}{# END {%- for fast_launch_configuration in distribution.fast_launch_configurations %} #}
+{%- endif %}{# END {%- if distribution.fast_launch_configurations is defined %} #}
 {%- if distribution.launch_template_configurations is defined %}{# BEGIN {%- if distribution.launch_template_configurations is defined %} #}
           LaunchTemplateConfigurations:
 {%- for launch_template_configuration in distribution.launch_template_configurations %}
@@ -101,19 +132,19 @@ Resources:
 {%- endif %}
 {%- endfor %}
 {%- endif %}{# END {%- if distribution.launch_template_configurations is defined %} #}
-{%- if distribution.license_configuration_arns is defined %}
+{%- if distribution.license_configuration_arns is defined %}{# BEGIN {%- if distribution.license_configuration_arns is defined %} #}
           LicenseConfigurationArns:
 {%- for license_configuration_arn in distribution.license_configuration_arns %}
-            - {{ license_configuration_arn }}
+            - {{ license_configuration_arn | trim }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END {%- if distribution.license_configuration_arns is defined %} #}
 {%- endfor %}
       Name: {{ distribution_configuration.distribution_configuration_name }}
 {%- if distribution_configuration.description is defined %}
       Description: {{ distribution_configuration.description }}
 {%- endif %}
       Tags:
-        "SourceRepoURL": "{{ sceptre_user_data.source_repo_url | default('unknown') }}"
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if distribution_configuration.tags is defined %}
 {%- for key,value in distribution_configuration.tags.items() %}
         {{ key }}: {{ value }}

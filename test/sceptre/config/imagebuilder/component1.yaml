@@ -1,0 +1,53 @@
+---
+template:
+  type: file
+  path: imagebuilder/component.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  components:
+    - name: Component1
+      component_name: Component1
+      platform: Linux
+      version: "1.0.0"
+      description: Test image builder component
+      change_description: Initial revision
+      kms_key_id: alias/test-kms
+      supported_os_versions:
+        - Amazon Linux 2
+        - CentOS
+        - Red Hat Enterprise Linux
+      data: |
+        name: HelloWorldTestingLinuxDoc - InlineData
+        description: This is hello world testing doc
+        schemaVersion: 1.0
+
+        phases:
+          - name: build
+            steps:
+              - name: HelloWorldStep
+                action: ExecuteBash
+                inputs:
+                  commands:
+                    - echo "Hello World! Build."
+          - name: validate
+            steps:
+              - name: HelloWorldStep
+                action: ExecuteBash
+                inputs:
+                  commands:
+                    - echo "Hello World! Validate."
+          - name: test
+            steps:
+              - name: HelloWorldStep
+                action: ExecuteBash
+                inputs:
+                  commands:
+                    - echo "Hello World! Test."
+      tags:
+        Name: Component1
+        Project: {{ stack_group_config.project_code }}
+
+stack_tags:
+  Test: imagebuilder-component

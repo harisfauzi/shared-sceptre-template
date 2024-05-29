@@ -1,0 +1,129 @@
+---
+Description: {{sceptre_user_data.description|default('ImageBuilder LifecyclePolicy(es) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for lifecycle_policy in sceptre_user_data.lifecycle_policies %}
+{%- set lifecycle_policy_name = lifecycle_policy.name %}
+  {{ lifecycle_policy_name }}:
+    Type: AWS::ImageBuilder::LifecyclePolicy
+    DeletionPolicy: {{ lifecycle_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ lifecycle_policy.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if lifecycle_policy.description is defined %}
+      Description: {{ lifecycle_policy.description }}
+{%- endif %}
+      ExecutionRole: {{ lifecycle_policy.execution_role | trim }}
+      Name: {{ lifecycle_policy.lifecycle_policy_name }}
+      PolicyDetails:
+{%- for policy_detail in lifecycle_policy.policy_details %}{# BEGIN {%- for policy_detail in lifecycle_policy.policy_details %} #}
+        -
+          Action:
+            Type: {{ policy_detail.action.type }}
+{%- if policy_detail.action.include_resources is defined %}{# BEGIN {%- if policy_detail.action.include_resources is defined %} #}
+            IncludeResources:
+{%- if policy_detail.action.include_resources.amis is defined %}
+              Amis: {{ policy_detail.action.include_resources.amis }}
+{%- endif %}
+{%- if policy_detail.action.include_resources.containers is defined %}
+              Containers: {{ policy_detail.action.include_resources.containers }}
+{%- endif %}
+{%- if policy_detail.action.include_resources.snapshots is defined %}
+              Snapshots: {{ policy_detail.action.include_resources.snapshots }}
+{%- endif %}
+{%- endif %}{# END {%- if policy_detail.action.include_resources is defined %} #}
+          Filter:
+            Type: {{ policy_detail.filter.type }}
+            Value: {{ policy_detail.filter.value }}
+{%- if policy_detail.filter.retain_at_least is defined %}
+            RetainAtLeast: {{ policy_detail.filter.retain_at_least }}
+{%- endif %}
+{%- if policy_detail.filter.unit is defined %}
+            Unit: {{ policy_detail.filter.unit }}
+{%- endif %}
+{%- if policy_detail.exclusion_rules is defined %}{# BEGIN {%- if policy_detail.exclusion_rules is defined %} #}
+          ExclusionRules:
+{%- if policy_detail.exclusion_rules.amis is defined %}{# BEGIN {%- if policy_detail.exclusion_rules.amis is defined %} #}
+            Amis:
+{%- if policy_detail.exclusion_rules.amis.is_public is defined %}
+              IsPublic: {{ policy_detail.exclusion_rules.amis.is_public }}
+{%- endif %}
+{%- if policy_detail.exclusion_rules.amis.last_launched is defined %}
+              LastLaunched:
+                Unit: {{ policy_detail.exclusion_rules.amis.last_launched.unit }}
+                Value: {{ policy_detail.exclusion_rules.amis.last_launched.value }}
+{%- endif %}
+{%- if policy_detail.exclusion_rules.amis.regions is defined %}
+              Regions:
+{%- for region in policy_detail.exclusion_rules.amis.regions %}
+                - {{ region }}
+{%- endfor %}
+{%- endif %}
+{%- if policy_detail.exclusion_rules.amis.shared_accounts is defined %}
+              SharedAccounts:
+{%- for shared_account in policy_detail.exclusion_rules.amis.shared_accounts %}
+                - {{ shared_account }}
+{%- endfor %}
+{%- endif %}
+{%- if policy_detail.exclusion_rules.amis.tag_map is defined %}
+              TagMap:
+{%- for key,value in policy_detail.exclusion_rules.amis.tag_map.items() %}
+                {{ key }}: {{ value}}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END {%- if policy_detail.exclusion_rules.amis is defined %} #}
+{%- if policy_detail.exclusion_rules.tag_map is defined %}
+            TagMap:
+{%- for key,value in policy_detail.exclusion_rules.tag_map.items() %}
+              {{ key }}: {{ value}}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END {%- if policy_detail.exclusion_rules is defined %} #}
+{%- endfor %}{# END {%- for policy_detail in lifecycle_policy.policy_details %} #}
+{%- if lifecycle_policy.resource_selection is defined %}{# BEGIN {%- if lifecycle_policy.resource_selection is defined %} #}
+      ResourceSelection:
+{%- if lifecycle_policy.resource_selection.recipes is defined %}
+        Recipes:
+{%- for recipe in lifecycle_policy.resource_selection.recipes %}
+          -
+            Name: {{ recipe.name }}
+            SemanticVersion: {{ recipe.semantic_version }}
+{%- endfor %}
+{%- endif %}
+{%- if lifecycle_policy.resource_selection.tag_map is defined %}
+        TagMap:
+{%- for key,value in lifecycle_policy.resource_selection.tag_map.items() %}
+          {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END {%- if lifecycle_policy.resource_selection is defined %} #}
+      ResourceType: {{ lifecycle_policy.resource_type }}
+{%- if lifecycle_policy.status is defined %}
+      Status: {{ lifecycle_policy.status }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if lifecycle_policy.tags is defined %}
+{%- for key,value in lifecycle_policy.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for lifecycle_policy in sceptre_user_data.lifecycle_policies %}
+{%- set lifecycle_policy_name = lifecycle_policy.name %}
+  {{ lifecycle_policy_name }}Arn:
+    Description: The ARN for {{ lifecycle_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ lifecycle_policy_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ lifecycle_policy_name }}-Arn"
+
+{%- endfor %}

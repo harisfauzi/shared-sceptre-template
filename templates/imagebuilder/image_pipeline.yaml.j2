@@ -11,8 +11,9 @@ Resources:
     DeletionPolicy: {{ image_pipeline.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ image_pipeline.update_replace_policy | default('Delete') }}
     Properties:
-      InfrastructureConfigurationArn: {{ image_pipeline.infrastructure_configuration_arn | trim }}
+{%- if image_pipeline.image_pipeline_name is defined %}
       Name: {{ image_pipeline.image_pipeline_name }}
+{%- endif %}
 {%- if image_pipeline.container_recipe_arn is defined %}
       ContainerRecipeArn: {{ image_pipeline.container_recipe_arn | trim }}
 {%- endif %}
@@ -25,10 +26,31 @@ Resources:
 {%- if image_pipeline.enhanced_image_metadata_enabled is defined %}
       EnhancedImageMetadataEnabled: {{ image_pipeline.enhanced_image_metadata_enabled }}
 {%- endif %}
-{%- if image_pipeline.image_recipe_arn is defined %}
-      ImageRecipeArn: {{ image_pipeline.image_recipe_arn }}
+{%- if image_pipeline.execution_role is defined %}
+      ExecutionRole: {{ image_pipeline.execution_role }}
 {%- endif %}
-{%- if image_pipeline.image_tests_configuration is defined %}
+{%- if image_pipeline.image_recipe_arn is defined %}
+      ImageRecipeArn: {{ image_pipeline.image_recipe_arn | trim }}
+{%- endif %}
+{%- if image_pipeline.image_scanning_configuration is defined %}{# BEGIN {%- if image_pipeline.image_scanning_configuration is defined %} #}
+      ImageScanningConfiguration:
+{%- if image_pipeline.image_scanning_configuration.ecr_configuration is defined %}
+        EcrConfiguration:
+{%- if image_pipeline.image_scanning_configuration.ecr_configuration.container_tags is defined %}
+          ContainerTags:
+{%- for container_tag in image_pipeline.image_scanning_configuration.ecr_configuration.container_tags %}
+            - {{ container_tag }}
+{%- endfor %}
+{%- endif %}
+{%- if image_pipeline.image_scanning_configuration.ecr_configuration.repository_name is defined %}
+          RepositoryName: {{ image_pipeline.image_scanning_configuration.ecr_configuration.repository_name }}
+{%- endif %}
+{%- endif %}
+{%- if image_pipeline.image_scanning_configuration.image_scanning_enabled is defined %}
+        ImageScanningEnabled: {{ image_pipeline.image_scanning_configuration.image_scanning_enabled }}
+{%- endif %}
+{%- endif %}{# END {%- if image_pipeline.image_scanning_configuration is defined %} #}
+{%- if image_pipeline.image_tests_configuration is defined %}{# BEGIN {%- if image_pipeline.image_tests_configuration is defined %} #}
       ImageTestsConfiguration:
 {%- if image_pipeline.image_tests_configuration.image_tests_enabled is defined %}
         ImageTestsEnabled: {{ image_pipeline.image_tests_configuration.image_tests_enabled }}
@@ -36,6 +58,9 @@ Resources:
 {%- if image_pipeline.image_tests_configuration.timeout_minutes is defined %}
         TimeoutMinutes: {{ image_pipeline.image_tests_configuration.timeout_minutes }}
 {%- endif %}
+{%- endif %}{# END {%- if image_pipeline.image_tests_configuration is defined %} #}
+{%- if image_pipeline.infrastructure_configuration_arn is defined %}
+      InfrastructureConfigurationArn: {{ image_pipeline.infrastructure_configuration_arn | trim }}
 {%- endif %}
 {%- if image_pipeline.schedule is defined %}
       Schedule:
@@ -50,12 +75,42 @@ Resources:
       Status: {{ image_pipeline.status }}
 {%- endif %}
       Tags:
-        "SourceRepoURL": "{{ sceptre_user_data.source_repo_url | default('unknown') }}"
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if image_pipeline.tags is defined %}
 {%- for key,value in image_pipeline.tags.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
+{%- if image_pipeline.workflows is defined %}{# BEGIN {%- if image_pipeline.workflows is defined %} #}
+      Workflows:
+{%- for workflow in image_pipeline.workflows %}
+        -
+{%- if workflow.on_failure is defined %}
+          OnFailure: {{ workflow.on_failure }}
+{%- endif %}
+{%- if workflow.parallel_group is defined %}
+          ParallelGroup: {{workflow.parallel_group }}
+{%- endif %}
+{%- if workflow.parameters is defined %}
+          Parameters:
+{%- for parameter in workflow.parameters %}
+            -
+{%- if parameter.name is defined %}
+              Name: {{parameter.name }}
+{%- endif %}
+{%- if parameter.name is defined %}
+              Value:
+{%- for val in parameter.name %}
+                - {{ val }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if workflow.workflow_arn is defined %}
+          WorkflowArn: {{ workflow.workflow_arn }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END {%- if image_pipeline.workflows is defined %} #}
 
 {%- endfor %}
 

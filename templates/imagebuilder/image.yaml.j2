@@ -11,7 +11,6 @@ Resources:
     DeletionPolicy: {{ image.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ image.update_replace_policy | default('Delete') }}
     Properties:
-      InfrastructureConfigurationArn: {{ image.infrastructure_configuration_arn | trim }}
 {%- if image.container_recipe_arn is defined %}
       ContainerRecipeArn: {{ image.container_recipe_arn | trim }}
 {%- endif %}
@@ -21,9 +20,30 @@ Resources:
 {%- if image.enhanced_image_metadata_enabled is defined %}
       EnhancedImageMetadataEnabled: {{ image.enhanced_image_metadata_enabled }}
 {%- endif %}
+{%- if image.execution_role is defined %}
+      ExecutionRole: {{ image.execution_role | trim }}
+{%- endif %}
 {%- if image.image_recipe_arn is defined %}
       ImageRecipeArn: {{ image.image_recipe_arn | trim }}
 {%- endif %}
+{%- if image.image_scanning_configuration is defined %}{# BEGIN {%- if image.image_scanning_configuration is defined %} #}
+      ImageScanningConfiguration:
+{%- if image.image_scanning_configuration.ecr_configuration is defined %}
+        EcrConfiguration:
+{%- if image.image_scanning_configuration.ecr_configuration.container_tags is defined %}
+          ContainerTags:
+{%- for container_tag in image.image_scanning_configuration.ecr_configuration.container_tags %}
+            - {{ container_tag }}
+{%- endfor %}
+{%- endif %}
+{%- if image.image_scanning_configuration.ecr_configuration.repository_name is defined %}
+          RepositoryName: {{ image.image_scanning_configuration.ecr_configuration.repository_name }}
+{%- endif %}
+{%- endif %}
+{%- if image.image_scanning_configuration.image_scanning_enabled is defined %}
+        ImageScanningEnabled: {{ image.image_scanning_configuration.image_scanning_enabled }}
+{%- endif %}
+{%- endif %}{# END {%- if image.image_scanning_configuration is defined %} #}
 {%- if image.image_tests_configuration is defined %}
       ImageTestsConfiguration:
 {%- if image.image_tests_configuration.image_tests_enabled is defined %}
@@ -33,13 +53,46 @@ Resources:
         TimeoutMinutes: {{ image.image_tests_configuration.timeout_minutes }}
 {%- endif %}
 {%- endif %}
+{%- if image.infrastructure_configuration_arn is defined %}
+      InfrastructureConfigurationArn: {{ image.infrastructure_configuration_arn | trim }}
+{%- endif %}
       Tags:
-        "SourceRepoURL": "{{ sceptre_user_data.source_repo_url | default('unknown') }}"
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if image.tags is defined %}
 {%- for key,value in image.tags.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
+{%- if image.workflows is defined %}{# BEGIN {%- if image.workflows is defined %} #}
+      Workflows:
+{%- for workflow in image.workflows %}
+        -
+{%- if workflow.on_failure is defined %}
+          OnFailure: {{ workflow.on_failure }}
+{%- endif %}
+{%- if workflow.parallel_group is defined %}
+          ParallelGroup: {{ workflow.parallel_group }}
+{%- endif %}
+{%- if workflow.parameters is defined %}
+          Parameters:
+{%- for parameter in workflow.parameters %}
+            -
+{%- if parameter.name is defined %}
+              Name: {{ parameter.name }}
+{%- endif %}
+{%- if parameter.value is defined %}
+              Value:
+{%- for val in parameter.value %}
+                - {{ val }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if workflow.workflow_arn is defined %}
+          WorkflowArn: {{ workflow.workflow_arn | trim }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END {%- if image.workflows is defined %} #}
 
 {%- endfor %}
 
@@ -65,6 +118,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ image_name }}-Arn"
 
+{%- if image.image_recipe_arn is defined %}
   {{ image_name }}ImageId:
     Description: The AMI ID for {{ image_name }}
     Value:
@@ -75,6 +129,19 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ image_name }}-ImageId"
 
+{%- endif %}
+{%- if image.container_recipe_arn is defined %}
+  {{ image_name }}ImageUri:
+    Description: The URI for container image for {{ image_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ image_name }}
+        - ImageUri
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ image_name }}-ImageUri"
+
+{%- endif %}
   {{ image_name }}Name:
     Description: The Image Name for {{ image_name }}
     Value:

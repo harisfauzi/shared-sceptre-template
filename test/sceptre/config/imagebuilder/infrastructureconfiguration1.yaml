@@ -1,0 +1,35 @@
+---
+template:
+  type: file
+  path: imagebuilder/infrastructure_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  infrastructure_configurations:
+    - name: Infrastructure1
+      infrastructure_configuration_name: Infrastructure1
+      instance_profile_name: MyInstanceProfile
+      description: Test infrastructure configuration
+      instance_types:
+        - m4.large
+        - m5.large
+      key_pair: myKeyPair
+      logging:
+        s3_logs:
+          s3_bucket_name: "!Sub build-logs-${AWS::AccountId}"
+          s3_key_prefix: "{{project_code}}"
+      resource_tags:
+        Name: Test-AMI
+        Project: {{ stack_group_config.project_code }}
+      sns_topic_arn: myTopicArn
+      security_group_ids:
+        - sg-012345678
+      subnet_id: subnet-abcdefgh
+      terminate_instance_on_failure: true
+      tags:
+        Name: Infrastructure1
+        Project: {{ stack_group_config.project_code }}
+
+stack_tags:
+  Test: imagebuilder-infrastructureconfiguration
