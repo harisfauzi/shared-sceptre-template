@@ -1,0 +1,39 @@
+---
+template:
+  type: file
+  path: imagebuilder/lifecycle_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  lifecycle_policies:
+    - name: Policy1
+      execution_role: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/myExecutionRole"
+      lifecycle_policy_name: Policy1
+      description: Test Lifecycle Policy
+      policy_details:
+        - action:
+            type: DELETE
+            include_resources:
+              amis: true
+              snapshots: true
+          filter:
+            type: AGE
+            value: 90
+            unit: DAYS
+            retain_at_least: 2
+      resource_selection:
+        recipes:
+          - name: Recipe1
+            semantic_version: "1.0.0"
+        tag_map:
+          Environment: dev
+          BranchName: main
+      resource_type: AMI_IMAGE
+      status: ENABLED
+      tags:
+        Name: Policy1
+        Project: {{ stack_group_config.project_code }}
+
+stack_tags:
+  Test: imagebuilder-component
