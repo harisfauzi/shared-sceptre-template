@@ -1,0 +1,36 @@
+---
+Description: {{sceptre_user_data.description|default('IAM Group Policy(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for group_policy in sceptre_user_data.group_policies %}
+{%- set group_policy_name = group_policy.name %}
+  {{ group_policy_name }}:
+    Type: AWS::IAM::GroupPolicy
+    DeletionPolicy: {{ group_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ group_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      GroupName: {{ group_policy.group_name }}
+      PolicyName: {{ group_policy.policy_name }}
+{%- if group_policy.policy_document_json is defined %}
+      PolicyDocument: {{ group_policy.policy_document_json }}
+{%- else %}
+      PolicyDocument:
+{{ group_policy.policy_document | indent(width=8, first=true) }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for group_policy in sceptre_user_data.group_policies %}
+{%- set group_policy_name = group_policy.name %}
+  {{ group_policy_name }}:
+    Description: The resource name for {{ group_policy_name }}
+    Value:
+      Ref: {{ group_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ group_policy_name }}"
+
+{%- endfor %}

@@ -1,0 +1,80 @@
+---
+template:
+  type: file
+  path: iam/role.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  roles:
+    - name: pipeline
+      role_name: CodePipelineRole
+      assume_role_policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - codepipeline.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      description: IAM Role for CodePipeline
+      path: /
+      managed_policy_arns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforDataPipelineRole
+        - arn:aws:iam::aws:policy/AWSCodeBuildDeveloperAccess
+        - arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess
+        - arn:aws:iam::aws:policy/AWSCodeDeployDeployerAccess
+      max_session_duration: 3600
+      policies:
+        - policy_name: AllowS3BucketAccess
+          policy_document: |
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Resource: "*"
+                Action:
+                  - s3:ListBucket
+                  - s3:ListBucketMultipartUploads
+        - policy_name: AllowS3Access
+          policy_document: |
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Resource: "*"
+                Action:
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                  - s3:PutObjectRetention
+                  - s3:PutObjectTagging
+                  - s3:PutObjectVersionAcl
+                  - s3:PutObjectVersionTagging
+                  - s3:DeleteObject
+                  - s3:DeleteObjectTagging
+                  - s3:DeleteObjectVersion
+                  - s3:DeleteObjectVersionTagging
+                  - s3:GetObject
+                  - s3:GetObjectAcl
+                  - s3:GetObjectTagging
+                  - s3:GetObjectVersion
+                  - s3:GetObjectVersionAcl
+                  - s3:GetObjectVersionTagging
+                  - s3:ListMultipartUploadParts
+                  - s3:AbortMultipartUpload
+        - policy_name: CodeCommitAccess
+          policy_document: |
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Resource: "*"
+                Action:
+                  - codecommit:BatchDescribe*
+                  - codecommit:BatchGet*
+                  - codecommit:Describe*
+                  - codecommit:Get*
+                  - codecommit:GitPull
+                  - codecommit:List*
+                  - codecommit:UploadArchive
+      tags:
+        Name: CodePipelineRole
+        Project: "{{ stack_group_config.project_code }}"
