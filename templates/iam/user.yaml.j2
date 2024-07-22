@@ -85,6 +85,42 @@ Resources:
 {%- if user.access_key_1.status is defined %}
       Status: {{ user.access_key_1.status }}
 {%- endif %}
+
+  {{ user_name }}accesskey1Secret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description:
+        Fn::Join:
+          - ""
+          - - "SecretsManager Secret Entry to store the API Key for Access Key 1 for user "
+            - Ref: {{ user_name }}
+      SecretString:
+        Fn::Join:
+          - ""
+          - - "{\"IAMUserName\":\""
+            - Fn::GetAtt:
+                - {{ user_name }}
+                - Arn
+            - "\",\"AccessKeyId\":\""
+            - Ref: {{ user_name }}accesskey1
+            - "\",\"SecretAccessKey\":\""
+            - Fn::GetAtt:
+                - {{ user_name }}accesskey1
+                - SecretAccessKey
+            - "\"}"
+      Name: !Sub /iamuser/${AWS::StackName}/{{user_name}}/accesskey1
+{%- if user.access_key_1.secret_kms_key_id is defined %}
+      KmsKeyId: {{user.access_key_1.secret_kms_key_id}}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if user.tags is defined %}
+{%- for key,value in user.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endif %}{# END {%- if user.access_key_1 is defined %} #}
 
 {%- if user.access_key_2 is defined %}{# BEGIN {%- if user.access_key_2 is defined %} #}
@@ -100,6 +136,42 @@ Resources:
 {%- endif %}
 {%- if user.access_key_2.status is defined %}
       Status: {{ user.access_key_2.status }}
+{%- endif %}
+
+  {{ user_name }}accesskey2Secret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description:
+        Fn::Join:
+          - ""
+          - - "SecretsManager Secret Entry to store the API Key for Access Key 1 for user "
+            - Ref: {{ user_name }}
+      SecretString:
+        Fn::Join:
+          - ""
+          - - "{\"IAMUserArn\":\""
+            - Fn::GetAtt:
+                - {{ user_name }}
+                - Arn
+            - "\",\"AccessKeyId\":\""
+            - Ref: {{ user_name }}accesskey2
+            - "\",\"SecretAccessKey\":\""
+            - Fn::GetAtt:
+                - {{ user_name }}accesskey2
+                - SecretAccessKey
+            - "\"}"
+      Name: !Sub /iamuser/${AWS::StackName}/{{user_name}}/accesskey2
+{%- if user.access_key_2.secret_kms_key_id is defined %}
+      KmsKeyId: {{user.access_key_2.secret_kms_key_id}}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if user.tags is defined %}
+{%- for key,value in user.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
 {%- endif %}
 {%- endif %}{# END {%- if user.access_key_2 is defined %} #}
 {%- endfor %}

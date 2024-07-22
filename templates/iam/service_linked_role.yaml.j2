@@ -11,7 +11,9 @@ Resources:
     DeletionPolicy: {{ service_linked_role.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ service_linked_role.update_replace_policy | default('Delete') }}
     Properties:
+{%- if service_linked_role.aws_service_name is defined %}
       AWSServiceName: {{ service_linked_role.aws_service_name }}
+{%- endif %}
 {%- if service_linked_role.custom_suffix is defined %}
       CustomSuffix: {{ service_linked_role.custom_suffix }}
 {%- endif %}

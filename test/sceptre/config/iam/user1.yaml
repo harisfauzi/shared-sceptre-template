@@ -1,0 +1,25 @@
+---
+template:
+  type: file
+  path: iam/user.yaml.j2
+
+sceptre_user_data:
+  project_code: '{{stack_group_config.project_code}}'
+  source_repo_url: '{{git_repo}}'
+  users:
+    - name: user1
+    - name: user2
+      user_name: TestUser2
+      groups:
+        - !stack_output iam/group1.yaml::group2
+      path: /test/
+      access_key_1:
+        status: Active
+      access_key_2: true
+        status: Active
+        show_secret_access_key: true
+      managed_policy_arns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      tags:
+        Name: User2
+        Project: "{{ stack_group_config.project_code }}"

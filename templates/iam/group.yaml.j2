@@ -23,9 +23,6 @@ Resources:
 {%- if group.path is defined %}
       Path: {{ group.path }}
 {%- endif %}
-{%- if group.permissions_boundary is defined %}
-      PermissionsBoundary: {{ group.permissions_boundary }}
-{%- endif %}
 {%- if group.policies is defined %}
       Policies:
 {%- for policy in group.policies %}
