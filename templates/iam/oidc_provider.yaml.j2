@@ -11,10 +11,6 @@ Resources:
     DeletionPolicy: {{ oidc_provider.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ oidc_provider.update_replace_policy | default('Delete') }}
     Properties:
-      ThumbprintList:
-{%- for thumbprint in oidc_provider.thumbprint_list %}
-        - {{ thumbprint }}
-{%- endfor %}
 {%- if oidc_provider.client_id_list is defined %}
       ClientIdList:
 {%- for client_id in oidc_provider.client_id_list %}
@@ -28,6 +24,12 @@ Resources:
 {%- for key,value in oidc_provider.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if oidc_provider.thumbprint_list is defined %}
+      ThumbprintList:
+{%- for thumbprint in oidc_provider.thumbprint_list %}
+        - {{ thumbprint }}
 {%- endfor %}
 {%- endif %}
 {%- if oidc_provider.url is defined %}
