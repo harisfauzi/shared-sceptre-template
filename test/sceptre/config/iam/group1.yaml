@@ -15,12 +15,12 @@ sceptre_user_data:
         - arn:aws:iam::aws:policy/ReadOnlyAccess
       path: /test/
       policies:
-        - policy_name: 
+        - policy_name: S3BucketAccess
           policy_document: |
-          Version: 2012-10-17
-          Statement:
-            - Effect: Allow
-              Resource: "*"
-              Action:
-                - s3:ListBucket
-                - s3:ListBucketMultipartUploads
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Resource: "*"
+                Action:
+                  - s3:ListBucket
+                  - s3:ListBucketMultipartUploads
