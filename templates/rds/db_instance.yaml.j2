@@ -37,6 +37,9 @@ Resources:
           RoleArn: {{ associated_role.role_arn }}
 {%- endfor %}
 {%- endif %}
+{%- if db_instance.automatic_backup_replication_kms_key_id is defined %}
+      AutomaticBackupReplicationKmsKeyId: {{ db_instance.automatic_backup_replication_kms_key_id }}
+{%- endif %}
 {%- if db_instance.automatic_backup_replication_region is defined %}
       AutomaticBackupReplicationRegion: {{ db_instance.automatic_backup_replication_region }}
 {%- endif %}
@@ -52,9 +55,15 @@ Resources:
 {%- if db_instance.ca_certificate_identifier is defined %}
       CACertificateIdentifier: {{ db_instance.ca_certificate_identifier }}
 {%- endif %}
-{%- if db_instance.certificate_details is defined %}
+{%- if db_instance.certificate_details is defined %}{# BEGIN {%- if db_instance.certificate_details is defined %} #}
       CertificateDetails: {{ db_instance.certificate_details }}
+{%- if db_instance.certificate_details.ca_identifier is defined %}
+        CAIdentifier: {{ db_instance.certificate_details.ca_identifier }}
 {%- endif %}
+{%- if db_instance.certificate_details.valid_till is defined %}
+        ValidTill: {{ db_instance.certificate_details.valid_till }}
+{%- endif %}
+{%- endif %}{# END {%- if db_instance.certificate_details is defined %} #}
 {%- if db_instance.certificate_rotation_restart is defined %}
       CertificateRotationRestart: {{ db_instance.certificate_rotation_restart }}
 {%- endif %}
@@ -157,6 +166,9 @@ Resources:
 {%- if db_instance.engine is defined %}
       Engine: {{ db_instance.engine }}
 {%- endif %}
+{%- if db_instance.engine_lifecycle_support is defined %}
+      EngineLifecycleSupport: {{ db_instance.engine_lifecycle_support }}
+{%- endif %}
 {%- if db_instance.engine_version is defined %}
       EngineVersion: {{ db_instance.engine_version }}
 {%- endif %}
@@ -183,9 +195,15 @@ Resources:
       MasterUserPassword: {{ db_instance.master_user_password }}
 {%- endif %}
 {%- endif %}
-{%- if db_instance.master_user_secret is defined %}
-      MasterUserSecret: {{ db_instance.master_user_secret }}
+{%- if db_instance.master_user_secret is defined %}{# BEGIN {%- if db_instance.master_user_secret is defined %} #}
+      MasterUserSecret:
+{%- if db_instance.master_user_secret.kms_key_id is defined %}
+        KmsKeyId: {{ db_instance.master_user_secret.kms_key_id }}
 {%- endif %}
+{%- if db_instance.master_user_secret.secret_arn is defined %}
+        SecretArn: {{ db_instance.master_user_secret.secret_arn }}
+{%- endif %}
+{%- endif %}{# END {%- if db_instance.master_user_secret is defined %} #}
 {%- if db_instance.max_allocated_storage is defined %}
       MaxAllocatedStorage: {{ db_instance.max_allocated_storage }}
 {%- endif %}

@@ -11,7 +11,9 @@ Resources:
     DeletionPolicy: {{ custom_db_engine_version.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ custom_db_engine_version.update_replace_policy | default('Delete') }}
     Properties:
+{%- if custom_db_engine_version.database_installation_files_s3_bucket_name is defined %}
       DatabaseInstallationFilesS3BucketName: {{ custom_db_engine_version.database_installation_files_s3_bucket_name }}
+{%- endif %}
       Engine: {{ custom_db_engine_version.engine }}
       EngineVersion: {{ custom_db_engine_version.engine_version }}
 {%- if custom_db_engine_version.database_installation_files_s3_prefix is defined %}
@@ -20,11 +22,17 @@ Resources:
 {%- if custom_db_engine_version.description is defined %}
       Description: {{ custom_db_engine_version.description }}
 {%- endif %}
+{%- if custom_db_engine_version.image_id is defined %}
+      ImageId: {{ custom_db_engine_version.image_id }}
+{%- endif %}
 {%- if custom_db_engine_version.kms_key_id is defined %}
       KMSKeyId: {{ custom_db_engine_version.kms_key_id }}
 {%- endif %}
 {%- if custom_db_engine_version.manifest is defined %}
       Manifest: {{ custom_db_engine_version.manifest }}
+{%- endif %}
+{%- if custom_db_engine_version.source_custom_db_engine_version_identifier is defined %}
+      SourceCustomDbEngineVersionIdentifier: {{ custom_db_engine_version.source_custom_db_engine_version_identifier }}
 {%- endif %}
 {%- if custom_db_engine_version.status is defined %}
       Status: {{ custom_db_engine_version.status }}
@@ -38,6 +46,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
+{%- if custom_db_engine_version.use_aws_provided_latest_image is defined %}
+      UseAwsProvidedLatestImage: {{ custom_db_engine_version.use_aws_provided_latest_image }}
+{%- endif %}
 
 {%- endfor %}
 
@@ -45,6 +56,13 @@ Outputs:
 
 {%- for custom_db_engine_version in sceptre_user_data.custom_db_engine_versions %}
 {%- set custom_db_engine_version_name = custom_db_engine_version.name %}
+  {{ custom_db_engine_version_name }}:
+    Description: The resource name for {{ custom_db_engine_version_name }}
+    Value:
+      Ref: {{ custom_db_engine_version_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ custom_db_engine_version_name }}"
 
   {{ custom_db_engine_version_name }}DBEngineVersionArn:
     Description: The ARN of the custom engine version {{ custom_db_engine_version_name }}

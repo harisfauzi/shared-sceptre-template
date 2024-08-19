@@ -17,6 +17,9 @@ Resources:
 {%- if global_cluster.engine is defined %}
       Engine: {{ global_cluster.engine }}
 {%- endif %}
+{%- if global_cluster.engine_lifecycle_support is defined %}
+      EngineLifecycleSupport: {{ global_cluster.engine_lifecycle_support }}
+{%- endif %}
 {%- if global_cluster.engine_version is defined %}
       EngineVersion: {{ global_cluster.engine_version }}
 {%- endif %}
