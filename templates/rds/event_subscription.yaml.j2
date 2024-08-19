@@ -33,6 +33,15 @@ Resources:
 {%- if event_subscription.subscription_name is defined %}
       SubscriptionName: {{ event_subscription.subscription_name }}
 {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if event_subscription.tags is defined %}
+{%- for key,value in event_subscription.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 
 {%- endfor %}
 
