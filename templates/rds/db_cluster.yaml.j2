@@ -99,8 +99,14 @@ Resources:
 {%- if db_cluster.enable_iam_database_authentication is defined %}
       EnableIAMDatabaseAuthentication: {{ db_cluster.enable_iam_database_authentication }}
 {%- endif %}
+{%- if db_cluster.enable_local_write_forwarding is defined %}
+      EnableLocalWriteForwarding: {{ db_cluster.enable_local_write_forwarding }}
+{%- endif %}
 {%- if db_cluster.engine is defined %}
       Engine: {{ db_cluster.engine }}
+{%- endif %}
+{%- if db_cluster.engine_lifecycle_support is defined %}
+      EngineLifecycleSupport: {{ db_cluster.engine_lifecycle_support }}
 {%- endif %}
 {%- if db_cluster.engine_mode is defined %}
       EngineMode: {{ db_cluster.engine_mode }}
@@ -130,7 +136,13 @@ Resources:
       MasterUserPassword: {{ db_cluster.master_user_password }}
 {%- endif %}
 {%- if db_cluster.master_user_secret is defined %}
-      MasterUserSecret: {{ db_cluster.master_user_secret }}
+      MasterUserSecret:
+{%- if db_cluster.master_user_secret.kms_key_id is defined %}
+        KmsKeyId: {{ db_cluster.master_user_secret.kms_key_id }}
+{%- endif %}
+{%- if db_cluster.master_user_secret.secret_arn is defined %}
+        SecretArn: {{ db_cluster.master_user_secret.secret_arn }}
+{%- endif %}
 {%- endif %}
 {%- if db_cluster.monitoring_interval is defined %}
       MonitoringInterval: {{ db_cluster.monitoring_interval }}
@@ -163,7 +175,8 @@ Resources:
       PubliclyAccessible: {{ db_cluster.publicly_accessible }}
 {%- endif %}
 {%- if db_cluster.read_endpoint is defined %}
-      ReadEndpoint: {{ db_cluster.read_endpoint }}
+      ReadEndpoint:
+        Address: {{ db_cluster.read_endpoint.address }}
 {%- endif %}
 {%- if db_cluster.replication_source_identifier is defined %}
       ReplicationSourceIdentifier: {{ db_cluster.replication_source_identifier }}

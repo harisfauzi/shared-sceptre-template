@@ -19,6 +19,12 @@ Resources:
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
+{%- if integration.data_filter is defined %}
+      DataFilter: {{ integration.data_filter }}
+{%- endif %}
+{%- if integration.description is defined %}
+      Description: {{ integration.description }}
+{%- endif %}
 {%- if integration.integration_name is defined %}
       IntegrationName: {{ integration.integration_name }}
 {%- endif %}
