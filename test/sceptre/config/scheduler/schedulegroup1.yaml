@@ -1,0 +1,20 @@
+---
+template:
+  type: file
+  path: scheduler/schedule-group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  schedule_groups:
+    - name: group1
+      schedule_group_name: SchedulerGroup1
+      retention_in_days: 1
+    - name: group2
+      schedule_group_name: SchedulerGroup12
+      tags:
+        project: {{project_code}}
+        costcentre: test
+
+stack_tags:
+  Test: scheduler-schedulergroup

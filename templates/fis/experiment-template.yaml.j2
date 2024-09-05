@@ -1,0 +1,133 @@
+---
+Description: {{sceptre_user_data.description|default('FIS ExperimentTemplate(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for experiment_template in sceptre_user_data.experiment_templates %}
+{%- set experiment_template_name = experiment_template.name %}
+  {{ experiment_template_name }}:
+    Type: AWS::FIS::ExperimentTemplate
+    DeletionPolicy: {{ experiment_template.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ experiment_template.update_replace_policy | default('Delete') }}
+    Properties:
+      Description: {{experiment_template.description}}
+      RoleArn: {{experiment_template.role_arn | trim}}
+      StopConditions:
+{%- for stop_condition in experiment_template.stop_conditions %}
+        -
+          Source: {{stop_condition.source}}
+{%- if stop_condition.value is defined %}
+          Value: {{stop_condition.value}}
+{%- endif %}
+{%- endfor %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if experiment_template.tags is defined %}
+{%- for key,value in experiment_template.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+      Targets:
+{%- for key,target in experiment_template.targets.items() %}{# BEGIN {%- for key,target in experiment_template.targets.items() %} #}
+        {{key}}:
+          ResourceType: {{target.resource_type}}
+          SelectionMode: {{target.selection_mode}}
+{%- if target.filters is defined %}{# BEGIN {%- if target.filters is defined %} #}
+          Filters:
+{%- for _filter in target.filters %}
+            -
+              Path: {{_filter.path}}
+              Values:
+{%- for value in _filter._values %}
+                - {{value}}
+{%- endfor %}
+{%- endfor %}
+{%- endif %}{# END {%- if target.filters is defined %} #}
+{%- if target.parameters is defined %}
+          Parameters:
+{%- for key,value in target.parameters.items() %}
+            {{key}}: {{value}}
+{%- endfor %}
+{%- endif %}
+{%- if target.resource_arns is defined %}
+          ResourceArns:
+{%- for resource_arn in target.resource_arns %}
+            - {{resource_arn}}
+{%- endfor %}
+{%- endif %}
+{%- if target.resource_tags is defined %}
+          ResourceTags:
+{%- for key,value in target.resource_tags.items() %}
+            {{key}}: {{value}}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}{# END {%- for key,target in experiment_template.targets.items() %} #}
+{%- if experiment_template.actions is defined %}{# BEGIN {%- if experiment_template.actions is defined %} #}
+      Actions:
+{%- for key,action in experiment_template.actions.items() %}
+        {{key}}:
+          ActionId: {{action.action_id}}
+{%- if action.description is defined %}
+          Description: {{action.description}}
+{%- endif %}
+{%- if action.parameters is defined %}
+          Parameters:
+{%- for key,value in action.parameters.items() %}
+            {{key}}: {{value}}
+{%- endfor %}
+{%- endif %}
+{%- if action.start_after is defined %}
+          StartAfter:
+{%- for after_action in action.start_after %}
+            - {{after_action}}
+{%- endfor %}
+{%- endif %}
+{%- if action.targets is defined %}
+          Targets:
+{%- for key,value in action.targets.items() %}
+            {{key}}: {{value}}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END {%- if experiment_template.actions is defined %} #}
+{%- if experiment_template.experiment_options is defined %}{# BEGIN {%- if experiment_template.experiment_options is defined %} #}
+      ExperimentOptions:
+{%- if experiment_template.experiment_options.account_targeting is defined %}
+        AccountTargeting: {{experiment_template.experiment_options.account_targeting}}
+{%- endif %}
+{%- if experiment_template.experiment_options.empty_target_resolution_mode is defined %}
+        EmptyTargetResolutionMode: {{experiment_template.experiment_options.empty_target_resolution_mode}}
+{%- endif %}
+{%- endif %}{# END {%- if experiment_template.experiment_options is defined %} #}
+{%- if experiment_template.log_configuration is defined %}{# BEGIN {%- if experiment_template.log_configuration is defined %} #}
+      LogConfiguration:
+        LogSchemaVersion: {{experiment_template.log_configuration.log_schema_version}}
+{%- if experiment_template.log_configuration.cloud_watch_logs_configuration is defined %}
+        CloudWatchLogsConfiguration:
+          LogGroupArn: {{experiment_template.log_configuration.cloud_watch_logs_configuration.log_group_arn}}
+{%- endif %}
+{%- if experiment_template.log_configuration.s3_configuration is defined %}
+        S3Configuration:
+          BucketName: {{experiment_template.log_configuration.s3_configuration.bucket_name}}
+{%- if experiment_template.log_configuration.s3_configuration.s3_configuration.prefix is defined %}
+          Prefix: {{experiment_template.log_configuration.s3_configuration.s3_configuration.prefix}}
+{%- endif %}
+{%- endif %}
+{%- endif %}{# END {%- if experiment_template.log_configuration is defined %} #}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for experiment_template in sceptre_user_data.experiment_templates %}
+{%- set experiment_template_name = experiment_template.name %}
+  {{ experiment_template_name }}:
+    Description: The Template ID for {{ experiment_template_name }}
+    Value:
+      Ref: {{ experiment_template_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ experiment_template_name }}"
+
+{%- endfor %}
