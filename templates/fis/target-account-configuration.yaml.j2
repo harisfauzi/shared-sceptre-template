@@ -1,0 +1,21 @@
+---
+Description: {{sceptre_user_data.description|default('FIS TargetAccountConfiguration(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for target_account_configuration in sceptre_user_data.target_account_configurations %}
+{%- set target_account_configuration_name = target_account_configuration.name %}
+  {{ target_account_configuration_name }}:
+    Type: AWS::FIS::TargetAccountConfiguration
+    DeletionPolicy: {{ target_account_configuration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ target_account_configuration.update_replace_policy | default('Delete') }}
+    Properties:
+      AccountId: {{target_account_configuration.account_id | trim}}
+      ExperimentTemplateId: {{target_account_configuration.experiment_template_id | trim}}
+      RoleArn: {{target_account_configuration.role_arn | trim}}
+{%- if target_account_configuration.description is defined %}
+      Description: {{target_account_configuration.description}}
+{%- endif %}
+
+{%- endfor %}
