@@ -1,0 +1,35 @@
+---
+template:
+  type: file
+  path: scheduler/schedule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  schedules:
+    - name: schedule1
+      flexible_time_window:
+        mode: OFF
+      schedule_expression: cron(15 10 ? * 6L 2024-2025)
+      target:
+        arn: "!Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:helloworld"
+        role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/ExampleRole"
+    - name: schedule2
+      flexible_time_window:
+        mode: FLEXIBLE
+        maximum_window_in_minutes: 1440
+      schedule_name: Schedule2
+      group_name: !stack_output scheduler/schedulegroup1.yaml::group2
+      kms_key_arn: "!Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/1234abcd-12ab-34cd-56ef-1234567890ab"
+      schedule_expression: rate(10 hours)
+      schedule_expression_timezone: Australia/Sydney
+      target:
+        arn: "!Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:helloworld"
+        role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/ExampleRole"
+      description: Schedule 2 with rate
+      start_date: 2024-06-01
+      end_date: 2024-12-31
+      state: ENABLED
+
+stack_tags:
+  Test: scheduler-schedule

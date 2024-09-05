@@ -1,0 +1,202 @@
+---
+Description: {{sceptre_user_data.description|default('Scheduler Schedule(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for schedule in sceptre_user_data.schedules %}
+{%- set schedule_name = schedule.name %}
+  {{ schedule_name }}:
+    Type: AWS::Scheduler::Schedule
+    DeletionPolicy: {{ schedule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ schedule.update_replace_policy | default('Delete') }}
+    Properties:
+      FlexibleTimeWindow:
+        Mode: {{schedule.flexible_time_window.mode}}
+{%- if schedule.flexible_time_window.maximum_window_in_minutes is defined %}
+        MaximumWindowInMinutes: {{schedule.flexible_time_window.maximum_window_in_minutes}}
+{%- endif %}
+      ScheduleExpression: {{schedule.schedule_expression}}
+      Target:
+        Arn: {{schedule.target.arn}}
+        RoleArn: {{schedule.target.role_arn}}
+{%- if schedule.target.dead_letter_config is defined %}{# BEGIN {%- if schedule.target.dead_letter_config is defined %} #}
+        DeadLetterConfig:
+          Arn: {{schedule.target.dead_letter_config.arn}}
+{%- endif %}{# END {%- if schedule.target.dead_letter_config is defined %} #}
+{%- if schedule.target.esc_parameters is defined %}{# BEGIN {%- if schedule.target.esc_parameters is defined %} #}
+        EcsParameters:
+          TaskDefinitionArn: {{schedule.target.esc_parameters.task_definition_arn}}
+{%- if schedule.target.esc_parameters.capacity_provider_strategy is defined %}{# BEGIN {%- if schedule.target.esc_parameters.capacity_provider_strategy is defined %} #}
+          CapacityProviderStrategy:
+{%- for strategy in schedule.target.esc_parameters.capacity_provider_strategy %}{# BEGIN {%- for strategy in schedule.target.esc_parameters.capacity_provider_strategy %} #}
+            -
+              CapacityProvider: {{strategy.capacity_provider}}
+{%- if strategy.base is defined %}
+              Base: {{strategy.base}}
+{%- endif %}
+{%- if strategy.weight is defined %}
+              Weight: {{strategy.weight}}
+{%- endif %}
+{%- endfor %}{# END {%- for strategy in schedule.target.esc_parameters.capacity_provider_strategy %} #}
+{%- endif %}{# END {%- if schedule.target.esc_parameters.capacity_provider_strategy is defined %} #}
+{%- if schedule.target.esc_parameters.enable_ecs_managed_tags is defined %}
+          EnableECSManagedTags: {{schedule.target.esc_parameters.enable_ecs_managed_tags}}
+{%- endif %}
+{%- if schedule.target.esc_parameters.enable_execute_command is defined %}
+          EnableExecuteCommand: {{schedule.target.esc_parameters.enable_execute_command}}
+{%- endif %}
+{%- if schedule.target.esc_parameters.group is defined %}
+          Group: {{schedule.target.esc_parameters.group}}
+{%- endif %}
+{%- if schedule.target.esc_parameters.launch_type is defined %}
+          LaunchType: {{schedule.target.esc_parameters.launch_type}}
+{%- endif %}
+{%- if schedule.target.esc_parameters.network_configuration is defined %}{# BEGIN {%- if schedule.target.esc_parameters.network_configuration is defined %} #}
+          NetworkConfiguration:
+{%- if schedule.target.esc_parameters.network_configuration.aws_vpc_configuration is defined %}
+            AwsvpcConfiguration:
+              Subnets:
+{%- for subnet in schedule.target.esc_parameters.network_configuration.aws_vpc_configuration.subnets %}
+                - {{subnet}}
+{%- endfor %}
+{%- if schedule.target.esc_parameters.network_configuration.aws_vpc_configuration.assign_public_ip is defined %}
+              AssignPublicIp: {{schedule.target.esc_parameters.network_configuration.aws_vpc_configuration.assign_public_ip}}
+{%- endif %}
+{%- if schedule.target.esc_parameters.network_configuration.aws_vpc_configuration.security_groups is defined %}{# BEGIN {%- if schedule.target.esc_parameters.network_configuration.aws_vpc_configuration.security_groups is defined %} #}
+              SecurityGroups:
+{%- for security_group in schedule.target.esc_parameters.network_configuration.aws_vpc_configuration.security_groups %}
+                - {{security_group}}
+{%- endfor %}
+{%- endif %}{# END {%- if schedule.target.esc_parameters.network_configuration.aws_vpc_configuration.security_groups is defined %} #}
+{%- endif %}
+{%- endif %}{# END {%- if schedule.target.esc_parameters.network_configuration is defined %} #}
+{%- if schedule.target.esc_parameters.placement_constraints is defined %}{# BEGIN {%- if schedule.target.esc_parameters.placement_constraints is defined %} #}
+          PlacementConstraints:
+{%- for constraint in schedule.target.esc_parameters.placement_constraints %}
+            -
+{%- if constraint.expression is defined %}
+              Expression: {{constraint.expression}}
+{%- endif %}
+{%- if constraint.type is defined %}
+              Type: {{constraint.type}}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END {%- if schedule.target.esc_parameters.placement_constraints is defined %} #}
+{%- if schedule.target.esc_parameters.placement_strategy is defined %}{# BEGIN {%- if schedule.target.esc_parameters.placement_strategy is defined %} #}
+          PlacementStrategy:
+{%- for strategy in schedule.target.esc_parameters.placement_strategy %}
+            -
+{%- if strategy.field is defined %}
+              Field: {{strategy.field}}
+{%- endif %}
+{%- if strategy.type is defined %}
+              Type: {{strategy.type}}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END {%- if schedule.target.esc_parameters.placement_strategy is defined %} #}
+{%- if schedule.target.esc_parameters.platform_version is defined %}
+          PlatformVersion: {{schedule.target.esc_parameters.platform_version}}
+{%- endif %}
+{%- if schedule.target.esc_parameters.propagate_tags is defined %}
+          PropagateTags: {{schedule.target.esc_parameters.propagate_tags}}
+{%- endif %}
+{%- if schedule.target.esc_parameters.reference_id is defined %}
+          ReferenceId: {{schedule.target.esc_parameters.reference_id}}
+{%- endif %}
+{%- if schedule.target.esc_parameters.tags is defined %}
+          Tags:
+{%- for key,value in schedule.target.esc_parameters.tags.items() %}
+            -
+              {{key}}: {{value}}
+{%- endfor %}
+{%- endif %}
+{%- if schedule.target.esc_parameters.task_count is defined %}
+          TaskCount: {{schedule.target.esc_parameters.task_count}}
+{%- endif %}
+{%- endif %}{# END {%- if schedule.target.esc_parameters is defined %} #}
+{%- if schedule.target.event_bridge_parameters is defined %}
+        EventBridgeParameters:
+          DetailType: {{schedule.target.event_bridge_parameters.detail_type}}
+          Source: {{schedule.target.event_bridge_parameters.source}}
+{%- endif %}
+{%- if schedule.target.input is defined %}
+        Input: {{schedule.target.input}}
+{%- endif %}
+{%- if schedule.target.kinesis_parameters is defined %}
+        KinesisParameters:
+          PartitionKey: {{schedule.target.kinesis_parameters.partition_key}}
+{%- endif %}
+{%- if schedule.target.retry_policy is defined %}{# BEGIN {%- if schedule.target.retry_policy is defined %} #}
+        RetryPolicy:
+{%- if schedule.target.retry_policy.maximum_event_age_in_seconds is defined %}
+          MaximumEventAgeInSeconds: {{schedule.target.retry_policy.maximum_event_age_in_seconds}}
+{%- endif %}
+{%- if schedule.target.retry_policy.maximum_retry_attempts is defined %}
+          MaximumRetryAttempts: {{schedule.target.retry_policy.maximum_retry_attempts}}
+{%- endif %}
+{%- endif %}{# END {%- if schedule.target.retry_policy is defined %} #}
+{%- if schedule.target.sage_maker_pipeline_parameters is defined %}{# BEGIN {%- if schedule.target.sage_maker_pipeline_parameters is defined %} #}
+        SageMakerPipelineParameters:
+{%- if schedule.target.sage_maker_pipeline_parameters.pipeline_parameter_list is defined %}
+          PipelineParameterList:
+{%- for item in schedule.target.sage_maker_pipeline_parameters.pipeline_parameter_list %}
+            -
+              Name: {{item.name}}
+              Value: {{item.value}}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END {%- if schedule.target.sage_maker_pipeline_parameters is defined %} #}
+{%- if schedule.target.sqs_parameters is defined %}
+        SqsParameters:
+          MessageGroupId: {{schedule.target.sqs_parameters.message_group_id}}
+{%- endif %}
+{%- if schedule.description is defined %}
+      Description: {{schedule.description}}
+{%- endif %}
+{%- if schedule.end_date is defined %}
+      EndDate: {{schedule.end_date}}
+{%- endif %}
+{%- if schedule.group_name is defined %}
+      GroupName: {{schedule.group_name}}
+{%- endif %}
+{%- if schedule.kms_key_arn is defined %}
+      KmsKeyArn: {{schedule.kms_key_arn | trim}}
+{%- endif %}
+{%- if schedule.schedule_name is defined %}
+      Name: {{schedule.schedule_name}}
+{%- endif %}
+{%- if schedule.schedule_expression_timezone is defined %}
+      ScheduleExpressionTimezone: {{schedule.schedule_expression_timezone}}
+{%- endif %}
+{%- if schedule.start_date is defined %}
+      StartDate: {{schedule.start_date}}
+{%- endif %}
+{%- if schedule.state is defined %}
+      State: {{schedule.state}}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for schedule in sceptre_user_data.schedules %}
+{%- set schedule_name = schedule.name %}
+  {{ schedule_name }}:
+    Description: Name for schedule {{ schedule_name }}
+    Value:
+      Ref: {{ schedule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ schedule_name }}"
+
+  {{ schedule_name }}Arn:
+    Description: The ARN for {{ schedule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ schedule_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ schedule_name }}-Arn"
+
+{%- endfor %}
