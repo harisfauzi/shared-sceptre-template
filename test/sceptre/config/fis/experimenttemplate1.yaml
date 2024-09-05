@@ -1,0 +1,70 @@
+---
+template:
+  type: file
+  path: fis/experiment-template.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  experiment_templates:
+    - name: template1
+      description: Test template 1
+      role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/FISRole"
+      stop_conditions:
+        - source: none
+      targets:
+        oneRandomEC2Instance:
+          resource_type: aws:ec2:instance
+          selection_mode: COUNT(1)
+          resource_tags:
+            env: prod
+      tags:
+        Name: template1
+    - name: template2
+      description: Test template 2
+      role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/FISRole"
+      stop_conditions:
+        - source: none
+      targets:
+        oneRandomEC2Instance:
+          resource_type: aws:ec2:instance
+          selection_mode: COUNT(1)
+          resource_tags:
+            env: prod
+      tags:
+        Name: template2
+      actions:
+        stopEC2Instances:
+          action_id: aws:ec2:stop-instances
+          description: Stop EC2 Instances
+          parameters:
+            startInstancesAfterDuration: PT2M
+          targets:
+            Instances: oneRandomEC2Instance
+    - name: template3
+      description: Test template 3
+      role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/FISRole"
+      stop_conditions:
+        - source: none
+      targets:
+        oneRandomEC2Instance:
+          resource_type: aws:ec2:instance
+          selection_mode: COUNT(1)
+          resource_tags:
+            env: prod
+      tags:
+        Name: template3
+      actions:
+        stopEC2Instances:
+          action_id: aws:ec2:stop-instances
+          description: Stop EC2 Instances
+          parameters:
+            startInstancesAfterDuration: PT2M
+          targets:
+            Instances: oneRandomEC2Instance
+      experiment_options:
+        account_targeting: multi-account
+        empty_target_resolution_mode: skip
+
+stack_tags:
+  Test: fis-experimenttemplate
