@@ -1,0 +1,71 @@
+---
+Description: {{sceptre_user_data.description|default('Scheduler Group(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for schedule_group in sceptre_user_data.schedule_groups %}
+{%- set schedule_group_name = schedule_group.name %}
+  {{ schedule_group_name }}:
+    Type: AWS::Scheduler::ScheduleGroup
+    DeletionPolicy: {{ schedule_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ schedule_group.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if schedule_group.schedule_group_name is defined %}
+      Name: {{ schedule_group.schedule_group_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if schedule_group.tags is defined %}
+{%- for key,value in schedule_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+
+{%- endfor %}
+
+Outputs:
+
+{%- for schedule_group in sceptre_user_data.schedule_groups %}
+{%- set schedule_group_name = schedule_group.name %}
+  {{ schedule_group_name }}:
+    Description: ScheduleGroup Name for {{ schedule_group_name }}
+    Value:
+      Ref: {{ schedule_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ schedule_group_name }}"
+
+  {{ schedule_group_name }}Arn:
+    Description: The ARN for {{ schedule_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ schedule_group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ schedule_group_name }}-Arn"
+
+  {{ schedule_group_name }}CreationDate:
+    Description: The Creation Date for {{ schedule_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ schedule_group_name }}
+        - CreationDate
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ schedule_group_name }}-CreationDate"
+
+  {{ schedule_group_name }}LastModificationDate:
+    Description: The Last Modification Date for {{ schedule_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ schedule_group_name }}
+        - LastModificationDate
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ schedule_group_name }}-LastModificationDate"
+
+{%- endfor %}
