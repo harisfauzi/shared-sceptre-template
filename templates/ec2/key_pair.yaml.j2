@@ -1,0 +1,76 @@
+---
+Description: {{sceptre_user_data.description|default('KeyPair(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for key_pair in sceptre_user_data.key_pairs %}
+{%- set key_pair_name = key_pair.name %}
+  {{ key_pair_name }}:
+    Type: AWS::EC2::KeyPair
+    Properties:
+      KeyName: {{key_pair.key_name}}
+{%- if key_pair.key_format is defined %}
+      KeyFormat: {{key_pair.key_format}}
+{%- endif %}
+{%- if key_pair.key_type is defined %}
+      KeyType: {{key_pair.key_type}}
+{%- endif %}
+{%- if key_pair.public_key_material is defined %}
+      PublicKeyMaterial: {{key_pair.public_key_material}}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if key_pair.tags is defined %}
+{%- for key,value in key_pair.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for key_pair in sceptre_user_data.key_pairs %}
+{%- set key_pair_name = key_pair.name %}
+  {{ key_pair_name }}:
+    Description: The name of the key pair for {{ key_pair_name }}
+    Value:
+      Ref: {{ key_pair_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_pair_name }}"
+
+  {{ key_pair_name }}KeyFingerprint:
+    Description: KeyFingerprint for {{ key_pair_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ key_pair_name }}
+        - KeyFingerprint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_pair_name }}-KeyFingerprint"
+
+  {{ key_pair_name }}KeyPairId:
+    Description: The ID of the key pair for {{ key_pair_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ key_pair_name }}
+        - KeyPairId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_pair_name }}-KeyPairId"
+
+{%- endfor %}
+{#
+# Current supported structure:
+Type: AWS::EC2::KeyPair
+Properties:
+  KeyFormat: String
+  KeyName: String
+  KeyType: String
+  PublicKeyMaterial: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

@@ -1,0 +1,24 @@
+---
+template:
+  type: 
+  path: ec2/key_pair.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  key_pairs:
+    - name: key1
+      key_name: key1
+    - name: key2
+      key_name: key2
+      public_key_material: ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICfp1F7DhdWZdqkYAUGCzcBsLmJeu9izpIyGpmmg7eCz example
+    - name: key3
+      key_name: key3
+      key_format: pem
+      key_type: rsa
+    - name: key4
+      key_name: key4
+      key_format: ppk
+      key_type: ed25519
+stack_tags:
+  Test: ec2-keypair
