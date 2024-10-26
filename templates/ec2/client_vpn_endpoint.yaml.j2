@@ -49,6 +49,13 @@ Resources:
         LambdaFunctionArn: {{ client_vpn_endpoint.client_connect_options.lambda_function_arn | trim }}
 {%- endif %}
 {%- endif %}{# END {%- if client_vpn_endpoint.client_connect_options is defined %} #}
+{%- if client_vpn_endpoint.client_login_banner_options is defined %}{# BEGIN {%- if client_vpn_endpoint.client_login_banner_options is defined %} #}
+      ClientLoginBannerOptions:
+        Enabled: {{ client_vpn_endpoint.client_login_banner_options.enabled }}
+{%- if client_vpn_endpoint.client_login_banner_options.banner_text is defined %}
+        BannerText: {{ client_vpn_endpoint.client_login_banner_options.banner_text }}
+{%- endif %}
+{%- endif %}{# END {%- if client_vpn_endpoint.client_login_banner_options is defined %} #}
 {%- if client_vpn_endpoint.description is defined %}
       Description: {{ client_vpn_endpoint.description }}
 {%- endif %}
@@ -66,6 +73,9 @@ Resources:
 {%- endif %}
 {%- if client_vpn_endpoint.self_service_portal is defined %}
       SelfServicePortal: {{ client_vpn_endpoint.self_service_portal }}
+{%- endif %}
+{%- if client_vpn_endpoint.session_timeout_hours is defined %}
+      SessionTimeoutHours: {{ client_vpn_endpoint.session_timeout_hours }}
 {%- endif %}
 {%- if client_vpn_endpoint.split_tunnel is defined %}
       SplitTunnel: {{ client_vpn_endpoint.split_tunnel }}
@@ -145,3 +155,45 @@ Outputs:
 {%- endif %}{# END {%- if client_vpn_endpoint.target_network_associations is defined %}#}
 
 {%- endfor %}
+{#
+# Supported structure as of 20241027:
+Type: AWS::EC2::ClientVpnEndpoint
+Properties:
+  AuthenticationOptions:
+    - Type: String
+      ActiveDirectory:
+        DirectoryId: String
+      FederatedAuthentication:
+        SAMLProviderArn: String
+        SelfServiceSAMLProviderArn: String
+      MutualAuthentication:
+        ClientRootCertificateChainArn: String
+  ClientCidrBlock: String
+  ClientConnectOptions:
+    Enabled: Boolean
+    LambdaFunctionArn: String
+  ClientLoginBannerOptions:
+    BannerText: String
+    Enabled: Boolean
+  ConnectionLogOptions:
+    CloudwatchLogGroup: String
+    CloudwatchLogStream: String
+    Enabled: Boolean
+  Description: String
+  DnsServers:
+    - String
+  SecurityGroupIds:
+    - String
+  SelfServicePortal: String
+  ServerCertificateArn: String
+  SessionTimeoutHours: Integer
+  SplitTunnel: Boolean
+  TagSpecifications:
+    - ResourceType: String
+      Tags:
+        - Key: String
+          Value: String
+  TransportProtocol: String
+  VpcId: String
+  VpnPort: Integer
+#}

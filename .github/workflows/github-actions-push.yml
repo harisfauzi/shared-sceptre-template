@@ -28,9 +28,10 @@ jobs:
       - name: Generate CloudFormation templates
         run: |
           cd test/sceptre;
-          for CFNTEST in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+          for CFNTEST_B64 in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+            CFNTEST=$(echo "${CFNTEST_B64}" | base64 -d)
             _jq() {
-              echo "${CFNTEST}" | base64 -d | jq -r "$1"
+              echo "${CFNTEST}" | jq -r "$1"
             }
             YAML_DIR=$(_jq .directory)
             YAML_FILE=$(_jq .file)
@@ -64,9 +65,10 @@ jobs:
       - name: Validate CloudFormatoin
         run: |
           cd test/sceptre;
-          for CFNTEST in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+          for CFNTEST_B64 in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+            CFNTEST=$(echo "${CFNTEST_B64}" | base64 -d)
             _jq() {
-              echo "${CFNTEST}" | base64 -d | jq -r "$1"
+              echo "${CFNTEST}" | jq -r "$1"
             }
             YAML_DIR=$(_jq .directory)
             YAML_FILE=$(_jq .file)
@@ -80,9 +82,10 @@ jobs:
       - name: Run cfn-guard against generated CloudFormation templates
         run: |
           cd test/sceptre;
-          for CFNTEST in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+          for CFNTEST_B64 in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do
+            CFNTEST=$(echo "${CFNTEST_B64}" | base64 -d)
             _jq() {
-              echo "${CFNTEST}" | base64 -d | jq -r "$1"
+              echo "${CFNTEST}" | jq -r "$1"
             }
             YAML_DIR=$(_jq .directory)
             YAML_FILE=$(_jq .file)
