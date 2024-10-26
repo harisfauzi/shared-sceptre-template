@@ -30,6 +30,12 @@ Resources:
 {%- if capacity_reservation.instance_match_criteria is defined %}
       InstanceMatchCriteria: {{ capacity_reservation.instance_match_criteria }}
 {%- endif %}
+{%- if capacity_reservation.out_post_arn is defined %}
+      OutPostArn: {{ capacity_reservation.out_post_arn | trim }}
+{%- endif %}
+{%- if capacity_reservation.placement_group_arn is defined %}
+      PlacementGroupArn: {{ capacity_reservation.placement_group_arn | trim }}
+{%- endif %}
 {%- if capacity_reservation.tag_specifications is defined %}{# BEGIN {%- if capacity_reservation.tag_specifications is defined %} #}
       TagSpecifications:
 {%- for tag_specification in capacity_reservation.tag_specifications %}
@@ -49,7 +55,9 @@ Resources:
 {%- if capacity_reservation.tenancy is defined %}
       Tenancy: {{ capacity_reservation.tenancy }}
 {%- endif %}
-
+{%- if capacity_reservation.unused_reservation_billing_owner_id is defined %}
+      UnusedReservationBillingOwnerId: {{ capacity_reservation.unused_reservation_billing_owner_id }}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -115,3 +123,26 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-TotalInstanceCount"
 
 {%- endfor %}
+{#
+# Supported structure as of 20241026:
+Type: AWS::EC2::CapacityReservation
+Properties:
+  AvailabilityZone: String
+  EbsOptimized: Boolean
+  EndDate: String
+  EndDateType: String
+  EphemeralStorage: Boolean
+  InstanceCount: Integer
+  InstanceMatchCriteria: String
+  InstancePlatform: String
+  InstanceType: String
+  OutPostArn: String
+  PlacementGroupArn: String
+  TagSpecifications:
+    - ResourceType: String
+      Tags:
+        - Key: String
+          Value: String
+  Tenancy: String
+  UnusedReservationBillingOwnerId: String
+#}
