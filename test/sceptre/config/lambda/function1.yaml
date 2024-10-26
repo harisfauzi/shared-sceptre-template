@@ -1,0 +1,49 @@
+---
+template:
+  type: file
+  path: lambda/function.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: Test Jinja2 parsing for Lambda Function template.
+  functions:
+    - name: function1
+      # Lambda Function test based on sample #1 in https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html#aws-resource-lambda-function--examples
+      runtime: nodejs20.x
+      role: arn:aws:iam::111122223333:role/lambda-role
+      handler: index.handler
+      code:
+        zip_file: |
+          const { S3Client, ListBucketsCommand } = require("@aws-sdk/client-s3");
+          const s3 = new S3Client({ region: "us-east-1" }); // replace "us-east-1" with your AWS Region
+
+          exports.handler = async function(event) {
+            const command = new ListBucketsCommand({});
+            const response = await s3.send(command);
+            return response.Buckets;
+          };
+      description: List Amazon S3 buckets in us-east-1.
+      tracing_config:
+        mode: Active
+    - name: function2
+      # Lambda Function test based on sample #@ in https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-lambda-function.html#aws-resource-lambda-function--examples
+      runtime: nodejs20.x
+      role: arn:aws:iam::111122223333:role/lambda-role
+      handler: index.handler
+      code:
+        s3_bucket: amzn-s3-demo-bucket
+        s3_key: function.zip
+      description: List Amazon S3 buckets in us-east-1.
+      timeout: 5
+      tracing_config:
+        mode: Active
+      vpc_config:
+        security_group_ids:
+          - sg-085912345678492fb
+        subnet_ids:
+          - subnet-071f712345678e7c8
+          - subnet-07fd123456788a036
+
+stack_tags:
+  Test: lambda-function

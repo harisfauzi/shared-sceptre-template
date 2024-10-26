@@ -23,17 +23,26 @@ Resources:
 {%- if function.code.s3_object_version is defined %}
         S3ObjectVersion: {{ function.code.s3_object_version }}
 {%- endif %}
+{%- if function.code.source_kms_key_arn is defined %}
+        SourceKMSKeyArn: {{ function.code.source_kms_key_arn | trim }}
+{%- endif %}
 {%- if function.code.zip_file is defined %}
         ZipFile: |
 {{ function.code.zip_file | indent(width=10, first=true) }}
 {%- endif %}
       Role: {{ function.role }}
+{%- if function.architectures is defined %}
+      Architectures:
+{%- for architecture in function.architectures %}
+        - {{architecture}}
+{%- endfor %}
+{%- endif %}
 {%- if function.code_signing_config_arn is defined %}
       CodeSigningConfigArn: {{ function.code_signing_config_arn }}
 {%- endif %}
 {%- if function.dead_letter_config is defined %}
       DeadLetterConfig:
-        TargetArn: {{ function.dead_letter_config.target_arn }}
+        TargetArn: {{ function.dead_letter_config.target_arn | trim }}
 {%- endif %}
 {%- if function.description is defined %}
       Description: {{ function.description }}
@@ -45,10 +54,14 @@ Resources:
           {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
+{%- if function.ephemeral_storage is defined %}
+      EphemeralStorage:
+        Size: {{ function.ephemeral_storage.size }}
+{%- endif %}
 {%- if function.file_system_configs is defined %}
       FileSystemConfigs:
 {%- for file_system_config in function.file_system_configs %}
-        - Arn: {{ file_system_config.arn }}
+        - Arn: {{ file_system_config.arn | trim }}
           LocalMountPath: {{ file_system_config.local_mounth_path }}
 {%- endfor %}
 {%- endif %}
@@ -77,13 +90,28 @@ Resources:
 {%- endif %}
 {%- endif %}
 {%- if function.kms_key_arn is defined %}
-      KmsKeyArn: {{ function.kms_key_arn }}
+      KmsKeyArn: {{ function.kms_key_arn | trim }}
 {%- endif %}
 {%- if function.layers is defined %}
       Layers:
 {%- for layer_arn in function.layers %}
-        - {{ layer_arn }}
+        - {{ layer_arn | trim }}
 {%- endfor %}
+{%- endif %}
+{%- if function.logging_config is defined %}
+      LoggingConfig:
+{%- if function.logging_config.application_log_level is defined %}
+        ApplicationLogLevel: {{ function.logging_config.application_log_level }}
+{%- endif %}
+{%- if function.logging_config.log_format is defined %}
+        LogFormat: {{ function.logging_config.log_format }}
+{%- endif %}
+{%- if function.logging_config.log_group is defined %}
+        LogGroup: {{ function.logging_config.log_group }}
+{%- endif %}
+{%- if function.logging_config.system_log_level is defined %}
+        SystemLogLevel: {{ function.logging_config.system_log_level }}
+{%- endif %}
 {%- endif %}
 {%- if function.memory_size is defined %}
       MemorySize: {{ function.memory_size }}
@@ -91,11 +119,25 @@ Resources:
 {%- if function.package_type is defined %}
       PackageType: {{ function.package_type }}
 {%- endif %}
+{%- if function.recursive_loop is defined %}
+      RecursiveLoop: {{ function.recursive_loop }}
+{%- endif %}
 {%- if function.reserved_concurrent_execution is defined %}
       ReservedConcurrentExecutions: {{ function.reserved_concurrent_execution }}
 {%- endif %}
 {%- if function.runtime is defined %}
       Runtime: {{ function.runtime }}
+{%- endif %}
+{%- if function.runtime_management_config is defined %}
+      RuntimeManagementConfig:
+        UpdateRuntimeOn: {{ function.runtime_management_config.update_runtime_on }}
+{%- if function.runtime_management_config.runtime_version_arn is defined %}
+        RuntimeVersionArn: {{ function.runtime_management_config.runtime_version_arn | trim }}
+{%- endif %}
+{%- endif %}
+{%- if function.snap_start is defined %}
+      SnapStart:
+        ApplyOn: {{ function.snap_start.apply_on }}
 {%- endif %}
 {%- if function.timeout is defined %}
       Timeout: {{ function.timeout }}
@@ -106,6 +148,9 @@ Resources:
 {%- endif %}
 {%- if function.vpc_config is defined %}
       VpcConfig:
+{%- if function.vpc_config.ipv6_allowed_for_dual_stack is defined %}
+        Ipv6AllowedForDualStack: {{ function.vpc_config.ipv6_allowed_for_dual_stack }}
+{%- endif %}
 {%- if function.vpc_config.security_group_ids is defined %}
         SecurityGroupIds:
 {%- for security_group_id in function.vpc_config.security_group_ids %}
@@ -153,3 +198,70 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ function_name }}-Arn"
 
 {%- endfor %}
+{#
+# Current supported structure as of 2024/10/26:
+Type: AWS::Lambda::Function
+Properties:
+  Architectures:
+    - String
+  Code:
+    ImageUri: String
+    S3Bucket: String
+    S3Key: String
+    S3ObjectVersion: String
+    SourceKMSKeyArn: String
+    ZipFile: String
+  CodeSigningConfigArn: String
+  DeadLetterConfig:
+    TargetArn: String
+  Description: String
+  Environment:
+    Variables:
+      Key: Value
+  EphemeralStorage:
+    Size: Integer
+  FileSystemConfigs:
+    -
+      Arn: String
+      LocalMountPath: String
+  FunctionName: String
+  Handler: String
+  ImageConfig:
+    Command:
+      - String
+    EntryPoint:
+      - String
+    WorkingDirectory: String
+  KmsKeyArn: String
+  Layers:
+    - String
+  LoggingConfig:
+    ApplicationLogLevel: String
+    LogFormat: String
+    LogGroup: String
+    SystemLogLevel: String
+  MemorySize: Integer
+  PackageType: String
+  RecursiveLoop: String
+  ReservedConcurrentExecutions: Integer
+  Role: String
+  Runtime: String
+  RuntimeManagementConfig:
+    RuntimeVersionArn: String
+    UpdateRuntimeOn: String
+  SnapStart:
+    ApplyOn: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  Timeout: Integer
+  TracingConfig:
+    Mode: String
+  VpcConfig:
+    Ipv6AllowedForDualStack: Boolean
+    SecurityGroupIds:
+      - String
+    SubnetIds:
+      - String
+#}
