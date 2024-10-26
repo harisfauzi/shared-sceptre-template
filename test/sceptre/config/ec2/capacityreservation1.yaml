@@ -1,0 +1,34 @@
+---
+template:
+  type: 
+  path: ec2/capacity_reservation.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  capacity_reservations:
+    - name: reservation1
+      availability_zone: "!Sub ${AWS::Region}a"
+      instance_count: 10
+      instance_platform: Linux/UNIX
+      instance_type: m6i.2xlarge
+    - name: reservation2
+      availability_zone: "!Sub ${AWS::Region}b"
+      instance_count: 5
+      instance_platform: Windows
+      instance_type: m6in.2xlarge
+      ebs_optimized: True
+      end_date_type: limited
+      end_date: "5/31/2019, 13:30:55"
+      instance_match_criteria: open
+      tag_specifications:
+        - resource_type: capacity-reservation
+          tags:
+            Name: reservation2
+            Type: test
+            Environment: development
+      tenancy: default
+      unused_reservation_billing_owner_id: "111111111111"
+
+stack_tags:
+  Test: ec2-capacityreservation
