@@ -17,13 +17,16 @@ Resources:
 {%- if dhcp_option.domain_name_servers is defined %}
       DomainNameServers:
 {%- for domain_name_server in dhcp_option.domain_name_servers %}
-      - {{ domain_name_server }}
+        - {{ domain_name_server }}
 {%- endfor %}
+{%- endif %}
+{%- if dhcp_option.ipv6_address_preferred_lease_time is defined %}
+      Ipv6AddressPreferredLeaseTime: {{ dhcp_option.ipv6_address_preferred_lease_time }}
 {%- endif %}
 {%- if dhcp_option.netbios_name_servers is defined %}
       NetbiosNameServers:
 {%- for netbios_name_server in dhcp_option.netbios_name_servers %}
-      - {{ netbios_name_server }}
+        - {{ netbios_name_server }}
 {%- endfor %}
 {%- endif %}
 {%- if dhcp_option.netbios_node_type is defined %}
@@ -32,7 +35,7 @@ Resources:
 {%- if dhcp_option.ntp_servers is defined %}
       NtpServers:
 {%- for ntp_server in dhcp_option.ntp_servers %}
-      - {{ ntp_server }}
+        - {{ ntp_server }}
 {%- endfor %}
 {%- endif %}
       Tags:
@@ -69,3 +72,20 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ dhcp_option_name }}-DhcpOptionsId"
 
 {%- endfor %}
+{#
+# Supported structure as of 20241027:
+Type: AWS::EC2::DHCPOptions
+Properties:
+  DomainName: String
+  DomainNameServers: 
+    - String
+  Ipv6AddressPreferredLeaseTime: Integer
+  NetbiosNameServers: 
+    - String
+  NetbiosNodeType: Integer
+  NtpServers: 
+    - String
+  Tags:
+    - Key: String
+      Value: String
+#}
