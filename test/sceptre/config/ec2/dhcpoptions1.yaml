@@ -1,0 +1,32 @@
+---
+template:
+  type: 
+  path: ec2/dhcp_options.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  dhcp_options:
+    - name: option1
+      domain_name_servers:
+        - AmazonProvidedDNS
+      tags:
+        Project: Test
+        Name: option1
+    - name: option2
+      domain_name: test.lan
+      domain_name_servers:
+        - 10.255.255.2
+        - 10.255.127.2
+      ipv6_address_preferred_lease_time: 86400
+      netbios_name_servers:
+        - 10.255.255.2
+        - 10.255.127.2
+      ntp_servers:
+        - 10.255.255.123
+        - 10.255.127.123
+      tags:
+        Project: Test
+        Name: option2
+stack_tags:
+  Test: ec2-dhcpoption
