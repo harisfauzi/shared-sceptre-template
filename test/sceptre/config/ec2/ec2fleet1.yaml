@@ -1,0 +1,27 @@
+---
+template:
+  type: 
+  path: ec2/ec2_fleet.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  ec2_fleets:
+    - name: fleet1
+      launch_template_configs:
+        - launch_template_specification:
+            launch_template_name: lt-test
+            version: $Default
+      type: maintain
+      target_capacity_specification:
+        total_target_capacity: 10
+        default_target_capacity_type: on-demand
+        on_demand_target_capacity: 5
+        target_capacity_unit_type: units
+        tag_specifications:
+          - resource_type: fleet
+            tags:
+              Project: Test
+              Name: fleet1
+stack_tags:
+  Test: ec2-ec2fleet
