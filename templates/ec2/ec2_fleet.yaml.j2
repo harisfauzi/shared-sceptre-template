@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 EC2Fleet(s) for '+scep
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for ec2_fleet in sceptre_user_data.ec2_fleets %}
 {%- set ec2_fleet_name = ec2_fleet.name %}
   {{ ec2_fleet_name }}:
@@ -71,6 +70,12 @@ Resources:
                   - {{ type }}
 {%- endfor %}
 {%- endif %}
+{%- if override.instance_requirements.allowed_instance_types is defined %}
+                AllowedInstanceTypes:
+{%- for instance_type in override.instance_requirements.allowed_instance_types %}
+                  - {{ instance_type }}
+{%- endfor %}
+{%- endif %}
 {%- if override.instance_requirements.bare_metal is defined %}
                 BareMetal: {{ override.instance_requirements.bare_metal }}
 {%- endif %}
@@ -113,6 +118,9 @@ Resources:
                   - {{ type }}
 {%- endfor %}
 {%- endif %}
+{%- if override.instance_requirements.max_spot_price_as_percentage_of_optimal_on_demand_price is defined %}
+                MaxSpotPriceAsPercentageOfOptimalOnDemandPrice: {{ override.instance_requirements.max_spot_price_as_percentage_of_optimal_on_demand_price }}
+{%- endif %}
 {%- if override.instance_requirements.memory_gib_per_vcpu is defined %}
                 MemoryGiBPerVCpu:
 {%- if override.instance_requirements.memory_gib_per_vcpu.max is defined %}
@@ -129,6 +137,15 @@ Resources:
 {%- endif %}
 {%- if override.instance_requirements.memory_mib.min is defined %}
                   Min: {{ override.instance_requirements.memory_mib.min }}
+{%- endif %}
+{%- endif %}
+{%- if override.instance_requirements.network_bandwidth_gbps is defined %}
+                NetworkBandwidthGbps:
+{%- if override.instance_requirements.network_bandwidth_gbps.max is defined %}
+                  Max: {{ override.instance_requirements.network_bandwidth_gbps.max }}
+{%- endif %}
+{%- if override.instance_requirements.network_bandwidth_gbps.min is defined %}
+                  Min: {{ override.instance_requirements.network_bandwidth_gbps.min }}
 {%- endif %}
 {%- endif %}
 {%- if override.instance_requirements.network_interface_count is defined %}
@@ -324,7 +341,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for ec2_fleet in sceptre_user_data.ec2_fleets %}
 {%- set ec2_fleet_name = ec2_fleet.name %}
   {{ ec2_fleet_name }}:
@@ -346,3 +362,120 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ ec2_fleet_name }}-FleetId"
 
 {%- endfor %}
+{#
+# Supported structure as of 20241027:
+Type: AWS::EC2::EC2Fleet
+Properties:
+  Context: String
+  ExcessCapacityTerminationPolicy: String
+  LaunchTemplateConfigs:
+    -
+      LaunchTemplateSpecification:
+        LaunchTemplateId: String
+        LaunchTemplateName: String
+        Version: String
+      Overrides:
+        -
+          AvailabilityZone: String
+          InstanceRequirements:
+            AcceleratorCount:
+              Max: Integer
+              Min: Integer
+            AcceleratorManufacturers:
+              - String
+            AcceleratorNames:
+              - String
+            AcceleratorTotalMemoryMiB:
+              Max: Integer
+              Min: Integer
+            AcceleratorTypes:
+              - String
+            AllowedInstanceTypes:
+              - String
+            BareMetal: String
+            BaselineEbsBandwidthMbps:
+              Max: Integer
+              Min: Integer
+            BurstablePerformance: String
+            CpuManufacturers:
+              - String
+            ExcludedInstanceTypes:
+              - String
+            InstanceGenerations:
+              - String
+            LocalStorage: String
+            LocalStorageTypes:
+              - String
+            MaxSpotPriceAsPercentageOfOptimalOnDemandPrice: Integer
+            MemoryGiBPerVCpu:
+              Max: Number
+              Min: Number
+            MemoryMiB:
+              Max: Integer
+              Min: Integer
+            NetworkBandwidthGbps:
+              Max: Number
+              Min: Number
+            NetworkInterfaceCount:
+              Max: Integer
+              Min: Integer
+            OnDemandMaxPricePercentageOverLowestPrice: Integer
+            RequireHibernateSupport: Boolean
+            SpotMaxPricePercentageOverLowestPrice: Integer
+            TotalLocalStorageGB:
+              Max: Number
+              Min: Number
+            VCpuCount:
+              Max: Integer
+              Min: Integer
+          InstanceType: String
+          MaxPrice: String
+          Placement:
+            Affinity: String
+            AvailabilityZone: String
+            GroupName: String
+            HostId: String
+            HostResourceGroupArn: String
+            PartitionNumber: Integer
+            SpreadDomain: String
+            Tenancy: String
+          Priority: Number
+          SubnetId: String
+          WeightedCapacity: Number
+  OnDemandOptions:
+    AllocationStrategy: String
+    CapacityReservationOptions:
+      UsageStrategy: String
+    MaxTotalPrice: String
+    MinTargetCapacity: Integer
+    SingleAvailabilityZone: Boolean
+    SingleInstanceType: Boolean
+  ReplaceUnhealthyInstances: Boolean
+  SpotOptions:
+    AllocationStrategy: String
+    InstanceInterruptionBehavior: String
+    InstancePoolsToUseCount: Integer
+    MaintenanceStrategies:
+      CapacityRebalance:
+        ReplacementStrategy: String
+        TerminationDelay: Integer
+    MaxTotalPrice: String
+    MinTargetCapacity: Integer
+    SingleAvailabilityZone: Boolean
+    SingleInstanceType: Boolean
+  TagSpecifications:
+    - ResourceType: String
+      Tags:
+        - Key: String
+          Value: String
+  TargetCapacitySpecification:
+    DefaultTargetCapacityType: String
+    OnDemandTargetCapacity: Integer
+    SpotTargetCapacity: Integer
+    TargetCapacityUnitType: String
+    TotalTargetCapacity: Integer
+  TerminateInstancesWithExpiration: Boolean
+  Type: String
+  ValidFrom: String
+  ValidUntil: String
+#}
