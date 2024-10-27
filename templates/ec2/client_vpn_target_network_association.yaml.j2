@@ -1,0 +1,35 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Client VPN Target Network Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for client_vpn_tna in sceptre_user_data.client_vpn_target_network_associations %}
+{%- set client_vpn_tna_name = client_vpn_tna.name %}
+  {{ client_vpn_tna_name }}:
+    DeletionPolicy: {{ client_vpn_tna.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ client_vpn_tna.update_replace_policy | default('Delete') }}
+    Type: AWS::EC2::ClientVpnTargetNetworkAssociation
+    Properties:
+      ClientVpnEndpointId: {{ client_vpn_tna.client_vpn_endpoint_id | trim }}
+      SubnetId: {{ client_vpn_tna.subnet_id | trim }}
+{%- endfor %}
+
+Outputs:
+{%- for client_vpn_tna in sceptre_user_data.client_vpn_target_network_associations %}
+{%- set client_vpn_tna_name = client_vpn_tna.name %}
+  {{ client_vpn_tna_name }}:
+    Description: Association ID for {{ client_vpn_tna_name }}
+    Value:
+      Ref: {{ client_vpn_tna_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ client_vpn_tna_name }}"
+{%- endfor %}
+{#
+# Supported structure as of 20241027:
+Type: AWS::EC2::ClientVpnTargetNetworkAssociation
+Properties:
+  ClientVpnEndpointId: String
+  SubnetId: String
+#}
