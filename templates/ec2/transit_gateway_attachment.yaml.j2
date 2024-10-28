@@ -17,6 +17,21 @@ Resources:
 {%- endfor %}
       TransitGatewayId: {{ transit_gateway_attachment.transit_gateway_id | trim }}
       VpcId: {{ transit_gateway_attachment.vpc_id | trim }}
+{%- if transit_gateway_attachment.options is defined %}
+      Options:
+{%- if transit_gateway_attachment.options.appliance_mode_support is defined %}
+        ApplianceModeSupport: {{ transit_gateway_attachment.options.appliance_mode_support }}
+{%- endif %}
+{%- if transit_gateway_attachment.options.dns_support is defined %}
+        DnsSupport: {{ transit_gateway_attachment.options.dns_support }}
+{%- endif %}
+{%- if transit_gateway_attachment.options.ipv6_support is defined %}
+        Ipv6Support: {{ transit_gateway_attachment.options.ipv6_support }}
+{%- endif %}
+{%- if transit_gateway_attachment.options.security_group_referencing_support is defined %}
+        SecurityGroupReferencingSupport: {{ transit_gateway_attachment.options.security_group_referencing_support }}
+{%- endif %}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -39,3 +54,20 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_attachment_name }}"
 {%- endfor %}
+{#
+# Supported structure as of 20241028:
+Type: AWS::EC2::TransitGatewayAttachment
+Properties:
+  Options:
+    ApplianceModeSupport: String
+    DnsSupport: String
+    Ipv6Support: String
+    SecurityGroupReferencingSupport: String
+  SubnetIds:
+    - String
+  Tags:
+    - Key: String
+      Value: String
+  TransitGatewayId: String
+  VpcId: String
+#}
