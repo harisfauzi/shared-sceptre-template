@@ -1,0 +1,18 @@
+---
+template:
+  type: 
+  path: elbv2/trust_store_revocation.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  trust_store_revocations:
+    - name: truststorerevocations1
+      revocation_contents:
+        - revocation_type: CRL
+          s3_bucket: mys3-trust-store-p0l
+          s3_key: crl.pem
+      trust_store_arn: arn:aws:elasticloadbalancing:us-east-1:111122223333:truststore/my-trust-store/3ym756xh7yj
+
+stack_tags:
+  Test: elbv2-truststorerevocations
