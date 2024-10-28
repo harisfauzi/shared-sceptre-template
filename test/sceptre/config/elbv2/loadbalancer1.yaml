@@ -51,6 +51,9 @@ sceptre_user_data:
           value: true
         - key: waf.fail_open.enabled
           value: false
+      tags:
+        Project: Test
+        Name: elb1
     - name: elb2
       type: network
       load_balancer_name: elb2
@@ -73,5 +76,8 @@ sceptre_user_data:
           value: any_availability_zone
         - key: zonal_shift.config.enabled
           value: false
+      tags:
+        Project: Test
+        Name: elb2
 stack_tags:
   Test: elbv2-loadbalancer

@@ -1,0 +1,83 @@
+---
+Description: {{sceptre_user_data.description|default('IAM Role(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for trust_store in sceptre_user_data.trust_stores %}
+{%- set trust_store_name = trust_store.name %}
+  {{ trust_store_name }}:
+    Type: AWS::ElasticLoadBalancingV2::TrustStore
+    DeletionPolicy: {{ trust_store.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ trust_store.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if trust_store.ca_certificates_bundle_s3_bucket is defined %}
+      CaCertificatesBundleS3Bucket: {{ trust_store.ca_certificates_bundle_s3_bucket }}
+{%- endif %}
+{%- if trust_store.ca_certificates_bundle_s3_key is defined %}
+      CaCertificatesBundleS3Key: {{ trust_store.ca_certificates_bundle_s3_key }}
+{%- endif %}
+{%- if trust_store.ca_certificates_bundle_s3_object_version is defined %}
+      CaCertificatesBundleS3ObjectVersion: {{ trust_store.ca_certificates_bundle_s3_object_version }}
+{%- endif %}
+{%- if trust_store.trust_store_name is defined %}
+      Name: {{ trust_store.trust_store_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if trust_store.tags is defined %}
+{%- for key,value in trust_store.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for trust_store in sceptre_user_data.trust_stores %}
+{%- set trust_store_name = trust_store.name %}
+  {{ trust_store_name }}NumberOfCaCertificates:
+    Description: The number of ca certificates in the trust store {{ trust_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ trust_store_name }}
+        - NumberOfCaCertificates
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ trust_store_name }}-NumberOfCaCertificates"
+
+  {{ trust_store_name }}Status:
+    Description: The current status of the trust store {{ trust_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ trust_store_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ trust_store_name }}-Status"
+
+  {{ trust_store_name }}TrustStoreArn:
+    Description: The Amazon Resource Name (ARN) of the trust store {{ trust_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ trust_store_name }}
+        - TrustStoreArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ trust_store_name }}-TrustStoreArn"
+
+{%- endfor %}
+{#
+# Supported structure as of 20241028:
+Type: AWS::ElasticLoadBalancingV2::TrustStore
+Properties:
+  CaCertificatesBundleS3Bucket: String
+  CaCertificatesBundleS3Key: String
+  CaCertificatesBundleS3ObjectVersion: String
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
