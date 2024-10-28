@@ -79,7 +79,9 @@ Resources:
 {%- endfor %}
 {%- endif%}
 {%- endfor %}
+{%- if listener_rule.listener_arn is defined %}
       ListenerArn: {{ listener_rule.listener_arn }}
+{%- endif %}
       Priority: {{ listener_rule.priority }}
 {%- endfor %}
 
@@ -95,3 +97,84 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ listener_rule_name }}"
 
 {%- endfor %}
+{#
+# Supported structure as of 20241028:
+Type: AWS::ElasticLoadBalancingV2::ListenerRule
+Properties:
+  Actions:
+    -
+      AuthenticateCognitoConfig:
+        AuthenticationRequestExtraParams:
+          Key: Value
+        OnUnauthenticatedRequest: String
+        Scope: String
+        SessionCookieName: String
+        SessionTimeout: Integer
+        UserPoolArn: String
+        UserPoolClientId: String
+        UserPoolDomain: String
+      AuthenticateOidcConfig:
+        AuthenticationRequestExtraParams:
+          Key: Value
+        AuthorizationEndpoint: String
+        ClientId: String
+        ClientSecret: String
+        Issuer: String
+        OnUnauthenticatedRequest: String
+        Scope: String
+        SessionCookieName: String
+        SessionTimeout: Integer
+        TokenEndpoint: String
+        UseExistingClientSecret: Boolean
+        UserInfoEndpoint: String
+      FixedResponseConfig:
+        ContentType: String
+        MessageBody: String
+        StatusCode: String
+      ForwardConfig:
+        TargetGroups:
+          -
+            TargetGroupArn: String
+            Weight: Integer
+        TargetGroupStickinessConfig:
+          DurationSeconds: Integer
+          Enabled: Boolean
+      Order: Integer
+      RedirectConfig:
+        Host: String
+        Path: String
+        Port: String
+        Protocol: String
+        Query: String
+        StatusCode: String
+      TargetGroupArn: String
+      Type: String
+  Conditions:
+    -
+      Field: String
+      HostHeaderConfig:
+        Values:
+          - String
+      HttpHeaderConfig:
+        HttpHeaderName: String
+        Values:
+          - String
+      HttpRequestMethodConfig:
+        Values:
+          - String
+      PathPatternConfig:
+        Values:
+          - String
+      QueryStringConfig:
+        Values:
+          -
+            Key: String
+            Value: String
+      SourceIpConfig:
+        Values:
+          - String
+      Values:
+        - String
+  ListenerArn: String
+  Priority: Integer
+#}

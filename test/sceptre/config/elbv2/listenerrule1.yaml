@@ -1,0 +1,39 @@
+---
+template:
+  type: 
+  path: elbv2/listener_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  listener_rules:
+    - name: listenerrule1
+      actions:
+        - type: redirect
+          redirect_config:
+            status_code: HTTP_301
+            protocol: HTTPS
+            port: 443
+            host: "{% raw %}'#{host}'{% endraw %}"
+            query: "{% raw %}'#{query}'{% endraw %}"
+            path: "/#{path}"
+      conditions:
+        - field: host-header
+          host_header_config:
+            _values:
+              - hello.sample.com
+      listener_arn: arn:aws:elasticloadbalancing:us-west-2:123456789012:listener/app/my-load-balancer/50dc6c495c0c9188/0467ef3c8400ae65
+      priority: 10100
+    - name: listenerrule2
+      actions:
+        - type: forward
+          target_group_arn: arn:aws:elasticloadbalancing:us-west-2:123456789012:targetgroup/my-targets/73e2d6bc24d8a067
+      conditions:
+        - field: host-header
+          host_header_config:
+            _values:
+              - hello.sample.com
+      listener_arn: arn:aws:elasticloadbalancing:us-west-2:123456789012:listener/app/my-load-balancer/50dc6c495c0c9188/0467ef3c8400ae65
+      priority: 10110
+stack_tags:
+  Test: elbv2-listenerrule
