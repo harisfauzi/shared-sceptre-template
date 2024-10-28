@@ -1,0 +1,77 @@
+---
+template:
+  type: 
+  path: elbv2/load_balancer.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  load_balancers:
+    - name: elb1
+      type: application
+      load_balancer_name: elb1
+      scheme: internet-facing
+      ip_address_type: dualstack
+      load_balancer_attributes:
+        - key: deletion_protection.enabled
+          value: true
+        - key: load_balancing.cross_zone.enabled
+          value: true
+        - key: access_logs.s3.enabled
+          value: true
+        - key: access_logs.s3.bucket
+          value: s3-bucket-log-al9
+        - key: access_logs.s3.prefix
+          value: elb1/access
+        - key: ipv6.deny_all_igw_traffic
+          value: false
+        - key: idle_timeout.timeout_seconds
+          value: 15
+        - key: client_keep_alive.seconds
+          value: 15
+        - key: connection_logs.s3.enabled
+          value: true
+        - key: connection_logs.s3.bucket
+          value: s3-bucket-log-al9
+        - key: connection_logs.s3.prefix
+          value: elb1/connection
+        - key: routing.http.desync_mitigation_mode
+          value: defensive
+        - key: routing.http.drop_invalid_header_fields.enabled
+          value: false
+        - key: routing.http.preserve_host_header.enabled
+          value: true
+        - key: routing.http.x_amzn_tls_version_and_cipher_suite.enabled
+          value: false
+        - key: routing.http.xff_client_port.enabled
+          value: false
+        - key: routing.http.xff_header_processing.mode
+          value: append
+        - key: routing.http2.enabled
+          value: true
+        - key: waf.fail_open.enabled
+          value: false
+    - name: elb2
+      type: network
+      load_balancer_name: elb2
+      scheme: internal
+      ip_address_type: ipv4
+      load_balancer_attributes:
+        - key: deletion_protection.enabled
+          value: true
+        - key: load_balancing.cross_zone.enabled
+          value: true
+        - key: access_logs.s3.enabled
+          value: true
+        - key: access_logs.s3.bucket
+          value: s3-bucket-log-al9
+        - key: access_logs.s3.prefix
+          value: elb1/access
+        - key: ipv6.deny_all_igw_traffic
+          value: false
+        - key: dns_record.client_routing_policy
+          value: any_availability_zone
+        - key: zonal_shift.config.enabled
+          value: false
+stack_tags:
+  Test: elbv2-loadbalancer

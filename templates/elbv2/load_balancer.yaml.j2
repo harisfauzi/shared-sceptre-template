@@ -10,6 +10,9 @@ Resources:
     DeletionPolicy: {{ load_balancer.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ load_balancer.update_replace_policy | default('Delete') }}
     Properties:
+{%- if load_balancer.enforce_security_group_inbound_rules_on_private_link_traffic is defined %}
+      EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic: {{ load_balancer.enforce_security_group_inbound_rules_on_private_link_traffic }}
+{%- endif %}
 {%- if load_balancer.ip_address_type is defined %}
       IpAddressType: {{ load_balancer.ip_address_type }}
 {%- endif %}
@@ -122,5 +125,32 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-LoadBalancerName"
-
 {%- endfor %}
+{#
+# Supported structure as of 20241028:
+Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+Properties:
+  EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic: String
+  IpAddressType: String
+  LoadBalancerAttributes:
+    -
+      Key: String
+      Value: String
+  Name: String
+  Scheme: String
+  SecurityGroups:
+    - String
+  SubnetMappings:
+    -
+      AllocationId: String
+      IPv6Address: String
+      PrivateIPv4Address: String
+      SubnetId: String
+  Subnets:
+    - String
+  Tags:
+    -
+      Key: String
+      Value: String
+  Type: String
+#}
