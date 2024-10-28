@@ -1,0 +1,24 @@
+---
+template:
+  type: 
+  path: ec2/customer_gateway.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  customer_gateways:
+    - name: gateway1
+      bgp_asn: 64512
+      ip_address: 111.222.111.222
+      tags:
+        Project: Test
+        Name: gateway1
+    - name: gateway2
+      bgp_asn_extended: 4200000000
+      ip_address: 111.222.111.123
+      certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012
+      tags:
+        Project: Test
+        Name: gateway2
+stack_tags:
+  Test: ec2-customergateway

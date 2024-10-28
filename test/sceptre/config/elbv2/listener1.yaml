@@ -1,0 +1,24 @@
+---
+template:
+  type: 
+  path: elbv2/listener.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  listeners:
+    - name: listener1
+      default_actions:
+        - type: redirect
+          redirect_config:
+            status_code: HTTP_301
+            protocol: HTTPS
+            port: 443
+            host: "{% raw %}'#{host}'{% endraw %}"
+            query: "{% raw %}'#{query}'{% endraw %}"
+            path: "/#{path}"
+      load_balancer_arn: arn:aws:elasticloadbalancing:us-west-2:123456789012:loadbalancer/app/my-load-balancer/50dc6c495c0c9188
+      port: 80
+      protocol: HTTP
+stack_tags:
+  Test: elbv2-listener

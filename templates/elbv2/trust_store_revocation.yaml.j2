@@ -1,0 +1,46 @@
+---
+Description: {{sceptre_user_data.description|default('ELBv2 Trust Store Revocation(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for trust_store_revocation in sceptre_user_data.trust_store_revocations %}
+{%- set trust_store_revocation_name = trust_store_revocation.name %}
+  {{ trust_store_revocation_name }}:
+    Type: AWS::ElasticLoadBalancingV2::TrustStoreRevocation
+    DeletionPolicy: {{ trust_store_revocation.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ trust_store_revocation.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if trust_store_revocation.revocation_contents is defined %}
+      RevocationContents:
+{%- for content in trust_store_revocation.revocation_contents %}
+        -
+{%- if content.revocation_type is defined %}
+          RevocationType: {{ content.revocation_type }}
+{%- endif %}
+{%- if content.s3_bucket is defined %}
+          S3Bucket: {{ content.s3_bucket }}
+{%- endif %}
+{%- if content.s3_key is defined %}
+          S3Key: {{ content.s3_key }}
+{%- endif %}
+{%- if content.s3_object_version is defined %}
+          S3ObjectVersion: {{ content.s3_object_version }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if trust_store_revocation.trust_store_arn is defined %}
+      TrustStoreArn: {{ trust_store_revocation.trust_store_arn | trim }}
+{%- endif %}
+{%- endfor %}
+{#
+# Supported structure as of 20241028:
+Type: AWS::ElasticLoadBalancingV2::TrustStoreRevocation
+Properties:
+  RevocationContents:
+    -
+      RevocationType: String
+      S3Bucket: String
+      S3Key: String
+      S3ObjectVersion: String
+  TrustStoreArn: String
+#}

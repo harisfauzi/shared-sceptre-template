@@ -26,6 +26,30 @@ Resources:
         - CertificateArn: {{ certificate.certificate_arn | trim }}
 {%- endfor %}
 {%- endif %}
+{%- if listener.listener_attributes is defined %}
+      ListenerAttributes:
+{%- for attribute in listener.listener_attributes %}
+        -
+{%- if attribute.key is defined %}
+          Key: {{ attribute.key }}
+{%- endif %}
+{%- if attribute.value is defined %}
+          Value: {{ attribute.value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if listener.mutual_authentication is defined %}
+      MutualAuthentication:
+{%- if listener.mutual_authentication.ignore_client_certificate_expiry is defined %}
+        IgnoreClientCertificateExpiry: {{ listener.mutual_authentication.ignore_client_certificate_expiry }}
+{%- endif %}
+{%- if listener.mutual_authentication.mode is defined %}
+        Mode: {{ listener.mutual_authentication.mode }}
+{%- endif %}
+{%- if listener.mutual_authentication.trust_store_arn is defined %}
+        TrustStoreArn: {{ listener.mutual_authentication.trust_store_arn | trim }}
+{%- endif %}
+{%- endif %}
 {%- if listener.port is defined %}
       Port: {{ listener.port }}
 {%- endif %}
@@ -49,3 +73,72 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ listener_name }}"
 
 {%- endfor %}
+{#
+# Supported structure as of 20241028:
+Type: AWS::ElasticLoadBalancingV2::Listener
+Properties:
+  AlpnPolicy:
+    - String
+  Certificates:
+    - CertificateArn: String
+  DefaultActions:
+    -
+      AuthenticateCognitoConfig:
+        AuthenticationRequestExtraParams:
+          Key: Value
+        OnUnauthenticatedRequest: String
+        Scope: String
+        SessionCookieName: String
+        SessionTimeout: String
+        UserPoolArn: String
+        UserPoolClientId: String
+        UserPoolDomain: String
+      AuthenticateOidcConfig:
+        AuthenticationRequestExtraParams:
+          Key: Value
+        AuthorizationEndpoint: String
+        ClientId: String
+        ClientSecret: String
+        Issuer: String
+        OnUnauthenticatedRequest: String
+        Scope: String
+        SessionCookieName: String
+        SessionTimeout: String
+        TokenEndpoint: String
+        UseExistingClientSecret: Boolean
+        UserInfoEndpoint: String
+      FixedResponseConfig:
+        ContentType: String
+        MessageBody: String
+        StatusCode: String
+      ForwardConfig:
+        TargetGroups:
+          -
+            TargetGroupArn: String
+            Weight: Integer
+        TargetGroupStickinessConfig:
+          DurationSeconds: Integer
+          Enabled: Boolean
+      Order: Integer
+      RedirectConfig:
+        Host: String
+        Path: String
+        Port: String
+        Protocol: String
+        Query: String
+        StatusCode: String
+      TargetGroupArn: String
+      Type: String
+  ListenerAttributes:
+    -
+      Key: String
+      Value: String
+  LoadBalancerArn: String
+  MutualAuthentication:
+    IgnoreClientCertificateExpiry: Boolean
+    Mode: String
+    TrustStoreArn: String
+  Port: Integer
+  Protocol: String
+  SslPolicy: String
+#}

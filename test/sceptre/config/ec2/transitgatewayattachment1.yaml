@@ -1,0 +1,26 @@
+---
+template:
+  type: 
+  path: ec2/transit_gateway_attachment.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  transit_gateway_attachments:
+    - name: tga1
+      subnet_ids:
+        - subnet-0bb1c79de3EXAMPLE
+        - subnet-0bb1caaaaaEXAMPLE
+      transit_gateway_id: tgw-0262a0e521EXAMPLE
+      vpc_id: vpc-06e4ab6c6cEXAMPLE
+      options:
+        appliance_mode_support: disable
+        dns_support: disable
+        ipv6_support: enable
+        security_group_referencing_support: disable
+      tags:
+        Application: "!Ref 'AWS::StackId'"
+        Project: Test
+        Name: tga1
+stack_tags:
+  Test: ec2-transitgatewayattachment

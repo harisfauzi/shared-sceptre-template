@@ -11,7 +11,18 @@ Resources:
     DeletionPolicy: {{ customer_gateway.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ customer_gateway.update_replace_policy | default('Delete') }}
     Properties:
+{%- if customer_gateway.bgp_asn is defined %}
       BgpAsn: {{ customer_gateway.bgp_asn }}
+{%- endif %}
+{%- if customer_gateway.bgp_asn_extended is defined %}
+      BgpAsnExtended: {{ customer_gateway.bgp_asn_extended }}
+{%- endif %}
+{%- if customer_gateway.certificate_arn is defined %}
+      CertificateArn: {{ customer_gateway.certificate_arn | trim }}
+{%- endif %}
+{%- if customer_gateway.device_name is defined %}
+      DeviceName: {{ customer_gateway.device_name }}
+{%- endif %}
       IpAddress: {{ customer_gateway.ip_address }}
       Tags:
         - Key: SourceRepoURL
@@ -36,3 +47,17 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ customer_gateway_name }}"
 {%- endfor %}
+{#
+# Supported structure as of 20241027:
+Type: AWS::EC2::CustomerGateway
+Properties:
+  BgpAsn: Integer
+  BgpAsnExtended: Number
+  CertificateArn: String
+  DeviceName: String
+  IpAddress: String
+  Tags:
+    - Key: String
+      Value: String
+  Type: String
+#}

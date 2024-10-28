@@ -1,0 +1,30 @@
+---
+template:
+  type: 
+  path: ec2/client_vpn_endpoint.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  client_vpn_endpoints:
+    - name: endpoint1
+      authentication_options:
+        - type: directory-service-authentication
+          active_directory:
+            directory_id: d-926example
+      client_cidr_block: 10.0.0.0/22
+      connection_log_options:
+        enabled: False
+      description: My Client VPN Endpoint
+      dns_servers:
+        - 11.11.0.1
+      server_certificate_arn: arn:aws:acm:us-east-1:111122223333:certificate/12345678-1234-1234-1234-123456789012
+      tag_specifications:
+        - resource_type: client-vpn-endpoint
+          tags:
+            Name: endpoint1
+            Type: test
+            Environment: development
+
+stack_tags:
+  Test: ec2-clientvpnendpoint
