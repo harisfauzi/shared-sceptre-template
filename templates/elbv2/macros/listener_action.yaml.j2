@@ -29,7 +29,9 @@
           AuthenticateOidcConfig:
             AuthorizationEndpoint: {{ action.authenticate_oidc_config.authorization_endpoint }}
             ClientId: {{ action.authenticate_oidc_config.client_id | trim }}
+{%- if action.authenticate_oidc_config.client_secret is defined %}
             ClientSecret: {{ action.authenticate_oidc_config.client_secret }}
+{%- endif %}
             Issuer: {{ action.authenticate_oidc_config.client_issuer }}
             TokenEndpoint: {{ action.authenticate_oidc_config.token_endpoint }}
             UserInfoEndpoint: {{ action.authenticate_oidc_config.user_info_endpoint }}
@@ -50,6 +52,9 @@
 {%- endif %}
 {%- if action.authenticate_oidc_config.session_timeout %}
             SessionTimeout: {{ action.authenticate_oidc_config.session_timeout }}
+{%- endif %}
+{%- if action.authenticate_oidc_config.use_existing_client_secret is defined %}
+            UseExistingClientSecret: {{ action.authenticate_oidc_config.use_existing_client_secret }}
 {%- endif %}
 {%- endif %}{# END {%- if action.authenticate_oidc_config is defined %} #}
 {%- if action.fixed_response_config is defined %}{# BEGIN {%- if action.fixed_response_config is defined %} #}
