@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Transit Gateway(s) for
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for transit_gateway in sceptre_user_data.transit_gateways %}
 {%- set transit_gateway_name = transit_gateway.name %}
   {{ transit_gateway_name }}:
@@ -38,6 +37,9 @@ Resources:
 {%- if transit_gateway.propagation_default_route_table_id is defined %}
       PropagationDefaultRouteTableId: {{ transit_gateway.propagation_default_route_table_id | trim }}
 {%- endif %}
+{%- if transit_gateway.security_group_referencing_support is defined %}
+      SecurityGroupReferencingSupport: {{ transit_gateway.security_group_referencing_support }}
+{%- endif %}
 {%- if transit_gateway.transit_gateway_cidr_blocks is defined %}
       TransitGatewayCidrBlocks:
 {%- for cidr_block in transit_gateway.transit_gateway_cidr_blocks %}
@@ -56,9 +58,7 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
-
 
 Outputs:
 {%- for transit_gateway in sceptre_user_data.transit_gateways %}
@@ -75,10 +75,31 @@ Outputs:
     Description: The ARN of {{ transit_gateway_name }}
     Value:
       Fn::Join:
-        - ''
-        - - Fn::Sub: arn:aws:ec2:${AWS::Region}:${AWS::AccountId}:transit-gateway/
+        - ""
+        - - Fn::Sub: arn:${AWS::Partition}:ec2:${AWS::Region}:${AWS::AccountId}:transit-gateway/
           - Ref: {{ transit_gateway_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_name }}-Arn"
 {%- endfor %}
+{#
+# Supported structure as of 20241027:
+Type: AWS::EC2::TransitGateway
+Properties:
+  AmazonSideAsn: Integer
+  AssociationDefaultRouteTableId: String
+  AutoAcceptSharedAttachments: String
+  DefaultRouteTableAssociation: String
+  DefaultRouteTablePropagation: String
+  Description: String
+  DnsSupport: String
+  MulticastSupport: String
+  PropagationDefaultRouteTableId: String
+  SecurityGroupReferencingSupport: String
+  Tags:
+    - Key: String
+      Value: String
+  TransitGatewayCidrBlocks:
+    - String
+  VpnEcmpSupport: String
+#}
