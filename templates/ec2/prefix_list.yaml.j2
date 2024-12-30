@@ -12,8 +12,10 @@ Resources:
     UpdateReplacePolicy: {{ prefix_list.update_replace_policy | default('Delete') }}
     Properties:
       AddressFamily: {{ prefix_list.address_family }}
-      MaxEntries: {{ prefix_list.max_entries }}
       PrefixListName: {{ prefix_list.prefix_list_name }}
+{%- if prefix_list.max_entries is defined %}
+      MaxEntries: {{ prefix_list.max_entries }}
+{%- endif %}
 {%- if prefix_list.entries is defined %}
       Entries:
 {%- for entry in prefix_list.entries %}
@@ -76,15 +78,5 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ prefix_list_name }}-PrefixListId"
-
-  {{ prefix_list_name }}Version:
-    Description: The version of the prefix list {{ prefix_list_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ prefix_list_name }}
-        - Version
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ prefix_list_name }}-Version"
 
 {%- endfor %}
