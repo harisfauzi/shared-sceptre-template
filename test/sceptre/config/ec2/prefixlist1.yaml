@@ -1,0 +1,35 @@
+---
+template:
+  path: ec2/prefix_list.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  prefix_lists:
+    - name: list1
+      address_family: IPv4
+      prefix_list_name: org.fauzi.test.test01
+      max_entries: 2
+      entries:
+        - cidr: 10.128.128.0/23
+          description: Test prefix list
+        - cidr: 10.128.240.0/23
+          description: Test prefix list
+      tags:
+        Name: org.fauzi.test.test01
+        Project: "{{ project_code }}"
+    - name: list2
+      address_family: IPv6
+      prefix_list_name: org.fauzi.test.test02
+      max_entries: 2
+      entries:
+        - cidr: fd7d:25a3:470a:7b09::/64
+          description: Test prefix list
+        - cidr: d1b:6d17:5ac9:8b24::/64
+          description: Test prefix list
+      tags:
+        Name: org.fauzi.test.test02
+        Project: "{{ project_code }}"
+
+stack_tags:
+  Test: ec2-prefixlist
