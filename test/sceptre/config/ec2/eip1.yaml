@@ -1,0 +1,22 @@
+---
+template:
+  type: file
+  path: ec2/eip.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  eips:
+    - name: eip1
+      tags:
+        Name: eip1
+        Project: "{{ project_code }}"
+    - name: eip2
+      domain: vpc
+      instance_id: i-abcd01234
+      tags:
+        Name: eip2
+        Project: "{{ project_code }}"
+
+stack_tags:
+  Test: ec2-eip
