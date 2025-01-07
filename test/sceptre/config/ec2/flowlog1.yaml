@@ -1,0 +1,66 @@
+---
+template:
+  type: file
+  path: ec2/flow_log.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  flow_logs:
+    - name: flowlog1
+      resource_id: vpc-06b7830650EXAMPLE
+      resource_type: VPC
+      deliver_logs_permission_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/FlowLogRole"
+      tags:
+        Name: flowlog1
+        Project: "{{ project_code }}"
+    - name: flowlog2
+      resource_id: eni-cfca76a6
+      resource_type: NetworkInterface
+      log_destination_type: s3
+      log_destination: "!Sub arn:aws:s3:::${AWS::AccountId}-${AWS::Region}-flowlog/eni-flows/"
+      tags:
+        Name: flowlog1
+        Project: "{{ project_code }}"
+    - name: flowlog3
+      resource_id: subnet-0397b6c47c42e4dc0
+      resource_type: Subnet
+      log_format: "${version} ${vpc-id} ${subnet-id} ${instance-id} ${srcaddr} ${dstaddr} ${srcport} ${dstport} ${protocol} ${tcp-flags} ${type} ${pkt-srcaddr} ${pkt-dstaddr}"
+      log_destination_type: kinesis-data-firehose
+      log_destination: "!Sub arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:delivery-stream/flowlog3"
+      deliver_logs_permission_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/FlowLogRole"
+      max_aggregation_interval: 60
+      traffic_type: REJECT
+      tags:
+        Name: flowlog3
+        Project: "{{ project_code }}"
+    - name: flowlog4
+      resource_id: tgw-0262a0e521EXAMPLE
+      resource_type: TransitGateway
+      deliver_cross_account_role: arn:aws:iam::123456789012:role/FlowLogRole
+      log_destination_type: s3
+      log_destination: "!Sub arn:aws:s3:::123456789012-${AWS::Region}-flowlog/tgw-flows/"
+      destination_options:
+        file_format: parquet
+        hive_compatible_partitions: true
+        per_hour_partition: true
+      tags:
+        Name: flowlog4
+        Project: "{{ project_code }}"
+      traffic_type: REJECT
+    - name: flowlog5
+      resource_id: tgw-attach-0e141e0bebEXAMPLE
+      resource_type: TransitGatewayAttachment
+      deliver_cross_account_role: arn:aws:iam::123456789012:role/FlowLogRole
+      log_destination_type: s3
+      log_destination: "!Sub arn:aws:s3:::123456789012-${AWS::Region}-flowlog/tgw-flows/"
+      destination_options:
+        file_format: plain-text
+        hive_compatible_partitions: true
+        per_hour_partition: true
+      tags:
+        Name: flowlog5
+        Project: "{{ project_code }}"
+
+stack_tags:
+  Test: ec2-flowlog

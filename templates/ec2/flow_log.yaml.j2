@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Flow Log(s) for '+scep
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for flow_log in sceptre_user_data.flow_logs %}
 {%- set flow_log_name = flow_log.name %}
   {{ flow_log_name }}:
@@ -11,40 +10,51 @@ Resources:
     DeletionPolicy: {{ flow_log.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ flow_log.update_replace_policy | default('Delete') }}
     Properties:
+      # Required properties
       ResourceId: {{ flow_log.resource_id | trim }}
       ResourceType: {{ flow_log.resource_type }}
-      TrafficType: {{ flow_log.traffic_type }}
-{%- if flow_log.deliver_logs_permission_arn is defined %}
+      {%- if flow_log.deliver_cross_account_role is defined %}
+      DeliverCrossAccountRole: {{ flow_log.deliver_cross_account_role }}
+      {%- endif %}
+      {%- if flow_log.deliver_logs_permission_arn is defined %}
       DeliverLogsPermissionArn: {{ flow_log.deliver_logs_permission_arn }}
-{%- endif %}
-{%- if flow_log.log_destination is defined %}
+      {%- endif %}
+      {%- if flow_log.destination_options is defined %}
+      DestinationOptions:
+        FileFormat: {{ flow_log.destination_options.file_format }}
+        HiveCompatiblePartitions: {{ flow_log.destination_options.hive_compatible_partitions | lower }}
+        PerHourPartition: {{ flow_log.destination_options.per_hour_partition | lower }}
+      {%- endif %}
+      {%- if flow_log.log_destination is defined %}
       LogDestination: {{ flow_log.log_destination }}
-{%- endif %}
-{%- if flow_log.log_destination_type is defined %}
+      {%- endif %}
+      {%- if flow_log.log_destination_type is defined %}
       LogDestinationType: {{ flow_log.log_destination_type }}
-{%- endif %}
-{%- if flow_log.log_format is defined %}
+      {%- endif %}
+      {%- if flow_log.log_format is defined %}
       LogFormat: {{ flow_log.log_format }}
-{%- endif %}
-{%- if flow_log.log_group_name is defined %}
+      {%- endif %}
+      {%- if flow_log.log_group_name is defined %}
       LogGroupName: {{ flow_log.log_group_name }}
-{%- endif %}
-{%- if flow_log.max_aggregation_interval is defined %}
+      {%- endif %}
+      {%- if flow_log.max_aggregation_interval is defined %}
       MaxAggregationInterval: {{ flow_log.max_aggregation_interval }}
-{%- endif %}
+      {%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if flow_log.tags is defined %}
-{%- for key,value in flow_log.tags.items() %}
+        {%- if flow_log.tags is defined %}
+        {%- for key,value in flow_log.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
-{%- endfor %}
-{%- endif %}
+        {%- endfor %}
+        {%- endif %}
+      {%- if flow_log.traffic_type is defined %}
+      TrafficType: {{ flow_log.traffic_type }}
+      {%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for flow_log in sceptre_user_data.flow_logs %}
 {%- set flow_log_name = flow_log.name %}
   {{ flow_log_name }}:
@@ -56,3 +66,26 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ flow_log_name }}"
 
 {%- endfor %}
+{#
+# Supported structure as of 20250107
+Type: AWS::EC2::FlowLog
+Properties:
+  DeliverCrossAccountRole: String
+  DeliverLogsPermissionArn: String
+  DestinationOptions:
+    FileFormat: String
+    HiveCompatiblePartitions: Boolean
+    PerHourPartition: Boolean
+  LogDestination: String
+  LogDestinationType: String
+  LogFormat: String
+  LogGroupName: String
+  MaxAggregationInterval: Integer
+  ResourceId: String
+  ResourceType: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TrafficType: String
+#}
