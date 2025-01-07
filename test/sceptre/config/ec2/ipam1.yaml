@@ -1,0 +1,26 @@
+---
+template:
+  type: file
+  path: ec2/ipam.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  ipams:
+    - name: ipam1
+      description: Default IPAM
+      tags:
+        Name: ipam1
+        Project: "{{ project_code }}"
+    - name: ipam2
+      description: IPAM for us-west-2
+      enable_private_gua: true
+      operating_regions:
+        - region_name: us-west-2
+      tags:
+        Name: ipam2
+        Project: "{{ project_code }}"
+      tier: free
+
+stack_tags:
+  Test: ec2-ipam
