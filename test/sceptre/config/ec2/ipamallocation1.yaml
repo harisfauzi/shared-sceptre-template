@@ -1,0 +1,21 @@
+---
+template:
+  type: file
+  path: ec2/ipam_allocation.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  ipam_allocations:
+    - name: ipv4allocation1
+      ipam_pool_id: ipam-pool-0533048da7d823723
+      cidr: "10.0.1.0/24"
+      description: "IPv4 allocation for VPC1"
+
+    - name: ipv6allocation1
+      ipam_pool_id: ipam-pool-0533048da7d823723
+      cidr: "2001:db8:1::/56"
+      description: "IPv6 allocation for VPC1"
+
+stack_tags:
+  Test: ec2-ipamallocation
