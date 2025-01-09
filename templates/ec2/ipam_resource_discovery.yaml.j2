@@ -1,0 +1,104 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 IPAM Resource Discovery for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for discovery in sceptre_user_data.ipam_resource_discoveries %}
+{%- set discovery_name = discovery.name %}
+  {{ discovery_name }}:
+    Type: AWS::EC2::IPAMResourceDiscovery
+    DeletionPolicy: {{ discovery.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ discovery.update_replace_policy | default('Delete') }}
+    Properties:
+      {%- if discovery.description is defined %}
+      Description: {{ discovery.description }}
+      {%- endif %}
+      {%- if discovery.operating_regions is defined %}
+      OperatingRegions:
+        {%- for region in discovery.operating_regions %}
+        - RegionName: {{ region.region_name }}
+        {%- endfor %}
+      {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        {%- if discovery.tags is defined %}
+        {%- for key, value in discovery.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+        {%- endfor %}
+        {%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for discovery in sceptre_user_data.ipam_resource_discoveries %}
+{%- set discovery_name = discovery.name %}
+  {{ discovery_name }}:
+    Description: IPAM Resource Discovery ID for {{ discovery_name }}
+    Value:
+      Ref: {{ discovery_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ discovery_name }}"
+
+  {{ discovery_name }}IpamResourceDiscoveryArn:
+    Description: ARN for {{ discovery_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ discovery_name }}
+        - IpamResourceDiscoveryArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ discovery_name }}-IpamResourceDiscoveryArn"
+
+  {{ discovery_name }}IpamResourceDiscoveryRegion:
+    Description: Region for {{ discovery_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ discovery_name }}
+        - IpamResourceDiscoveryRegion
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ discovery_name }}-IpamResourceDiscoveryRegion"
+
+  {{ discovery_name }}IsDefault:
+    Description: Whether {{ discovery_name }} is default
+    Value:
+      Fn::GetAtt:
+        - {{ discovery_name }}
+        - IsDefault
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ discovery_name }}-IsDefault"
+
+  {{ discovery_name }}OwnerId:
+    Description: Owner ID for {{ discovery_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ discovery_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ discovery_name }}-OwnerId"
+
+  {{ discovery_name }}State:
+    Description: State of {{ discovery_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ discovery_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ discovery_name }}-State"
+{%- endfor %}
+{#
+# Supported structure as of 20250109:
+Type: AWS::EC2::IPAMResourceDiscovery
+Properties:
+  Description: String
+  OperatingRegions: 
+    - RegionName: String
+  Tags:
+    - Key: String
+      Value: String
+#}
