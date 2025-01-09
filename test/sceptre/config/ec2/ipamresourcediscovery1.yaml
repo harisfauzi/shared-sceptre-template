@@ -1,0 +1,20 @@
+---
+template:
+  type: file
+  path: ec2/ipam_resource_discovery.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  ipam_resource_discoveries:
+    - name: discovery1
+      description: "Multi-region IPAM Resource Discovery"
+      operating_regions:
+        - region_name: us-west-2
+        - region_name: us-east-1
+      tags:
+        Name: discovery1
+        Project: "{{ project_code }}"
+
+stack_tags:
+  Test: ec2-ipamresourcediscovery

@@ -1,0 +1,39 @@
+---
+template:
+  type: file
+  path: ec2/ipam_pool.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  ipam_pools:
+    - name: pool1
+      address_family: ipv4
+      ipam_scope_id: ipam-scope-01c1ebab2b63bd7e4
+      description: Primary IPv4 pool
+      allocation_min_netmask_length: 24
+      allocation_max_netmask_length: 28
+      allocation_default_netmask_length: 26
+      tags:
+        Name: pool1
+        Project: "{{ project_code }}"
+    
+    - name: pool2
+      address_family: ipv6
+      ipam_scope_id: ipam-scope-01c1ebab2b63bd7e4
+      description: Primary IPv6 pool
+      allocation_min_netmask_length: 48
+      allocation_max_netmask_length: 64
+      allocation_default_netmask_length: 56
+      aws_service: ec2
+      locale: "!Sub ${AWS::Region}"
+      provisioned_cidrs:
+        - cidr: 2001:db8::/48
+      public_ip_source: byoip
+      publicly_advertisable: true
+      tags:
+        Name: pool2
+        Project: "{{ project_code }}"
+
+stack_tags:
+  Test: ec2-ipampool

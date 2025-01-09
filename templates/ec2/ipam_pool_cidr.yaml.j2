@@ -1,0 +1,61 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 IPAM Pool CIDR(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for cidr in sceptre_user_data.ipam_pool_cidrs %}
+{%- set cidr_name = cidr.name %}
+  {{ cidr_name }}:
+    Type: AWS::EC2::IPAMPoolCidr
+    DeletionPolicy: {{ cidr.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ cidr.update_replace_policy | default('Delete') }}
+    Properties:
+      # Required property
+      IpamPoolId: {{ cidr.ipam_pool_id | trim}}
+      {%- if cidr.cidr is defined %}
+      Cidr: {{ cidr.cidr }}
+      {%- endif %}
+      {%- if cidr.netmask_length is defined %}
+      NetmaskLength: {{ cidr.netmask_length }}
+      {%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for cidr in sceptre_user_data.ipam_pool_cidrs %}
+{%- set cidr_name = cidr.name %}
+  {{ cidr_name }}:
+    Description: IPAM Pool CIDR Reference for {{ cidr_name }}
+    Value:
+      Ref: {{ cidr_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cidr_name }}"
+
+  {{ cidr_name }}IpamPoolCidrId:
+    Description: IPAM Pool CIDR ID for {{ cidr_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cidr_name }}
+        - IpamPoolCidrId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cidr_name }}-IpamPoolCidrId"
+
+  {{ cidr_name }}State:
+    Description: State of {{ cidr_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cidr_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cidr_name }}-State"
+{%- endfor %}
+{#
+# Supported structure as of 20250108:
+Type: AWS::EC2::IPAMPoolCidr
+Properties:
+  Cidr: String  # Either Cidr or NetmaskLength is required
+  IpamPoolId: String  # Required
+  NetmaskLength: Integer  # Either Cidr or NetmaskLength is required
+#}
