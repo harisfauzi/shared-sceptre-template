@@ -1,0 +1,127 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 IPAM Resource Discovery Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for association in sceptre_user_data.ipam_resource_discovery_associations %}
+{%- set association_name = association.name %}
+  {{ association_name }}:
+    Type: AWS::EC2::IPAMResourceDiscoveryAssociation
+    DeletionPolicy: {{ association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ association.update_replace_policy | default('Delete') }}
+    Properties:
+      # Required properties
+      IpamId: {{ association.ipam_id }}
+      IpamResourceDiscoveryId: {{ association.ipam_resource_discovery_id }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+  {%- if association.tags is defined %}
+  {%- for key, value in association.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+  {%- endfor %}
+  {%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for association in sceptre_user_data.ipam_resource_discovery_associations %}
+{%- set association_name = association.name %}
+  {{ association_name }}:
+    Description: Resource Discovery Association ID for {{ association_name }}
+    Value:
+      Ref: {{ association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}"
+
+  {{ association_name }}IpamArn:
+    Description: IPAM ARN for {{ association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - IpamArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-IpamArn"
+
+  {{ association_name }}IpamRegion:
+    Description: IPAM Region for {{ association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - IpamRegion
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-IpamRegion"
+
+  {{ association_name }}IpamResourceDiscoveryAssociationArn:
+    Description: Resource Discovery Association ARN for {{ association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - IpamResourceDiscoveryAssociationArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-IpamResourceDiscoveryAssociationArn"
+
+  {{ association_name }}AssociationId:
+    Description: Resource Discovery Association ID for {{ association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - IpamResourceDiscoveryAssociationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-AssociationId"
+
+  {{ association_name }}IsDefault:
+    Description: Whether {{ association_name }} is default
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - IsDefault
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-IsDefault"
+
+  {{ association_name }}OwnerId:
+    Description: Owner ID for {{ association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-OwnerId"
+
+  {{ association_name }}ResourceDiscoveryStatus:
+    Description: Resource Discovery Status for {{ association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - ResourceDiscoveryStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-ResourceDiscoveryStatus"
+
+  {{ association_name }}State:
+    Description: State of {{ association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-State"
+{%- endfor %}
+{#
+# Supported structure as of 20250107:
+Type: AWS::EC2::IPAMResourceDiscoveryAssociation
+Properties:
+  IpamId: String  # Required
+  IpamResourceDiscoveryId: String  # Required
+  Tags:
+    - Key: String
+      Value: String
+#}

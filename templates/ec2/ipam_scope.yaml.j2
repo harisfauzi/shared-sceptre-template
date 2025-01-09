@@ -1,0 +1,89 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 IPAM Scope(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for scope in sceptre_user_data.ipam_scopes %}
+{%- set scope_name = scope.name %}
+  {{ scope_name }}:
+    Type: AWS::EC2::IPAMScope
+    DeletionPolicy: {{ scope.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ scope.update_replace_policy | default('Delete') }}
+    Properties:
+      # Required property
+      IpamId: {{ scope.ipam_id | trim }}
+      {%- if scope.description is defined %}
+      Description: {{ scope.description }}
+      {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        {%- if scope.tags is defined %}
+        {%- for key,value in scope.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+        {%- endfor %}
+        {%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for scope in sceptre_user_data.ipam_scopes %}
+{%- set scope_name = scope.name %}
+  {{ scope_name }}:
+    Description: The IPAM Scope ID for {{ scope_name }}
+    Value:
+      Ref: {{ scope_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scope_name }}"
+
+  {{ scope_name }}Arn:
+    Description: The ARN for {{ scope_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ scope_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scope_name }}-Arn"
+
+  {{ scope_name }}IpamArn:
+    Description: The IPAM ARN for {{ scope_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ scope_name }}
+        - IpamArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scope_name }}-IpamArn"
+
+  {{ scope_name }}IpamScopeId:
+    Description: The IPAM Scope ID for {{ scope_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ scope_name }}
+        - IpamScopeId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scope_name }}-IpamScopeId"
+
+  {{ scope_name }}IpamScopeType:
+    Description: The IPAM Scope Type for {{ scope_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ scope_name }}
+        - IpamScopeType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scope_name }}-IpamScopeType"
+{%- endfor %}
+{#
+# Supported structure as of 20250107:
+Type: AWS::EC2::IPAMScope
+Properties:
+  Description: String
+  IpamId: String  # Required
+  Tags:
+    - Key: String
+      Value: String
+#}

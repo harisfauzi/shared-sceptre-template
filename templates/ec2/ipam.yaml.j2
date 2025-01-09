@@ -1,0 +1,92 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 IPAM(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for ipam in sceptre_user_data.ipams %}
+{%- set ipam_name = ipam.name %}
+  {{ ipam_name }}:
+    Type: AWS::EC2::IPAM
+    DeletionPolicy: {{ ipam.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ ipam.update_replace_policy | default('Delete') }}
+    Properties:
+      {%- if ipam.description is defined %}
+      Description: {{ ipam.description }}
+      {%- endif %}
+      {%- if ipam.enable_private_gua is defined %}
+      EnablePrivateGua: {{ ipam.enable_private_gua | lower }}
+      {%- endif %}
+      {%- if ipam.operating_regions is defined %}
+      OperatingRegions:
+        {%- for region in ipam.operating_regions %}
+        - RegionName: {{ region }}
+        {%- endfor %}
+      {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        {%- if ipam.tags is defined %}
+        {%- for key,value in ipam.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+        {%- endfor %}
+        {%- endif %}
+      {%- if ipam.tier is defined %}
+      Tier: {{ ipam.tier }}
+      {%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for ipam in sceptre_user_data.ipams %}
+{%- set ipam_name = ipam.name %}
+  {{ ipam_name }}:
+    Description: The IPAM ID for {{ ipam_name }}
+    Value:
+      Ref: {{ ipam_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ipam_name }}"
+
+  {{ ipam_name }}Arn:
+    Description: The Private Default Scope ID for {{ ipam_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ ipam_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ipam_name }}-Arn"
+
+  {{ ipam_name }}PrivateDefaultScopeId:
+    Description: The Private Default Scope ID for {{ ipam_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ ipam_name }}
+        - PrivateDefaultScopeId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ipam_name }}-PrivateDefaultScopeId"
+
+  {{ ipam_name }}PublicDefaultScopeId:
+    Description: The Public Default Scope ID for {{ ipam_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ ipam_name }}
+        - PublicDefaultScopeId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ipam_name }}-PublicDefaultScopeId"
+{%- endfor %}
+{#
+# Supported structure as of 20250107:
+Type: AWS::EC2::IPAM
+Properties:
+  Description: String
+  EnablePrivateGua: Boolean
+  OperatingRegions: 
+    - RegionName: String
+  Tags:
+    - Key: String
+      Value: String
+  Tier: String
+#}

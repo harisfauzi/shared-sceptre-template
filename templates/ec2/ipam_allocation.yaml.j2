@@ -1,0 +1,55 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 IPAM Allocation(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for allocation in sceptre_user_data.ipam_allocations %}
+{%- set allocation_name = allocation.name %}
+  {{ allocation_name }}:
+    Type: AWS::EC2::IPAMAllocation
+    DeletionPolicy: {{ allocation.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ allocation.update_replace_policy | default('Delete') }}
+    Properties:
+      IpamPoolId: {{ allocation.ipam_pool_id }}
+      {%- if allocation.cidr is defined %}
+      Cidr: {{ allocation.cidr }}
+      {%- endif %}
+      {%- if allocation.description is defined %}
+      Description: {{ allocation.description }}
+      {%- endif %}
+      {%- if allocation.netmask_length is defined %}
+      NetmaskLength: {{ allocation.netmask_length }}
+      {%- endif %}
+
+{%- endfor %}
+
+Outputs:
+{%- for allocation in sceptre_user_data.ipam_allocations %}
+{%- set allocation_name = allocation.name %}
+  {{ allocation_name }}:
+    Description: The IPAM Allocation Reference for {{ allocation_name }}
+    Value:
+      Ref: {{ allocation_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ allocation_name }}"
+
+  {{ allocation_name }}IpamPoolAllocationId:
+    Description: The IPAM Pool Allocation ID for {{ allocation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ allocation_name }}
+        - IpamPoolAllocationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ allocation_name }}-IpamPoolAllocationId"
+{%- endfor %}
+{#
+# Supported structure as of 20250109:
+Type: AWS::EC2::IPAMAllocation
+Properties:
+  Cidr: String
+  Description: String
+  IpamPoolId: String
+  NetmaskLength: Integer
+#}

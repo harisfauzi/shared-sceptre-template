@@ -1,0 +1,176 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 IPAM Pool(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for pool in sceptre_user_data.ipam_pools %}
+{%- set pool_name = pool.name %}
+  {{ pool_name }}:
+    Type: AWS::EC2::IPAMPool
+    DeletionPolicy: {{ pool.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ pool.update_replace_policy | default('Delete') }}
+    Properties:
+      # Required properties
+      AddressFamily: {{ pool.address_family }}  {# ipv4 | ipv6 #}
+      IpamScopeId: {{ pool.ipam_scope_id }}
+      {%- if pool.allocation_default_netmask_length is defined %}
+      AllocationDefaultNetmaskLength: {{ pool.allocation_default_netmask_length }}
+      {%- endif %}
+      {%- if pool.allocation_max_netmask_length is defined %}
+      AllocationMaxNetmaskLength: {{ pool.allocation_max_netmask_length }}
+      {%- endif %}
+      {%- if pool.allocation_min_netmask_length is defined %}
+      AllocationMinNetmaskLength: {{ pool.allocation_min_netmask_length }}
+      {%- endif %}
+      {%- if pool.allocation_resource_tags is defined %}
+      AllocationResourceTags:
+        {%- for tag in pool.allocation_resource_tags %}
+        - Key: {{ tag.key }}
+          Value: {{ tag.value }}
+        {%- endfor %}
+      {%- endif %}
+      {%- if pool.auto_import is defined %}
+      AutoImport: {{ pool.auto_import | lower }}
+      {%- endif %}
+      {%- if pool.aws_service is defined %}
+      AwsService: {{ pool.aws_service }}  {# ec2 #}
+      {%- endif %}
+      {%- if pool.description is defined %}
+      Description: {{ pool.description }}
+      {%- endif %}
+      {%- if pool.locale is defined %}
+      Locale: {{ pool.locale }}
+      {%- endif %}
+      {%- if pool.provisioned_cidrs is defined %}
+      ProvisionedCidrs:
+        {%- for cidr in pool.provisioned_cidrs %}
+        - Cidr: {{ cidr.cidr }}
+        {%- endfor %}
+      {%- endif %}
+      {%- if pool.public_ip_source is defined %}
+      PublicIpSource: {{ pool.public_ip_source }}  {# byoip | amazon #}
+      {%- endif %}
+      {%- if pool.publicly_advertisable is defined %}
+      PubliclyAdvertisable: {{ pool.publicly_advertisable | lower }}
+      {%- endif %}
+      {%- if pool.source_ipam_pool_id is defined %}
+      SourceIpamPoolId: {{ pool.source_ipam_pool_id }}
+      {%- endif %}
+      {%- if pool.source_resource is defined %}
+      SourceResource:
+        ResourceId: {{ pool.source_resource.resource_id }}
+        ResourceOwner: {{ pool.source_resource.resource_owner }}
+        ResourceRegion: {{ pool.source_resource.resource_region }}
+        ResourceType: {{ pool.source_resource.resource_type }}
+      {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        {%- if pool.tags is defined %}
+        {%- for key,value in pool.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+        {%- endfor %}
+        {%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for pool in sceptre_user_data.ipam_pools %}
+{%- set pool_name = pool.name %}
+  {{ pool_name }}:
+    Description: IPAM Pool ID for {{ pool_name }}
+    Value:
+      Ref: {{ pool_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ pool_name }}"
+
+  {{ pool_name }}Arn:
+    Description: ARN for {{ pool_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ pool_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ pool_name }}-Arn"
+
+  {{ pool_name }}IpamArn:
+    Description: IPAM ARN for {{ pool_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ pool_name }}
+        - IpamArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ pool_name }}-IpamArn"
+  {{ pool_name }}IpamScopeArn:
+    Description: IPAM Scope ARN for {{ pool_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ pool_name }}
+        - IpamScopeArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ pool_name }}-IpamScopeArn"
+
+  {{ pool_name }}IpamScopeType:
+    Description: IPAM Scope Type for {{ pool_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ pool_name }}
+        - IpamScopeType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ pool_name }}-IpamScopeType"
+
+  {{ pool_name }}PoolDepth:
+    Description: Pool Depth for {{ pool_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ pool_name }}
+        - PoolDepth
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ pool_name }}-PoolDepth"
+
+  {{ pool_name }}State:
+    Description: State of {{ pool_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ pool_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ pool_name }}-State"
+{%- endfor %}
+{#
+# Supported structure as of 20250107:
+Type: AWS::EC2::IPAMPool
+Properties:
+  AddressFamily: String  # Required, ipv4 | ipv6
+  AllocationDefaultNetmaskLength: Integer  # 0-128
+  AllocationMaxNetmaskLength: Integer  # 0-128
+  AllocationMinNetmaskLength: Integer  # 0-128
+  AllocationResourceTags:
+    - Key: String
+      Value: String
+  AutoImport: Boolean
+  AwsService: String  # ec2
+  Description: String
+  IpamScopeId: String  # Required
+  Locale: String
+  ProvisionedCidrs:
+    - Cidr: String
+  PublicIpSource: String  # byoip | amazon
+  PubliclyAdvertisable: Boolean
+  SourceIpamPoolId: String
+  SourceResource:
+    ResourceId: String
+    ResourceOwner: String
+    ResourceRegion: String
+    ResourceType: vpc
+  Tags:
+    - Key: String
+      Value: String
+#}
