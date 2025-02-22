@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ElastiCache CacheCluster(s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for cache_cluster in sceptre_user_data.cache_clusters %}
 {%- set cache_cluster_name = cache_cluster.name %}
   {{ cache_cluster_name }}:
@@ -117,7 +116,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for cache_cluster in sceptre_user_data.cache_clusters %}
 {%- set cache_cluster_name = cache_cluster.name %}
 {%- if cache_cluster.engine|lower == 'redis' %}
@@ -165,3 +163,48 @@ Outputs:
 
 {%- endif %}
 {%- endfor %}
+{#
+# Supported structure as of 20250223:
+Type: AWS::ElastiCache::CacheCluster
+Properties:
+  AutoMinorVersionUpgrade: Boolean
+  AZMode: String
+  CacheNodeType: String
+  CacheParameterGroupName: String
+  CacheSecurityGroupNames:
+    - String
+  CacheSubnetGroupName: String
+  ClusterName: String
+  Engine: String
+  EngineVersion: String
+  IpDiscovery: String
+  LogDeliveryConfigurations:
+    - DestinationDetails:
+        CloudWatchLogsDetails:
+          LogGroup: String
+        KinesisFirehoseDetails:
+          DeliveryStream: String
+      DestinationType: String
+      LogFormat: String
+      LogType: String
+  NetworkType: String
+  NotificationTopicArn: String
+  NumCacheNodes: Integer
+  Port: Integer
+  PreferredAvailabilityZone: String
+  PreferredAvailabilityZones:
+    - String
+  PreferredMaintenanceWindow: String
+  SnapshotArns:
+    - String
+  SnapshotName: String
+  SnapshotRetentionLimit: Integer
+  SnapshotWindow: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TransitEncryptionEnabled: Boolean
+  VpcSecurityGroupIds:
+    - String
+#}
