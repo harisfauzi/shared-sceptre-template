@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ElastiCache ServerlessCach
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for serverless_cache in sceptre_user_data.serverless_caches %}
 {%- set serverless_cache_name = serverless_cache.name %}
   {{ serverless_cache_name }}:
@@ -17,12 +16,22 @@ Resources:
       CacheUsageLimits:
 {%- if serverless_cache.cache_usage_limits.data_storage is defined %}
         DataStorage:
-          Maximum: {{serverless_cache.cache_usage_limits.data_storage.maximum}}
           Unit: {{serverless_cache.cache_usage_limits.data_storage.unit}}
+{%- if serverless_cache.cache_usage_limits.data_storage.maximum is defined %}
+          Maximum: {{serverless_cache.cache_usage_limits.data_storage.maximum}}
+{%- endif %}
+{%- if serverless_cache.cache_usage_limits.data_storage.minimum is defined %}
+          Minimum: {{serverless_cache.cache_usage_limits.data_storage.minimum}}
+{%- endif %}
 {%- endif %}
 {%- if serverless_cache.cache_usage_limits.ecpu_per_second is defined %}
         ECPUPerSecond:
+{%- if serverless_cache.cache_usage_limits.ecpu_per_second.maximum is defined %}
           Maximum: {{serverless_cache.cache_usage_limits.ecpu_per_second.maximum}}
+{%- endif %}
+{%- if serverless_cache.cache_usage_limits.ecpu_per_second.minimum is defined %}
+          Minimum: {{serverless_cache.cache_usage_limits.ecpu_per_second.minimum}}
+{%- endif %}
 {%- endif %}
 {%- endif %}
 {%- if serverless_cache.daily_snapshot_time is defined %}
@@ -95,7 +104,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for serverless_cache in sceptre_user_data.serverless_caches %}
 {%- set serverless_cache_name = serverless_cache.name %}
   {{ serverless_cache_name }}:
@@ -189,3 +197,41 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ serverless_cache_name }}-Status"
 
 {%- endfor %}
+{#
+# Supported structure as of 20250223:
+Type: AWS::ElastiCache::ServerlessCache
+Properties:
+  CacheUsageLimits:
+    DataStorage:
+      Maximum: Integer
+      Minimum: Integer
+      Unit: String
+    ECPUPerSecond:
+      Maximum: Integer
+      Minimum: Integer
+  DailySnapshotTime: String
+  Description: String
+  Endpoint:
+    Address: String
+    Port: String
+  Engine: String
+  FinalSnapshotName: String
+  KmsKeyId: String
+  MajorEngineVersion: String
+  ReaderEndpoint:
+    Address: String
+    Port: String
+  SecurityGroupIds:
+    - String
+  ServerlessCacheName: String
+  SnapshotArnsToRestore:
+    - String
+  SnapshotRetentionLimit: Integer
+  SubnetIds:
+    - String
+  Tags:
+    -
+      Key: String
+      Value: String
+  UserGroupId: String
+#}

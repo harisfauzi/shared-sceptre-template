@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ElastiCache SecurityGroup(
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for security_group in sceptre_user_data.security_groups %}
 {%- set security_group_name = security_group.name %}
   {{ security_group_name }}:
@@ -42,7 +41,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for security_group in sceptre_user_data.security_groups %}
 {%- set security_group_name = security_group.name %}
   {{ security_group_name }}:
@@ -54,3 +52,19 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ security_group_name }}"
 
 {%- endfor %}
+{#
+# Supported structure as of 20250223:
+Type: AWS::ElastiCache::SecurityGroup
+Properties:
+  Description: String
+  Tags:
+    -
+      Key: String
+      Value: String
+
+Type: AWS::ElastiCache::SecurityGroupIngress
+Properties:
+  CacheSecurityGroupName: String
+  EC2SecurityGroupName: String
+  EC2SecurityGroupOwnerId: String
+#}
