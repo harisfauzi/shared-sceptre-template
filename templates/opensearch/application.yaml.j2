@@ -1,0 +1,98 @@
+---
+Description: {{sceptre_user_data.description|default('OpenSearchService Application(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Type: AWS::OpenSearchService::Application
+    DeletionPolicy: {{ application.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ application.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ application.application_name }}
+{%- if application.app_configs is defined %}
+      AppConfigs:
+{%- for key, value in application.app_configs.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if application.data_sources is defined %}
+      DataSources:
+{%- for data_source in application.data_sources %}
+        - DataSourceArn: {{ data_source.data_source_arn }}
+          DataSourceDescription: {{ data_source.data_source_description }}
+{%- endfor %}
+{%- endif %}
+{%- if application.endpoint is defined %}
+      Endpoint: {{ application.endpoint }}
+{%- endif %}
+{%- if application.iam_identity_center_options is defined %}
+      IamIdentityCenterOptions:
+{%- if application.iam_identity_center_options.enabled is defined %}
+        Enabled: {{ application.iam_identity_center_options.enabled }}
+{%- endif %}
+{%- if application.iam_identity_center_options.iam_identity_center_instance_arn is defined %}
+        IamIdentityCenterInstanceArn: {{ application.iam_identity_center_options.iam_identity_center_instance_arn }}
+{%- endif %}
+{%- if application.iam_identity_center_options.iam_role_for_identity_center_application_arn is defined %}
+        IamRoleForIdentityCenterApplicationArn: {{ application.iam_identity_center_options.iam_role_for_identity_center_application_arn }}
+{%- endif %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if application.tags is defined %}
+{%- for key, value in application.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}Arn:
+    Description: The ARN of the opensearch domain for
+    Value:
+      Fn::GetAtt:
+        - {{ application_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}-Arn"
+
+  {{ application_name }}Id:
+    Description: Unique identifier for an OpenSearch application for {{ application_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ application_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}-Id"
+
+{%- endfor %}
+{#
+# Supported structure as of 20250223:
+Type: AWS::OpenSearchService::Application
+Properties:
+  AppConfigs: 
+    - Key: String
+      Value: String
+  DataSources: 
+    - DataSourceArn: String
+      DataSourceDescription: String
+  Endpoint: String
+  IamIdentityCenterOptions: 
+    Enabled: Boolean
+    IamIdentityCenterInstanceArn: String
+    IamRoleForIdentityCenterApplicationArn: String
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
