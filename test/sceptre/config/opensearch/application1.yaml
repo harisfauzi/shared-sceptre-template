@@ -1,0 +1,26 @@
+---
+template:
+  path: opensearch/application.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  applications:
+    - name: simpleapplication1
+      application_name: simpleapplication1
+      app_configs:
+        config1: value1
+        config2: value2
+      data_sources:
+        - data_source_arn: "arn:aws:opensearch:region:account-id:datasource/datasource1"
+          data_source_description: "Description for datasource1"
+      endpoint: "https://simpleapplication1.endpoint"
+      iam_identity_center_options:
+        enabled: true
+        iam_identity_center_instance_arn: "arn:aws:sso:::instance/ssoins-1234567890abcdef"
+        iam_role_for_identity_center_application_arn: "arn:aws:iam::account-id:role/role-name"
+      tags:
+        Name: simpleapplication1
+
+stack_tags:
+  Test: opensearchservice-application
