@@ -20,6 +20,17 @@ sceptre_user_data:
         instance_count: 2
         zone_awareness_enabled: true
         instance_type: t3.medium.search
+        multi_az_with_standby_enabled: true
+        node_options:
+          - node_config:
+              count: 2
+              enabled: true
+              type: t4g.medium.search
+            node_type: coordinator
+          - node_config:
+              count: 4
+              enabled: true
+              type: t4g.small.search
       ebs_options:
         ebs_enabled: true
         volume_type: gp3
@@ -29,7 +40,7 @@ sceptre_user_data:
           - Effect: Allow
             Principal:
               AWS: !Sub arn:${AWS::Partition}:iam:${AWS::AccountId}:user/opensearch-testuser
-            Action: 'es:*'
+            Action: "es:*"
             Resource: arn:${AWS::Partition}:iam:${AWS::AccountId}:domain/domain2/*
       log_publishing_options:
         es_application_logs:
@@ -45,6 +56,11 @@ sceptre_user_data:
         anonymous_auth_disable_date: "24-02-21T00:00:00Z"
         anonymous_auth_enabled: true
         internal_user_database_enabled: true
+        jwt_options:
+          enabled: true
+          public_key: BEGIN
+          roles_key: GroupName
+          subject_key: UserName
         master_user_options:
           master_user_name: osadmin
       node_to_node_encryption_options:
@@ -52,6 +68,13 @@ sceptre_user_data:
       encryption_at_rest_options:
         enabled: true
         kms_key_id: alias/opensearch-kms
+      identity_center_options:
+        enabled_api_access: true
+        identity_center_application_arn: "arn:aws:sso:::instance/ssoins-1234567890abcdef"
+        identity_center_instance_arn: "arn:aws:iam::account-id:role/role-name"
+        identity_store_id: "random-id"
+        roles_key: GroupName
+        subject_key: UserName
       ip_address_type: dualstack
       off_peak_window_options:
         enabled: true
@@ -59,6 +82,7 @@ sceptre_user_data:
           windows_start_time:
             hours: 23
             minutes: 30
+      skip_shard_migration_wait: true
       software_update_options:
         auto_software_updated_enabled: true
       vpc_options:
