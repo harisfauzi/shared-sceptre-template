@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ElastiCache GlobalReplicat
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for global_replication_group in sceptre_user_data.global_replication_groups %}
 {%- set global_replication_group_name = global_replication_group.name %}
   {{ global_replication_group_name }}:
@@ -32,6 +31,9 @@ Resources:
 {%- endif %}
 {%- if global_replication_group.cache_parameter_group_name is defined %}
       CacheParameterGroupName: {{global_replication_group.cache_parameter_group_name}}
+{%- endif %}
+{%- if global_replication_group.engine is defined %}
+      Engine: {{global_replication_group.engine}}
 {%- endif %}
 {%- if global_replication_group.engine_version is defined %}
       EngineVersion: {{global_replication_group.engine_version}}
@@ -76,7 +78,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for global_replication_group in sceptre_user_data.global_replication_groups %}
 {%- set global_replication_group_name = global_replication_group.name %}
   {{ global_replication_group_name }}GlobalReplicationGroupId:
@@ -100,3 +101,30 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ global_replication_group_name }}-Status"
 
 {%- endfor %}
+{#
+# Supported structure as of 20250223:
+Type: AWS::ElastiCache::GlobalReplicationGroup
+Properties:
+  AutomaticFailoverEnabled: Boolean
+  CacheNodeType: String
+  CacheParameterGroupName: String
+  Engine: String
+  EngineVersion: String
+  GlobalNodeGroupCount: Integer
+  GlobalReplicationGroupDescription: String
+  GlobalReplicationGroupIdSuffix: String
+  Members:
+    -
+      ReplicationGroupId: String
+      ReplicationGroupRegion: String
+      Role: String
+  RegionalConfigurations:
+    -
+      ReplicationGroupId: String
+      ReplicationGroupRegion: String
+      ReshardingConfigurations:
+        -
+          NodeGroupId: String
+          PreferredAvailabilityZones:
+            - String
+#}

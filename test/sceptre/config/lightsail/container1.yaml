@@ -1,0 +1,49 @@
+---
+template:
+  type: file
+  path: lightsail/container.yaml.j2
+
+sceptre_user_data:
+  description: "Test Lightsail Container"
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  containers:
+    - name: "TestContainer1"
+      power: "nano"
+      scale: 2
+      service_name: "test-service-1"
+      is_disabled: false
+      container_service_deployment:
+        containers:
+          - container_name: "test-container-1"
+            image: "nginx:latest"
+            command: ["nginx", "-g", "daemon off;"]
+            environment:
+              - variable: "ENV_VAR"
+                value: "test"
+            ports:
+              - port: "80"
+                protocol: "HTTP"
+        public_endpoint:
+          container_name: "test-container-1"
+          container_port: 80
+          health_check_config:
+            healthy_threshold: 3
+            interval_seconds: 10
+            path: "/health"
+            success_codes: "200"
+            timeout_seconds: 5
+            unhealthy_threshold: 3
+      private_registry_access:
+        ecr_image_puller_role:
+          is_active: true
+          principal_arn: "arn:aws:iam::123456789012:role/EcrImagePuller"
+      public_domain_names:
+        - certificate_name: "test-cert"
+          domain_names:
+            - "example.com"
+      tags:
+        Environment: "Test"
+        Owner: "Tester"
+stack_tags:
+  Test: lightsail-container

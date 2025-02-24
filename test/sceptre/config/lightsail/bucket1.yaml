@@ -1,0 +1,27 @@
+---
+template:
+  type: file
+  path: lightsail/bucket.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  buckets:
+    - name: simplebucket1
+      bucket_name: my-test-bucket
+      bundle_id: small_1_0
+      access_rules:
+        allow_public_overrides: false
+        get_object: private
+      object_versioning: true
+      read_only_access_accounts:
+        - "123456789012"
+        - "210987654321"
+      resources_receiving_access:
+        - "arn:aws:lightsail:region:account-id:instance/instance-name"
+      tags:
+        Environment: test
+        Name: simplebucket1
+
+stack_tags:
+  Test: lightsail-bucket

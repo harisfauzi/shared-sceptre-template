@@ -3,13 +3,16 @@ Description: {{sceptre_user_data.description|default('ElastiCache ReplicationGro
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for replication_group in sceptre_user_data.replication_groups %}
 {%- set replication_group_name = replication_group.name %}
   {{ replication_group_name }}:
     Type: AWS::ElastiCache::ReplicationGroup
     DeletionPolicy: {{ replication_group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ replication_group.update_replace_policy | default('Delete') }}
+{%- if replication_group.update_policy is defined %}
+    UpdatePolicy:
+      UseOnlineResharding : {{ replication_group.update_policy.use_online_resharding }}
+{%- endif %}
     Properties:
       ReplicationGroupDescription: {{replication_group.replication_group_description}}
 {%- if replication_group.at_rest_encryption_enabled is defined %}
@@ -135,6 +138,9 @@ Resources:
 {%- if replication_group.replicas_per_node_group is defined %}
       ReplicasPerNodeGroup: {{replication_group.replicas_per_node_group}}
 {%- endif %}
+{%- if replication_group.replication_group_id is defined %}
+      ReplicationGroupId: {{replication_group.replication_group_id}}
+{%- endif %}
 {%- if replication_group.security_group_ids is defined %}
       SecurityGroupIds:
 {%- for security_group_id in replication_group.security_group_ids %}
@@ -184,7 +190,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for replication_group in sceptre_user_data.replication_groups %}
 {%- set replication_group_name = replication_group.name %}
   {{ replication_group_name }}:
@@ -259,3 +264,70 @@ Outputs:
 
 {%- endif %}
 {%- endfor %}
+{#
+# Supported structure as of 20250223:
+Type: AWS::ElastiCache::ReplicationGroup
+Properties:
+  AtRestEncryptionEnabled: Boolean
+  AuthToken: String
+  AutomaticFailoverEnabled: Boolean
+  AutoMinorVersionUpgrade: Boolean
+  CacheNodeType: String
+  CacheParameterGroupName: String
+  CacheSecurityGroupNames:
+    - String
+  CacheSubnetGroupName: String
+  ClusterMode: String
+  DataTieringEnabled: Boolean
+  Engine: String
+  EngineVersion: String
+  GlobalReplicationGroupId: String
+  IpDiscovery: String
+  KmsKeyId: String
+  LogDeliveryConfigurations:
+    - DestinationDetails:
+        CloudWatchLogsDetails:
+          LogGroup: String
+        KinesisFirehoseDetails:
+          DeliveryStream: String
+      DestinationType: String
+      LogFormat: String
+      LogType: String
+  MultiAZEnabled: Boolean
+  NetworkType: String
+  NodeGroupConfiguration:
+    -
+      NodeGroupId: String
+      PrimaryAvailabilityZone: String
+      ReplicaAvailabilityZones:
+        - String
+      ReplicaCount: Integer
+      Slots: String
+  NotificationTopicArn: String
+  NumCacheClusters: Integer
+  NumNodeGroups: Integer
+  Port: Integer
+  PreferredCacheClusterAZs:
+    - String
+  PreferredMaintenanceWindow: String
+  PrimaryClusterId: String
+  ReplicasPerNodeGroup: Integer
+  ReplicationGroupDescription: String
+  ReplicationGroupId: String
+  SecurityGroupIds:
+    - String
+  SnapshotArns:
+    - String
+  SnapshotName: String
+  SnapshotRetentionLimit: Integer
+  SnapshottingClusterId: String
+  SnapshotWindow: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TransitEncryptionEnabled: Boolean
+  TransitEncryptionMode: String
+  UserGroupIds:
+    - String
+#}

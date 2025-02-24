@@ -1,0 +1,84 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Load Balancer(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for load_balancer in sceptre_user_data.load_balancers %}
+{%- set load_balancer_name = load_balancer.name %}
+  {{ load_balancer_name }}:
+    Type: AWS::Lightsail::LoadBalancer
+    DeletionPolicy: {{ load_balancer.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ load_balancer.update_replace_policy | default('Delete') }}
+    Properties:
+      LoadBalancerName: {{ load_balancer.load_balancer_name }}
+      InstancePort: {{ load_balancer.instance_port }}
+{%- if load_balancer.attached_instances is defined %}{# BEGIN if load_balancer.attached_instances is defined #}
+      AttachedInstances:
+{%- for instance in load_balancer.attached_instances %}
+        - {{ instance }}
+{%- endfor %}
+{%- endif %}{# END if load_balancer.attached_instances is defined #}
+{%- if load_balancer.health_check_path is defined %}
+      HealthCheckPath: {{ load_balancer.health_check_path }}
+{%- endif %}
+{%- if load_balancer.ip_address_type is defined %}
+      IpAddressType: {{ load_balancer.ip_address_type }}
+{%- endif %}
+{%- if load_balancer.session_stickiness_enabled is defined %}
+      SessionStickinessEnabled: {{ load_balancer.session_stickiness_enabled | lower }}
+{%- endif %}
+{%- if load_balancer.session_stickiness_lbcookie_duration_seconds is defined %}
+      SessionStickinessLBCookieDurationSeconds: {{ load_balancer.session_stickiness_lbcookie_duration_seconds }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if load_balancer.tags is defined %}
+{%- for key, value in load_balancer.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if load_balancer.tls_policy_name is defined %}
+      TlsPolicyName: {{ load_balancer.tls_policy_name }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for load_balancer in sceptre_user_data.load_balancers %}
+{%- set load_balancer_name = load_balancer.name %}
+  {{ load_balancer_name }}:
+    Description: Unique identifier for {{ load_balancer_name }}
+    Value:
+      Ref: {{ load_balancer_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}"
+
+  {{ load_balancer_name }}LoadBalancerArn:
+    Description: The ARN for {{ load_balancer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ load_balancer_name }}
+        - LoadBalancerArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-LoadBalancerArn"
+{%- endfor %}
+{#
+# Supported structure as of 20250224:
+Type: AWS::Lightsail::LoadBalancer
+Properties:
+  AttachedInstances:
+    - String
+  HealthCheckPath: String
+  InstancePort: Integer
+  IpAddressType: String
+  LoadBalancerName: String
+  SessionStickinessEnabled: Boolean
+  SessionStickinessLBCookieDurationSeconds: Integer
+  Tags:
+    - Key: String
+      Value: String
+  TlsPolicyName: String
+#}

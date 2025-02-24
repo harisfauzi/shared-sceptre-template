@@ -1,0 +1,30 @@
+---
+template:
+  type: file
+  path: lightsail/alarm.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  alarms:
+    - name: simplealarm1
+      alarm_name: simplealarm1
+      comparison_operator: GreaterThanOrEqualToThreshold
+      contact_protocols:
+        - Email
+        - SMS
+      datapoints_to_alarm: 3
+      evaluation_periods: 5
+      metric_name: CPUUtilization
+      monitored_resource_name: my-lightsail-instance
+      notification_enabled: true
+      notification_triggers:
+        - OK
+        - ALARM
+      threshold: 80
+      treat_missing_data: breaching
+      tags:
+        Name: simplealarm1
+
+stack_tags:
+  Test: lightsail-alarm

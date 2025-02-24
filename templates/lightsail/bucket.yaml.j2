@@ -1,0 +1,100 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Bucket(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for bucket in sceptre_user_data.buckets %}
+{%- set bucket_name = bucket.name %}
+  {{ bucket_name }}:
+    Type: AWS::Lightsail::Bucket
+    DeletionPolicy: {{ bucket.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ bucket.update_replace_policy | default('Delete') }}
+    Properties:
+      BucketName: {{ bucket.bucket_name }}
+      BundleId: {{ bucket.bundle_id }}
+{%- if bucket.access_rules is defined %}
+      AccessRules:
+{%- if bucket.access_rules.allow_public_overrides is defined %}
+        AllowPublicOverrides: {{ bucket.access_rules.allow_public_overrides | lower }}
+{%- endif %}
+{%- if bucket.access_rules.get_object is defined %}
+        GetObject: {{ bucket.access_rules.get_object }}
+{%- endif %}
+{%- endif %}
+{%- if bucket.object_versioning is defined %}
+      ObjectVersioning: {{ bucket.object_versioning | lower }}
+{%- endif %}
+{%- if bucket.read_only_access_accounts is defined %}
+      ReadOnlyAccessAccounts:
+{%- for account in bucket.read_only_access_accounts %}
+        - {{ account }}
+{%- endfor %}
+{%- endif %}
+{%- if bucket.resources_receiving_access is defined %}
+      ResourcesReceivingAccess:
+{%- for resource in bucket.resources_receiving_access %}
+        - {{ resource }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if bucket.tags is defined %}
+{%- for key, value in bucket.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for bucket in sceptre_user_data.buckets %}
+{%- set bucket_name = bucket.name %}
+  {{ bucket_name }}:
+    Description: Unique id for bucket {{ bucket_name }}
+    Value:
+      Ref: {{ bucket_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ bucket_name }}"
+
+  {{ bucket_name }}BucketArn:
+    Description: The bucket ARN for {{ bucket_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ bucket_name }}
+        - BucketArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-BucketArn"
+
+  {{ bucket_name }}Url:
+    Description: The Url for {{ bucket_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ bucket_name }}
+        - Url
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-Url"
+
+{%- endfor %}
+{#
+# Supported structure as of 20250223:
+Type: AWS::Lightsail::Bucket
+Properties:
+  AccessRules:
+    AllowPublicOverrides: Boolean
+    GetObject: String
+  BucketName: String
+  BundleId: String
+  ObjectVersioning: Boolean
+  ReadOnlyAccessAccounts:
+    - String
+  ResourcesReceivingAccess:
+    - String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

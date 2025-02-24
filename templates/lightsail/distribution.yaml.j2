@@ -1,0 +1,187 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Distribution(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for distribution in sceptre_user_data.distributions %}
+{%- set distribution_name = distribution.name %}
+  {{ distribution_name }}:
+    Type: AWS::Lightsail::Distribution
+    DeletionPolicy: {{ distribution.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ distribution.update_replace_policy | default('Delete') }}
+    Properties:
+      BundleId: {{ distribution.bundle_id }}
+      DefaultCacheBehavior:
+{%- if distribution.default_cache_behavior.behavior is defined %}
+        Behavior: {{ distribution.default_cache_behavior.behavior }}
+{%- endif %}
+      DistributionName: {{ distribution.distribution_name }}
+      Origin:
+{%- if distribution.origin.name is defined %}
+        Name: {{ distribution.origin.name }}
+{%- endif %}
+{%- if distribution.origin.protocol_policy is defined %}
+        ProtocolPolicy: {{ distribution.origin.protocol_policy }}
+{%- endif %}
+{%- if distribution.origin.region_name is defined %}
+        RegionName: {{ distribution.origin.region_name }}
+{%- endif %}
+{%- if distribution.cache_behaviors is defined %}{# BEGIN if distribution.cache_behaviors is defined #}
+      CacheBehaviors:
+{%- for cache_behavior in distribution.cache_behaviors %}{# BEGIN for cache_behavior in distribution.cache_behaviors #}
+        -
+{%- if cache_behavior.behavior is defined %}
+          Behavior: {{ cache_behavior.behavior }}
+{%- endif %}
+{%- if cache_behavior.path is defined %}
+          Path: {{ cache_behavior.path }}
+{%- endif %}
+{%- endfor %}{# END for cache_behavior in distribution.cache_behaviors #}
+{%- endif %}{# END if distribution.cache_behaviors is defined #}
+{%- if distribution.cache_behavior_settings is defined %}{# BEGIN if distribution.cache_behavior_settings is defined #}
+      CacheBehaviorSettings:
+{%- if distribution.cache_behavior_settings.allowed_http_methods is defined %}
+        AllowedHTTPMethods: {{ distribution.cache_behavior_settings.allowed_http_methods }}
+{%- endif %}
+{%- if distribution.cache_behavior_settings.cached_http_methods is defined %}
+        CachedHTTPMethods: {{ distribution.cache_behavior_settings.cached_http_methods }}
+{%- endif %}
+{%- if distribution.cache_behavior_settings.default_ttl is defined %}
+        DefaultTTL: {{ distribution.cache_behavior_settings.default_ttl }}
+{%- endif %}
+{%- if distribution.cache_behavior_settings.forwarded_cookies is defined %}{# BEGIN if distribution.cache_behavior_settings.forwarded_cookies is defined #}
+        ForwardedCookies:
+{%- if distribution.cache_behavior_settings.forwarded_cookies.cookies_allow_list is defined %}
+          CookiesAllowList:
+{%- for cookie in distribution.cache_behavior_settings.forwarded_cookies.cookies_allow_list %}
+            - {{ cookie }}
+{%- endfor %}
+{%- endif %}
+{%- if distribution.cache_behavior_settings.forwarded_cookies.option is defined %}
+          Option: {{ distribution.cache_behavior_settings.forwarded_cookies.option }}
+{%- endif %}
+{%- endif %}{# END if distribution.cache_behavior_settings.forwarded_cookies is defined #}
+{%- if distribution.cache_behavior_settings.forwarded_headers is defined %}{# BEGIN if distribution.cache_behavior_settings.forwarded_headers is defined #}
+        ForwardedHeaders:
+{%- if distribution.cache_behavior_settings.forwarded_headers.headers_allow_list is defined %}
+          HeadersAllowList:
+{%- for header in distribution.cache_behavior_settings.forwarded_headers.headers_allow_list %}
+            - {{ header }}
+{%- endfor %}
+{%- endif %}
+{%- if distribution.cache_behavior_settings.forwarded_headers.option is defined %}
+          Option: {{ distribution.cache_behavior_settings.forwarded_headers.option }}
+{%- endif %}
+{%- endif %}{# END if distribution.cache_behavior_settings.forwarded_headers is defined #}
+{%- if distribution.cache_behavior_settings.forwarded_query_strings is defined %}{# BEGIN if distribution.cache_behavior_settings.forwarded_query_strings is defined #}
+        ForwardedQueryStrings:
+{%- if distribution.cache_behavior_settings.forwarded_query_strings.option is defined %}
+          Option: {{ distribution.cache_behavior_settings.forwarded_query_strings.option }}
+{%- endif %}
+{%- if distribution.cache_behavior_settings.forwarded_query_strings.query_strings_allow_list is defined %}
+          QueryStringsAllowList:
+{%- for query_string in distribution.cache_behavior_settings.forwarded_query_strings.query_strings_allow_list %}
+            - {{ query_string }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END if distribution.cache_behavior_settings.forwarded_query_strings is defined #}
+{%- if distribution.cache_behavior_settings.maximum_ttl is defined %}
+        MaximumTTL: {{ distribution.cache_behavior_settings.maximum_ttl }}
+{%- endif %}
+{%- if distribution.cache_behavior_settings.minimum_ttl is defined %}
+        MinimumTTL: {{ distribution.cache_behavior_settings.minimum_ttl }}
+{%- endif %}
+{%- endif %}{# END if distribution.cache_behavior_settings is defined #}
+{%- if distribution.certificate_name is defined %}
+      CertificateName: {{ distribution.certificate_name }}
+{%- endif %}
+{%- if distribution.ip_address_type is defined %}
+      IpAddressType: {{ distribution.ip_address_type }}
+{%- endif %}
+{%- if distribution.is_enabled is defined %}
+      IsEnabled: {{ distribution.is_enabled | lower }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if distribution.tags is defined %}
+{%- for key, value in distribution.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for distribution in sceptre_user_data.distributions %}
+{%- set distribution_name = distribution.name %}
+  {{ distribution_name }}:
+    Description: Unique identifier for {{ distribution_name }}
+    Value:
+      Ref: {{ distribution_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_name }}"
+
+  {{ distribution_name }}DistributionArn:
+    Description: The ARN for {{ distribution_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ distribution_name }}
+        - DistributionArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_name }}-DistributionArn"
+
+  {{ distribution_name }}Status:
+    Description: The status of {{ distribution_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ distribution_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_name }}-Status"
+
+{%- endfor %}
+{#
+# Supported structure as of 20250224:
+Type: AWS::Lightsail::Distribution
+Properties:
+  BundleId: String
+  CacheBehaviors:
+    -
+      Behavior: String
+      Path: String
+  CacheBehaviorSettings:
+    AllowedHTTPMethods: String
+    CachedHTTPMethods: String
+    DefaultTTL: Integer
+    ForwardedCookies:
+      CookiesAllowList:
+        - String
+      Option: String
+    ForwardedHeaders:
+      HeadersAllowList:
+        - String
+      Option: String
+    ForwardedQueryStrings:
+      Option: Boolean
+      QueryStringsAllowList:
+        - String
+    MaximumTTL: Integer
+    MinimumTTL: Integer
+  CertificateName: String
+  DefaultCacheBehavior:
+    Behavior: String
+  DistributionName: String
+  IpAddressType: String
+  IsEnabled: Boolean
+  Origin:
+    Name: String
+    ProtocolPolicy: String
+    RegionName: String
+  Tags:
+    - Key: String
+      Value: String
+#}
