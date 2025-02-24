@@ -1,0 +1,57 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Static IP(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for static_ip in sceptre_user_data.static_ips %}
+{%- set static_ip_name = static_ip.name %}
+  {{ static_ip_name }}:
+    Type: AWS::Lightsail::StaticIp
+    DeletionPolicy: {{ static_ip.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ static_ip.update_replace_policy | default('Delete') }}
+    Properties:
+      StaticIpName: {{ static_ip.static_ip_name }}
+{%- if static_ip.attached_to is defined %}
+      AttachedTo: {{ static_ip.attached_to }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for static_ip in sceptre_user_data.static_ips %}
+{%- set static_ip_name = static_ip.name %}
+  {{ static_ip_name }}:
+    Description: Unique identifier for {{ static_ip_name }}
+    Value:
+      Ref: {{ static_ip_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ static_ip_name }}"
+
+  {{ static_ip_name }}IpAddress:
+    Description: The IP address for {{ static_ip_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ static_ip_name }}
+        - IpAddress
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ static_ip_name }}-IpAddress"
+
+  {{ static_ip_name }}StaticIpArn:
+    Description: The ARN for the static IP {{ static_ip_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ static_ip_name }}
+        - StaticIpArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ static_ip_name }}-StaticIpArn"
+
+{%- endfor %}
+{#
+# Supported structure as of 20250224:
+Type: AWS::Lightsail::StaticIp
+Properties:
+  StaticIpName: String
+  AttachedTo: String
+#}

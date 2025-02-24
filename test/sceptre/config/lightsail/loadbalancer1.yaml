@@ -1,0 +1,27 @@
+---
+template:
+  type: file
+  path: lightsail/load-balancer.yaml.j2
+
+sceptre_user_data:
+  description: "Test Lightsail Load Balancer"
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  load_balancers:
+    - name: "TestLoadBalancer1"
+      load_balancer_name: "test-load-balancer-1"
+      instance_port: 80
+      attached_instances:
+        - "TestInstance1"
+        - "TestInstance2"
+      health_check_path: "/health"
+      ip_address_type: "ipv4"
+      session_stickiness_enabled: true
+      session_stickiness_lbcookie_duration_seconds: 3600
+      tls_policy_name: "TLS-1-2-2017-01"
+      tags:
+        Environment: "Test"
+        Owner: "Tester"
+
+stack_tags:
+  Test: lightsail-load-balancer

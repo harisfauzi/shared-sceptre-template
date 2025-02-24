@@ -1,0 +1,154 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Disk(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for disk in sceptre_user_data.disks %}
+{%- set disk_name = disk.name %}
+  {{ disk_name }}:
+    Type: AWS::Lightsail::Disk
+    DeletionPolicy: {{ disk.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ disk.update_replace_policy | default('Delete') }}
+    Properties:
+      DiskName: {{ disk.disk_name }}
+      SizeInGb: {{ disk.size_in_gb }}
+{%- if disk.add_ons is defined %}{# BEGIN if disk.add_ons is defined #}
+      AddOns:
+{%- for add_on in disk.add_ons %}
+        - AddOnType: {{ add_on.add_on_type }}
+{%- if add_on.auto_snapshot_add_on_request is defined %}
+          AutoSnapshotAddOnRequest:
+{%- if add_on.auto_snapshot_add_on_request.snapshot_time_of_day is defined %}
+            SnapshotTimeOfDay: {{ add_on.auto_snapshot_add_on_request.snapshot_time_of_day }}
+{%- endif %}
+{%- endif %}
+{%- if add_on.status is defined %}
+          Status: {{ add_on.status }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if disk.add_ons is defined #}
+{%- if disk.availability_zone is defined %}
+      AvailabilityZone: {{ disk.availability_zone }}
+{%- endif %}
+{%- if disk.location is defined %}{# BEGIN if disk.location is defined #}
+      Location:
+{%- if disk.location.availability_zone is defined %}
+        AvailabilityZone: {{ disk.location.availability_zone }}
+{%- endif %}
+{%- if disk.location.region_name is defined %}
+        RegionName: {{ disk.location.region_name }}
+{%- endif %}
+{%- endif %}{# END if disk.location is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if disk.tags is defined %}
+{%- for key, value in disk.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for disk in sceptre_user_data.disks %}
+{%- set disk_name = disk.name %}
+  {{ disk_name }}:
+    Description: Unique identifier for {{ disk_name }}
+    Value:
+      Ref: {{ disk_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_name }}"
+
+  {{ disk_name }}DiskArn:
+    Description: The ARN for {{ disk_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ disk_name }}
+        - DiskArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_name }}-DiskArn"
+
+  {{ disk_name }}LocationAvailabilityZone:
+    Description: The Availability Zone where the disk {{ disk_name }} is located.
+    Value:
+      Fn::GetAtt:
+        - {{ disk_name }}
+        - Location.AvailabilityZone
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_name }}-Location-AvailabilityZone"
+
+  {{ disk_name }}LocationRegionName:
+    Description: The AWS Region where the disk {{ disk_name }} is located.
+    Value:
+      Fn::GetAtt:
+        - {{ disk_name }}
+        - Location.RegionName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_name }}-Location-RegionName"
+
+  {{ disk_name }}Path:
+    Description: The disk path for {{ disk_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ disk_name }}
+        - Path
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_name }}-Path"
+
+  {{ disk_name }}ResourceType:
+    Description: The resource type of the disk for {{ disk_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ disk_name }}
+        - ResourceType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_name }}-ResourceType"
+
+  {{ disk_name }}State:
+    Description: The state of the disk for {{ disk_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ disk_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_name }}-State"
+
+  {{ disk_name }}SupportCode:
+    Description: The support code of the disk for {{ disk_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ disk_name }}
+        - SupportCode
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_name }}-SupportCode"
+
+{%- endfor %}
+{#
+# Supported structure as of 20250224:
+Type: AWS::Lightsail::Disk
+Properties:
+  AddOns:
+    -
+      AddOnType: String
+      AutoSnapshotAddOnRequest:
+        SnapshotTimeOfDay: String
+      Status: String
+  AvailabilityZone: String
+  DiskName: String
+  Location:
+    AvailabilityZone: String
+    RegionName: String
+  SizeInGb: Integer
+  Tags:
+    - Key: String
+      Value: String
+#}

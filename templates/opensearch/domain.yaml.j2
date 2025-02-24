@@ -15,7 +15,6 @@ Parameters:
 {%- endif %}
 
 Resources:
-
 {%- for domain in sceptre_user_data.domains %}
 {%- set domain_name = domain.name %}
   {{ domain_name }}:
@@ -53,6 +52,21 @@ Resources:
 {%- if domain.advanced_security_options.internal_user_database_enabled is defined %}
         InternalUserDatabaseEnabled: {{ domain.advanced_security_options.internal_user_database_enabled }}
 {%- endif %}
+{%- if domain.advanced_security_options.jwt_options is defined %}{# BEGIN if domain.advanced_security_options.jwt_options is defined #}
+        JWTOptions:
+{%- if domain.advanced_security_options.jwt_options.enabled is defined %}
+          Enabled: {{ domain.advanced_security_options.jwt_options.enabled }}
+{%- endif %}
+{%- if domain.advanced_security_options.jwt_options.public_key is defined %}
+          PublicKey: {{ domain.advanced_security_options.jwt_options.public_key }}
+{%- endif %}
+{%- if domain.advanced_security_options.jwt_options.roles_key is defined %}
+          RolesKey: {{ domain.advanced_security_options.jwt_options.roles_key }}
+{%- endif %}
+{%- if domain.advanced_security_options.jwt_options.subject_key is defined %}
+          SubjectKey: {{ domain.advanced_security_options.jwt_options.subject_key }}
+{%- endif %}
+{%- endif %}{# END endif domain.advanced_security_options.jwt_options is defined #}
 {%- if domain.advanced_security_options.master_user_options is defined %}{# BEGIN {%- if domain.advanced_security_options.master_user_options is defined %} #}
         MasterUserOptions:
 {%- if domain.advanced_security_options.master_user_options.master_user_arn is defined %}
@@ -118,6 +132,27 @@ Resources:
 {%- if domain.cluster_config.multi_az_with_standby_enabled is defined %}
         MultiAZWithStandbyEnabled: {{ domain.cluster_config.multi_az_with_standby_enabled }}
 {%- endif %}
+{%- if domain.cluster_config.node_options is defined %}{# BEGIN if domain.cluster_config.node_options is defined #}
+        NodeOptions:
+{%- for node_option in domain.cluster_config.node_options %}{# BEGIN for node_option in domain.cluster_config.node_options #}
+          -
+{%- if node_option.node_config is defined %}{# BEGIN if node_option.node_config is defined #}
+            NodeConfig:
+{%- if node_option.node_config.count is defined %}
+              Count: {{ node_option.node_config.count }}
+{%- endif %}
+{%- if node_option.node_config.enabled is defined %}
+              Enabled: {{ node_option.node_config.enabled }}
+{%- endif %}
+{%- if node_option.node_config.type is defined %}
+              Type: {{ node_option.node_config.type }}
+{%- endif %}
+{%- endif %}{# END if node_option.node_config is defined #}
+{%- if node_option.node_type is defined %}
+            NodeType: {{ node_option.node_type }}
+{%- endif %}
+{%- endfor %}{# END for node_option in domain.cluster_config.node_options #}
+{%- endif %}{# END if domain.cluster_config.node_options is defined #}
 {%- if domain.cluster_config.warm_count is defined %}
         WarmCount: {{ domain.cluster_config.warm_count }}
 {%- endif %}
@@ -201,6 +236,27 @@ Resources:
 {%- if domain.engine_version is defined %}
       EngineVersion: {{ domain.engine_version }}
 {%- endif %}
+{%- if domain.identity_center_options is defined %}{# BEGIN if domain.identity_center_options is defined #}
+      IdentityCenterOptions:
+{%- if domain.identity_center_options.enabled_api_access is defined %}
+        EnabledAPIAccess: {{ domain.identity_center_options.enabled_api_access }}
+{%- endif %}
+{%- if domain.identity_center_options.identity_center_application_arn is defined %}
+        IdentityCenterApplicationARN: {{ domain.identity_center_options.identity_center_application_arn }}
+{%- endif %}
+{%- if domain.identity_center_options.identity_center_instance_arn is defined %}
+        IdentityCenterInstanceARN: {{ domain.identity_center_options.identity_center_instance_arn }}
+{%- endif %}
+{%- if domain.identity_center_options.identity_store_id is defined %}
+        IdentityStoreId: {{ domain.identity_center_options.identity_store_id }}
+{%- endif %}
+{%- if domain.identity_center_options.roles_key is defined %}
+        RolesKey: {{ domain.identity_center_options.roles_key }}
+{%- endif %}
+{%- if domain.identity_center_options.subject_key is defined %}
+        SubjectKey: {{ domain.identity_center_options.subject_key }}
+{%- endif %}
+{%- endif %}{# END if domain.identity_center_options is defined #}
 {%- if domain.ip_address_type is defined %}
       IPAddressType: {{ domain.ip_address_type }}
 {%- endif %}
@@ -259,6 +315,9 @@ Resources:
             Minutes: {{ domain.off_peak_window_options.off_peak_window.windows_start_time.minutes }}
 {%- endif %}
 {%- endif %}
+{%- if domain.skip_shard_migration_wait is defined %}
+      SkipShardMigrationWait: {{ domain.skip_shard_migration_wait }}
+{%- endif %}
 {%- if domain.snapshot_options is defined %}
       SnapshotOptions:
         AutomatedSnapshotStartHour: {{ domain.snapshot_options.automated_snapshot_start_hour }}
@@ -291,7 +350,6 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
@@ -307,7 +365,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ domain_name }}"
 
   {{ domain_name }}Arn:
-    Description: The ARN for for the CloudFormation stack
+    Description: The ARN for the CloudFormation stack
     Value:
       Fn::GetAtt:
         - {{ domain_name }}
@@ -359,3 +417,111 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ domain_name }}-Id"
 
 {%- endfor %}
+{#
+# Supported structure as of 20250222:
+Type: AWS::OpenSearchService::Domain
+Properties:
+  AccessPolicies: Json
+  AdvancedOptions:
+    Key: Value
+  AdvancedSecurityOptions:
+    AnonymousAuthDisableDate: String
+    AnonymousAuthEnabled: Boolean
+    Enabled: Boolean
+    InternalUserDatabaseEnabled: Boolean
+    JWTOptions:
+      Enabled: Boolean
+      PublicKey: String
+      RolesKey: String
+      SubjectKey: String
+    MasterUserOptions:
+      MasterUserARN: String
+      MasterUserName: String
+      MasterUserPassword: String
+    SAMLOptions:
+      Enabled: Boolean
+      Idp:
+        EntityId: String
+        MetadataContent: String
+      MasterBackendRole: String
+      MasterUserName: String
+      RolesKey: String
+      SessionTimeoutMinutes: Integer
+      SubjectKey: String
+  ClusterConfig:
+    ColdStorageOptions:
+      Enabled: Boolean
+    DedicatedMasterCount: Integer
+    DedicatedMasterEnabled: Boolean
+    DedicatedMasterType: String
+    InstanceCount: Integer
+    InstanceType: String
+    MultiAZWithStandbyEnabled: Boolean
+    NodeOptions:
+      -
+        NodeConfig:
+          Count: Integer
+          Enabled: Boolean
+          Type: String
+        NodeType: String
+    WarmCount: Integer
+    WarmEnabled: Boolean
+    WarmType: String
+    ZoneAwarenessConfig:
+      AvailabilityZoneCount: Integer
+    ZoneAwarenessEnabled: Boolean
+  CognitoOptions:
+    Enabled: Boolean
+    IdentityPoolId: String
+    RoleArn: String
+    UserPoolId: String
+  DomainEndpointOptions:
+    CustomEndpoint: String
+    CustomEndpointCertificateArn: String
+    CustomEndpointEnabled: Boolean
+    EnforceHTTPS: Boolean
+    TLSSecurityPolicy: String
+  DomainName: String
+  EBSOptions:
+    EBSEnabled: Boolean
+    Iops: Integer
+    Throughput: Integer
+    VolumeSize: Integer
+    VolumeType: String
+  EncryptionAtRestOptions:
+    Enabled: Boolean
+    KmsKeyId: String
+  EngineVersion: String
+  IdentityCenterOptions:
+    EnabledAPIAccess: Boolean
+    IdentityCenterApplicationARN: String
+    IdentityCenterInstanceARN: String
+    IdentityStoreId: String
+    RolesKey: String
+    SubjectKey: String
+  IPAddressType: String
+  LogPublishingOptions:
+    Key: Value
+  NodeToNodeEncryptionOptions:
+    Enabled: Boolean
+  OffPeakWindowOptions:
+    Enabled: Boolean
+    OffPeakWindow:
+      WindowStartTime:
+        Hours: Integer
+        Minutes: Integer
+  SkipShardMigrationWait: Boolean
+  SnapshotOptions:
+    AutomatedSnapshotStartHour: Integer
+  SoftwareUpdateOptions:
+    AutoSoftwareUpdateEnabled: Boolean
+  Tags:
+    -
+      Key: String
+      Value: String
+  VPCOptions:
+    SecurityGroupIds:
+      - String
+    SubnetIds:
+      - String
+#}

@@ -1,0 +1,44 @@
+---
+template:
+  type: file
+  path: lightsail/instance.yaml.j2
+
+sceptre_user_data:
+  description: "Test Lightsail Instance"
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  instances:
+    - name: "TestInstance1"
+      blueprint_id: "ubuntu_20_04"
+      bundle_id: "nano_2_0"
+      instance_name: "test-instance-1"
+      availability_zone: "us-east-1a"
+      hardware:
+        cpu_count: 1
+        disks:
+          - disk_name: "test-disk-1"
+            path: "/dev/xvda"
+            size_in_gb: 40
+            is_system_disk: true
+      key_pair_name: "test-key-pair"
+      networking:
+        ports:
+          - access_direction: "inbound"
+            access_from: "0.0.0.0/0"
+            access_type: "public"
+            from_port: 22
+            to_port: 22
+            protocol: "tcp"
+      state:
+        code: 1
+        name: "running"
+      user_data: |
+        Fn::Base64: |
+          #!/bin/bash
+          echo "Hello, World!" > /var/www/html/index.html
+      tags:
+        Environment: "Test"
+        Owner: "Tester"
+
+stack_tags:
+  Test: lightsail-instance
