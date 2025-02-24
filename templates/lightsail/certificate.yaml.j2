@@ -1,0 +1,65 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Certificate(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for certificate in sceptre_user_data.certificates %}
+{%- set certificate_name = certificate.name %}
+  {{ certificate_name }}:
+    Type: AWS::Lightsail::Certificate
+    DeletionPolicy: {{ certificate.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ certificate.update_replace_policy | default('Delete') }}
+    Properties:
+      CertificateName: {{ certificate.certificate_name }}
+      DomainName: {{ certificate.domain_name }}
+{%- if certificate.subject_alternative_names is defined %}
+      SubjectAlternativeNames:
+{%- for name in certificate.subject_alternative_names %}
+        - {{ name }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if certificate.tags is defined %}
+{%- for key, value in certificate.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for certificate in sceptre_user_data.certificates %}
+{%- set certificate_name = certificate.name %}
+  {{ certificate_name }}:
+    Description: Unique identifier for certificate {{ certificate_name }}
+    Value:
+      Ref: {{ certificate_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ certificate_name }}"
+
+  {{ certificate_name }}CertificateArn:
+    Description: The ARN of certificate {{ certificate_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ certificate_name }}
+        - CertificateArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ certificate_name }}-CertificateArn"
+
+{%- endfor %}
+{#
+# Supported structure as of 20250223:
+Type: AWS::Lightsail::Certificate
+Properties:
+  CertificateName: String
+  DomainName: String
+  SubjectAlternativeNames:
+    - String
+  Tags:
+    - Key: String
+      Value: String
+#}

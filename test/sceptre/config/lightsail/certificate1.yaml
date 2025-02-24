@@ -1,0 +1,21 @@
+---
+template:
+  type: file
+  path: lightsail/certificate.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  certificates:
+    - name: simplecertificate1
+      certificate_name: test-cert
+      domain_name: example.com
+      subject_alternative_names:
+        - "*.example.com"
+        - "app.example.com"
+      tags:
+        Environment: test
+        Name: simplecertificate1
+
+stack_tags:
+  Test: lightsail-certificate

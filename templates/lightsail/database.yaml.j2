@@ -1,0 +1,135 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Database(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for database in sceptre_user_data.databases %}
+{%- set database_name = database.name %}
+  {{ database_name }}:
+    Type: AWS::Lightsail::Database
+    DeletionPolicy: {{ database.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ database.update_replace_policy | default('Delete') }}
+    Properties:
+      MasterDatabaseName: {{ database.master_database_name }}
+      MasterUsername: {{ database.master_username }}
+      RelationalDatabaseBlueprintId: {{ database.relational_database_blueprint_id }}
+      RelationalDatabaseBundleId: {{ database.relational_database_bundle_id }}
+      RelationalDatabaseName: {{ database.relational_database_name }}
+{%- if database.availability_zone is defined %}
+      AvailabilityZone: {{ database.availability_zone }}
+{%- endif %}
+{%- if database.backup_retention is defined %}
+      BackupRetention: {{ database.backup_retention }}
+{%- endif %}
+{%- if database.ca_certificate_identifier is defined %}
+      CaCertificateIdentifier: {{ database.ca_certificate_identifier }}
+{%- endif %}
+{%- if database.master_user_password is defined %}
+      MasterUserPassword: {{ database.master_user_password }}
+{%- endif %}
+{%- if database.preferred_backup_window is defined %}
+      PreferredBackupWindow: {{ database.preferred_backup_window }}
+{%- endif %}
+{%- if database.preferred_maintenance_window is defined %}
+      PreferredMaintenanceWindow: {{ database.preferred_maintenance_window }}
+{%- endif %}
+{%- if database.publicly_accessible is defined %}
+      PubliclyAccessible: {{ database.publicly_accessible }}
+{%- endif %}
+{%- if database.relational_database_parameters is defined %}
+      RelationalDatabaseParameters:
+{%- for param in database.relational_database_parameters %}
+        -
+{%- if param.allowed_values is defined %}
+          AllowedValues: {{ param.allowed_values }}
+{%- endif %}
+{%- if param.apply_method is defined %}
+          ApplyMethod: {{ param.apply_method }}
+{%- endif %}
+{%- if param.apply_type is defined %}
+          ApplyType: {{ param.apply_type }}
+{%- endif %}
+{%- if param.data_type is defined %}
+          DataType: {{ param.data_type }}
+{%- endif %}
+{%- if param.description is defined %}
+          Description: {{ param.description }}
+{%- endif %}
+{%- if param.is_modifiable is defined %}
+          IsModifiable: {{ param.is_modifiable }}
+{%- endif %}
+{%- if param.parameter_name is defined %}
+          ParameterName: {{ param.parameter_name }}
+{%- endif %}
+{%- if param.parameter_value is defined %}
+          ParameterValue: {{ param.parameter_value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if database.rotate_master_user_password is defined %}
+      RotateMasterUserPassword: {{ database.rotate_master_user_password }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if database.tags is defined %}
+{%- for key, value in database.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for database in sceptre_user_data.databases %}
+{%- set database_name = database.name %}
+  {{ database_name }}:
+    Description: Unique identifier for {{ database_name }}
+    Value:
+      Ref: {{ database_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_name }}"
+
+  {{ database_name }}DatabaseArn:
+    Description: The ARN for {{ database_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ database_name }}
+        - DatabaseArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_name }}-DatabaseArn"
+
+{%- endfor %}
+{#
+# Supported structure as of 20250224:
+Type: AWS::Lightsail::Database
+Properties:
+  AvailabilityZone: String
+  BackupRetention: Boolean
+  CaCertificateIdentifier: String
+  MasterDatabaseName: String
+  MasterUsername: String
+  MasterUserPassword: String
+  PreferredBackupWindow: String
+  PreferredMaintenanceWindow: String
+  PubliclyAccessible: Boolean
+  RelationalDatabaseBlueprintId: String
+  RelationalDatabaseBundleId: String
+  RelationalDatabaseName: String
+  RelationalDatabaseParameters:
+    -
+      AllowedValues: String
+      ApplyMethod: String
+      ApplyType: String
+      DataType: String
+      Description: String
+      IsModifiable: Boolean
+      ParameterName: String
+      ParameterValue: String
+  RotateMasterUserPassword: Boolean
+  Tags:
+    - Key: String
+      Value: String
+#}

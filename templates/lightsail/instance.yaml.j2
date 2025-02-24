@@ -1,0 +1,277 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Instance(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for instance in sceptre_user_data.instances %}
+{%- set instance_name = instance.name %}
+  {{ instance_name }}:
+    Type: AWS::Lightsail::Instance
+    DeletionPolicy: {{ instance.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ instance.update_replace_policy | default('Delete') }}
+    Properties:
+      BlueprintId: {{ instance.blueprint_id }}
+      BundleId: {{ instance.bundle_id }}
+      InstanceName: {{ instance.instance_name }}
+{%- if instance.add_ons is defined %}{# BEGIN if instance.add_ons is defined #}
+      AddOns:
+{%- for add_on in instance.add_ons %}{# BEGIN for add_on in instance.add_ons #}
+        - AddOnType: {{ add_on.add_on_type }}
+{%- if add_on.auto_snapshot_add_on_request is defined %}
+          AutoSnapshotAddOnRequest:
+{%- if add_on.auto_snapshot_add_on_request.snapshot_time_of_day is defined %}
+            SnapshotTimeOfDay: {{ add_on.auto_snapshot_add_on_request.snapshot_time_of_day }}
+{%- endif %}
+{%- endif %}
+{%- endfor %}{# END for add_on in instance.add_ons #}
+{%- endif %}{# END if instance.add_ons is defined #}
+{%- if instance.availability_zone is defined %}
+      AvailabilityZone: {{ instance.availability_zone }}
+{%- endif %}
+{%- if instance.hardware is defined %}{# BEGIN if instance.hardware is defined #}
+      Hardware:
+{%- if instance.hardware.cpu_count is defined %}
+        CpuCount: {{ instance.hardware.cpu_count }}
+{%- endif %}
+{%- if instance.hardware.disks is defined %}
+        Disks:
+{%- for disk in instance.hardware.disks %}
+          - DiskName: {{ disk.disk_name }}
+            Path: {{ disk.path }}
+{%- if disk.attached_to is defined %}
+            AttachedTo: {{ disk.attached_to }}
+{%- endif %}
+{%- if disk.attachment_state is defined %}
+            AttachmentState: {{ disk.attachment_state }}
+{%- endif %}
+{%- if disk.iops is defined %}
+            IOPS: {{ disk.iops }}
+{%- endif %}
+{%- if disk.is_system_disk is defined %}
+            IsSystemDisk: {{ disk.is_system_disk }}
+{%- endif %}
+{%- if disk.size_in_gb is defined %}
+            SizeInGb: {{ disk.size_in_gb }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if instance.hardware.ram_size_in_gb is defined %}
+        RamSizeInGb: {{ instance.hardware.ram_size_in_gb }}
+{%- endif %}
+{%- endif %}{# END if instance.hardware is defined #}
+{%- if instance.key_pair_name is defined %}
+      KeyPairName: {{ instance.key_pair_name }}
+{%- endif %}
+{%- if instance.location is defined %}{# BEGIN if instance.location is defined #}
+      Location:
+{%- if instance.location.availability_zone is defined %}
+        AvailabilityZone: {{ instance.location.availability_zone }}
+{%- endif %}
+{%- if instance.location.region_name is defined %}
+        RegionName: {{ instance.location.region_name }}
+{%- endif %}
+{%- endif %}{# END if instance.location is defined #}
+{%- if instance.networking is defined %}{# BEGIN if instance.networking is defined #}
+      Networking:
+        Ports:
+{%- for port in instance.networking.ports %}{# BEGIN for port in instance.networking.ports #}
+          -
+{%- if port.access_direction is defined %}
+            AccessDirection: {{ port.access_direction }}
+{%- endif %}
+{%- if port.access_from is defined %}
+            AccessFrom: {{ port.access_from }}
+{%- endif %}
+{%- if port.access_type is defined %}
+            AccessType: {{ port.access_type }}
+{%- endif %}
+{%- if port.cidr_list_aliases is defined %}{# BEGIN if port.cidr_list_aliases is defined #}
+            CidrListAliases:
+{%- for alias in port.cidr_list_aliases %}
+              - {{ alias }}
+{%- endfor %}
+{%- endif %}{# END if port.cidr_list_aliases is defined #}
+{%- if port.cidrs is defined %}{# BEGIN if port.cidrs is defined #}
+            Cidrs:
+{%- for cidr in port.cidrs %}
+              - {{ cidr }}
+{%- endfor %}
+{%- endif %}{# END if port.cidrs is defined #}
+{%- if port.common_name is defined %}
+            CommonName: {{ port.common_name }}
+{%- endif %}
+{%- if port.from_port is defined %}
+            FromPort: {{ port.from_port }}
+{%- endif %}
+{%- if port.ipv6_cidrs is defined %}{# BEGIN if port.ipv6_cidrs is defined #}
+            Ipv6Cidrs:
+{%- for ipv6_cidr in port.ipv6_cidrs %}
+              - {{ ipv6_cidr }}
+{%- endfor %}
+{%- endif %}{# END if port.ipv6_cidrs is defined #}
+{%- if port.protocol is defined %}
+            Protocol: {{ port.protocol }}
+{%- endif %}
+{%- if port.to_port is defined %}
+            ToPort: {{ port.to_port }}
+{%- endif %}
+{%- endfor %}{# END for port in instance.networking.ports #}
+{%- if instance.networking.monthly_transfer is defined %}
+        MonthlyTransfer:
+{%- if instance.networking.monthly_transfer.gb_per_month_allocated is defined %}
+          GbPerMonthAllocated: String
+{%- endif %}
+{%- endif %}
+{%- endif %}{# END if instance.networking is defined #}
+{%- if instance.user_data is defined %}
+      UserData: |
+{{ instance.user_data | indent(width=8, first=true) }}
+{%- endif %}
+{%- if instance.state is defined %}{# BEGIN if instance.state is defined #}
+      State:
+{%- if instance.state.code is defined %}
+        Code: {{ instance.state.code }}
+{%- endif %}
+{%- if instance.state.name is defined %}
+        Name: {{ instance.state.name }}
+{%- endif %}
+{%- endif %}{# END if instance.state is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if instance.tags is defined %}
+{%- for key, value in instance.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for instance in sceptre_user_data.instances %}
+{%- set instance_name = instance.name %}
+  {{ instance_name }}:
+    Description: Unique identifier for {{ instance_name }}
+    Value:
+      Ref: {{ instance_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}"
+
+  {{ instance_name }}InstanceArn:
+    Description: The ARN for {{ instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - InstanceArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-InstanceArn"
+
+  {{ instance_name }}LocationAvailabilityZone:
+    Description: The AWS Region and Availability Zone where the instance {{ instance_name }} is located.
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - Location.AvailabilityZone
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-Location-AvailabilityZone"
+
+  {{ instance_name }}LocationRegionName:
+    Description: The AWS Region of the instance {{ instance_name }} is located.
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - Location.RegionName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-Location-RegionName"
+
+  {{ instance_name }}PrivateIpAddress:
+    Description: The private IP address for {{ instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - PrivateIpAddress
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-PrivateIpAddress"
+
+  {{ instance_name }}SshKeyName:
+    Description: The name of the SSH key pair used by the instance {{ instance_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - SshKeyName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-SshKeyName"
+
+  {{ instance_name }}SupportCode:
+    Description: The support code of the instance {{ instance_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - SupportCode
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-SupportCode"
+
+{%- endfor %}
+{#
+# Supported structure as of 20250224:
+Type: AWS::Lightsail::Instance
+Properties:
+  AddOns:
+    -
+      AddOnType: String
+      AutoSnapshotAddOnRequest:
+        SnapshotTimeOfDay: String
+      Status: String
+  AvailabilityZone: String
+  BlueprintId: String
+  BundleId: String
+  Hardware:
+    CpuCount: Integer
+    Disks:
+      -
+        AttachedTo: String
+        AttachmentState: String
+        DiskName: String
+        Iops: Integer
+        IsSystemDisk: Boolean
+        Path: String
+        SizeInGb: Integer
+    RamSizeInGb: Number
+  InstanceName: String
+  KeyPairName: String
+  Location:
+    AvailabilityZone: String
+    RegionName: String
+  Networking:
+    MonthlyTransfer:
+      GbPerMonthAllocated: String
+    Ports:
+      -
+        AccessDirection: String
+        AccessFrom: String
+        AccessType: String
+        CidrListAliases:
+          - String
+        Cidrs:
+          - String
+        CommonName: String
+        FromPort: Integer
+        Ipv6Cidrs:
+          - String
+        Protocol: String
+        ToPort: Integer
+  State:
+    Code: Integer
+    Name: String
+  Tags:
+    - Key: String
+      Value: String
+  UserData: String
+#}

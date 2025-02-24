@@ -1,0 +1,39 @@
+---
+template:
+  type: file
+  path: lightsail/database.yaml.j2
+
+sceptre_user_data:
+  description: "Test Lightsail Database"
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  databases:
+    - name: "TestDatabase1"
+      master_database_name: "testdb"
+      master_username: "admin"
+      master_user_password: "password"
+      relational_database_blueprint_id: "mysql_5_7"
+      relational_database_bundle_id: "medium_1_0"
+      relational_database_name: "testdb1"
+      availability_zone: "!Sub ${AWS::Region}a"
+      backup_retention: true
+      ca_certificate_identifier: "rds-ca-2019"
+      preferred_backup_window: "07:00-09:00"
+      preferred_maintenance_window: "Mon:00:00-Mon:03:00"
+      publicly_accessible: true
+      relational_database_parameters:
+        - parameter_name: "max_connections"
+          parameter_value: "100"
+          apply_method: "immediate"
+          allowed_values: "1-1000"
+          apply_type: "static"
+          data_type: "integer"
+          description: "The maximum number of connections"
+          is_modifiable: true
+      rotate_master_user_password: false
+      tags:
+        Environment: "Test"
+        Owner: "Tester"
+
+stack_tags:
+  Test: lightsail-database

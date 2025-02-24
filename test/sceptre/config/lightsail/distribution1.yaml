@@ -1,0 +1,52 @@
+---
+template:
+  type: file
+  path: lightsail/distribution.yaml.j2
+
+sceptre_user_data:
+  description: "Test Lightsail Distribution"
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  distributions:
+    - name: "TestDistribution1"
+      bundle_id: "small_1_0"
+      distribution_name: "test-distribution-1"
+      origin:
+        name: "test-origin"
+        protocol_policy: "https-only"
+        region_name: "us-east-1"
+      default_cache_behavior:
+        behavior: "cache"
+      cache_behavior_settings:
+        allowed_http_methods: "GET,HEAD"
+        cached_http_methods: "GET,HEAD"
+        default_ttl: 3600
+        forwarded_cookies:
+          cookies_allow_list:
+            - "cookie1"
+            - "cookie2"
+          option: "all"
+        forwarded_headers:
+          headers_allow_list:
+            - "header1"
+            - "header2"
+          option: "all"
+        forwarded_query_strings:
+          option: true
+          query_strings_allow_list:
+            - "query1"
+            - "query2"
+        maximum_ttl: 86400
+        minimum_ttl: 60
+      cache_behaviors:
+        - behavior: "cache"
+          path: "/images/*"
+      certificate_name: "test-cert"
+      ip_address_type: "ipv4"
+      is_enabled: true
+      tags:
+        Environment: "Test"
+        Owner: "Tester"
+
+stack_tags:
+  Test: lightsail-distribution
