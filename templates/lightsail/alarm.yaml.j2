@@ -1,0 +1,81 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Alarm(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for alarm in sceptre_user_data.alarms %}
+{%- set alarm_name = alarm.name %}
+  {{ alarm_name }}:
+    Type: AWS::Lightsail::Alarm
+    DeletionPolicy: {{ alarm.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ alarm.update_replace_policy | default('Delete') }}
+    Properties:
+      AlarmName: {{ alarm.alarm_name }}
+      ComparisonOperator: {{ alarm.comparison_operator }}
+{%- if alarm.contact_protocols is defined %}
+      ContactProtocols:
+{%- for protocol in alarm.contact_protocols %}
+        - {{ protocol }}
+{%- endfor %}
+{%- endif %}
+{%- if alarm.datapoints_to_alarm is defined %}
+      DatapointsToAlarm: {{ alarm.datapoints_to_alarm }}
+{%- endif %}
+      EvaluationPeriods: {{ alarm.evaluation_periods }}
+      MetricName: {{ alarm.metric_name }}
+      MonitoredResourceName: {{ alarm.monitored_resource_name }}
+{%- if alarm.notification_enabled is defined %}
+      NotificationEnabled: {{ alarm.notification_enabled | lower }}
+{%- endif %}
+{%- if alarm.notification_triggers is defined %}
+      NotificationTriggers:
+{%- for trigger in alarm.notification_triggers %}
+        - {{ trigger }}
+{%- endfor %}
+{%- endif %}
+      Threshold: {{ alarm.threshold }}
+{%- if alarm.treat_missing_data is defined %}
+      TreatMissingData: {{ alarm.treat_missing_data }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for alarm in sceptre_user_data.alarms %}
+{%- set alarm_name = alarm.name %}
+  {{ alarm_name }}:
+    Description: Unique id for alarm {{ alarm_name }}
+    Value:
+      Ref: {{ alarm_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ alarm_name }}"
+
+  {{ alarm_name }}AlarmArn:
+    Description: The ARN for {{ alarm_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ alarm_name }}
+        - AlarmArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ alarm_name }}-AlarmArn"
+
+{%- endfor %}
+{#
+# Supported structure as of 20250223:
+Type: AWS::Lightsail::Alarm
+Properties:
+  AlarmName: String
+  ComparisonOperator: String
+  ContactProtocols:
+    - String
+  DatapointsToAlarm: Integer
+  EvaluationPeriods: Integer
+  MetricName: String
+  MonitoredResourceName: String
+  NotificationEnabled: Boolean
+  NotificationTriggers:
+    - String
+  Threshold: Number
+  TreatMissingData: String
+#}

@@ -1,0 +1,207 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Container(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for container in sceptre_user_data.containers %}
+{%- set container_name = container.name %}
+  {{ container_name }}:
+    Type: AWS::Lightsail::Container
+    DeletionPolicy: {{ container.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ container.update_replace_policy | default('Delete') }}
+    Properties:
+      Power: {{ container.power | default('micro') }}
+      Scale: {{ container.scale | default(1) }}
+      ServiceName: {{ container.service_name | default(container_name) }}
+{%- if container.container_service_deployment is defined %}{# BEGIN if container.container_service_deployment is defined #}
+      ContainerServiceDeployment:
+{%- if container.container_service_deployment.containers is defined %}{# BEGIN if container.container_service_deployment.containers is defined #}
+        Containers:
+{%- for deployment_container in container.container_service_deployment.containers %}
+          -
+{%- if deployment_container.command is defined %}
+            Command:
+{%- for cmd in deployment_container.command %}
+              - {{ cmd }}
+{%- endfor %}
+{%- endif %}
+{%- if deployment_container.container_name is defined %}
+            ContainerName: {{ deployment_container.container_name }}
+{%- endif %}
+{%- if deployment_container.image is defined %}
+            Image: {{ deployment_container.image }}
+{%- endif %}
+{%- if deployment_container.environment is defined %}
+            Environment:
+{%- for env in deployment_container.environment %}
+              -
+{%- if env.value is defined %}
+                Value: {{ env.value }}
+{%- endif %}
+{%- if env.variable is defined %}
+                Variable: {{ env.variable }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if deployment_container.ports is defined %}
+            Ports:
+{%- for port in deployment_container.ports %}
+              -
+{%- if port.port is defined %}
+                Port: {{ port.port }}
+{%- endif %}
+{%- if port.protocol is defined %}
+                Protocol: {{ port.protocol }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if container.container_service_deployment.containers is defined #}
+{%- if container.container_service_deployment.public_endpoint is defined %}{# BEGIN if container.container_service_deployment.public_endpoint is defined #}
+        PublicEndpoint:
+{%- if container.container_service_deployment.public_endpoint.container_name is defined %}
+          ContainerName: {{ container.container_service_deployment.public_endpoint.container_name }}
+{%- endif %}
+{%- if container.container_service_deployment.public_endpoint.container_port is defined %}
+          ContainerPort: {{ container.container_service_deployment.public_endpoint.container_port }}
+{%- endif %}
+{%- if container.container_service_deployment.public_endpoint.health_check_config is defined %}{# BEGIN if container.container_service_deployment.public_endpoint.health_check_config is defined #}
+          HealthCheckConfig:
+{%- if container.container_service_deployment.public_endpoint.health_check_config.healthy_threshold is defined %}
+            HealthyThreshold: {{ container.container_service_deployment.public_endpoint.health_check_config.healthy_threshold }}
+{%- endif %}
+{%- if container.container_service_deployment.public_endpoint.health_check_config.interval_seconds is defined %}
+            IntervalSeconds: {{ container.container_service_deployment.public_endpoint.health_check_config.interval_seconds }}
+{%- endif %}
+{%- if container.container_service_deployment.public_endpoint.health_check_config.path is defined %}
+            Path: {{ container.container_service_deployment.public_endpoint.health_check_config.path }}
+{%- endif %}
+{%- if container.container_service_deployment.public_endpoint.health_check_config.success_codes is defined %}
+            SuccessCodes: {{ container.container_service_deployment.public_endpoint.health_check_config.success_codes }}
+{%- endif %}
+{%- if container.container_service_deployment.public_endpoint.health_check_config.timeout_seconds is defined %}
+            TimeoutSeconds: {{ container.container_service_deployment.public_endpoint.health_check_config.timeout_seconds }}
+{%- endif %}
+{%- if container.container_service_deployment.public_endpoint.health_check_config.unhealthy_threshold is defined %}
+            UnhealthyThreshold: {{ container.container_service_deployment.public_endpoint.health_check_config.unhealthy_threshold }}
+{%- endif %}
+{%- endif %}{# END if container.container_service_deployment.public_endpoint.health_check_config is defined #}
+{%- endif %}{# END if container.container_service_deployment.public_endpoint is defined #}
+{%- endif %}{# END if container.container_service_deployment is defined #}
+{%- if container.is_disabled is defined %}
+      IsDisabled: {{ container.is_disabled }}
+{%- endif %}
+{%- if container.private_registry_access is defined %}{# BEGIN if container.private_registry_access is defined #}
+      PrivateRegistryAccess:
+        EcrImagePullerRole:
+{%- if container.private_registry_access.ecr_image_puller_role.is_active is defined %}
+          IsActive: {{ container.private_registry_access.ecr_image_puller_role.is_active }}
+{%- endif %}
+{%- if container.private_registry_access.ecr_image_puller_role.principal_arn is defined %}
+          PrincipalArn: {{ container.private_registry_access.ecr_image_puller_role.principal_arn }}
+{%- endif %}
+{%- endif %}{# END if container.private_registry_access is defined #}
+{%- if container.public_domain_names is defined %}{# BEGIN if container.public_domain_names is defined #}
+      PublicDomainNames:
+{%- for domain in container.public_domain_names %}
+        -
+{%- if domain.certificate_name is defined %}
+          CertificateName: {{ domain.certificate_name }}
+{%- endif %}
+{%- if domain.domain_names is defined %}
+          DomainNames:
+{%- for domain_name in domain.domain_names %}
+            - {{ domain_name }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if container.public_domain_names is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if container.tags is defined %}
+{%- for key, value in container.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for container in sceptre_user_data.containers %}
+{%- set container_name = container.name %}
+  {{ container_name }}:
+    Description: The unique identifier for {{ container_name }}
+    Value:
+      Ref: {{ container_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ container_name }}"
+
+  {{ container_name }}ContainerArn:
+    Description: The ARN of container service {{ container_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ container_name }}
+        - ContainerArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ container_name }}-ContainerArn"
+
+  {{ container_name }}PrincipalArn:
+    Description: The principal ARN of container service {{ container_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ container_name }}
+        - PrincipalArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ container_name }}-PrincipalArn"
+
+{%- endfor %}
+{#
+# Supported structure as of 20250223:
+Type: AWS::Lightsail::Container
+Properties:
+  ContainerServiceDeployment:
+    Containers:
+      -
+        Command:
+          - String
+        ContainerName: String
+        Environment:
+          -
+            Value: String
+            Variable: String
+        Image: String
+        Ports:
+          -
+            Port: String
+            Protocol: String
+    PublicEndpoint:
+      ContainerName: String
+      ContainerPort: Integer
+      HealthCheckConfig:
+        HealthyThreshold: Integer
+        IntervalSeconds: Integer
+        Path: String
+        SuccessCodes: String
+        TimeoutSeconds: Integer
+        UnhealthyThreshold: Integer
+  IsDisabled: Boolean
+  Power: String
+  PrivateRegistryAccess:
+    EcrImagePullerRole:
+      IsActive: Boolean
+      PrincipalArn: String
+  PublicDomainNames:
+    -
+      CertificateName: String
+      DomainNames:
+        - String
+  Scale: Integer
+  ServiceName: String
+  Tags:
+    - Key: String
+      Value: String
+#}

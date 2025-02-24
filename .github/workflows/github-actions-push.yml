@@ -74,9 +74,12 @@ jobs:
             YAML_FILE=$(_jq .file)
             CFN_TEMPLATE=$(_jq .cfntemplate)
             echo "Validating ${CFN_TEMPLATE}"
+            # Validate the generated CloudFormation template
+            # This must be in us-east-1 as some resources are only available
+            # in this region.
             /usr/bin/sceptre \
               --var-file ./vars/main.yaml \
-              --var aws_region=${AWS_DEFAULT_REGION} \
+              --var aws_region=us-east-1 \
               validate "${YAML_DIR}/${YAML_FILE}"
           done
       - name: Run cfn-guard against generated CloudFormation templates

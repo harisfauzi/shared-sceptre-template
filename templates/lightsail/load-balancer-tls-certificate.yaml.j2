@@ -1,0 +1,73 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Load Balancer TLS Certificate(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for load_balancer_tls_certificate in sceptre_user_data.load_balancer_tls_certificates %}
+{%- set load_balancer_tls_certificate_name = load_balancer_tls_certificate.name %}
+  {{ load_balancer_tls_certificate_name }}:
+    Type: AWS::Lightsail::LoadBalancerTlsCertificate
+    DeletionPolicy: {{ load_balancer_tls_certificate.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ load_balancer_tls_certificate.update_replace_policy | default('Delete') }}
+    Properties:
+      CertificateDomainName: {{ load_balancer_tls_certificate.certificate_domain_name }}
+      CertificateName: {{ load_balancer_tls_certificate.certificate_name }}
+      LoadBalancerName: {{ load_balancer_tls_certificate.load_balancer_name }}
+{%- if load_balancer_tls_certificate.certificate_alternative_names is defined %}
+      CertificateAlternativeNames:
+{%- for alt_name in load_balancer_tls_certificate.certificate_alternative_names %}
+        - {{ alt_name }}
+{%- endfor %}
+{%- endif %}
+{%- if load_balancer_tls_certificate.https_redirection_enabled is defined %}
+      HttpsRedirectionEnabled: {{ load_balancer_tls_certificate.https_redirection_enabled | lower }}
+{%- endif %}
+{%- if load_balancer_tls_certificate.is_attached is defined %}
+      IsAttached: {{ load_balancer_tls_certificate.is_attached | lower }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for load_balancer_tls_certificate in sceptre_user_data.load_balancer_tls_certificates %}
+{%- set load_balancer_tls_certificate_name = load_balancer_tls_certificate.name %}
+  {{ load_balancer_tls_certificate_name }}:
+    Description: Unique identifier for {{ load_balancer_tls_certificate_name }}
+    Value:
+      Ref: {{ load_balancer_tls_certificate_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ load_balancer_tls_certificate_name }}"
+
+  {{ load_balancer_tls_certificate_name }}LoadBalancerTlsCertificateArn:
+    Description: The ARN for {{ load_balancer_tls_certificate_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ load_balancer_tls_certificate_name }}
+        - LoadBalancerTlsCertificateArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ load_balancer_tls_certificate_name }}-LoadBalancerTlsCertificateArn"
+
+  {{ load_balancer_tls_certificate_name }}Status:
+    Description: The status of {{ load_balancer_tls_certificate_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ load_balancer_tls_certificate_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ load_balancer_tls_certificate_name }}-Status"
+
+{%- endfor %}
+{#
+# Supported structure as of 20250224:
+Type: AWS::Lightsail::LoadBalancerTlsCertificate
+Properties:
+  CertificateAlternativeNames:
+    - String
+  CertificateDomainName: String
+  CertificateName: String
+  HttpsRedirectionEnabled: Boolean
+  IsAttached: Boolean
+  LoadBalancerName: String
+#}

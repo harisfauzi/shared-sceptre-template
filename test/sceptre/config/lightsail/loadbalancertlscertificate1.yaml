@@ -1,0 +1,24 @@
+---
+template:
+  type: file
+  path: lightsail/load-balancer-tls-certificate.yaml.j2
+
+sceptre_user_data:
+  description: "Test Lightsail Load Balancer TLS Certificate"
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  load_balancer_tls_certificates:
+    - name: "TestCertificate"
+      certificate_domain_name: "example.com"
+      certificate_name: "test-cert"
+      load_balancer_name: "test-load-balancer"
+      certificate_alternative_names:
+        - '"*.example.com"'
+        - "app.example.com"
+      https_redirection_enabled: true
+      is_attached: false
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+stack_tags:
+  Test: lightsail-load-balancer-tls-certificate
