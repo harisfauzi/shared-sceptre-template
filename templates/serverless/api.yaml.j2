@@ -1,0 +1,281 @@
+---
+{%- import 'macros/globals.yaml.j2' as globals %}
+{%- import 'macros/prop_api.yaml.j2' as prop_api %}
+Description: {{sceptre_user_data.description|default('Serverless API(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+{%- if sceptre_user_data.globals is defined %}
+{{ globals.prep(sceptre_user_data.globals) }}
+{%- endif %}
+
+Resources:
+{%- for api in sceptre_user_data.apis %}
+{%- set api_name = api.name %}
+  {{ api_name }}:
+    Type: AWS::Serverless::Api
+    DeletionPolicy: {{ api.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ api.update_replace_policy | default('Delete') }}
+    Properties:
+      StageName: {{ api.stage_name }}
+{%- if api.access_log_setting is defined %}{# BEGIN if api.access_log_setting is defined #}
+      {{ prop_api.prep_access_log_setting(api.access_log_setting) | indent(width=6, first=False) }}
+{%- endif %}{# END if api.access_log_setting is defined #}
+{%- if api.always_deploy is defined %}
+      AlwaysDeploy: Boolean
+{%- endif %}
+{%- if api.api_key_source_type is defined %}
+      ApiKeySourceType: String
+{%- endif %}
+{%- if api.auth is defined %}{# BEGIN if api.auth is defined #}
+      {{ prop_api.prep_auth(api.auth) | indent(width=6, first=False) }}
+{%- endif %}{# END if api.auth is defined #}
+{%- if api.binary_media_types is defined %}
+      BinaryMediaTypes: List
+{%- for item in api.binary_media_types %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if api.cache_clusters_enabled is defined %}
+      CacheClusterEnabled: {{ api.cache_clusters_enabled }}
+{%- endif %}
+{%- if api.cache_cluster_size is defined %}
+      CacheClusterSize: {{ api.cache_cluster_size }}
+{%- endif %}
+{%- if api.canary_setting is defined %}
+      {{ prop_api.prep_canary_setting(api.canary_setting) | indent(width=6, first=False) }}
+{%- endif %}
+{%- if api.cors is defined %}
+      {{ prop_api.prep_cors(api.cors) | indent(width=6, first=False) }}
+{%- endif %}
+{%- if api.definition_body is defined %}
+      DefinitionBody:
+        {{ api.definition_body | indent(width=8, first=False) }}
+{%- endif %}
+{%- if api.definition_uri is defined %}
+      {{ prop_api.prep_definition_uri(api.definition_uri) | indent(width=6, first=False) }}
+{%- endif %}
+{%- if api.description is defined %}
+      Description: {{ api.description }}
+{%- endif %}
+{%- if api.disable_execute_api_endpoint is defined %}
+      DisableExecuteApiEndpoint: {{ api.disable_execute_api_endpoint }}
+{%- endif %}
+{%- if api.domain is defined %}
+      {{ prop_api.prep_domain(api.domain) | indent(width=6, first=False) }}
+{%- endif %}
+{%- if api.endpoint_configuration is defined %}
+      {{ prop_api.prep_endpoint_configuration(api.endpoint_configuration) | indent(width=6, first=False) }}
+{%- endif %}
+{%- if api.fail_on_warnings is defined %}
+      FailOnWarnings: {{ api.fail_on_warnings }}
+{%- endif %}
+{%- if api.gateway_responses is defined %}
+      GatewayResponses:
+{%- for key, value in api.gateway_responses.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if api.merge_definitions is defined %}
+      MergeDefinitions: {{ api.merge_definitions }}
+{%- endif %}
+{%- if api.method_settings is defined %}
+      {{ prop_api.prep_method_settings(api.method_settings) | indent(width=6, first=False) }}
+{%- endif %}
+{%- if api.minimum_compression_size is defined %}
+      MinimumCompressionSize: {{ api.minimum_compression_size }}
+{%- endif %}
+{%- if api.mode is defined %}
+      Mode: {{ api.mode }}
+{%- endif %}
+{%- if api.models is defined %}
+      Models:
+{%- for key, value in api.models.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if api.api_name is defined %}
+      Name: {{ api.api_name }}
+{%- endif %}
+{%- if api.open_api_version is defined %}
+      OpenApiVersion: {{ api.open_api_version }}
+{%- endif %}
+{%- if api.propagate_tags is defined %}
+      PropagateTags: {{ api.propagate_tags }}
+{%- endif %}
+{%- if api.tags is defined %}
+      Tags:
+        SouceRepoUrl: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- for key, value in api.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if api.tracing_enabled is defined %}
+      TracingEnabled: {{ api.tracing_enabled }}
+{%- endif %}
+{%- if api.variables is defined %}
+      Variables: Map
+{%- for key, value in api.variables.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for api in sceptre_user_data.apis %}
+{%- set api_name = api.name %}
+  {{ api_name }}:
+    Description: The ID of API Gateway for {{ api_name }}
+    Value:
+      Ref: {{ api_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ api_name }}"
+
+  {{ api_name }}RootResourceId:
+    Description: The root resource ID for a RestApi for {{ api_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ api_name }}
+        - RootResourceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ api_name }}-RootResourceId"
+{%- endfor %}
+{#
+# Supported structure as of 20250320:
+Type: AWS::Serverless::Api
+Properties:
+  AccessLogSetting:
+    DestinationArn: String
+    Format: String
+  AlwaysDeploy: Boolean
+  ApiKeySourceType: String
+  Auth:
+    AddApiKeyRequiredToCorsPreflight: Boolean
+    AddDefaultAuthorizerToCorsPreflight: Boolean
+    ApiKeyRequired: Boolean
+    Authorizers: CognitoAuthorizer | LambdaTokenAuthorizer | LambdaRequestAuthorizer | AWS_IAM
+      # CognitoAuthorizer
+      AuthorizationScopes: List
+      Identity:
+        Header: String
+        ReauthorizeEvery: Integer
+        ValidationExpression: String
+      UserPoolArn: String
+      # LambdaTokenAuthorizer
+      DisableFunctionDefaultPermissions: Boolean
+      FunctionArn: String
+      FunctionInvokeRole: String
+      FunctionPayloadType: String
+      Identity:
+        Header: String
+        ReauthorizeEvery: Integer
+        ValidationExpression: String
+      # LambdaRequestAuthorizer
+      DisableFunctionDefaultPermissions: Boolean
+      FunctionArn: String
+      FunctionInvokeRole: String
+      FunctionPayloadType: String
+      Identity:
+        Header: String
+        ReauthorizeEvery: Integer
+        ValidationExpression: String
+    DefaultAuthorizer: String
+    InvokeRole: String
+    ResourcePolicy:
+      AwsAccountBlacklist: List
+      AwsAccountWhitelist: List
+      CustomStatements: List
+      IntrinsicVpcBlacklist: List
+      IntrinsicVpcWhitelist: List
+      IntrinsicVpceBlacklist: List
+      IntrinsicVpceWhitelist: List
+      IpRangeBlacklist: List
+      IpRangeWhitelist: List
+      SourceVpcBlacklist: List
+      SourceVpcWhitelist: List
+    UsagePlan: ApiUsagePlan
+      CreateUsagePlan: String
+      Description: String
+      Quota:
+        Limit: Integer
+        Offset: Integer
+        Period: String
+      Tags: List
+      Throttle:
+        BurstLimit: Integer
+        RateLimit: Number
+      UsagePlanName: String
+  BinaryMediaTypes: List
+  CacheClusterEnabled: Boolean
+  CacheClusterSize: String
+  CanarySetting:
+    DeploymentId: String
+    PercentTraffic: Number
+    StageVariableOverrides: 
+      Key: Value
+    UseStageCache: Boolean
+
+  Cors: String | CorsConfiguration
+    # CorsConfiguration
+    AllowCredentials: Boolean
+    AllowHeaders: String
+    AllowMethods: String
+    AllowOrigin: String
+    MaxAge: String
+  DefinitionBody: JSON
+  DefinitionUri: String | ApiDefinition
+    # ApiDefinition
+    Bucket: String
+    Key: String
+    Version: String
+  Description: String
+  DisableExecuteApiEndpoint: Boolean
+  Domain:
+    BasePath: List
+    NormalizeBasePath: Boolean
+    CertificateArn: String
+    DomainName: String
+    EndpointConfiguration: String
+    MutualTlsAuthentication:
+      TruststoreUri: String
+      TruststoreVersion: String
+    OwnershipVerificationCertificateArn: String
+    Route53:
+      DistributionDomainName: String
+      EvaluateTargetHealth: Boolean
+      HostedZoneId: String
+      HostedZoneName: String
+      IpV6: Boolean
+      Region: String
+      SetIdentifier: String
+    SecurityPolicy: String
+  EndpointConfiguration:
+    Type: String
+    VPCEndpointIds: List
+  FailOnWarnings: Boolean
+  GatewayResponses: Map
+  MergeDefinitions: Boolean
+  MethodSettings:
+    -
+      CacheDataEncrypted: Boolean
+      CacheTtlInSeconds: Integer
+      CachingEnabled: Boolean
+      DataTraceEnabled: Boolean
+      HttpMethod: String
+      LoggingLevel: String
+      MetricsEnabled: Boolean
+      ResourcePath: String
+      ThrottlingBurstLimit: Integer
+      ThrottlingRateLimit: Number
+  MinimumCompressionSize: Integer
+  Mode: String
+  Models: Map
+  Name: String
+  OpenApiVersion: String
+  PropagateTags: Boolean
+  StageName: String
+  Tags: Map
+  TracingEnabled: Boolean
+  Variables: Map
+#}
