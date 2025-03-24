@@ -1,0 +1,89 @@
+---
+{%- import 'macros/globals.yaml.j2' as globals %}
+{%- import 'macros/prop-http-api.yaml.j2' as prop_http_api %}
+Description: {{sceptre_user_data.description|default('Serverless API(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+{%- if sceptre_user_data.globals is defined %}
+{{ globals.prep(sceptre_user_data.globals) }}
+{%- endif %}
+
+Resources:
+{%- for api in sceptre_user_data.apis %}
+{%- set api_name = api.name %}
+  {{ api_name }}:
+    Type: AWS::Serverless::HttpApi
+    DeletionPolicy: {{ api.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ api.update_replace_policy | default('Delete') }}
+    Properties:
+{%- endfor %}
+{#
+# Supported structure as of 20250322:
+Type: AWS::Serverless::HttpApi
+Properties:
+  AccessLogSettings:
+    DestinationArn: String
+    Format: String
+  Auth:
+    Authorizers: OAuth2Authorizer | LambdaAuthorizer
+      OAuth2AuthorizerLogicalId:
+        AuthorizationScopes:
+          - String
+        IdentitySource: String
+        JwtConfiguration: Map
+      LambdaAuthorizerLogicalId:
+        AuthorizerPayloadFormatVersion: String
+        EnableFunctionDefaultPermissions: Boolean
+        EnableSimpleResponses: Boolean
+        FunctionArn: String
+        FunctionInvokeRole: String
+        Identity:
+          Context:
+            - String
+          Headers:
+            - String
+          QueryStrings:
+            - String
+          ReauthorizeEvery: Integer
+          StageVariables:
+            - String
+    DefaultAuthorizer: String
+    EnableIamAuthorizer: Boolean
+  CorsConfiguration: String | HttpApiCorsConfiguration
+    # HttpApiCorsConfiguration
+    AllowCredentials: Boolean
+    AllowHeaders:
+      - String
+    AllowMethods:
+      - String
+    AllowOrigins:
+      - String
+    ExposeHeaders:
+      - String
+    MaxAge: Integer
+  DefaultRouteSettings: RouteSettings
+  DefinitionBody: JSON
+  DefinitionUri: String | HttpApiDefinition
+    # HttpApiDefinition
+    Bucket: String
+    Key: String
+    Version: String
+  Description: String
+  DisableExecuteApiEndpoint: Boolean
+  Domain:
+    BasePath: List
+    CertificateArn: String
+    DomainName: String
+    EndpointConfiguration: String
+    MutualTlsAuthentication: MutualTlsAuthentication
+    OwnershipVerificationCertificateArn: String
+    Route53: Route53Configuration
+    SecurityPolicy: String
+  FailOnWarnings: Boolean
+  Name: String
+  PropagateTags: Boolean
+  RouteSettings: Json
+  StageName: String
+  StageVariables: Json
+  Tags: Map
+#}

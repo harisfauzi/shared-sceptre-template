@@ -1,0 +1,57 @@
+---
+{%- import 'macros/prop-connector.yaml.j2' as prop_connector %}
+Description: {{sceptre_user_data.description|default('Serverless Connector(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+{%- for connector in sceptre_user_data.connectors %}
+{%- set connector_name = connector.name %}
+  {{ connector_name }}:
+    Type: AWS::Serverless::Connector
+    DeletionPolicy: {{ connector.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ connector.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if connector.destination is mapping %}
+      Destination:
+        {{ prop_connector.prep_resource_reference(connector.destination) | indent(width=8, first=False) }}
+{%- elif connector.destination is iterable %}
+      Destination:
+{%- for resource_reference in connector.destination %}
+        -
+          {{ prop_connector.prep_resource_reference(connector.destination) | indent(width=10, first=False) }}
+{%- endfor %}
+{%- endif %}
+      Permissions:
+{%- for permission in connector.permissions %}
+        - {{ permission }}
+{%- endfor %}
+      Source:
+        {{ prop_connector.prep_resource_reference(connector.source) | indent(width=8, first=False) }}
+{%- endfor %}
+{#
+# Supported structure as of 20250322:
+Type: AWS::Serverless::Connector
+Properties:
+  Destination: ResourceReference | List of ResourceReference
+    -
+      Arn: String
+      Id: String
+      Name: String
+      Qualifier: String
+      QueueUrl: String
+      ResourceId: String
+      RoleName: String
+      Type: String
+  Permissions:
+    - String
+  Source:
+    Arn: String
+    Id: String
+    Name: String
+    Qualifier: String
+    QueueUrl: String
+    ResourceId: String
+    RoleName: String
+    Type: String
+#}

@@ -1,0 +1,162 @@
+---
+{%- import 'macros/globals.yaml.j2' as globals %}
+{%- import 'macros/prop_api.yaml.j2' as prop_api %}
+Description: {{sceptre_user_data.description|default('Serverless API(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+{%- if sceptre_user_data.globals is defined %}
+{{ globals.prep(sceptre_user_data.globals) }}
+{%- endif %}
+
+Resources:
+{%- for api in sceptre_user_data.apis %}
+{%- set api_name = api.name %}
+  {{ api_name }}:
+    Type: AWS::Serverless::Api
+    DeletionPolicy: {{ api.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ api.update_replace_policy | default('Delete') }}
+    Properties:
+{%- endfor %}
+{#
+# Supported structure as of 20250320:
+Type: AWS::Serverless::StateMachine
+Properties:
+  AutoPublishAlias: String
+  UseAliasAsEventTarget: Boolean
+  Definition: Map
+  DefinitionSubstitutions: Map
+  DefinitionUri: String | S3Location
+    # S3Location
+    Bucket: String
+    Key: String
+    Version: String
+  DeploymentPreference:
+    Alarms:
+      - String
+    Interval: Integer
+    Percentage: Integer
+    StateMachineVersionArn: String
+    Type: String
+  Events: EventSource
+    EventLogicalId:
+      Type: String
+      Properties: Schedule | ScheduleV2 | CloudWatchEvent | EventBridgeRule | Api
+        # Schedule
+        DeadLetterConfig:
+          Arn: String
+          QueueLogicalId: String
+          Type: String
+        Description: String
+        Enabled: Boolean
+        Input: String
+        Name: String
+        RetryPolicy:
+          MaximumEventAgeInSeconds: Integer
+          MaximumRetryAttempts: Integer
+        RoleArn: String
+        Schedule: String
+        State: String
+        Target: Target
+
+        # ScheduleV2
+        DeadLetterConfig:
+          Arn: String
+          QueueLogicalId: String
+          Type: String
+        Description: String
+        EndDate: String
+        FlexibleTimeWindow:
+          MaximumWindowInMinutes: Number
+          Mode: String
+        GroupName: String
+        Input: String
+        KmsKeyArn: String
+        Name: String
+        OmitName: Boolean
+        PermissionsBoundary: String
+        RetryPolicy:
+          MaximumEventAgeInSeconds: Integer
+          MaximumRetryAttempts: Integer
+        RoleArn: String
+        ScheduleExpression: String
+        ScheduleExpressionTimezone: String
+        StartDate: String
+        State: String
+
+        # CloudWatchEvent
+        EventBusName: String
+        Input: String
+        InputPath: String
+        Pattern: Json
+
+        # EventBridgeRule
+        DeadLetterConfig:
+          Arn: String
+          QueueLogicalId: String
+          Type: String
+        EventBusName: String
+        Input: String
+        InputPath: String
+        InputTransformer:
+          InputPathsMap:
+            Key: Value
+          InputTemplate: String
+        Pattern: Json
+        RetryPolicy:
+          MaximumEventAgeInSeconds: Integer
+          MaximumRetryAttempts: Integer
+        RuleName: String
+        State: String
+        Target:
+          Id: String
+
+        # Api
+        Auth:
+          ApiKeyRequired: Boolean
+          AuthorizationScopes:
+            - String
+          Authorizer: String
+          ResourcePolicy:
+            AwsAccountBlacklist:
+            - String
+            AwsAccountWhitelist:
+            - String
+            CustomStatements:
+            - String
+            IntrinsicVpcBlacklist:
+            - String
+            IntrinsicVpcWhitelist:
+            - String
+            IntrinsicVpceBlacklist:
+            - String
+            IntrinsicVpceWhitelist:
+            - String
+            IpRangeBlacklist:
+            - String
+            IpRangeWhitelist:
+            - String
+            SourceVpcBlacklist:
+            - String
+            SourceVpcWhitelist:
+            - String
+        Method: String
+        Path: String
+        RestApiId: String
+        UnescapeMappingTemplate: Boolean
+  Logging:
+    Destinations:
+      - CloudWatchLogsLogGroup:
+            LogGroupArn: String
+    IncludeExecutionData: Boolean
+    Level: String
+  Name: String
+  PermissionsBoundary: String
+  Policies: String | List | Map
+  PropagateTags: Boolean
+  RolePath: String
+  Role: String
+  Tags: Map
+  Tracing:
+    Enabled: Boolean
+  Type: String
+#}

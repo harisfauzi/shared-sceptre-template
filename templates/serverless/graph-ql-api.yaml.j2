@@ -1,0 +1,368 @@
+---
+{%- import 'macros/prop-graphqlapi.yaml.j2' as prop_graphqlapi %}
+Description: {{sceptre_user_data.description|default('Serverless GraphQLApi(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+{%- for graphqlapi in sceptre_user_data.graphqlapis %}
+{%- set graphqlapi_name = graphqlapi.name %}
+  {{ graphqlapi_name }}:
+    Type: AWS::Serverless::GraphQLApi
+    DeletionPolicy: {{ graphqlapi.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ graphqlapi.update_replace_policy | default('Delete') }}
+    Properties:
+      {#- BEGIN Auth: #}
+      Auth:
+        Type: {{ graphqlapi.auth.type }}
+{%- if graphqlapi.auth.additional is defined %}{#- BEGIN if graphqlapi.auth.additional is defined #}
+        Additional:
+{%- for additional_item in graphqlapi.auth.additional %}
+          - Type: {{ additional_item.type }}
+{%- if additional_item.lambda_authorizer is defined %}{## BEGIN if additional_item.lambda_authorizer is defined #}
+            {{ prop_graphqlapi.prep_lambda_authorizer_config(additional_item.lambda_authorizer) | indent(width=14, first=False) }}
+{%- endif %}{## END if additional_item.lambda_authorizer is defined #}
+{%- if additional_item.open_id_connect is defined %}{## BEGIN if additional_item.open_id_connect is defined #}
+            {{ prop_graphqlapi.prep_openid_connect_config(additional_item.open_id_connect) | indent(width=12, first=False) }}
+{%- endif %}{## END if additional_item.open_id_connect is defined #}
+{%- if additional_item.user_pool is defined %}{## BEGIN if additional_item.user_pool is defined #}
+            {{ prop_graphqlapi.prep_user_pool(additional_item.user_pool) | indent(width=12, first=False) }}
+{%- endif %}{## END if additional_item.user_pool is defined #}
+{%- endfor %}
+{%- endif %}{#- END if graphqlapi.auth.additional is defined #}
+{%- if graphqlapi.auth.lambda_authorizer is defined %}
+        {{ prop_graphqlapi.prep_lambda_authorizer_config(graphqlapi.auth.lambda_authorizer) | indent(width=10, first=False) }}
+{%- endif %}
+{%- if graphqlapi.auth.open_id_connect is defined %}
+        {{ prop_graphqlapi.prep_openid_connect_config(graphqlapi.auth.open_id_connect) | indent(width=8, first=False) }}
+{%- endif %}
+{%- if graphqlapi.auth.user_pool is defined %}
+        {{ prop_graphqlapi.prep_user_pool(graphqlapi.auth.user_pool) | indent(width=8, first=False) }}
+{%- endif %}
+      {#- END Auth: #}
+      {#- BEGIN DataSources: #}
+      DataSources:
+{%- if graphqlapi.data_sources.dynamo_db is defined %}{# BEGIN if graphqlapi.data_sources.dynamo_db is defined #}
+        DynamoDb:
+{%- for logical_id, dynamo_db in graphqlapi.data_sources.dynamo_db.items() %}
+          {{ logical_id }}:
+            TableName: {{ dynamo_db.table_name }}
+{%- if dynamo_db.delta_sync is defined %}{# BEGIN if dynamo_db.delta_sync is defined #}
+            DeltaSync:
+              BaseTableTTL: {{ dynamo_db.delta_sync.base_table_ttl }}
+              DeltaSyncTableName: {{ dynamo_db.delta_sync.delta_sync_table_name }}
+              DeltaSyncTableTTL: {{ dynamo_db.delta_sync.delta_sync_table_ttl }}
+{%- endif %}{# END if dynamo_db.delta_sync is defined #}
+{%- if dynamo_db.description is defined %}
+            Description: {{ dynamo_db.description }}
+{%- endif %}
+{%- if dynamo_db.name is defined %}
+            Name: {{ dynamo_db.name }}
+{%- endif %}
+{%- if dynamo_db.permissions is defined %}
+            Permissions: {{ dynamo_db.permissions }}
+{%- endif %}
+{%- if dynamo_db.region is defined %}
+            Region: {{ dynamo_db.region }}
+{%- endif %}
+{%- if dynamo_db.service_role_arn is defined %}
+            ServiceRoleArn: {{ dynamo_db.service_role_arn }}
+{%- endif %}
+{%- if dynamo_db.table_arn is defined %}
+            TableArn: {{ dynamo_db.table_arn }}
+{%- endif %}
+{%- if dynamo_db.use_caller_credentials is defined %}
+            UseCallerCredentials: {{ dynamo_db.use_caller_credentials | lower }}
+{%- endif %}
+{%- if dynamo_db.versioned is defined %}
+            Versioned: {{ dynamo_db.versioned | lower }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if graphqlapi.data_sources.dynamo_db is defined #}
+{%- if graphqlapi.data_sources.lambda is defined %}{# BEGIN if graphqlapi.data_sources.dynamo_db is defined #}
+        Lambda:
+{%- for logical_id, lambda in graphqlapi.data_sources.lambda.items() %}
+          {{ logical_id }}:
+{%- if lambda.description is defined %}
+            Description: {{ lambda.description }}
+{%- endif %}
+{%- if lambda.function_arn is defined %}
+            FunctionArn: {{ lambda.function_arn }}
+{%- endif %}
+{%- if lambda.name is defined %}
+            Name: {{ lambda.name }}
+{%- endif %}
+{%- if lambda.service_role_arn is defined %}
+            ServiceRoleArn: {{ lambda.service_role_arn }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if graphqlapi.data_sources.dynamo_db is defined #}
+      {#- END DataSources: #}
+      {#- BEGIN Functions: #}
+      Functions:
+{%- for logical_id, function in graphqlapi.functions.items() %}
+        {{ logical_id }}:
+          DataSource: {{ function.data_source }}
+          Runtime:
+            Name: {{ function.runtime.name }}
+            Version: {{ function.runtime.version }}
+{%- if function.code_uri is defined %}
+          CodeUri: {{ function.code_uri }}
+{%- endif %}
+{%- if function.description is defined %}
+          Description: {{ function.description }}
+{%- endif %}
+{%- if function.id is defined %}
+          Id: {{ function.id }}
+{%- endif %}
+{%- if function.inline_code is defined %}
+          InlineCode: |
+            {{ function.inline_code | indent(width=12, first=False) }}
+{%- endif %}
+{%- if function.max_batch_size is defined %}
+          MaxBatchSize: {{ function.max_batch_size }}
+{%- endif %}
+{%- if function.name is defined %}
+          Name: {{ function.name }}
+{%- endif %}
+{%- if function.xxxxxx is defined %}
+          Sync:
+            ConflictDetection: String
+            ConflictHandler: String
+            LambdaConflictHandlerConfig: 
+              LambdaConflictHandlerArn: String
+{%- endif %}
+{%- endfor %}
+      {#- END Functions: #}
+      {#- BEGIN Resolvers: #}
+      Resolvers:
+        OperationType:
+          LogicalId:
+            Caching:
+              CachingKeys: 
+                - String
+              Ttl: Number
+
+            CodeUri: String
+            FieldName: String
+            InlineCode: String 
+            MaxBatchSize: Integer
+            Pipeline: List
+            Runtime:
+              Name: String
+              Version: String
+            Sync:
+              ConflictDetection: String
+              ConflictHandler: String
+              LambdaConflictHandlerConfig: 
+                LambdaConflictHandlerArn: String
+      {#- END Resolvers: #}
+      ApiKeys:
+        LogicalId:
+          ApiKeyId: String
+          Description: String
+          ExpiresOn: Double
+      Cache: AWS::AppSync::ApiCache
+      DomainName: AWS::AppSync::DomainName
+      Logging:
+        CloudWatchLogsRoleArn: String
+        ExcludeVerboseContent: Boolean
+        FieldLogLevel: String
+      Name: String
+      SchemaInline: String
+      SchemaUri: String
+      Tags:
+        - Key: String
+          Value: String
+      XrayEnabled: Boolean
+
+{%- endfor %}
+
+Outputs:
+{%- for graphqlapi in sceptre_user_data.graphqlapis %}
+{%- set graphqlapi_name = graphqlapi.name %}
+  {{ graphqlapi_name }}:
+    Description: The ARN of GraphQLAPI for {{ graphqlapi_name }}
+    Value:
+      Ref: {{ graphqlapi_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ graphqlapi_name }}"
+
+  {{ graphqlapi_name }}ApiId:
+    Description: Unique AWS AppSync GraphQL API identifier for {{ graphqlapi_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ graphqlapi_name }}
+        - ApiId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ graphqlapi_name }}-ApiId"
+
+  {{ graphqlapi_name }}GraphQLDns:
+    Description: The FQDN of the endpoint URL for {{ graphqlapi_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ graphqlapi_name }}
+        - GraphQLDns
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ graphqlapi_name }}-GraphQLDns"
+
+  {{ graphqlapi_name }}GraphQLEndpointArn:
+    Description: The GraphQL endpoint ARN for {{ graphqlapi_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ graphqlapi_name }}
+        - GraphQLEndpointArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ graphqlapi_name }}-GraphQLEndpointArn"
+
+  {{ graphqlapi_name }}GraphQLUrl:
+    Description: The Endpoint URL of the GraphQL API for {{ graphqlapi_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ graphqlapi_name }}
+        - GraphQLUrl
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ graphqlapi_name }}-GraphQLUrl"
+
+  {{ graphqlapi_name }}RealtimeDns:
+    Description: The FQDN of the real-time endpoint URL of the GraphQL API for {{ graphqlapi_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ graphqlapi_name }}
+        - RealtimeDns
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ graphqlapi_name }}-RealtimeDns"
+
+  {{ graphqlapi_name }}RealtimeUrl:
+    Description: The GraphQL API real-time endpoint URL for {{ graphqlapi_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ graphqlapi_name }}
+        - RealtimeUrl
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ graphqlapi_name }}-RealtimeUrl"
+{%- endfor %}
+{#
+# Supported structure as of 20250322:
+  Type: AWS::Serverless::GraphQLApi
+  Properties:
+    ApiKeys:
+      LogicalId:
+        ApiKeyId: String
+        Description: String
+        ExpiresOn: Double
+    Auth:
+      Additional:
+        -
+          LambdaAuthorizer:
+            AuthorizerResultTtlInSeconds: Integer
+            AuthorizerUri: String
+            IdentityValidationExpression: String
+          OpenIDConnect:
+            AuthTTL: Number
+            ClientId: String
+            IatTTL: Number
+            Issuer: String
+          Type: String
+          UserPool:
+            AppIdClientRegex: String
+            AwsRegion: String
+            DefaultAction: String
+            UserPoolId: String
+      LambdaAuthorizer:
+        AuthorizerResultTtlInSeconds: Integer
+        AuthorizerUri: String
+        IdentityValidationExpression: String
+      OpenIDConnect:
+        AuthTTL: Number
+        ClientId: String
+        IatTTL: Number
+        Issuer: String
+      Type: String
+      UserPool:
+        AppIdClientRegex: String
+        AwsRegion: String
+        DefaultAction: String
+        UserPoolId: String
+
+    Cache: AWS::AppSync::ApiCache
+    DataSources:
+      DynamoDb:
+        LogicalId:
+          DeltaSync:
+            BaseTableTTL: String
+            DeltaSyncTableName: String
+            DeltaSyncTableTTL: String
+          Description: String
+          Name: String
+          Permissions: List
+          Region: String
+          ServiceRoleArn: String
+          TableArn: String
+          TableName: String
+          UseCallerCredentials: Boolean
+          Versioned: Boolean
+      Lambda:
+        LogicalId:
+          Description: String
+          FunctionArn: String
+          Name: String
+          ServiceRoleArn: String
+    DomainName: AWS::AppSync::DomainName
+    Functions:
+      LogicalId:
+        CodeUri: String
+        DataSource: String
+        Description: String
+        Id: String
+        InlineCode: String
+        MaxBatchSize: Integer
+        Name: String
+        Runtime:
+          Name: String
+          Version: String
+        Sync:
+          ConflictDetection: String
+          ConflictHandler: String
+          LambdaConflictHandlerConfig: 
+            LambdaConflictHandlerArn: String
+    Logging:
+      CloudWatchLogsRoleArn: String
+      ExcludeVerboseContent: Boolean
+      FieldLogLevel: String
+    Name: String
+    Resolvers:
+      OperationType:
+        LogicalId:
+          Caching:
+            CachingKeys: 
+              - String
+            Ttl: Number
+
+          CodeUri: String
+          FieldName: String
+          InlineCode: String 
+          MaxBatchSize: Integer
+          Pipeline: List
+          Runtime:
+            Name: String
+            Version: String
+          Sync:
+            ConflictDetection: String
+            ConflictHandler: String
+            LambdaConflictHandlerConfig: 
+              LambdaConflictHandlerArn: String
+    SchemaInline: String
+    SchemaUri: String
+    Tags:
+      - Key: String
+        Value: String
+    XrayEnabled: Boolean
+#}

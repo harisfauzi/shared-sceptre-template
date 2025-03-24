@@ -1,0 +1,38 @@
+---
+{%- import 'macros/globals.yaml.j2' as globals %}
+{%- import 'macros/prop_api.yaml.j2' as prop_api %}
+Description: {{sceptre_user_data.description|default('Serverless API(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+{%- if sceptre_user_data.globals is defined %}
+{{ globals.prep(sceptre_user_data.globals) }}
+{%- endif %}
+
+Resources:
+{%- for api in sceptre_user_data.apis %}
+{%- set api_name = api.name %}
+  {{ api_name }}:
+    Type: AWS::Serverless::Api
+    DeletionPolicy: {{ api.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ api.update_replace_policy | default('Delete') }}
+    Properties:
+{%- endfor %}
+{#
+# Supported structure as of 20250324:
+Type: AWS::Serverless::LayerVersion
+Properties:
+  CompatibleArchitectures:
+    - String
+  CompatibleRuntimes:
+    - String
+  ContentUri: String | LayerContent
+    # LayerContent
+    Bucket: String
+    Key: String
+    Version: String
+  Description: String
+  LayerName: String
+  LicenseInfo: String
+  PublishLambdaVersion: Boolean
+  RetentionPolicy: String
+#}
