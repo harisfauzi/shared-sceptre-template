@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Events Event Bus Policy(s)
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for event_bus_policy in sceptre_user_data.event_bus_policys %}
 {%- set event_bus_policy_name = event_bus_policy.name %}
   {{ event_bus_policy_name }}:
@@ -37,13 +36,11 @@ Resources:
       Statement: {{ event_bus_policy.statement_json }}
 {%- elif event_bus_policy.statement is defined %}
       Statement:
-{{ event_bus_policy.statement | indent(width=8, first=true) }}
+        {{ event_bus_policy.statement | indent(width=8, first=False) }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for event_bus_policy in sceptre_user_data.event_bus_policys %}
 {%- set event_bus_policy_name = event_bus_policy.name %}
   {{ event_bus_policy_name }}:
@@ -53,5 +50,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ event_bus_policy_name }}"
-
 {%- endfor %}
+{#
+# Supported structure as of 20250226:
+Type: AWS::Events::EventBusPolicy
+Properties:
+  Action: String
+  Condition:
+    Key: String
+    Type: String
+    Value: String
+  EventBusName: String
+  Principal: String
+  Statement: Json
+  StatementId: String
+#}

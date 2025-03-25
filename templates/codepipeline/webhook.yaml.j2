@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CodePipeline Webhook(s) fo
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for webhook in sceptre_user_data.webhooks %}
 {%- set webhook_name = webhook.name %}
   {{ webhook_name }}:
@@ -34,13 +33,12 @@ Resources:
       Name: {{webhook.webhook_name}}
 {%- endif %}
 {%- if webhook.register_with_third_party is defined %}
-      RegisterWithThirdParty: {{webhook.register_with_third_party}}
+      RegisterWithThirdParty: {{webhook.register_with_third_party|lower}}
 {%- endif %}
 
 {%- endfor %}
 
 Outputs:
-
 {%- for webhook in sceptre_user_data.webhooks %}
 {%- set webhook_name = webhook.name %}
   {{ webhook_name }}:
@@ -62,3 +60,21 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ webhook_name }}-Url"
 
 {%- endfor %}
+{#
+# Supported structure as of 20250325:
+Type: AWS::CodePipeline::Webhook
+Properties:
+  Authentication: String
+  AuthenticationConfiguration:
+    AllowedIPRange: String
+    SecretToken: String
+  Filters:
+    -
+      JsonPath: String
+      MatchEquals: String
+  TargetAction: String
+  TargetPipeline: String
+  TargetPipelineVersion: Integer
+  Name: String
+  RegisterWithThirdParty: Boolean
+#}

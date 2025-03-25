@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Events Rule(s) for '+scept
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for rule in sceptre_user_data.rules %}
 {%- set rule_name = rule.name %}
   {{ rule_name }}:
@@ -11,24 +10,26 @@ Resources:
     DeletionPolicy: {{ rule.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ rule.update_replace_policy | default('Delete') }}
     Properties:
-      State: {{ rule.state | default('ENABLED') }}
-{#- must define either event_pattern on schedule_expression #}
-{%- if rule.event_pattern_json is defined %}
-      EventPattern: {{ rule.event_pattern_json }}
-{%- elif rule.event_pattern is defined %}
-      EventPattern:
-{{ rule.event_pattern | indent(width=8, first=true) }}
-{%- else %}
-      ScheduleExpression: {{ rule.schedule_expression }}
-{%- endif %}
 {%- if rule.description is defined %}
       Description: {{ rule.description }}
 {%- endif %}
 {%- if rule.event_bus_name is defined %}
       EventBusName: {{ rule.event_bus_name }}
 {%- endif %}
+{#- must define either event_pattern on schedule_expression #}
+{%- if rule.event_pattern_json is defined %}
+      EventPattern: {{ rule.event_pattern_json }}
+{%- elif rule.event_pattern is defined %}
+      EventPattern:
+        {{ rule.event_pattern | indent(width=8, first=false) }}
+{%- else %}
+      ScheduleExpression: {{ rule.schedule_expression }}
+{%- endif %}
 {%- if rule.rule_name is defined %}
       Name: {{ rule.rule_name }}
+{%- endif %}
+{%- if rule.state is defined %}
+      State: {{ rule.state | default('ENABLED') }}
 {%- endif %}
 {%- if rule.role_arn is defined %}
       RoleArn: {{ rule.role_arn | trim }}
@@ -38,27 +39,37 @@ Resources:
 {%- for target in rule.targets %}
         - Arn: {{ target.arn | trim }}
           Id: {{ target.id }}
-{%- if target.batch_parameters is defined %}
+{%- if target.app_sync_parameters is defined %}{# BEGIN if target.app_sync_parameters is defined #}
+          AppSyncParameters:
+            GraphQLOperation: {{ target.app_sync_parameters.graphql_operation }}
+{%- endif %}{# END if target.app_sync_parameters is defined #}
+{%- if target.batch_parameters is defined %}{# BEGIN if target.batch_parameters is defined #}
           BatchParameters:
             JobDefinition: {{ target.batch_parameters.job_definition }}
             JobName: {{ target.batch_parameters.job_name }}
-{%- if target.batch_parameters.array_properties is defined %}
+{%- if target.batch_parameters.array_properties is defined %}{## BEGIN if target.batch_parameters.array_properties is defined ##}
             ArrayProperties:
+{%- if target.batch_parameters.array_properties.size is defined %}
               Size: {{ target.batch_parameters.array_properties.size }}
 {%- endif %}
-{%- if target.batch_parameters.retry_strategy is defined %}
+{%- endif %}{## END if target.batch_parameters.array_properties is defined ##}
+{%- if target.batch_parameters.retry_strategy is defined %}{## BEGIN if target.batch_parameters.retry_strategy is defined ##}
             RetryStrategy:
+{%- if target.batch_parameters.retry_strategy.attempts is defined %}
               Attempts: {{ target.batch_parameters.retry_strategy.attempts }}
 {%- endif %}
-{%- endif %}
-{%- if target.dead_letter_config is defined %}
+{%- endif %}{## END if target.batch_parameters.retry_strategy is defined ##}
+{%- endif %}{# END if target.batch_parameters is defined #}
+{%- if target.dead_letter_config is defined %}{# BEGIN if target.dead_letter_config is defined #}
           DeadLetterConfig:
+{%- if target.dead_letter_config.arn is defined %}
             Arn: {{ target.dead_letter_config.arn | trim }}
 {%- endif %}
-{%- if target.ecs_parameters is defined %}{# BEGIN {%- if target.ecs_parameters is defined %} #}
+{%- endif %}{# END if target.dead_letter_config is defined #}
+{%- if target.ecs_parameters is defined %}{# BEGIN if target.ecs_parameters is defined #}
           EcsParameters:
             TaskDefinitionArn: {{ target.ecs_parameters.task_definition_arn | trim }}
-{%- if target.ecs_parameters.capacity_provider_strategy is defined %}
+{%- if target.ecs_parameters.capacity_provider_strategy is defined %}{# BEGIN if target.ecs_parameters.capacity_provider_strategy is defined #}
             CapacityProviderStrategy:
 {%- for strategy in target.ecs_parameters.capacity_provider_strategy %}
               - CapacityProvider: {{ strategy.capacity_provider }}
@@ -69,21 +80,22 @@ Resources:
                 Weight: {{ strategy.weight }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}
-{%- if target.ecs_parameters.enable_ecs_managed_tags is defined %}
-            EnableECSManagedTags: {{ target.ecs_parameters.enable_ecs_managed_tags }}
-{%- endif %}
-{%- if target.ecs_parameters.enable_execute_command is defined %}
-            EnableExecuteCommand: {{ target.ecs_parameters.enable_execute_command }}
-{%- endif %}
-{%- if target.ecs_parameters.group is defined %}
+{%- endif %}{# END if target.ecs_parameters.capacity_provider_strategy is defined #}
+{%- if target.ecs_parameters.enable_ecs_managed_tags is defined %}{# BEGIN if target.ecs_parameters.enable_ecs_managed_tags is defined #}
+            EnableECSManagedTags: {{ target.ecs_parameters.enable_ecs_managed_tags | lower }}
+{%- endif %}{# END if target.ecs_parameters.enable_ecs_managed_tags is defined #}
+{%- if target.ecs_parameters.enable_execute_command is defined %}{# BEGIN if target.ecs_parameters.enable_execute_command is defined #}
+            EnableExecuteCommand: {{ target.ecs_parameters.enable_execute_command | lower }}
+{%- endif %}{# END if target.ecs_parameters.enable_execute_command is defined #}
+{%- if target.ecs_parameters.group is defined %}{# BEGIN if target.ecs_parameters.group is defined #}
             Group: {{ target.ecs_parameters.group }}
-{%- endif %}
-{%- if target.ecs_parameters.launch_type is defined %}
+{%- endif %}{# END if target.ecs_parameters.group is defined #}
+{%- if target.ecs_parameters.launch_type is defined %}{# BEGIN if target.ecs_parameters.launch_type is defined #}
             LaunchType: {{ target.ecs_parameters.launch_type }}
-{%- endif %}
-{%- if target.ecs_parameters.network_configuration is defined %}
+{%- endif %}{# END if target.ecs_parameters.launch_type is defined #}
+{%- if target.ecs_parameters.network_configuration is defined %}{# BEGIN if target.ecs_parameters.network_configuration is defined #}
             NetworkConfiguration:
+{%- if target.ecs_parameters.network_configuration.aws_vpc_configuration is defined %}{## BEGIN if target.ecs_parameters.network_configuration.aws_vpc_configuration is defined ##}
               AwsVpcConfiguration:
                 Subnets:
 {%- for subnet in target.ecs_parameters.network_configuration.aws_vpc_configuration.subnets %}
@@ -98,7 +110,8 @@ Resources:
                   - {{ security_group | trim }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}
+{%- endif %}{## END if target.ecs_parameters.network_configuration.aws_vpc_configuration is defined ##}
+{%- endif %}{# END if target.ecs_parameters.network_configuration is defined #}
 {%- if target.ecs_parameters.placement_constraints is defined %}
             PlacementConstraints:
 {%- for placement_constraint in target.ecs_parameters.placement_constraints %}
@@ -135,71 +148,82 @@ Resources:
 {%- if target.ecs_parameters.tag_list is defined %}
             TagList:
 {%- for key, value in target.ecs_parameters.tag_list.items() %}
-              - Key: "{{ key }}"
-                Value: "{{ value }}"
+              - Key: {{ key }}
+                Value: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if target.ecs_parameters.task_count is defined %}
             TaskCount: {{ target.ecs_parameters.task_count }}
 {%- endif %}
-{%- endif %}{# END {%- if target.ecs_parameters is defined %} #}
-{%- if target.http_parameters is defined %}
+{%- endif %}{# END if target.ecs_parameters is defined #}
+{%- if target.http_parameters is defined %}{# BEGIN if target.http_parameters is defined #}
           HttpParameters:
-{%- if target.http_parameters.header_parameters is defined %}
+{%- if target.http_parameters.header_parameters is defined %}{## BEGIN if target.http_parameters.header_parameters is defined ##}
             HeaderParameters:
 {%- for key, value in target.http_parameters.header_parameters.items() %}
-              "{{ key }}" : "{{ value }}"
+              {{ key }}: {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- if target.http_parameters.path_parameter_values is defined %}
+{%- endif %}{## END if target.http_parameters.header_parameters is defined ##}
+{%- if target.http_parameters.path_parameter_values is defined %}{## BEGIN if target.http_parameters.path_parameter_values is defined ##}
             PathParameterValues:
-{%- for value in target.http_parameters.path_parameter_values %}
-              - {{ value }}
+{%- for item in target.http_parameters.path_parameter_values %}
+              - {{ item }}
 {%- endfor %}
-{%- endif %}
-{%- if target.http_parameters.query_string_parameters is defined %}
+{%- endif %}{## END if target.http_parameters.path_parameter_values is defined ##}
+{%- if target.http_parameters.query_string_parameters is defined %}{## BEGIN if target.http_parameters.query_string_parameters is defined ##}
             QueryStringParameters:
 {%- for key, value in target.http_parameters.query_string_parameters.items() %}
-              "{{ key }}" : "{{ value }}"
+              {{ key }}: {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}
+{%- endif %}{## END if target.http_parameters.query_string_parameters is defined ##}
+{%- endif %}{# END if target.http_parameters is defined #}
 {%- if target.input is defined %}
           Input: {{ target.input }}
 {%- endif %}
 {%- if target.input_path is defined %}
           InputPath: {{ target.input_path }}
 {%- endif %}
-{%- if target.input_transformer is defined %}
+{%- if target.input_transformer is defined %}{# BEGIN if target.input_transformer is defined #}
           InputTransformer:
-            InputTemplate: {{ target.input_transformer.input_template }}
+            InputTemplate: |
+              {{ target.input_transformer.input_template | indent(width=14, first=false) }}
+{%- if target.input_transformer.input_paths_map is defined %}
             InputPathsMap:
 {%- for key, value in target.input_transformer.input_paths_map.items() %}
-              "{{ key }}" : "{{ value }}"
+              {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- if target.kinesis_parameters is defined %}
+{%- endif %}{# END if target.input_transformer is defined #}
+{%- if target.kinesis_parameters is defined %}{# BEGIN if target.kinesis_parameters is defined #}
           KinesisParameters:
             PartitionKeyPath: {{ target.kinesis_parameters.partition_key_path }}
-{%- endif %}
-{%- if target.redshift_data_parameters is defined %}
+{%- endif %}{# END if target.kinesis_parameters is defined #}
+{%- if target.redshift_data_parameters is defined %}{# BEGIN if target.redshift_data_parameters is defined #}
           RedshiftDataParameters:
             Database: {{ target.redshift_data_parameters.database | trim }}
-            Sql: {{ target.redshift_data_parameters.sql }}
 {%- if target.redshift_data_parameters.db_user is defined %}
             DbUser: {{ target.redshift_data_parameters.db_user }}
 {%- endif %}
 {%- if target.redshift_data_parameters.secret_manager_arn is defined %}
             SecretManagerArn: {{ target.redshift_data_parameters.secret_manager_arn | trim }}
 {%- endif %}
+{%- if target.redshift_data_parameters.sql is defined %}
+            Sql: {{ target.redshift_data_parameters.sql }}
+{%- endif %}
+{%- if target.redshift_data_parameters.sqls is defined %}{## BEGIN if target.redshift_data_parameters.sqls is defined ##}
+            Sqls:
+{%- for item in target.redshift_data_parameters.sqls %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}{## END if target.redshift_data_parameters.sqls is defined ##}
 {%- if target.redshift_data_parameters.statement_name is defined %}
             StatementName: {{ target.redshift_data_parameters.statement_name }}
 {%- endif %}
 {%- if target.redshift_data_parameters.with_event is defined %}
-            WithEvent: {{ target.redshift_data_parameters.with_event }}
+            WithEvent: {{ target.redshift_data_parameters.with_event | lower }}
 {%- endif %}
-{%- endif %}
-{%- if target.retry_policy is defined %}
+{%- endif %}{# END if target.redshift_data_parameters is defined #}
+{%- if target.retry_policy is defined %}{# BEGIN if target.retry_policy is defined #}
           RetryPolicy:
 {%- if target.retry_policy.maximum_event_age_in_seconds is defined %}
             MaximumEventAgeInSeconds: {{ target.retry_policy.maximum_event_age_in_seconds }}
@@ -207,32 +231,41 @@ Resources:
 {%- if target.retry_policy.maximum_retry_attempts is defined %}
             MaximumRetryAttempts: {{ target.retry_policy.maximum_retry_attempts }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if target.retry_policy is defined #}
 {%- if target.role_arn is defined %}
           RoleArn: {{ target.role_arn | trim }}
 {%- endif %}
-{%- if target.run_command_parameters is defined %}
+{%- if target.run_command_parameters is defined %}{# BEGIN if target.run_command_parameters is defined #}
           RunCommandParameters:
             RunCommandTargets:
 {%- for run_command_target in target.run_command_parameters.run_command_targets %}
               - Key: {{ run_command_target.key }}
                 Values:
-{%- for values in run_command_target.values %}
-                  - {{ values }}
+{%- for item in run_command_target._values %}
+                  - {{ item }}
 {%- endfor %}
+{%- endfor %}
+{%- endif %}{# END if target.run_command_parameters is defined #}
+{%- if target.sage_maker_pipeline_parameters is defined %}{# BEGIN if target.sage_maker_pipeline_parameters is defined #}
+          SageMakerPipelineParameters:
+{%- if target.sage_maker_pipeline_parameters.pipeline_parameter_list is defined %}
+            PipelineParameterList:
+{%- for parameter in target.sage_maker_pipeline_parameters.pipeline_parameter_list %}
+              -
+                Name: {{ parameter.name }}
+                Value: {{ parameter.value }}
 {%- endfor %}
 {%- endif %}
-{%- if target.sqs_parameters is defined %}
+{%- endif %}{# END if target.sage_maker_pipeline_parameters is defined #}
+{%- if target.sqs_parameters is defined %}{# BEGIN if target.sqs_parameters is defined #}
           SqsParameters:
             MessageGroupId: {{ target.sqs_parameters.message_group_id | trim }}
-{%- endif %}
+{%- endif %}{# END if target.sqs_parameters is defined #}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for rule in sceptre_user_data.rules %}
 {%- set rule_name = rule.name %}
   {{ rule_name }}:
@@ -252,5 +285,106 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ rule_name }}-Arn"
-
 {%- endfor %}
+{#
+# Supported structure as of 20250226:
+Type: AWS::Events::Rule
+Properties:
+  Description: String
+  EventBusName: String
+  EventPattern: Json
+  Name: String
+  RoleArn: String
+  ScheduleExpression: String
+  State: String
+  Targets:
+    -
+      AppSyncParameters:
+        GraphQLOperation: String
+      Arn: String
+      BatchParameters:
+        ArrayProperties:
+          Size: Integer
+        JobDefinition: String
+        JobName: String
+        RetryStrategy:
+          Attempts: Integer
+      DeadLetterConfig:
+        Arn: String
+      EcsParameters:
+        CapacityProviderStrategy:
+          -
+            Base: Integer
+            CapacityProvider: String
+            Weight: Integer
+        EnableECSManagedTags: Boolean
+        EnableExecuteCommand: Boolean
+        Group: String
+        LaunchType: String
+        NetworkConfiguration:
+          AwsVpcConfiguration:
+            AssignPublicIp: String
+            SecurityGroups:
+              - String
+            Subnets:
+              - String
+        PlacementConstraints:
+          -
+            Expression: String
+            Type: String
+        PlacementStrategies:
+          -
+            Field: String
+            Type: String
+        PlatformVersion: String
+        PropagateTags: String
+        ReferenceId: String
+        TagList:
+          -
+            Key: String
+            Value: String
+        TaskCount: Integer
+        TaskDefinitionArn: String
+      HttpParameters:
+        HeaderParameters:
+          Key: Value
+        PathParameterValues:
+          - String
+        QueryStringParameters:
+          Key: Value
+      Id: String
+      Input: String
+      InputPath: String
+      InputTransformer:
+        InputPathsMap:
+          Key: Value
+        InputTemplate: String
+      KinesisParameters:
+        PartitionKeyPath: String
+      RedshiftDataParameters:
+        Database: String
+        DbUser: String
+        SecretManagerArn: String
+        Sql: String
+        Sqls:
+          - String
+        StatementName: String
+        WithEvent: Boolean
+      RetryPolicy:
+        MaximumEventAgeInSeconds: Integer
+        MaximumRetryAttempts: Integer
+      RoleArn: String
+      RunCommandParameters:
+        RunCommandTargets:
+          -
+            Key: String
+            Values:
+              - String
+      SageMakerPipelineParameters:
+        PipelineParameterList:
+          -
+            Name: String
+            Value: String
+      SqsParameters:
+        MessageGroupId: String
+#}

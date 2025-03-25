@@ -1,0 +1,24 @@
+---
+template:
+  type: file
+  path: events/event_bus.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample Event Buses for {{stack_group_config.project_code}}"
+  event_buss:
+    - name: sampleEventBus1
+      event_bus_name: sampleEventBus1
+      description: "Sample Event Bus 1"
+      tags:
+        Environment: "Development"
+        Owner: "TeamA"
+    - name: sampleEventBus2
+      event_bus_name: sampleEventBus2
+      description: "Sample Event Bus 2"
+      tags:
+        Environment: "Production"
+        Owner: "TeamB"
+stack_tags:
+  Test: events-event-bus

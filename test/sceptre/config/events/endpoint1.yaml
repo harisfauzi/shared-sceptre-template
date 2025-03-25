@@ -1,0 +1,40 @@
+---
+template:
+  type: file
+  path: events/endpoint.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample Endpoints for {{stack_group_config.project_code}}"
+  endpoints:
+    - name: sampleEndpoint1
+      endpoint_name: sampleEndpoint1
+      description: "Sample Endpoint 1"
+      event_buses:
+        - event_bus_arn: "!Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/default"
+      routing_config:
+        failover_config:
+          primary:
+            health_check: "!Sub arn:aws:route53:::healthcheck/primary-health-check-id"
+          secondary:
+            route: "secondary-route"
+      replication_config:
+        state: "ENABLED"
+      role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/my-endpoint-role"
+    - name: sampleEndpoint2
+      endpoint_name: sampleEndpoint2
+      description: "Sample Endpoint 2"
+      event_buses:
+        - event_bus_arn: "!Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/custom-bus"
+      routing_config:
+        failover_config:
+          primary:
+            health_check: "!Sub arn:aws:route53:::healthcheck/another-primary-health-check-id"
+          secondary:
+            route: "another-secondary-route"
+      replication_config:
+        state: "DISABLED"
+      role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/another-endpoint-role"
+stack_tags:
+  Test: events-endpoint
