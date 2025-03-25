@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Events API Destination(s) 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for api_destination in sceptre_user_data.api_destinations %}
 {%- set api_destination_name = api_destination.name %}
   {{ api_destination_name }}:
@@ -23,11 +22,9 @@ Resources:
 {%- if api_destination.api_destination_name is defined %}
       Name: {{ api_destination.api_destination_name }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for api_destination in sceptre_user_data.api_destinations %}
 {%- set api_destination_name = api_destination.name %}
   {{ api_destination_name }}:
@@ -49,3 +46,14 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ api_destination_name }}-Arn"
 
 {%- endfor %}
+{#
+# Supported structure as of 20250226:
+Type: AWS::Events::ApiDestination
+Properties:
+  ConnectionArn: String
+  Description: String
+  HttpMethod: String
+  InvocationEndpoint: String
+  InvocationRateLimitPerSecond: Integer
+  Name: String
+#}

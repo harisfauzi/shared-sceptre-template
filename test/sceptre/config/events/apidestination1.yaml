@@ -1,0 +1,25 @@
+---
+template:
+  type: file
+  path: events/api_destination.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample API Destinations for {{stack_group_config.project_code}}"
+  api_destinations:
+    - name: sampleApiDestination1
+      api_destination_name: sampleApiDestination1
+      connection_arn: "!Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:connection/my-connection"
+      http_method: "POST"
+      invocation_endpoint: "https://api.example.com/resource"
+      description: "Sample API Destination 1"
+      invocation_rate_limit_per_second: 10
+    - name: sampleApiDestination2
+      api_destination_name: sampleApiDestination2
+      connection_arn: "!Sub arn:aws:events:${AWS::Region}:${AWS::AccountId}:connection/another-connection"
+      http_method: "GET"
+      invocation_endpoint: "https://api.example.com/another-resource"
+      description: "Sample API Destination 2"
+stack_tags:
+  Test: events-api-destination

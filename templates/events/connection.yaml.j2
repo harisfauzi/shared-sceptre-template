@@ -1,9 +1,9 @@
 ---
+{%- import 'macros/prop-connection.yaml.j2'  as prop_connection %}
 Description: {{sceptre_user_data.description|default('Events Connection(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for connection in sceptre_user_data.connections %}
 {%- set connection_name = connection.name %}
   {{ connection_name }}:
@@ -12,23 +12,92 @@ Resources:
     UpdateReplacePolicy: {{ connection.update_replace_policy | default('Delete') }}
     Properties:
       AuthorizationType: {{ connection.authorization_type }}
-{%- if connection.auth_parameters_json is defined %}
-      AuthParameters: {{ connection.auth_parameters_json }}
-{%- elif connection.auth_parameters is defined %}
+{%- if connection.auth_parameters is defined %}{# BEGIN if connection.auth_parameters is defined #}
       AuthParameters:
-{{ connection.auth_parameters | indent(width=8, first=true) }}
+{%- if connection.auth_parameters.api_key_auth_parameters is defined %}
+        ApiKeyAuthParameters:
+          ApiKeyName: {{ connection.auth_parameters.api_key_auth_parameters.api_key_name }}
+          ApiKeyValue: {{ connection.auth_parameters.api_key_auth_parameters.api_key_value }}
 {%- endif %}
-{%- if connection.description is defined %}
+{%- if connection.auth_parameters.basic_auth_parameters is defined %}
+        BasicAuthParameters:
+          Username: {{ connection.auth_parameters.basic_auth_parameters.username }}
+          Password: {{ connection.auth_parameters.basic_auth_parameters.password }}
+{%- endif %}
+{%- if connection.auth_parameters.connectivity_parameters is defined %}{# BEGIN if connection.auth_parameters.connectivity_parameters is defined #}
+        ConnectivityParameters:
+          {{ prop_connection.prep_resource_parameters(connection.auth_parameters.connectivity_parameters.resource_parameters) | indent(width=10, first=False) }}
+{%- endif %}{# END if connection.auth_parameters.connectivity_parameters is defined #}
+{%- if connection.auth_parameters.invocation_http_parameters is defined %}{# BEGIN if connection.auth_parameters.invocation_http_parameters is defined #}
+        InvocationHttpParameters:
+{%- if connection.auth_parameters.invocation_http_parameters.body_parameters is defined %}{# BEGIN if connection.auth_parameters.invocation_http_parameters.body_parameters is defined #}
+          BodyParameters:
+{%- for parameter in connection.auth_parameters.invocation_http_parameters.body_parameters %}
+            -
+              {{ prop_connection.prep_parameter(parameter) | indent(width=14, first=False) }}
+{%- endfor %}
+{%- endif %}{# END if connection.auth_parameters.invocation_http_parameters.body_parameters is defined #}
+{%- if connection.auth_parameters.invocation_http_parameters.header_parameters is defined %}{# BEGIN if connection.auth_parameters.invocation_http_parameters.header_parameters is defined #}
+          HeaderParameters:
+{%- for parameter in connection.auth_parameters.invocation_http_parameters.header_parameters %}
+            -
+              {{ prop_connection.prep_parameter(parameter) | indent(width=14, first=False) }}
+{%- endfor %}
+{%- endif %}{# END if connection.auth_parameters.invocation_http_parameters.header_parameters is defined #}
+{%- if connection.auth_parameters.invocation_http_parameters.query_string_parameters is defined %}{# BEGIN if connection.auth_parameters.invocation_http_parameters.query_string_parameters is defined #}
+          QueryStringParameters:
+{%- for parameter in connection.auth_parameters.invocation_http_parameters.query_string_parameters %}
+            -
+              {{ prop_connection.prep_parameter(parameter) | indent(width=14, first=False) }}
+{%- endfor %}
+{%- endif %}{# END if connection.auth_parameters.invocation_http_parameters.query_string_parameters is defined #}
+{%- endif %}{# END if connection.auth_parameters.invocation_http_parameters is defined #}
+{%- if connection.auth_parameters.oauth_parameters is defined %}{# BEGIN if connection.auth_parameters.oauth_parameters is defined #}
+        OAuthParameters:
+          AuthorizationEndpoint: {{ connection.auth_parameters.oauth_parameters.authorization_endpoint }}
+          HttpMethod: {{ connection.auth_parameters.oauth_parameters.http_method }}
+          ClientParameters:
+            ClientID: {{ connection.auth_parameters.oauth_parameters.client_parameters.client_id }}
+            ClientSecret: {{ connection.auth_parameters.oauth_parameters.client_parameters.client_secret }}
+{%- if connection.auth_parameters.oauth_parameters.oauth_http_parameters is defined %}{# BEGIN if connection.auth_parameters.oauth_parameters.oauth_http_parameters is defined #}
+          OAuthHttpParameters:
+{%- if connection.auth_parameters.oauth_parameters.oauth_http_parameters.body_parameters is defined %}{# BEGIN if connection.auth_parameters.oauth_parameters.oauth_http_parameters.body_parameters is defined #}
+            BodyParameters:
+{%- for parameter in connection.auth_parameters.oauth_parameters.oauth_http_parameters.body_parameters %}
+              -
+                {{ prop_connection.prep_parameter(parameter) | indent(width=16, first=False) }}
+{%- endfor %}
+{%- endif %}{# END if connection.auth_parameters.oauth_parameters.oauth_http_parameters.body_parameters is defined #}
+{%- if connection.auth_parameters.oauth_parameters.oauth_http_parameters.header_parameters is defined %}{# BEGIN if connection.auth_parameters.oauth_parameters.oauth_http_parameters.header_parameters is defined #}
+            HeaderParameters:
+{%- for parameter in connection.auth_parameters.oauth_parameters.oauth_http_parameters.header_parameters %}
+              -
+                {{ prop_connection.prep_parameter(parameter) | indent(width=16, first=False) }}
+{%- endfor %}
+{%- endif %}{# END if connection.auth_parameters.oauth_parameters.oauth_http_parameters.header_parameters is defined #}
+{%- if connection.auth_parameters.oauth_parameters.oauth_http_parameters.query_string_parameters is defined %}{# BEGIN if connection.auth_parameters.oauth_parameters.oauth_http_parameters.query_string_parameters is defined #}
+            QueryStringParameters:
+{%- for parameter in connection.auth_parameters.oauth_parameters.oauth_http_parameters.query_string_parameters %}
+              -
+                {{ prop_connection.prep_parameter(parameter) | indent(width=16, first=False) }}
+{%- endfor %}
+{%- endif %}{# END if connection.auth_parameters.oauth_parameters.oauth_http_parameters.query_string_parameters is defined #}
+{%- endif %}{# END if connection.auth_parameters.oauth_parameters.oauth_http_parameters is defined #}
+{%- endif %}{# END if connection.auth_parameters.oauth_parameters is defined #}
+{%- endif %}{# END if connection.auth_parameters is defined #}
+{%- if connection.description is defined %}{# BEGIN if connection.description is defined #}
       Description: {{ connection.description }}
-{%- endif %}
-{%- if connection.connection_name is defined %}
+{%- endif %}{# END if connection.description is defined #}
+{%- if connection.invocation_connectivity_parameters is defined %}{# BEGIN if connection.invocation_connectivity_parameters is defined #}
+      InvocationConnectivityParameters:
+        {{ prop_connection.prep_resource_parameters(connection.invocation_connectivity_parameters.resource_parameters) | indent(width=8, first=False) }}
+{%- endif %}{# END if connection.invocation_connectivity_parameters is defined #}
+{%- if connection.name is defined %}{# BEGIN if connection.name is defined #}
       Name: {{ connection.connection_name }}
-{%- endif %}
-
+{%- endif %}{# END if connection.name is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for connection in sceptre_user_data.connections %}
 {%- set connection_name = connection.name %}
   {{ connection_name }}:
@@ -50,7 +119,7 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ connection_name }}-Arn"
 
   {{ connection_name }}SecretArn:
-    Description: The Sectret ARN for {{ connection_name }}
+    Description: The Secret ARN for {{ connection_name }}
     Value:
       Fn::GetAtt:
         - {{ connection_name }}
@@ -60,3 +129,64 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ connection_name }}-SecretArn"
 
 {%- endfor %}
+{#
+# Supported structure as of 20250107:
+Type: AWS::Events::Connection
+Properties:
+  AuthorizationType: String  # Required: API_KEY | BASIC | OAUTH_CLIENT_CREDENTIALS
+  AuthParameters:  # Required based on AuthorizationType
+    ApiKeyAuthParameters:
+      ApiKeyName: String
+      ApiKeyValue: String
+    BasicAuthParameters:
+      Password: String
+      Username: String
+    ConnectivityParameters:
+      ResourceParameters:
+        ResourceAssociationArn: String
+        ResourceConfigurationArn: String
+    InvocationHttpParameters:
+      BodyParameters:
+        -
+          IsValueSecret: Boolean
+          Key: String
+          Value: String
+      HeaderParameters:
+        -
+          IsValueSecret: Boolean
+          Key: String
+          Value: String
+      QueryStringParameters:
+        -
+          IsValueSecret: Boolean
+          Key: String
+          Value: String
+    OAuthParameters:
+      AuthorizationEndpoint: String
+      ClientParameters:
+        ClientID: String
+        ClientSecret: String
+      HttpMethod: String
+      OAuthHttpParameters:
+        BodyParameters:
+          -
+            IsValueSecret: Boolean
+            Key: String
+            Value: String
+        HeaderParameters:
+          -
+            IsValueSecret: Boolean
+            Key: String
+            Value: String
+        QueryStringParameters:
+          -
+            IsValueSecret: Boolean
+            Key: String
+            Value: String
+  Description: String  # Optional, max 512 chars
+  InvocationConnectivityParameters:  # Optional, for private APIs
+    ResourceParameters:
+      ResourceAssociationArn: String
+      ResourceConfigurationArn: String
+  Name: String  # Optional, 1-64 chars, pattern: [\.\-_A-Za-z0-9]+
+#}
