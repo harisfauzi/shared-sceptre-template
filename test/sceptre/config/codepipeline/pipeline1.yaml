@@ -99,3 +99,76 @@ sceptre_user_data:
         - name: Environment
           default_value: Test
           description: Target environment
+    - name: testpipeline
+      pipeline_name: test-pipeline
+      role_arn: !stack_output "{{pwd}}/iamrole.yaml::pipelineArn"
+      stages:
+        - name: SourceStage
+          actions:
+            - name: GetRepoSource
+              action_type_id:
+                category: Source
+                owner: AWS
+                provider: CodeStarSourceConnection
+                version: 1
+              configuration: |
+                ConnectionArn: !Sub arn:${AWS::Partition}:codestar-connections:${AWS::Region}:${AWS::AccountId}:connection/39e4c34d-e13a-4e94-a886-ea67651bf042
+                FullRepositoryId: sample-user/sample-repo
+                BranchName: main
+                OutputArtifactFormat: CODE_ZIP
+                DetectChanges: "false"
+              output_artifacts:
+                - name: RepoSource
+        - name: BuildStage
+          actions:
+            - name: CompileSource
+              action_type_id:
+                category: Build
+                owner: AWS
+                provider: CodeBuild
+                version: 1
+              configuration: |
+                ProjectName: dummy-project
+                PrimarySource: RepoSource
+              output_artifacts:
+                - name: BuildSource
+          on_failure:
+            conditions:
+              - result: SKIP
+                rules:
+                  - commands:
+                      - echo "Pipeline failed"
+                    configuration: |
+                      {}
+                    input_artifacts:
+                      - name: RepoSource
+                    name: failure-condition-1
+                    role_arn: !stack_output "{{pwd}}/iamrole.yaml::pipelineArn"
+                    region: "!Sub ${AWS::Region}"
+                    rule_type_id:
+                      category: Rule
+                      owner: AWS
+                      provider: Commands
+                      version: 1
+        - name: DeployStage
+          actions:
+            - name: DeployToCodeDeploy
+              action_type_id:
+                category: Deploy
+                owner: AWS
+                provider: CodeDeploy
+                version: 1
+              configuration: |
+                ApplicationName: DummyApplication
+                DeploymentGroupName: DummyApplicationDefaultGroup
+              input_artifacts:
+                - name: BuildSource
+      artifact_store:
+        location: dummy-artifact-store
+        type: S3
+      restart_execution_on_update: True
+      pipeline_type: V2
+      variables:
+        - name: Environment
+          default_value: Test
+          description: Target environment
