@@ -1,0 +1,81 @@
+{%- macro prep_artifact_store(store) -%}
+ArtifactStore:
+  Location: {{ store.location }}
+  Type: {{ store.type }}
+{%- if store.encryption_key is defined -%}
+  EncryptionKey:
+    Id: {{ store.encryption_key.id }}
+    Type: {{ store.encryption_key.type }}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro prep_conditions(conditions) -%}
+Conditions:
+{%- for condition in conditions%}
+  -
+{%- if condition.result is defined %}
+    Result: {{ condition.result }}
+{%- endif %}
+{%- if condition.rules is defined %}{# BEGIN if condition.rules is defined #}
+    Rules:
+{%- for rule in condition.rules %}{## BEGIN for rule in condition.rules #}
+      -
+{%- if rule.commands is defined %}
+        Commands:
+{%- for item in rule.commands %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if rule.configuration is defined %}
+        Configuration:
+          {{ rule.configuration | indent(width=10, first=False) }}
+{%- endif %}
+{%- if rule.input_artifacts is defined %}
+        InputArtifacts:
+{%- for input_artifact in rule.input_artifacts %}
+          - Name: {{ input_artifact.name }}
+{%- endfor %}
+{%- endif %}
+{%- if rule.name is defined %}
+        Name: {{ rule.name }}
+{%- endif %}
+{%- if rule.region is defined %}
+        Region: {{ rule.region }}
+{%- endif %}
+{%- if rule.role_arn is defined %}
+        RoleArn: {{ rule.role_arn | trim }}
+{%- endif %}
+{%- if rule.rule_type_id is defined %}{### BEGIN if rule.rule_type_id is defined #}
+        RuleTypeId:
+{%- if rule.rule_type_id.category is defined %}
+          Category: {{ rule.rule_type_id.category }}
+{%- endif %}
+{%- if rule.rule_type_id.owner is defined %}
+          Owner: {{ rule.rule_type_id.owner }}
+{%- endif %}
+{%- if rule.rule_type_id.provider is defined %}
+          Provider: {{ rule.rule_type_id.provider }}
+{%- endif %}
+{%- if rule.rule_type_id.version is defined %}
+          Version: {{ rule.rule_type_id.version }}
+{%- endif %}
+{%- endif %}{### END if rule.rule_type_id is defined #}
+{%- endfor %}{## END for rule in condition.rules #}
+{%- endif %}{# END if condition.rules is defined #}
+{%- endfor %}
+{%- endmacro -%}
+
+{%- macro prep_filter_criteria(filter_criteria) -%}
+{%- if filter_criteria.excludes is defined %}
+Excludes:
+{%- for item in filter_criteria.excludes %}
+  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if filter_criteria.includes is defined %}
+Includes:
+{%- for item in filter_criteria.includes %}
+  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro -%}
