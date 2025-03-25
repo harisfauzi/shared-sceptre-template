@@ -1,0 +1,33 @@
+---
+template:
+  type: file
+  path: events/rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample CloudWatch Event Rules for {{stack_group_config.project_code}}"
+  rules:
+    - name: sampleRule1
+      description: "Sample rule 1 description"
+      event_pattern: |
+        source:
+          - "aws.ec2"
+        detail-type:
+          - "EC2 Instance State-change Notification"
+        detail:
+          state:
+            - "running"
+      state: "ENABLED"
+      targets:
+        - arn: "arn:aws:lambda:us-west-2:123456789012:function:my-function"
+          id: "Target1"
+    - name: sampleRule2
+      description: "Sample rule 2 description"
+      schedule_expression: "rate(5 minutes)"
+      state: "ENABLED"
+      targets:
+        - arn: "arn:aws:sqs:us-west-2:123456789012:my-queue"
+          id: "Target2"
+stack_tags:
+  Test: events-rule
