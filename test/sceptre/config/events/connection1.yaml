@@ -1,0 +1,51 @@
+---
+template:
+  type: file
+  path: events/connection.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample Connections for {{stack_group_config.project_code}}"
+  connections:
+    - name: sampleConnection1
+      connection_name: sampleConnection1
+      authorization_type: API_KEY
+      auth_parameters:
+        api_key_auth_parameters:
+          api_key_name: "x-api-key"
+          api_key_value: "{% raw %}'{{resolve:secretsmanager:my-api-key:SecretString}}'{% endraw %}"
+      description: "Sample Connection 1"
+    - name: sampleConnection2
+      connection_name: sampleConnection2
+      authorization_type: BASIC
+      auth_parameters:
+        basic_auth_parameters:
+          username: "my-username"
+          password: "{% raw %}'{{resolve:secretsmanager:my-password:SecretString}}'{% endraw %}"
+      description: "Sample Connection 2"
+    - name: sampleConnection3
+      connection_name: sampleConnection3
+      authorization_type: API_KEY
+      auth_parameters:
+        api_key_auth_parameters:
+          api_key_name: Authorization
+          api_key_value: "{% raw %}'{{resolve:secretsmanager:my-api-key:SecretString}}'{% endraw %}"
+      description: "Sample Connection 3"
+      invocation_http_parameters:
+        header_parameters:
+          - key: "Content-Type"
+            value: "application/json"
+          - key: "Accept"
+            value: "application/json"
+        query_string_parameters:
+          - key: "param1"
+            value: "value1"
+          - key: "param2"
+            value: "value2"
+        body_parameters:
+          - key: routing_key
+            value: my-pagerduty-integration-key
+            is_value_secret: true
+stack_tags:
+  Test: events-connection

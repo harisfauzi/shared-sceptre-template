@@ -1,0 +1,15 @@
+{%- macro prep_parameter(parameter) %}
+Key: {{ parameter.key }}
+Value: {{ parameter.value}}
+{%- if parameter.is_value_secret is defined %}
+IsValueSecret: {{ parameter.is_value_secret | lower }}
+{%- endif %}
+{%- endmacro %}
+
+{%- macro prep_resource_parameters(resource_parameters) %}
+ResourceParameters: 
+  ResourceConfigurationArn: {{ resource_parameters.resource_configuration_arn | trim }}
+{%- if resource_parameters.resource_association_arn is defined %}
+  ResourceAssociationArn: {{ resource_parameters.resource_association_arn | trim }}
+{%- endif %}
+{%- endmacro %}

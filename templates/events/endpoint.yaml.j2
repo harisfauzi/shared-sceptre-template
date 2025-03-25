@@ -1,0 +1,120 @@
+---
+Description: {{sceptre_user_data.description|default('Events Endpoint(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for endpoint in sceptre_user_data.endpoints %}
+{%- set endpoint_name = endpoint.name %}
+  {{ endpoint_name }}:
+    Type: AWS::Events::Endpoint
+    DeletionPolicy: {{ endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      {# BEGIN endpoint.event_buses #}
+      EventBuses:
+{%- for event_bus in endpoint.event_buses %}
+        - EventBusArn: {{ event_bus.event_bus_arn | trim }}
+{%- endfor %}
+      {# END endpoint.event_buses #}
+      {# BEGIN endpoint.routing_config #}
+      RoutingConfig:
+        FailoverConfig:
+          Primary:
+            HealthCheck: {{ endpoint.routing_config.failover_config.primary.health_check }}
+          Secondary:
+            Route: {{ endpoint.routing_config.failover_config.secondary.route }}
+      {# END endpoint.routing_config #}
+{%- if endpoint.description is defined %}
+      Description: {{ endpoint.description }}
+{%- endif %}
+{%- if endpoint.endpoint_name is defined %}
+      Name: {{ endpoint.endpoint_name }}
+{%- endif %}
+{%- if endpoint.replication_config is defined %}
+      ReplicationConfig:
+        State: {{ endpoint.replication_config.state}}
+{%- endif %}
+{%- if endpoint.role_arn is defined %}
+      RoleArn: {{ endpoint.role_arn | trim }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for endpoint in sceptre_user_data.endpoints %}
+{%- set endpoint_name = endpoint.name %}
+  {{ endpoint_name }}:
+    Description: Endpoint ID for {{ endpoint_name }}
+    Value:
+      Ref: {{ endpoint_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}"
+
+  {{ endpoint_name }}Arn:
+    Description: The ARN for {{ endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ endpoint_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-Arn"
+
+  {{ endpoint_name }}EndpointId:
+    Description: The Endpoint ID for {{ endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ endpoint_name }}
+        - EndpointId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-EndpointId"
+
+  {{ endpoint_name }}EndpointUrl:
+    Description: The Endpoint URL for {{ endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ endpoint_name }}
+        - EndpointUrl
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-EndpointUrl"
+
+  {{ endpoint_name }}State:
+    Description: The main Region of the endpoint {{ endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ endpoint_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-State"
+
+  {{ endpoint_name }}StateReason:
+    Description: The reason the endpoint {{ endpoint_name }} is in its current state.
+    Value:
+      Fn::GetAtt:
+        - {{ endpoint_name }}
+        - StateReason
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-StateReason"
+{%- endfor %}
+{#
+# Supported structure as of 20250226:
+Type: AWS::Events::Endpoint
+Properties:
+  Description: String
+  EventBuses:
+    - EventBusArn: String
+  Name: String
+  ReplicationConfig:
+    State: String
+  RoleArn: String
+  RoutingConfig:
+    FailoverConfig:
+      Primary:
+        HealthCheck: String
+      Secondary:
+        Route: String
+#}
