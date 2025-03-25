@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Events Archive(s) for '+sc
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for archive in sceptre_user_data.archives %}
 {%- set archive_name = archive.name %}
   {{ archive_name }}:
@@ -22,16 +21,14 @@ Resources:
       EventPattern: {{ archive.event_pattern_json }}
 {%- elif archive.event_pattern is defined %}
       EventPattern:
-{{ archive.event_pattern | indent(width=8, first=true) }}
+        {{ archive.event_pattern | indent(width=8, first=false) }}
 {%- endif %}
 {%- if archive.retention_days is defined %}
       RetentionDays: {{ archive.retention_days }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for archive in sceptre_user_data.archives %}
 {%- set archive_name = archive.name %}
   {{ archive_name }}:
@@ -53,3 +50,13 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ archive_name }}-Arn"
 
 {%- endfor %}
+{#
+# Supported structure as of 20250226:
+Type: AWS::Events::Archive
+Properties:
+  ArchiveName: String
+  Description: String
+  EventPattern: Json
+  RetentionDays: Integer
+  SourceArn: String
+#}
