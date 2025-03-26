@@ -20,24 +20,24 @@ Resources:
 {%- for additional_item in graphqlapi.auth.additional %}
           - Type: {{ additional_item.type }}
 {%- if additional_item.lambda_authorizer is defined %}{## BEGIN if additional_item.lambda_authorizer is defined #}
-            {{ prop_graphqlapi.prep_lambda_authorizer_config(additional_item.lambda_authorizer) | indent(width=14, first=False) }}
+            {{ prop_graphqlapi.prep_lambda_authorizer_config(additional_item.lambda_authorizer) | indent(width=14, first=false) }}
 {%- endif %}{## END if additional_item.lambda_authorizer is defined #}
 {%- if additional_item.open_id_connect is defined %}{## BEGIN if additional_item.open_id_connect is defined #}
-            {{ prop_graphqlapi.prep_openid_connect_config(additional_item.open_id_connect) | indent(width=12, first=False) }}
+            {{ prop_graphqlapi.prep_openid_connect_config(additional_item.open_id_connect) | indent(width=12, first=false) }}
 {%- endif %}{## END if additional_item.open_id_connect is defined #}
 {%- if additional_item.user_pool is defined %}{## BEGIN if additional_item.user_pool is defined #}
-            {{ prop_graphqlapi.prep_user_pool(additional_item.user_pool) | indent(width=12, first=False) }}
+            {{ prop_graphqlapi.prep_user_pool(additional_item.user_pool) | indent(width=12, first=false) }}
 {%- endif %}{## END if additional_item.user_pool is defined #}
 {%- endfor %}
 {%- endif %}{#- END if graphqlapi.auth.additional is defined #}
 {%- if graphqlapi.auth.lambda_authorizer is defined %}
-        {{ prop_graphqlapi.prep_lambda_authorizer_config(graphqlapi.auth.lambda_authorizer) | indent(width=10, first=False) }}
+        {{ prop_graphqlapi.prep_lambda_authorizer_config(graphqlapi.auth.lambda_authorizer) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if graphqlapi.auth.open_id_connect is defined %}
-        {{ prop_graphqlapi.prep_openid_connect_config(graphqlapi.auth.open_id_connect) | indent(width=8, first=False) }}
+        {{ prop_graphqlapi.prep_openid_connect_config(graphqlapi.auth.open_id_connect) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if graphqlapi.auth.user_pool is defined %}
-        {{ prop_graphqlapi.prep_user_pool(graphqlapi.auth.user_pool) | indent(width=8, first=False) }}
+        {{ prop_graphqlapi.prep_user_pool(graphqlapi.auth.user_pool) | indent(width=8, first=false) }}
 {%- endif %}
       {#- END Auth: #}
       {#- BEGIN DataSources: #}
@@ -117,7 +117,7 @@ Resources:
 {%- endif %}
 {%- if function.inline_code is defined %}
           InlineCode: |
-            {{ function.inline_code | indent(width=12, first=False) }}
+            {{ function.inline_code | indent(width=12, first=false) }}
 {%- endif %}
 {%- if function.max_batch_size is defined %}
           MaxBatchSize: {{ function.max_batch_size }}
@@ -125,57 +125,157 @@ Resources:
 {%- if function.name is defined %}
           Name: {{ function.name }}
 {%- endif %}
-{%- if function.xxxxxx is defined %}
+{%- if function.sync is defined %}{# BEGIN if function.sync is defined#}
           Sync:
-            ConflictDetection: String
-            ConflictHandler: String
-            LambdaConflictHandlerConfig: 
-              LambdaConflictHandlerArn: String
+            ConflictDetection: {{ function.sync.conflict_detection }}
+{%- if function.sync.conflict_handler is defined %}
+            ConflictHandler: {{ function.sync.conflict_handler }}
 {%- endif %}
+{%- if function.sync.lambda_conflict_handler_config is defined %}
+            LambdaConflictHandlerConfig:
+{%- if function.sync.lambda_conflict_handler_config.lambda_conflict_handler_arn is defined %}
+              LambdaConflictHandlerArn: {{ function.sync.lambda_conflict_handler_config.lambda_conflict_handler_arn }}
+{%- endif %}
+{%- endif %}
+{%- endif %}{# END if function.sync is defined #}
 {%- endfor %}
       {#- END Functions: #}
       {#- BEGIN Resolvers: #}
       Resolvers:
-        OperationType:
-          LogicalId:
-            Caching:
-              CachingKeys: 
-                - String
-              Ttl: Number
-
-            CodeUri: String
-            FieldName: String
-            InlineCode: String 
-            MaxBatchSize: Integer
-            Pipeline: List
+{%- for operation_type, operation in graphqlapi.resolvers.items() %}{# BEGIN for operation_type, operation in graphqlapi.resolvers.items() #}
+        {{ operation_type }}:
+{%- for logical_id, resolver in operation.items() %}{## BEGIN for logical_id, resolver in operation.items() #}
+          {{ logical_id }}:
+            Pipeline:
+{%- for item in resolver.pipeline %}
+              - {{ item }}
+{%- endfor %}
             Runtime:
-              Name: String
-              Version: String
+              Name: {{ resolver.runtime.name }}
+              Version: {{ resolver.runtime.version }}
+{%- if resolver.caching is defined %}{### BEGIN if resolver.caching is defined #}
+            Caching:
+              Ttl: {{ resolver.caching.ttl }}
+{%- if resolver.caching.caching_keys is defined %}
+              CachingKeys:
+{%- for item in resolver.caching.caching_keys %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{### END if resolver.caching is defined #}
+{%- if resolver.code_uri is defined %}
+            CodeUri: {{ resolver.code_uri }}
+{%- endif %}
+{%- if resolver.field_name is defined %}
+            FieldName: {{ resolver.field_name }}
+{%- endif %}
+{%- if resolver.inline_code is defined %}
+            InlineCode: {{ resolver.inline_code }}
+{%- endif %}
+{%- if resolver.max_batch_size is defined %}
+            MaxBatchSize: {{ resolver.max_batch_size }}
+{%- endif %}
+{%- if resolver.sync is defined %}{### BEGIN if resolver.sync is defined #}
             Sync:
-              ConflictDetection: String
-              ConflictHandler: String
-              LambdaConflictHandlerConfig: 
-                LambdaConflictHandlerArn: String
+              ConflictDetection: {{ resolver.sync.conflict_detection }}
+{%- if resolver.sync.conflict_handler is defined %}
+              ConflictHandler: {{ resolver.sync.conflict_handler }}
+{%- endif %}
+{%- if resolver.sync.lambda_conflict_handler_config is defined %}{# BEGIN if resolver.sync.lambda_conflict_handler_config is defined #}
+              LambdaConflictHandlerConfig:
+{%- if resolver.sync.lambda_conflict_handler_config.lambda_conflict_handler_arn is defined %}
+                LambdaConflictHandlerArn: {{ resolver.sync.lambda_conflict_handler_config.lambda_conflict_handler_arn }}
+{%- endif %}
+{%- endif %}{# END if resolver.sync.lambda_conflict_handler_config is defined #}
+{%- endif %}{### END if resolver.sync is defined #}
+{%- endfor %}{## END for logical_id, resolver in operation.items() #}
+{%- endfor %}{# BEGIN for operation_type, operation in graphqlapi.resolvers.items() #}
       {#- END Resolvers: #}
+{%- if graphqlapi.api_keys is defined %}{# BEGIN if graphqlapi.api_keys is defined #}
       ApiKeys:
-        LogicalId:
-          ApiKeyId: String
-          Description: String
-          ExpiresOn: Double
-      Cache: AWS::AppSync::ApiCache
-      DomainName: AWS::AppSync::DomainName
+{%- for logical_id, api_key in graphqlapi.api_keys.items() %}{# BEGIN for logical_id, api_key in graphqlapi.api_keys.items() #}
+        {{ logical_id }}:
+          ApiKeyId: {{ api_key.api_key_id }}
+          ExpiresOn: {{ api_key.expires_on }}
+{%- if api_key.description is defined %}
+          Description: {{ api_key.description }}
+{%- endif %}
+{%- endfor %}{# END for logical_id, api_key in graphqlapi.api_keys.items() #}
+{%- endif %}{# END if graphqlapi.api_keys is defined #}
+{%- if graphqlapi.cache is defined %}{# BEGIN if graphqlapi.cache is defined #}
+      Cache:
+{%- if graphqlapi.cache.api_caching_behavior is defined %}
+        ApiCachingBehavior: {{ graphqlapi.cache.api_caching_behavior }}
+{%- endif %}
+{%- if graphqlapi.cache.api_id is defined %}
+        ApiId: {{ graphqlapi.cache.api_id | trim }}
+{%- endif %}
+{%- if graphqlapi.cache.at_rest_encryption_enabled is defined %}
+        AtRestEncryptionEnabled: {{ graphqlapi.cache.at_rest_encryption_enabled | lower }}
+{%- endif %}
+{%- if graphqlapi.cache.health_metrics_config is defined %}
+        HealthMetricsConfig: {{ graphqlapi.cache.health_metrics_config }}
+{%- endif %}
+{%- if graphqlapi.cache.transit_encryption_enabled is defined %}
+        TransitEncryptionEnabled: {{ graphqlapi.cache.transit_encryption_enabled | lower }}
+{%- endif %}
+{%- if graphqlapi.cache.ttl is defined %}
+        Ttl: {{ graphqlapi.cache.ttl }}
+{%- endif %}
+{%- if graphqlapi.cache.type is defined %}
+        Type: {{ graphqlapi.cache.type }}
+{%- endif %}
+{%- endif %}{# END if graphqlapi.cache is defined #}
+{%- if graphqlapi.domain_name is defined %}{# BEGIN if graphqlapi.domain_name is defined #}
+      DomainName:
+        CertificateArn: {{ graphqlapi.domain_name.certificate_arn | trim }}
+        DomainName: {{ graphqlapi.domain_name.domain_name }}
+{%- if graphqlapi.domain_name.description is defined %}
+        Description: {{ graphqlapi.domain_name.description }}
+{%- endif %}
+        Tags: 
+          - Key: SourceRepoURL
+            Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if graphqlapi.domain_name.tags is defined %}
+{%- for key, value in graphqlapi.domain_name.tags.items() %}
+          - Key: {{ key }}
+            Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END if graphqlapi.domain_name is defined #}
+{%- if graphqlapi.logging is defined %}{# BEGIN if graphqlapi.logging is defined #}
       Logging:
-        CloudWatchLogsRoleArn: String
-        ExcludeVerboseContent: Boolean
-        FieldLogLevel: String
-      Name: String
-      SchemaInline: String
-      SchemaUri: String
+{%- if graphqlapi.logging.cloud_watch_logs_role_arn is defined %}
+        CloudWatchLogsRoleArn: {{ graphqlapi.logging.cloud_watch_logs_role_arn | trim }}
+{%- endif %}
+{%- if graphqlapi.logging.exclude_verbose_content is defined %}
+        ExcludeVerboseContent: {{ graphqlapi.logging.exclude_verbose_content | lower }}
+{%- endif %}
+{%- if graphqlapi.logging.field_log_level is defined %}
+        FieldLogLevel: {{ graphqlapi.logging.field_log_level }}
+{%- endif %}
+{%- endif %}{# END if graphqlapi.logging is defined #}
+{%- if graphqlapi.graphqlapi_name is defined %}
+      Name: {{ graphqlapi.graphqlapi_name }}
+{%- endif %}
+{%- if graphqlapi.schema_inline is defined %}
+      SchemaInline: {{ graphqlapi.schema_inline }}
+{%- endif %}
+{%- if graphqlapi.schema_uri is defined %}
+      SchemaUri: {{ graphqlapi.schema_uri }}
+{%- endif %}
       Tags:
-        - Key: String
-          Value: String
-      XrayEnabled: Boolean
-
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if graphqlapi.tags is defined %}
+{%- for key, value in graphqlapi.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if graphqlapi.xray_enabled is defined %}
+      XrayEnabled: {{ graphqlapi.xray_enabled | lower }}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -331,7 +431,7 @@ Outputs:
         Sync:
           ConflictDetection: String
           ConflictHandler: String
-          LambdaConflictHandlerConfig: 
+          LambdaConflictHandlerConfig:
             LambdaConflictHandlerArn: String
     Logging:
       CloudWatchLogsRoleArn: String
@@ -342,13 +442,13 @@ Outputs:
       OperationType:
         LogicalId:
           Caching:
-            CachingKeys: 
+            CachingKeys:
               - String
             Ttl: Number
 
           CodeUri: String
           FieldName: String
-          InlineCode: String 
+          InlineCode: String
           MaxBatchSize: Integer
           Pipeline: List
           Runtime:
@@ -357,7 +457,7 @@ Outputs:
           Sync:
             ConflictDetection: String
             ConflictHandler: String
-            LambdaConflictHandlerConfig: 
+            LambdaConflictHandlerConfig:
               LambdaConflictHandlerArn: String
     SchemaInline: String
     SchemaUri: String

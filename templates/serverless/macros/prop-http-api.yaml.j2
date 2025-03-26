@@ -1,387 +1,85 @@
-{%- macro prep_access_log_setting(access_log_setting) %}{# BEGIN macro prep_access_log_setting(access_log_setting) #}
+{%- macro prep_access_log_settings(access_log_settings) %}{# BEGIN macro prep_access_log_settings(access_log_settings) #}
 AccessLogSetting:
-{%- if access_log_setting.destination_arn is defined %}
-  DestinationArn: {{ access_log_setting.destination_arn }}
+{%- if access_log_settings.destination_arn is defined %}
+  DestinationArn: {{ access_log_settings.destination_arn }}
 {%- endif %}
-{%- if access_log_setting.format is defined %}
-  Format: {{ access_log_setting.format }}
+{%- if access_log_settings.format is defined %}
+  Format: {{ access_log_settings.format }}
 {%- endif %}
-{%- endmacro %}{# END macro prep_access_log_setting(access_log_setting) #}
+{%- endmacro %}{# END macro prep_access_log_settings(access_log_settings) #}
 
 {%- macro prep_auth(auth) %}{# BEGIN macro prep_auth(auth) #}
 Auth:
-{%- if auth.add_api_key_required_to_cors_preflight is defined %}
-  AddApiKeyRequiredToCorsPreflight: {{ auth.add_api_key_required_to_cors_preflight }}
-{%- endif %}
-{%- if auth.add_Default_authorizer_to_cors_preflight is defined %}
-  AddDefaultAuthorizerToCorsPreflight: {{ auth.add_Default_authorizer_to_cors_preflight }}
-{%- endif %}
-{%- if auth.api_key_required is defined %}
-  ApiKeyRequired: {{ auth.api_key_required }}
-{%- endif %}
-{%- if auth.authorizers is string and auth.authorizers == 'aws_iam' %}
-  Authorizers: AWS_IAM
-{%- elif auth.authorizers is mapping %}
-  Authorizers:
-{%- if auth.authorizers.type is defined and auth.authorizers.type == 'cognito_authorizer' %}
-    # BEGIN CognitoAuthorizer
-    UserPoolArn: {{ auth.authorizers.user_pool_arn }}
-{%- if auth.authorizers.authorization_scopes is defined %}
-    AuthorizationScopes:
-{%- for scope in auth.authorizers.authorization_scopes %}
-      - {{ scope}}
-{%- endfor %}
-{%- endif %}
-{%- if auth.authorizers.identity is defined %}{# BEGIN if auth.authorizers.identity is defined #}
-    Identity:
-{%- if auth.authorizers.identity.header is defined %}
-      Header: {{ auth.authorizers.identity.header }}
-{%- endif %}
-{%- if auth.authorizers.identity.reauthorize_every is defined %}
-      ReauthorizeEvery: {{ auth.authorizers.identity.reauthorize_every }}
-{%- endif %}
-{%- if auth.authorizers.identity.validation_expression is defined %}
-      ValidationExpression: {{ auth.authorizers.identity.validation_expression }}
-{%- endif %}
-{%- endif %}{# END if auth.authorizers.identity is defined #}
-    # END CognitoAuthorizer
-{%- elif auth.authorizers.type is defined and auth.authorizers.type == 'lambda_token_authorizer' %}
-    # BEGIN LambdaTokenAuthorizer
-    FunctionArn: {{ auth.authorizers.function_arn }}
-{%- if auth.authorizers.disable_function_default_permission is defined %}
-    DisableFunctionDefaultPermissions: {{ auth.authorizers.disable_function_default_permission }}
-{%- endif %}
-{%- if auth.authorizers.function_invoke_role is defined %}
-    FunctionInvokeRole: {{ auth.authorizers.function_invoke_role }}
-{%- endif %}
-{%- if auth.authorizers.function_payload_type is defined %}
-    FunctionPayloadType: {{ auth.authorizers.function_payload_type }}
-{%- endif %}
-{%- if auth.authorizers.identity is defined %}{# BEGIN if auth.authorizers.identity is defined #}
-    Identity:
-{%- if auth.authorizers.identity.header is defined %}
-      Header: {{ auth.authorizers.identity.header }}
-{%- endif %}
-{%- if auth.authorizers.identity.reauthorize_every is defined %}
-      ReauthorizeEvery: {{ auth.authorizers.identity.reauthorize_every }}
-{%- endif %}
-{%- if auth.authorizers.identity.validation_expression is defined %}
-      ValidationExpression: {{ auth.authorizers.identity.validation_expression }}
-{%- endif %}
-{%- endif %}{# END if auth.authorizers.identity is defined #}
-    # END LambdaTokenAuthorizer
-{%- elif auth.authorizers.type is defined and auth.authorizers.type == 'lambda_request_authorizer' %}
-    # BEGIN LambdaRequestAuthorizer
-    FunctionArn: {{ auth.authorizers.function_arn }}
-{%- if auth.authorizers.disable_function_default_permission is defined %}
-    DisableFunctionDefaultPermissions: {{ auth.authorizers.disable_function_default_permission }}
-{%- endif %}
-{%- if auth.authorizers.function_invoke_role is defined %}
-    FunctionInvokeRole: {{ auth.authorizers.function_invoke_role }}
-{%- endif %}
-{%- if auth.authorizers.function_payload_type is defined %}
-    FunctionPayloadType: {{ auth.authorizers.function_payload_type }}
-{%- endif %}
-{%- if auth.authorizers.identity is defined %}{# BEGIN if auth.authorizers.identity is defined #}
-    Identity:
-{%- if auth.authorizers.identity.context is defined %}
-      Context:
-{%- for item in auth.authorizers.identity.context %}
-        - {{ item }}
-{%- endfor %}
-{%- endif %}
-{%- if auth.authorizers.identity.headers is defined %}
-      Headers:
-{%- for item in auth.authorizers.identity.headers %}
-        - {{ item }}
-{%- endfor %}
-{%- endif %}
-{%- if auth.authorizers.identity.query_strings is defined %}
-      QueryStrings:
-{%- for item in auth.authorizers.identity.query_strings %}
-        - {{ item }}
-{%- endfor %}
-{%- endif %}
-{%- if auth.authorizers.identity.reauthorize_every is defined %}
-      ReauthorizeEvery: {{ auth.authorizers.identity.reauthorize_every }}
-{%- endif %}
-{%- if auth.authorizers.identity.stage_variables is defined %}
-      StageVariables:
-{%- for item in auth.authorizers.identity.stage_variables %}
-        - {{ item }}
-{%- endfor %}
-{%- endif %}
-{%- endif %}{# END if auth.authorizers.identity is defined #}
-    # END LambdaRequestAuthorizer
-{%- endif %}
-{%- endif %}
 {%- if auth.default_authorizer is defined %}
   DefaultAuthorizer: {{ auth.default_authorizer }}
 {%- endif %}
-{%- if auth.invoke_role is defined %}
-  InvokeRole: {{ auth.invoke_role }}
+{%- if auth.enable_iam_authorizer is defined %}
+  EnableIamAuthorizer: {{ auth.enable_iam_authorizer | lower }}
 {%- endif %}
-{%- if auth.resource_policy is defined %}
-  ResourcePolicy:
-{%- if auth.resource_policy.aws_account_blacklist is defined %}
-    AwsAccountBlacklist:
-{%- for item in auth.resource_policy.aws_account_blacklist %}
-      - {{ item }}
+{%- if auth.authorizers is defined %}{# BEGIN if auth.authorizers is defined #}
+  Authorizers:
+{%- for logical_id, authorizer in auth.authorizers.items() %}{# BEGIN for logical_id, authorizer in auth.authorizers.items() #}
+    {{ logical_id }}:
+      # OAuth2Authorizer
+{%- if authorizer.authorization_scopes is defined %}
+      AuthorizationScopes:
+{%- for item in authorizer.authorization_scopes %}
+        - {{ item }}
 {%- endfor %}
 {%- endif %}
-{%- if auth.resource_policy.aws_account_whitelist is defined %}
-    AwsAccountWhitelist:
-{%- for item in auth.resource_policy.aws_account_whitelist %}
-      - {{ item }}
+{%- if authorizer.identity_source is defined %}
+      IdentitySource: {{ authorizer.identity_source }}
+{%- endif %}
+{%- if authorizer.jwt_configuration is defined %}
+      JwtConfiguration:
+{%- for key, value in authorizer.jwt_configuration.items() %}
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- if auth.resource_policy.custom_statements is defined %}
-    CustomStatements:
-{%- for item in auth.resource_policy.custom_statements %}
-      - {{ item }}
+      # LambdaAuthorizer
+{%- if authorizer.authorizer_payload_format_version is defined %}
+      AuthorizerPayloadFormatVersion: {{ authorizer.authorizer_payload_format_version }}
+{%- endif %}
+{%- if authorizer.enable_function_default_permission is defined %}
+      EnableFunctionDefaultPermissions: {{ authorizer.enable_function_default_permission | lower }}
+{%- endif %}
+{%- if authorizer.enable_simple_responses is defined %}
+      EnableSimpleResponses: {{ authorizer.enable_simple_responses | lower }}
+{%- endif %}
+{%- if authorizer.function_arn is defined %}
+      FunctionArn: {{ authorizer.enable_simple_responses | trim }}
+{%- endif %}
+{%- if authorizer.function_invoke_role is defined %}
+      FunctionInvokeRole: {{ authorizer.function_invoke_role | trim }}
+{%- endif %}
+{%- if authorizer.identity is defined %}{## BEGIN if authorizer.identity is defined#}
+      Identity:
+{%- if authorizer.identity.context is defined %}
+        Context:
+{%- for item in authorizer.identity.context %}
+          - {{ item }}
 {%- endfor %}
 {%- endif %}
-{%- if auth.resource_policy.intrinsic_vpc_blacklist is defined %}
-    IntrinsicVpcBlacklist:
-{%- for item in auth.resource_policy.intrinsic_vpc_blacklist %}
-      - {{ item }}
+{%- if authorizer.identity.headers is defined %}
+        Headers:
+{%- for item in authorizer.identity.headers %}
+          - {{ item }}
 {%- endfor %}
 {%- endif %}
-{%- if auth.resource_policy.intrinsic_vpc_whitelist is defined %}
-    IntrinsicVpcWhitelist:
-{%- for item in auth.resource_policy.intrinsic_vpc_whitelist %}
-      - {{ item }}
+{%- if authorizer.identity.query_strings is defined %}
+        QueryStrings:
+{%- for item in authorizer.identity.query_strings %}
+          - {{ item }}
 {%- endfor %}
 {%- endif %}
-{%- if auth.resource_policy.intrinsic_vpce_blacklist is defined %}
-    IntrinsicVpceBlacklist:
-{%- for item in auth.resource_policy.intrinsic_vpce_blacklist %}
-      - {{ item }}
-{%- endfor %}
+{%- if authorizer.identity.reauthorize_every is defined %}
+        ReauthorizeEvery: {{ authorizer.identity.reauthorize_every }}
 {%- endif %}
-{%- if auth.resource_policy.intrinsic_vpce_whitelist is defined %}
-    IntrinsicVpceWhitelist:
-{%- for item in auth.resource_policy.intrinsic_vpce_whitelist %}
-      - {{ item }}
-{%- endfor %}
+{%- if authorizer.identity.stage_variables is defined %}
+        StageVariables:
+          - {{ authorizer.identity.stage_variables }}
 {%- endif %}
-{%- if auth.resource_policy.ip_range_blacklist is defined %}
-    IpRangeBlacklist:
-{%- for item in auth.resource_policy.ip_range_blacklist %}
-      - {{ item }}
-{%- endfor %}
-{%- endif %}
-{%- if auth.resource_policy.ip_range_whitelist is defined %}
-    IpRangeWhitelist:
-{%- for item in auth.resource_policy.ip_range_whitelist %}
-      - {{ item }}
-{%- endfor %}
-{%- endif %}
-{%- if auth.resource_policy.source_vpc_blacklist is defined %}
-    SourceVpcBlacklist:
-{%- for item in auth.resource_policy.source_vpc_blacklist %}
-      - {{ item }}
-{%- endfor %}
-{%- endif %}
-{%- if auth.resource_policy.source_vpc_whitelist is defined %}
-    SourceVpcWhitelist:
-{%- for item in auth.resource_policy.source_vpc_whitelist %}
-      - {{ item }}
-{%- endfor %}
-{%- endif %}
-{%- endif %}
-{%- if auth.usage_plan is defined %}{# BEGIN if auth.usage_plan is defined #}
-  UsagePlan:
-    CreateUsagePlan: {{ auth.usage_plan.create_usage_plan }}
-{%- if auth.usage_plan.description is defined %}
-    Description: {{ auth.usage_plan.description }}
-{%- endif %}
-{%- if auth.usage_plan.quota is defined %}
-    Quota:
-{%- if auth.usage_plan.quota.limit is defined %}
-      Limit: {{ auth.usage_plan.quota.limit }}
-{%- endif %}
-{%- if auth.usage_plan.quota.offset is defined %}
-      Offset: {{ auth.usage_plan.quota.offset }}
-{%- endif %}
-{%- if auth.usage_plan.quota.period is defined %}
-      Period: {{ auth.usage_plan.quota.period }}
-{%- endif %}
-{%- endif %}
-{%- if auth.usage_plan.tags is defined %}
-    Tags: {{ auth.usage_plan.tags }}
-{%- endif %}
-{%- if auth.usage_plan.throttle is defined %}
-    Throttle:
-{%- if auth.usage_plan.throttle.burst_limit is defined %}
-      BurstLimit: {{ auth.usage_plan.throttle.burst_limit }}
-{%- endif %}
-{%- if auth.usage_plan.throttle.rate_limit is defined %}
-      RateLimit: {{ auth.usage_plan.throttle.rate_limit }}
-{%- endif %}
-{%- endif %}
-{%- if auth.usage_plan.usage_plan_name is defined %}
-    UsagePlanName: {{ auth.usage_plan.usage_plan_name }}
-{%- endif %}
-{%- endif %}{# END if auth.usage_plan is defined #}
+{%- endif %}{## END if authorizer.identity is defined#}
+{%- endfor %}{# END for logical_id, authorizer in auth.authorizers.items() #}
+{%- endif %}{# END if auth.authorizers is defined #}
 {%- endmacro %}{# END macro prep_auth(auth) #}
-
-{%- macro prep_canary_setting(canary_setting) %}{# BEGIN macro prep_canary_setting(canary_setting) #}
-CanarySetting:
-{%- if canary_setting.deployment_id is defined %}
-  DeploymentId: {{ canary_setting.deployment_id | trim }}
-{%- endif %}
-{%- if canary_setting.percent_traffic is defined %}
-  PercentTraffic: {{ canary_setting.percent_traffic }}
-{%- endif %}
-{%- if canary_setting.stage_variable_overrides is defined %}
-  StageVariableOverrides:
-{%- for key,value in canary_setting.stage_variable_overrides.items() %}
-    {{ key }}: {{ value }}
-{%- endfor %}
-{%- endif %}
-{%- if canary_setting.use_stage_cache is defined %}
-  UseStageCache: {{ canary_setting.use_stage_cache }}
-{%- endif %}
-{%- endmacro %}{# END macro prep_canary_setting(canary_setting) #}
-
-{%- macro prep_cors(cors) %}{# BEGIN macro prep_cors(cors) #}
-{%- if cors is string %}
-Cors: {{ cors }}
-{%- else %}
-Cors:
-  AllowOrigin: {{ cors.allow_origin }}
-{%- if cors.allow_credentials is defined %}
-  AllowCredentials: {{ cors.allow_credentials }}
-{%- endif %}
-{%- if cors.allow_headers is defined %}
-  AllowHeaders: {{ cors.allow_headers }}
-{%- endif %}
-{%- if cors.allow_methods is defined %}
-  AllowMethods: {{ cors.allow_methods }}
-{%- endif %}
-{%- if cors.max_age is defined %}
-  MaxAge: {{ cors.max_age }}
-{%- endif %}
-{%- endif %}
-{%- endmacro %}{# END macro prep_cors(cors) #}
-
-{%- macro prep_definition_uri(definition_uri) %}{# BEGIN macro prep_definition_uri(definition_uri) #}
-{%- if definition_uri is string -%}{# BEGIN if definition_uri is string #}
-DefinitionUri: {{ definition_uri }}
-{%- else -%}
-DefinitionUri:
-  Bucket: {{ definition_uri.bucket }}
-  Key: {{ definition_uri.key }}
-{%- if definition_uri.version is defined %}
-  Version: {{ definition_uri.version }}
-{%- endif %}
-{%- endif %}{# END if definition_uri is string #}
-{%- endmacro %}{# END macro prep_definition_uri(definition_uri) #}
-
-{%- macro prep_domain(domain) %}{# BEGIN macro prep_domain(domain) #}
-Domain:
-  CertificateArn: {{ domain.certificate_arn }}
-  DomainName: {{ domain.domain_name }}
-{%- if domain.base_path is defined %}
-  BasePath: List
-{%- for item in domain.base_path %}
-    - {{ item}}
-{%- endfor %}
-{%- endif %}
-{%- if domain.normalize_base_path is defined %}
-  NormalizeBasePath: {{ domain.normalize_base_path }}
-{%- endif %}
-{%- if domain.endpoint_configuration is defined %}
-  EndpointConfiguration: {{ domain.endpoint_configuration }}
-{%- endif %}
-{%- if domain.mutual_tls_authentication is defined %}{# BEGIN if domain.mutual_tls_authentication is defined #}
-  MutualTlsAuthentication:
-{%- if domain.mutual_tls_authentication.truststore_uri is defined %}
-    TruststoreUri: {{ domain.mutual_tls_authentication.truststore_uri }}
-{%- endif %}
-{%- if domain.mutual_tls_authentication.truststore_version is defined %}
-    TruststoreVersion: {{ domain.mutual_tls_authentication.truststore_version }}
-{%- endif %}
-{%- endif %}{# END if domain.mutual_tls_authentication is defined #}
-{%- if domain.ownership_verification_certification_arn is defined %}
-  OwnershipVerificationCertificateArn: {{ domain.ownership_verification_certification_arn | trim }}
-{%- endif %}
-{%- if domain.route53 is defined %}{# BEGIN if domain.route53 is defined #}
-  Route53:
-{%- if domain.route53.distribution_domain_name is defined %}
-    DistributionDomainName: {{ domain.route53.distribution_domain_name }}
-{%- endif %}
-{%- if domain.route53.evaluate_target_health is defined %}
-    EvaluateTargetHealth: {{ domain.route53.evaluate_target_health }}
-{%- endif %}
-{%- if domain.route53.hosted_zone_id is defined %}
-    HostedZoneId: {{ domain.route53.hosted_zone_id }}
-{%- endif %}
-{%- if domain.route53.hosted_zone_name is defined %}
-    HostedZoneName: {{ domain.route53.hosted_zone_name }}
-{%- endif %}
-{%- if domain.route53.ipv6 is defined %}
-    IpV6: {{ domain.route53.ipv6 }}
-{%- endif %}
-{%- if domain.route53.region is defined %}
-    Region: {{ domain.route53.region }}
-{%- endif %}
-{%- if domain.route53.set_identifier is defined %}
-    SetIdentifier: {{ domain.route53.set_identifier }}
-{%- endif %}
-{%- endif %}{# END if domain.route53 is defined #}
-{%- if domain.security_policy is defined %}
-  SecurityPolicy: {{ domain.security_policy }}
-{%- endif %}
-{%- endmacro %}{# END macro prep_domain(domain) #}
-
-{%- macro prep_endpoint_configuration(endpoint_configuration) %}{# BEGIN macro prep_endpoint_configuration(endpoint_configuration) #}
-EndpointConfiguration:
-{%- if endpoint_configuration.type is defined %}
-  Type: String
-{%- endif %}
-{%- if endpoint_configuration.vpc_endpoint_ids is defined %}
-  VPCEndpointIds:
-{%- for item in endpoint_configuration.vpc_endpoint_ids %}
-    - {{ item }}
-{%- endfor %}
-{%- endif %}
-{%- endmacro %}{# END macro prep_endpoint_configuration(endpoint_configuration) #}
-
-{%- macro prep_method_settings(method_settings) %}{# BEGIN macro prep_method_settings(method_settings) #}
-MethodSettings:
-{%- for method_setting in method_settings %}
-  -
-{%- if method_setting.cache_data_encrypted is defined %}
-    CacheDataEncrypted: {{ method_setting.cache_data_encrypted }}
-{%- endif %}
-{%- if method_setting.cache_ttl_in_seconds is defined %}
-    CacheTtlInSeconds: {{ method_setting.cache_ttl_in_seconds }}
-{%- endif %}
-{%- if method_setting.caching_enabled is defined %}
-    CachingEnabled: {{ method_setting.caching_enabled }}
-{%- endif %}
-{%- if method_setting.data_trace_enabled is defined %}
-    DataTraceEnabled: {{ method_setting.data_trace_enabled }}
-{%- endif %}
-{%- if method_setting.http_method is defined %}
-    HttpMethod: {{ method_setting.http_method }}
-{%- endif %}
-{%- if method_setting.logging_level is defined %}
-    LoggingLevel: {{ method_setting.logging_level }}
-{%- endif %}
-{%- if method_setting.metrics_enabled is defined %}
-    MetricsEnabled: {{ method_setting.metrics_enabled }}
-{%- endif %}
-{%- if method_setting.resource_path is defined %}
-    ResourcePath: {{ method_setting.resource_path }}
-{%- endif %}
-{%- if method_setting.throttling_burst_limit is defined %}
-    ThrottlingBurstLimit: {{ method_setting.throttling_burst_limit }}
-{%- endif %}
-{%- if method_setting.throttling_rate_limit is defined %}
-    ThrottlingRateLimit: {{ method_setting.throttling_rate_limit }}
-{%- endif %}
-{%- endfor %}
-{%- endmacro %}{# END macro prep_method_settings(method_settings) #}

@@ -18,7 +18,7 @@ Resources:
     Properties:
       StageName: {{ api.stage_name }}
 {%- if api.access_log_setting is defined %}{# BEGIN if api.access_log_setting is defined #}
-      {{ prop_api.prep_access_log_setting(api.access_log_setting) | indent(width=6, first=False) }}
+      {{ prop_api.prep_access_log_setting(api.access_log_setting) | indent(width=6, first=false) }}
 {%- endif %}{# END if api.access_log_setting is defined #}
 {%- if api.always_deploy is defined %}
       AlwaysDeploy: Boolean
@@ -27,7 +27,7 @@ Resources:
       ApiKeySourceType: String
 {%- endif %}
 {%- if api.auth is defined %}{# BEGIN if api.auth is defined #}
-      {{ prop_api.prep_auth(api.auth) | indent(width=6, first=False) }}
+      {{ prop_api.prep_auth(api.auth) | indent(width=6, first=false) }}
 {%- endif %}{# END if api.auth is defined #}
 {%- if api.binary_media_types is defined %}
       BinaryMediaTypes: List
@@ -42,17 +42,17 @@ Resources:
       CacheClusterSize: {{ api.cache_cluster_size }}
 {%- endif %}
 {%- if api.canary_setting is defined %}
-      {{ prop_api.prep_canary_setting(api.canary_setting) | indent(width=6, first=False) }}
+      {{ prop_api.prep_canary_setting(api.canary_setting) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if api.cors is defined %}
-      {{ prop_api.prep_cors(api.cors) | indent(width=6, first=False) }}
+      {{ prop_api.prep_cors(api.cors) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if api.definition_body is defined %}
       DefinitionBody:
-        {{ api.definition_body | indent(width=8, first=False) }}
+        {{ api.definition_body | indent(width=8, first=false) }}
 {%- endif %}
 {%- if api.definition_uri is defined %}
-      {{ prop_api.prep_definition_uri(api.definition_uri) | indent(width=6, first=False) }}
+      {{ prop_api.prep_definition_uri(api.definition_uri) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if api.description is defined %}
       Description: {{ api.description }}
@@ -61,10 +61,10 @@ Resources:
       DisableExecuteApiEndpoint: {{ api.disable_execute_api_endpoint }}
 {%- endif %}
 {%- if api.domain is defined %}
-      {{ prop_api.prep_domain(api.domain) | indent(width=6, first=False) }}
+      {{ prop_api.prep_domain(api.domain) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if api.endpoint_configuration is defined %}
-      {{ prop_api.prep_endpoint_configuration(api.endpoint_configuration) | indent(width=6, first=False) }}
+      {{ prop_api.prep_endpoint_configuration(api.endpoint_configuration) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if api.fail_on_warnings is defined %}
       FailOnWarnings: {{ api.fail_on_warnings }}
@@ -79,7 +79,7 @@ Resources:
       MergeDefinitions: {{ api.merge_definitions }}
 {%- endif %}
 {%- if api.method_settings is defined %}
-      {{ prop_api.prep_method_settings(api.method_settings) | indent(width=6, first=False) }}
+      {{ prop_api.prep_method_settings(api.method_settings) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if api.minimum_compression_size is defined %}
       MinimumCompressionSize: {{ api.minimum_compression_size }}
@@ -104,7 +104,7 @@ Resources:
 {%- endif %}
 {%- if api.tags is defined %}
       Tags:
-        SouceRepoUrl: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- for key, value in api.tags.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}

@@ -1,14 +1,15 @@
 {%- import 'macros/prop-api.yaml.j2' as prop_api %}
 {%- import 'macros/prop-function.yaml.j2' as prop_function %}
+{%- import 'macros/prop-http-api.yaml.j2' as prop_http_api %}
 {%- macro prep(globals) %}
 Globals:
-{%- if globals.api is defined %}
+{%- if globals.api is defined %}{# BEGIN if globals.api is defined #}
   Api:
 {%- if globals.api.access_log_setting is defined %}
-    {{ prop_api.prep_access_log_setting(globals.api.access_log_setting) | indent(width=4, first=False) }}
+    {{ prop_api.prep_access_log_setting(globals.api.access_log_setting) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.api.auth is defined %}
-    {{ prop_api.prep_auth(globals.api.auth) | indent(width=4, first=False) }}
+    {{ prop_api.prep_auth(globals.api.auth) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.api.binary_media_types is defined %}
     BinaryMediaTypes:
@@ -23,19 +24,19 @@ Globals:
     CacheClusterSize: {{ globals.api.cache_cluster_size }}
 {%- endif %}
 {%- if globals.api.canary_setting is defined %}
-    {{ prop_api.prep_canary_setting(globals.api.canary_setting) | indent(width=4, first=False) }}
+    {{ prop_api.prep_canary_setting(globals.api.canary_setting) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.api.cors is defined %}
     Cors:
 {%- endif %}
 {%- if globals.api.definition_uri is defined %}
-    {{ prop_api.prep_definition_uri(globals.api.definition_uri) | indent(width=4, first=False) }}
+    {{ prop_api.prep_definition_uri(globals.api.definition_uri) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.api.domain is defined %}
-    {{ prop_api.prep_domain(globals.api.domain) | indent(width=4, first=False) }}
+    {{ prop_api.prep_domain(globals.api.domain) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.api.endpoint_configuration is defined %}
-    {{ prop_api.prep_endpoint_configuration(globals.api.endpoint_configuration) | indent(width=4, first=False) }}
+    {{ prop_api.prep_endpoint_configuration(globals.api.endpoint_configuration) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.api.gateway_responses is defined %}
     GatewayResponses:
@@ -44,7 +45,7 @@ Globals:
 {%- endfor %}
 {%- endif %}
 {%- if globals.api.method_settings is defined %}
-    {{ prop_api.prep_method_settings(globals.api.method_settings) | indent(width=4, first=False) }}
+    {{ prop_api.prep_method_settings(globals.api.method_settings) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.api.minimum_compression_size is defined %}
     MinimumCompressionSize: {{ globals.api.minimum_compression_size }}
@@ -67,9 +68,9 @@ Globals:
       {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if globals.api is defined #}
 
-{%- if globals.function is defined %}
+{%- if globals.function is defined %}{# BEGIN if globals.function is defined #}
   Function:
 {%- if globals.function.architectures is defined %}
     Architectures:
@@ -79,7 +80,7 @@ Globals:
 {%- endif %}
 {%- if globals.function.assume_role_policy_document is defined %}
     AssumeRolePolicyDocument:
-      {{ globals.function.assume_role_policy_document | indent(width=6, first=False) }}
+      {{ globals.function.assume_role_policy_document | indent(width=6, first=false) }}
 {%- endif %}
 {%- if globals.function.auto_publish_alias is defined %}
     AutoPublishAlias: {{ globals.function.auto_publish_alias }}
@@ -88,7 +89,7 @@ Globals:
     CodeSigningConfigArn: {{ globals.function.code_signing_config_arn | trim }}
 {%- endif %}
 {%- if globals.function.code_uri is defined %}
-    {{ prop_function.prep_code_uri(globals.function.code_uri) | indent(width=4, first=False) }}
+    {{ prop_function.prep_code_uri(globals.function.code_uri) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.function.dead_letter_queue is defined %}
     DeadLetterQueue:
@@ -97,26 +98,26 @@ Globals:
 {%- endfor %}
 {%- endif %}
 {%- if globals.function.deployment_preference is defined %}
-    {{ prop_function.prep_deployment_preference(globals.function.deployment_preference) | indent(width=4, first=False) }}
+    {{ prop_function.prep_deployment_preference(globals.function.deployment_preference) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.function.description is defined %}
     Description: {{ globals.function.description }}
 {%- endif %}
 {%- if globals.function.environment is defined %}
-    {{ prop_function.prep_environment(globals.function.environment) | indent(width=4, first=False) }}
+    {{ prop_function.prep_environment(globals.function.environment) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.function.ephemeral_storage is defined %}
     EphemeralStorage:
       Size: {{ globals.function.ephemeral_storage.size }}
 {%- endif %}
 {%- if globals.function.event_invoke_configuration is defined %}
-    {{ prop_function.prep_event_invoke_configuration(globals.function.event_invoke_configuration) | indent(width=4, first=False) }}
+    {{ prop_function.prep_event_invoke_configuration(globals.function.event_invoke_configuration) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.function.file_system_configs is defined %}
-    {{ prop_function.prep_file_system_configs(globals.function.file_system_configs) | indent(width=4, first=False) }}
+    {{ prop_function.prep_file_system_configs(globals.function.file_system_configs) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.function.function_url_config is defined %}
-    {{ prop_function.prep_function_url_config(globals.function.function_url_config) | indent(width=4, first=False) }}
+    {{ prop_function.prep_function_url_config(globals.function.function_url_config) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.function.handler is defined %}
     Handler: {{ globals.function.handler }}
@@ -131,7 +132,7 @@ Globals:
 {%- endfor %}
 {%- endif %}
 {%- if globals.function.logging_config is defined %}
-    {{ prop_function.prep_logging_config(globals.function.logging_config) | indent(width=4, first=False) }}
+    {{ prop_function.prep_logging_config(globals.function.logging_config) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.function.memory_size is defined %}
     MemorySize: {{ globals.function.memory_size }}
@@ -159,7 +160,7 @@ Globals:
     Runtime: {{ globals.function.runtime }}
 {%- endif %}
 {%- if globals.function.runtime_management_config is defined %}
-    {{ prop_function.prep_runtime_management_config(globals.function.runtime_management_config) | indent(width=4, first=False) }}
+    {{ prop_function.prep_runtime_management_config(globals.function.runtime_management_config) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if globals.function.snap_start is defined %}
     SnapStart:
@@ -181,18 +182,32 @@ Globals:
     Tracing: {{ globals.function.tracing }}
 {%- endif %}
 {%- if globals.function.vpc_config is defined %}
-    {{ prop_function.prep_vpc_config(globals.function.vpc_config) | indent(width=4, first=False) }}
+    {{ prop_function.prep_vpc_config(globals.function.vpc_config) | indent(width=4, first=false) }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if globals.function is defined #}
 
-{%- if globals.http_api is defined and False %}
+{%- if globals.http_api is defined %}{# BEGIN if globals.http_api is defined #}
   HttpApi:
-    AccessLogSettings:
-    Auth:
-    PropagateTags:
-    StageVariables:
-    Tags:
+{%- if globals.http_api.access_log_settings is defined %}
+    {{ prop_http_api.prep_access_log_settings(globals.http_api.access_log_settings) | indent(width=4, first=false) }}
 {%- endif %}
+{%- if globals.http_api.auth is defined %}
+    {{ prop_http_api.prep_auth(globals.http_api.auth) | indent(width=4, first=false) }}
+{%- endif %}
+{%- if globals.http_api.propagate_tags is defined %}
+    PropagateTags: {{ globals.http_api.propagate_tags | lower }}
+{%- endif %}
+{%- if globals.http_api.stage_variables is defined %}
+    StageVariables:
+      {{ globals.http_api.stage_variables | indent(width=6, first=false) }}
+{%- endif %}
+{%- if globals.http_api.tags is defined %}
+    Tags:
+{%- for key, value in globals.http_api.tags.items() %}
+      {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END if globals.http_api is defined #}
 
 {%- if globals.simple_table is defined and False %}
   SimpleTable:

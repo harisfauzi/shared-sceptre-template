@@ -1,7 +1,7 @@
 ---
 {%- import 'macros/globals.yaml.j2' as globals %}
 {%- import 'macros/prop-http-api.yaml.j2' as prop_http_api %}
-Description: {{sceptre_user_data.description|default('Serverless API(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Serverless HttpApi(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 {%- if sceptre_user_data.globals is defined %}
@@ -9,13 +9,184 @@ Transform: AWS::Serverless-2016-10-31
 {%- endif %}
 
 Resources:
-{%- for api in sceptre_user_data.apis %}
-{%- set api_name = api.name %}
-  {{ api_name }}:
+{%- for http_api in sceptre_user_data.http_apis %}
+{%- set http_api_name = http_api.name %}
+  {{ http_api_name }}:
     Type: AWS::Serverless::HttpApi
-    DeletionPolicy: {{ api.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ api.update_replace_policy | default('Delete') }}
+    DeletionPolicy: {{ http_api.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ http_api.update_replace_policy | default('Delete') }}
     Properties:
+{%- if http_api.access_log_settings is defined %}{# BEGIN if http_api.access_log_settings is defined #}
+      {{ prop_http_api.prep_access_log_settings(http_api.access_log_settings) | indent(width=6, first=false) }}
+{%- endif %}{# END if http_api.access_log_settings is defined #}
+{%- if http_api.auth is defined %}{# BEGIN if http_api.auth is defined #}
+      {{ prop_http_api.prep_auth(http_api.auth) | indent(width=6, first=false) }}
+{%- endif %}{# END if http_api.auth is defined #}
+{%- if http_api.cors_configuration is defined %}{# BEGIN if http_api.cors_configuration is defined #}
+{%- if http_api.cors_configuration is string %}{## BEGIN if http_api.cors_configuration is string #}
+      CorsConfiguration: {{ http_api.cors_configuration }}
+{%- elif http_api.cors_configuration is mapping %}
+      CorsConfiguration:
+        # HttpApiCorsConfiguration
+{%- if http_api.cors_configuration.allow_credentials is defined %}
+        AllowCredentials: {{ http_api.cors_configuration.allow_credentials | lower }}
+{%- endif %}
+{%- if http_api.cors_configuration.allow_headers is defined %}
+        AllowHeaders:
+{%- for item in http_api.cors_configuration.allow_headers %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if http_api.cors_configuration.allow_methods is defined %}
+        AllowMethods:
+{%- for item in http_api.cors_configuration.allow_methods %}
+          - {{item }}
+{%- endfor %}
+{%- endif %}
+{%- if http_api.cors_configuration.allow_origins is defined %}
+        AllowOrigins:
+{%- for item in http_api.cors_configuration.allow_origins %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if http_api.cors_configuration.expose_headers is defined %}
+        ExposeHeaders:
+{%- for item in http_api.cors_configuration.expose_headers %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if http_api.cors_configuration.max_age is defined %}
+        MaxAge: {{ http_api.cors_configuration.max_age }}
+{%- endif %}
+{%- endif %}{## END if http_api.cors_configuration is string #}
+{%- endif %}{# END if http_api.cors_configuration is defined #}
+{%- if http_api.default_route_settings_json is defined %}
+      DefaultRouteSettings: {{ http_api.default_route_settings_json }}
+{%- elif http_api.default_route_settings is defined %}
+      DefaultRouteSettings:
+        {{ http_api.default_route_settings | indent(widht=8, first=false) }}
+{%- endif %}
+{%- if http_api.definition_body_json is defined %}
+      DefinitionBody: {{ http_api.definition_body_json }}
+{%- elif http_api.definition_body is defined %}
+      DefinitionBody:
+        {{ http_api.definition_body | indent(width=8, first=false) }}
+{%- endif %}
+{%- if http_api.definition_uri is defined %}{# BEGIN if http_api.definition_uri is defined #}
+{%- if http_api.definition_uri is string %}{# BEGIN if http_api.definition_uri is string #}
+      DefinitionUri: {{ http_api.definition_uri }}
+{%- elif http_api.definition_uri is mapping %}
+      DefinitionUri:
+        # HttpApiDefinition
+        Bucket: {{ http_api.definition_uri.bucket }}
+        Key: {{ http_api.definition_uri.key }}
+{%- if http_api.definition_uri.version is defined %}
+        Version: {{ http_api.definition_uri.version }}
+{%- endif %}
+{%- endif %}{# END if http_api.definition_uri is string/mapping #}
+{%- endif %}{# END if http_api.definition_uri is defined #}
+{%- if http_api.description is defined %}
+      Description: {{ http_api.description }}
+{%- endif %}
+{%- if http_api.disable_execute_api_endpoint is defined %}
+      DisableExecuteApiEndpoint: {{ http_api.disable_execute_api_endpoint | lower }}
+{%- endif %}
+{%- if http_api.domain is defined %}{# BEGIN if http_api.domain is defined #}
+      Domain:
+        CertificateArn: {{ http_api.domain.certificate_arn }}
+        DomainName: {{ http_api.domain.domain_name }}
+{%- if http_api.domain.base_path is defined %}
+        BasePath: List
+{%- for item in http_api.domain.base_path %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if http_api.domain.endpoint_configuration is defined %}
+        EndpointConfiguration: {{ http_api.domain.endpoint_configuration }}
+{%- endif %}
+{%- if http_api.domain.mutual_tls_authentication is defined %}{# BEGIN if http_api.domain.mutual_tls_authentication is defined #}
+        MutualTlsAuthentication:
+{%- if http_api.domain.mutual_tls_authentication.truststore_uri is defined %}
+          TruststoreUri: {{ http_api.domain.mutual_tls_authentication.truststore_uri }}
+{%- endif %}
+{%- if http_api.domain.mutual_tls_authentication.truststore_version is defined %}
+          TruststoreVersion: {{ http_api.domain.mutual_tls_authentication.truststore_version }}
+{%- endif %}
+{%- endif %}{# END if http_api.domain.mutual_tls_authentication is defined #}
+{%- if http_api.domain.ownership_verification_certificate_arn is defined %}
+        OwnershipVerificationCertificateArn: {{ http_api.domain.ownership_verification_certificate_arn }}
+{%- endif %}
+{%- if http_api.domain.route53 is defined %}{# BEGIN if http_api.domain.route53 is defined #}
+        Route53:
+{%- if http_api.domain.route53.distribution_domain_name is defined %}
+          DistributionDomainName: {{ http_api.domain.route53.distribution_domain_name }}
+{%- endif %}
+{%- if http_api.domain.route53.evaluate_target_health is defined %}
+          EvaluateTargetHealth: {{ http_api.domain.route53.evaluate_target_health | lower }}
+{%- endif %}
+{%- if http_api.domain.route53.hosted_zone_id is defined %}
+          HostedZoneId: {{ http_api.domain.route53.hosted_zone_id | trim }}
+{%- endif %}
+{%- if http_api.domain.route53.hosted_zone_name is defined %}
+          HostedZoneName: {{ http_api.domain.route53.hosted_zone_name }}
+{%- endif %}
+{%- if http_api.domain.route53.ipv6 is defined %}
+          IpV6: {{ http_api.domain.route53.ipv6 | lower }}
+{%- endif %}
+{%- if http_api.domain.route53.region is defined %}
+          Region: {{ http_api.domain.route53.region }}
+{%- endif %}
+{%- if http_api.domain.route53.set_identifier is defined %}
+          SetIdentifier: {{ http_api.domain.route53.set_identifier }}
+{%- endif %}
+{%- endif %}{# END if http_api.domain.route53 is defined #}
+{%- if http_api.domain.security_policy is defined %}
+        SecurityPolicy: {{ http_api.domain.security_policy }}
+{%- endif %}
+{%- endif %}{# END if http_api.domain is defined #}
+{%- if http_api.fail_on_warnings is defined %}
+      FailOnWarnings: {{ http_api.fail_on_warnings | lower }}
+{%- endif %}
+{%- if http_api.http_api_name is defined %}
+      Name: {{ http_api.http_api_name }}
+{%- endif %}
+{%- if http_api.propagate_tags is defined %}
+      PropagateTags: {{ http_api.propagate_tags | lower }}
+{%- endif %}
+{%- if http_api.route_settings_json is defined %}
+      RouteSettings: {{ http_api.route_settings_json }}
+{%- elif http_api.route_settings is defined %}
+      RouteSettings:
+        {{ http_api.route_settings | indent(width=8, first=false) }}
+{%- endif %}
+{%- if http_api.stage_name is defined %}
+      StageName: {{ http_api.stage_name }}
+{%- endif %}
+{%- if http_api.stage_variables_json is defined %}
+      StageVariables: {{ http_api.stage_variables_json }}
+{%- elif http_api.stage_variables is defined %}
+      StageVariables:
+        {{ http_api.stage_variables | indent(width=8, first=false) }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if http_api.tags is defined %}
+{%- for key, value in http_api.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for http_api in sceptre_user_data.http_apis %}
+{%- set http_api_name = http_api.name %}
+  {{ http_api_name }}:
+    Description: The API ID for {{ http_api_name }}
+    Value:
+      Ref: {{ http_api_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ http_api_name }}"
 {%- endfor %}
 {#
 # Supported structure as of 20250322:
@@ -61,7 +232,7 @@ Properties:
     ExposeHeaders:
       - String
     MaxAge: Integer
-  DefaultRouteSettings: RouteSettings
+  DefaultRouteSettings: Json
   DefinitionBody: JSON
   DefinitionUri: String | HttpApiDefinition
     # HttpApiDefinition
@@ -75,9 +246,18 @@ Properties:
     CertificateArn: String
     DomainName: String
     EndpointConfiguration: String
-    MutualTlsAuthentication: MutualTlsAuthentication
+    MutualTlsAuthentication:
+      TruststoreUri: String
+      TruststoreVersion: String
     OwnershipVerificationCertificateArn: String
-    Route53: Route53Configuration
+    Route53:
+      DistributionDomainName: String
+      EvaluateTargetHealth: Boolean
+      HostedZoneId: String
+      HostedZoneName: String
+      IpV6: Boolean
+      Region: String
+      SetIdentifier: String
     SecurityPolicy: String
   FailOnWarnings: Boolean
   Name: String

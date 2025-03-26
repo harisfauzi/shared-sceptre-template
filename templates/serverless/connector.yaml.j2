@@ -14,12 +14,12 @@ Resources:
     Properties:
 {%- if connector.destination is mapping %}
       Destination:
-        {{ prop_connector.prep_resource_reference(connector.destination) | indent(width=8, first=False) }}
+        {{ prop_connector.prep_resource_reference(connector.destination) | indent(width=8, first=false) }}
 {%- elif connector.destination is iterable %}
       Destination:
 {%- for resource_reference in connector.destination %}
         -
-          {{ prop_connector.prep_resource_reference(connector.destination) | indent(width=10, first=False) }}
+          {{ prop_connector.prep_resource_reference(connector.destination) | indent(width=10, first=false) }}
 {%- endfor %}
 {%- endif %}
       Permissions:
@@ -27,7 +27,7 @@ Resources:
         - {{ permission }}
 {%- endfor %}
       Source:
-        {{ prop_connector.prep_resource_reference(connector.source) | indent(width=8, first=False) }}
+        {{ prop_connector.prep_resource_reference(connector.source) | indent(width=8, first=false) }}
 {%- endfor %}
 {#
 # Supported structure as of 20250322:
