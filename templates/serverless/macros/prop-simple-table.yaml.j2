@@ -1,0 +1,10 @@
+{%- macro prep_sse_specification(sse_specification) %}{# BEGIN macro prep_sse_specification(sse_specification) #}
+SSESpecification:
+  SSEEnabled: {{ sse_specification.sse_enabled }}
+{%- if sse_specification.kms_master_key_id is defined %}
+  KMSMasterKeyId: {{ sse_specification.kms_master_key_id }}
+{%- endif %}
+{%- if sse_specification.sse_type is defined %}
+  SSEType: {{ sse_specification.sse_type }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_sse_specification(sse_specification) #}

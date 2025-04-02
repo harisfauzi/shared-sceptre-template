@@ -1,0 +1,24 @@
+---
+template:
+  type: sam
+  path: templates/serverless/api.yaml.j2
+  artifact_bucket_name: serverless/s3-bucket1.yaml::ArtifactBucket
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test Jinja2 template.
+  apis:
+    - name: TestAPI1
+      stage_name: test
+      cors: "\"'*'\""
+      auth:
+        default_authorizer: MyCognitoAuthorizer
+        authorizers:
+          MyCognitoAuthorizer:
+            user_pool_arn: arn:aws:cognito-idp:us-west-2:123456789012:userpool/us-west-2_EXAMPLE
+      tags:
+        Name: testapi1
+
+stack_tags:
+  Test: serverless-api

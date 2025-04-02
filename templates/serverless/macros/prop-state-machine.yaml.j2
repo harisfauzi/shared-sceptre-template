@@ -1,0 +1,22 @@
+{%- macro prep_dead_letter_config(dead_letter_config) %}{# BEGIN macro prep_dead_letter_config(dead_letter_config) #}
+DeadLetterConfig:
+{%- if dead_letter_config.arn is defined %}
+  Arn: {{ dead_letter_config.arn | trim }}
+{%- endif %}
+{%- if dead_letter_config.queue_logical_id is defined %}
+  QueueLogicalId: {{ dead_letter_config.queue_logical_id }}
+{%- endif %}
+{%- if dead_letter_config.type is defined %}
+  Type: {{ dead_letter_config.type }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_dead_letter_config(dead_letter_config) #}
+
+{%- macro prep_retry_policy(retry_policy) %}{# BEGIN macro prep_retry_policy(retry_policy) #}
+RetryPolicy:
+{%- if retry_policy.maximum_event_age_in_seconds is defined %}
+  MaximumEventAgeInSeconds: {{ retry_policy.maximum_event_age_in_seconds }}
+{%- endif %}
+{%- if retry_policy.maximum_retry_attempts is defined %}
+  MaximumRetryAttempts: {{ retry_policy.maximum_retry_attempts }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_retry_policy(retry_policy) #}

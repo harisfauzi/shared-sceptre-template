@@ -1,0 +1,84 @@
+---
+Description: {{sceptre_user_data.description|default('Serverless LayerVersion(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+{%- for layer_version in sceptre_user_data.layer_versions %}
+{%- set layer_version_name = layer_version.name %}
+  {{ layer_version_name }}:
+    Type: AWS::Serverless::LayerVersion
+    DeletionPolicy: {{ layer_version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ layer_version.update_replace_policy | default('Delete') }}
+    Properties:
+      {# BEGIN layer_version.content_uri #}
+{%- if layer_version.content_uri is string %}{# BEGIN if layer_version.content_uri is string #}
+      ContentUri: {{ layer_version.content_uri }}
+{%- elif layer_version.content_uri is mapping %}
+      ContentUri:
+        Bucket: {{ layer_version.content_uri.bucket }}
+        Key: {{ layer_version.content_uri.key }}
+{%- if layer_version.content_uri.version is defined %}
+        Version: {{ layer_version.content_uri.version }}
+{%- endif %}
+{%- endif %}{# END if layer_version.content_uri is string/mapping #}
+      {# END layer_version.content_uri #}
+{%- if layer_version.compatible_architectures is defined %}
+      CompatibleArchitectures:
+{%- for item in layer_version.compatible_architectures %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if layer_version.compatible_runtimes is defined %}
+      CompatibleRuntimes:
+{%- for item in layer_version.compatible_runtimes %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if layer_version.description is defined %}
+      Description: {{ layer_version.description }}
+{%- endif %}
+{%- if layer_version.layer_name is defined %}
+      LayerName: {{ layer_version.layer_name }}
+{%- endif %}
+{%- if layer_version.license_info is defined %}
+      LicenseInfo: {{ layer_version.license_info }}
+{%- endif %}
+{%- if layer_version.publish_lambda_version is defined %}
+      PublishLambdaVersion: {{ layer_version.publish_lambda_version | lower }}
+{%- endif %}
+{%- if layer_version.retention_policy is defined %}
+      RetentionPolicy: {{ layer_version.retention_policy }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for layer_version in sceptre_user_data.layer_versions %}
+{%- set layer_version_name = layer_version.name %}
+  {{ layer_version_name }}:
+    Description: The ARN for {{ layer_version_name }}
+    Value:
+      Ref: {{ layer_version_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ layer_version_name }}"
+{%- endfor %}
+{#
+# Supported structure as of 20250324:
+Type: AWS::Serverless::LayerVersion
+Properties:
+  CompatibleArchitectures:
+    - String
+  CompatibleRuntimes:
+    - String
+  ContentUri: String | LayerContent
+    # LayerContent
+    Bucket: String
+    Key: String
+    Version: String
+  Description: String
+  LayerName: String
+  LicenseInfo: String
+  PublishLambdaVersion: Boolean
+  RetentionPolicy: String
+#}

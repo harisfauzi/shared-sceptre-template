@@ -1,0 +1,1325 @@
+---
+{%- import 'macros/globals.yaml.j2' as globals %}
+{%- import 'macros/prop-function.yaml.j2' as prop_function %}
+Description: {{sceptre_user_data.description|default('Serverless Function(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+{%- if sceptre_user_data.globals is defined %}
+{{ globals.prep(sceptre_user_data.globals) }}
+{%- endif %}
+
+Resources:
+{%- for function in sceptre_user_data.functions %}
+{%- set function_name = function.name %}
+  {{ function_name }}:
+    Type: AWS::Serverless::Function
+    DeletionPolicy: {{ function.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ function.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if function.architectures is defined %}
+      Architectures:
+{%- for item in function.architectures %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if function.assume_role_policy_document is defined %}
+      AssumeRolePolicyDocument:
+        {{ function.assume_role_policy_document | indent(width=8, first=false) }}
+{%- endif %}
+{%- if function.auto_publish_alias is defined %}
+      AutoPublishAlias: {{ function.auto_publish_alias }}
+{%- endif %}
+{%- if function.auto_publish_alias_all_properties is defined %}
+      AutoPublishAliasAllProperties: {{ function.auto_publish_alias_all_properties }}
+{%- endif %}
+{%- if function.auto_publish_code_sha256 is defined %}
+      AutoPublishCodeSha256: {{ function.auto_publish_code_sha256 }}
+{%- endif %}
+{%- if function.code_signing_config_arn is defined %}
+      CodeSigningConfigArn: {{ function.code_signing_config_arn | trim }}
+{%- endif %}
+{%- if function.code_uri is defined %}
+      {{ prop_function.prep_code_uri(function.code_uri) | indent(width=6, first=false) }}
+{%- endif %}
+{%- if function.dead_letter_queue is defined %}
+      DeadLetterQueue:
+{%- for key, value in function.dead_letter_queue.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if function.deployment_preference is defined %}
+      {{ prop_function.prep_deployment_preference(function.deployment_preference) | indent(width=6, first=false) }}
+{%- endif %}
+{%- if function.description is defined %}
+      Description: {{ function.description }}
+{%- endif %}
+{%- if function.environment is defined %}
+      {{ prop_function.prep_environment(function.environment) | indent(width=6, first=false) }}
+{%- endif %}
+{%- if function.ephemeral_storage is defined %}
+      EphemeralStorage:
+        Size: {{ function.ephemeral_storage.size }}
+{%- endif %}
+{%- if function.event_invoke_configuration is defined %}
+      {{ prop_function.prep_event_invoke_configuration(function.event_invoke_configuration) | indent(width=6, first=false) }}
+{%- endif %}
+{%- if function.events is defined %}{# BEGIN if function.events is defined #}
+      Events:
+{%- for event_label, event in function.events.items() %}{# BEGIN for event_label, event in function.events.items() #}
+        {{ event_label }}:
+          Type: {{ event.type }}
+          Properties:
+{%- if event.type == 'AlexaSkill' %}{# BEGIN if event.type == 'AlexaSkill'/'Api'/'CloudWatchEvent'/'CloudWatchLogs'/'Cognito'/'DocumentDB'/'DynamoDB'/'EventBridgeRule'/'HttpApi'/'IoTRule'/'Kinesis'/'MQ'/'MSK'/'S3'/'Schedule'/'ScheduleV2'/'SelfManagedKafka'/'SNS'/'SQS' #}
+{# BEGIN event.type == 'AlexaSkill' #}
+{%- if event.properties.skill_id is defined %}
+            SkillId: {{ event.properties.skill_id }}
+{%- endif %}
+{# END event.type == 'AlexaSkill' #}
+{%- elif event.type == 'Api' %}
+{# BEGIN event.type == 'Api' #}
+            Method: {{ event.properties.method }}
+            Path: {{ event.properties.path }}
+{%- if event.properties.auth is defined %}{# BEGIN if event.properties.auth is defined #}
+            Auth:
+{%- if event.properties.auth.api_key_required is defined %}
+              ApiKeyRequired: {{ event.properties.auth.api_key_required }}
+{%- endif %}
+{%- if event.properties.auth.authorization_scopes is defined %}
+              AuthorizationScopes:
+{%- for item in event.properties.auth.authorization_scopes %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.authorizer is defined %}
+              Authorizer: {{ event.properties.auth.authorizer }}
+{%- endif %}
+{%- if event.properties.auth.invoke_role is defined %}
+              InvokeRole: {{ event.properties.auth.invoke_role }}
+{%- endif %}
+{%- if event.properties.auth.override_api_auth is defined %}
+              OverrideApiAuth: {{ event.properties.auth.override_api_auth }}
+{%- endif %}
+{%- if event.properties.auth.resource_policy is defined %}{# BEGIN if event.properties.auth.resource_policy is defined #}
+              ResourcePolicy:
+{%- if event.properties.auth.resource_policy.aws_account_blacklist is defined %}
+                AwsAccountBlacklist:
+{%- for item in event.properties.auth.resource_policy.aws_account_blacklist %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.aws_account_whitelist is defined %}
+                AwsAccountWhitelist:
+{%- for item in event.properties.auth.resource_policy.aws_account_whitelist %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.custom_statements is defined %}
+                CustomStatements:
+{%- for item in event.properties.auth.resource_policy.custom_statements %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.intrinsic_vpc_blacklist is defined %}
+                IntrinsicVpcBlacklist:
+{%- for item in event.properties.auth.resource_policy.intrinsic_vpc_blacklist %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.intrinsic_vpc_whitelist is defined %}
+                IntrinsicVpcWhitelist:
+{%- for item in event.properties.auth.resource_policy.intrinsic_vpc_whitelist %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.intrinsic_vpce_blacklist is defined %}
+                IntrinsicVpceBlacklist:
+{%- for item in event.properties.auth.resource_policy.intrinsic_vpce_blacklist %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.intrinsic_vpce_whitelist is defined %}
+                IntrinsicVpceWhitelist:
+{%- for item in event.properties.auth.resource_policy.intrinsic_vpce_whitelist %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.ip_range_blacklist is defined %}
+                IpRangeBlacklist:
+{%- for item in event.properties.auth.resource_policy.ip_range_blacklist %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.ip_range_whitelist is defined %}
+                IpRangeWhitelist:
+{%- for item in event.properties.auth.resource_policy.ip_range_whitelist %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.source_vpc_blacklist is defined %}
+                SourceVpcBlacklist:
+{%- for item in event.properties.auth.resource_policy.source_vpc_blacklist %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.source_vpc_whitelist is defined %}
+                SourceVpcWhitelist:
+{%- for item in event.properties.auth.resource_policy.source_vpc_whitelist %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END if event.properties.auth.resource_policy is defined #}
+{%- endif %}{# END if event.properties.auth is defined #}
+{%- if event.properties.request_model is defined %}{# BEGIN if event.properties.request_model is defined #}
+            RequestModel:
+              Model: {{ event.properties.request_model.model }}
+{%- if event.properties.request_model.required is defined %}
+              Required: {{ event.properties.request_model.required }}
+{%- endif %}
+{%- if event.properties.request_model.validate_body is defined %}
+              ValidateBody: {{ event.properties.request_model.validate_body }}
+{%- endif %}
+{%- if event.properties.request_model.validate_parameters is defined %}
+              ValidateParameters: {{ event.properties.request_model.validate_parameters }}
+{%- endif %}
+{%- endif %}{# END if event.properties.request_model is defined #}
+{%- if event.properties.request_parameters is defined %}{# BEGIN if event.properties.request_parameters is defined #}
+            RequestParameters:
+{%- for param in event.properties.request_parameters %}
+{%- if param is string %}
+              - {{ param }}
+{%- elif param is mapping %}
+{%- set param_key = param.keys()|list|first %}
+{%- set param_value = param.values()|list|first %}
+              - {{ param_key }}:
+{%- if param_value.caching is defined %}
+                  Caching: {{param_value.caching}}
+{%- endif %}
+{%- if param_value.required is defined %}
+                  Required: {{param_value.required}}
+{%- endif %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if event.properties.request_parameters is defined #}
+{%- if event.properties.rest_api_id is defined %}
+            RestApiId: {{ event.properties.rest_api_id }}
+{%- endif %}
+{%- if event.properties.timeout_in_millis is defined %}
+            TimeoutInMillis: {{ event.properties.timeout_in_millis }}
+{%- endif %}
+{# END event.type == 'Api' #}
+{%- elif event.type == 'CloudWatchEvent' %}
+{# BEGIN event.type == 'CloudWatchEvent' #}
+            Pattern:
+              {{ event.properties.pattern | indent(width=14, first=false) }}
+{%- if event.properties.enabled is defined %}
+            Enabled: {{ event.properties.enabled }}
+{%- endif %}
+{%- if event.properties.event_bus_name is defined %}
+            EventBusName: {{ event.properties.event_bus_name }}
+{%- endif %}
+{%- if event.properties.input is defined %}
+            Input: {{ event.properties.input }}
+{%- endif %}
+{%- if event.properties.input_path is defined %}
+            InputPath: {{ event.properties.input_path }}
+{%- endif %}
+{%- if event.properties.state is defined %}
+            State: {{ event.properties.state }}
+{%- endif %}
+{# END event.type == 'CloudWatchEvent' #}
+{%- elif event.type == 'CloudWatchLogs' %}
+{# BEGIN event.type == 'CloudWatchLogs' #}
+            FilterPattern: {{ event.properties.filter_pattern }}
+            LogGroupName: {{ event.properties.log_group_name }}
+{# END event.type == 'CloudWatchLogs' #}
+{%- elif event.type == 'Cognito' %}
+{# BEGIN event.type == 'Cognito' #}
+            Trigger:
+{%- for item in event.properties.trigger %}
+              - {{ item }}
+{%- endfor %}
+            UserPool: {{ event.properties.user_pool }}
+{# END event.type == 'Cognito' #}
+{%- elif event.type == 'DocumentDB' %}
+{# BEGIN event.type == 'DocumentDB' #}
+            Cluster: {{ event.properties.cluster }}
+            DatabaseName: {{ event.properties.database_name }}
+            {{ prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
+            StartingPosition: {{ event.properties.starting_position }}
+{%- if event.properties.batch_size is defined %}
+            BatchSize: {{ event.properties.batch_size }}
+{%- endif %}
+{%- if event.properties.collection_name is defined %}
+            CollectionName: {{ event.properties.collection_name }}
+{%- endif %}
+{%- if event.properties.enabled is defined %}
+            Enabled: {{ event.properties.enabled | lower }}
+{%- endif %}
+{%- if event.properties.filter_criteria is defined %}
+            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.full_document is defined %}
+            FullDocument: {{ event.properties.full_document }}
+{%- endif %}
+{%- if event.properties.kms_key_arn is defined %}
+            KmsKeyArn: {{ event.properties.kms_key_arn | trim }}
+{%- endif %}
+{%- if event.properties.maximum_batching_window_in_seconds is defined %}
+            MaximumBatchingWindowInSeconds: {{ event.properties.maximum_batching_window_in_seconds }}
+{%- endif %}
+{%- if event.properties.secrets_manager_kms_key_id is defined %}
+            SecretsManagerKmsKeyId: {{ event.properties.secrets_manager_kms_key_id }}
+{%- endif %}
+{%- if event.properties.starting_position_timestamp is defined %}
+            StartingPositionTimestamp: {{ event.properties.starting_position_timestamp }}
+{%- endif %}
+{# END event.type == 'DocumentDB' #}
+{%- elif event.type == 'DynamoDB' %}
+{# BEGIN event.type == 'DynamoDB' #}
+            StartingPosition: {{ event.properties.starting_position }}
+            Stream: {{ event.properties.stream }}
+{%- if event.properties.batch_size is defined %}
+            BatchSize: {{ event.properties.batch_size }}
+{%- endif %}
+{%- if event.properties.bisect_batch_on_function_error is defined %}
+            BisectBatchOnFunctionError: {{ event.properties.bisect_batch_on_function_error | lower }}
+{%- endif %}
+{%- if event.properties.destination_config is defined %}{# BEGIN if event.properties.destination_config is defined #}
+            {{ prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
+{%- endif %}{# END if event.properties.destination_config is defined #}
+{%- if event.properties.enabled is defined %}
+            Enabled: {{ event.properties.enabled | lower }}
+{%- endif %}
+{%- if event.properties.filter_criteria is defined %}
+            {{ prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.function_response_types is defined %}
+            FunctionResponseTypes:
+{%- for item in event.properties.function_response_types %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.kms_key_arn is defined %}
+            KmsKeyArn: {{ event.properties.kms_key_arn | trim }}
+{%- endif %}
+{%- if event.properties.maximum_batching_window_in_seconds is defined %}
+            MaximumBatchingWindowInSeconds: {{ event.properties.maximum_batching_window_in_seconds }}
+{%- endif %}
+{%- if event.properties.maximum_record_age_in_seconds is defined %}
+            MaximumRecordAgeInSeconds: {{ event.properties.maximum_record_age_in_seconds }}
+{%- endif %}
+{%- if event.properties.maximum_retry_attempts is defined %}
+            MaximumRetryAttempts: {{ event.properties.maximum_retry_attempts }}
+{%- endif %}
+{%- if event.properties.metrics_config is defined %}
+            {{ prop_function.prep_metrics_config(event.properties.metrics_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.parallelization_factor is defined %}
+            ParallelizationFactor: {{ event.properties.parallelization_factor }}
+{%- endif %}
+{%- if event.properties.starting_position_timestamp is defined %}
+            StartingPositionTimestamp: {{ event.properties.starting_position_timestamp }}
+{%- endif %}
+{%- if event.properties.tumbling_window_in_seconds is defined %}
+            TumblingWindowInSeconds: {{ event.properties.tumbling_window_in_seconds }}
+{%- endif %}
+{# END event.type == 'DynamoDB' #}
+{%- elif event.type == 'EventBridgeRule' %}
+{# BEGIN event.type == 'EventBridgeRule' #}
+            Pattern: EventPattern
+              {{ event.properties.pattern | indent(width=14, first=false) }}
+{%- if event.properties.dead_letter_config is defined %}
+            {{ prop_function.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.event_bus_name is defined %}
+            EventBusName: {{ event.properties.event_bus_name }}
+{%- endif %}
+{%- if event.properties.input is defined %}
+            Input: {{ event.properties.input }}
+{%- endif %}
+{%- if event.properties.input_path is defined %}
+            InputPath: {{ event.properties.input_path }}
+{%- endif %}
+{%- if event.properties.input_transformer is defined %}{# BEGIN if event.properties.input_transformer is defined #}
+            InputTransformer:
+              InputTemplate: {{ event.properties.input_transformer.input_template }}
+{%- if event.properties.input_transformer.input_paths_map is defined %}
+              InputPathsMap:
+{%- for key, value in event.properties.input_transformer.input_paths_map.items() %}
+                {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END if event.properties.input_transformer is defined #}
+{%- if event.properties.retry_policy is defined %}
+            {{ prop_function.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.rule_name is defined %}
+            RuleName: {{ event.properties.rule_name }}
+{%- endif %}
+{%- if event.properties.state is defined %}
+            State: {{ event.properties.state }}
+{%- endif %}
+{%- if event.properties.target is defined %}
+            Target:
+                Id: {{ event.properties.target.id }}
+{%- endif %}
+{# END event.type == 'EventBridgeRule' #}
+{%- elif event.type == 'HttpApi' %}
+{# BEGIN event.type == 'HttpApi' #}
+{%- if event.properties.api_id is defined %}
+            ApiId: {{ event.properties.api_id }}
+{%- endif %}
+{%- if event.properties.auth is defined %}{# BEGIN if event.properties.auth is defined #}
+            Auth:
+{%- if event.properties.auth.authorization_scopes is defined %}
+              AuthorizationScopes:
+{%- for scope in event.properties.auth.authorization_scopes %}
+                - {{ scope }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.authorizer is defined %}
+              Authorizer: {{ event.properties.auth.authorizer }}
+{%- endif %}
+{%- endif %}{# END if event.properties.auth is defined #}
+{%- if event.properties.method is defined %}
+            Method: {{ event.properties.method }}
+{%- endif %}
+{%- if event.properties.path is defined %}
+            Path: {{ event.properties.path }}
+{%- endif %}
+{%- if event.properties.payload_format_version is defined %}
+            PayloadFormatVersion: {{ event.properties.payload_format_version }}
+{%- endif %}
+{%- if event.properties.route_settings is defined %}
+            RouteSettings:
+              {{ event.properties.route_settings | indent(width=14, first=false) }}
+{%- endif %}
+{%- if event.properties.timeout_in_millis is defined %}
+            TimeoutInMillis: {{ event.properties.timeout_in_millis }}
+{%- endif %}
+{# END event.type == 'HttpApi' #}
+{%- elif event.type == 'IoTRule' %}
+{# BEGIN event.type == 'IoTRule' #}
+            Sql: {{ event.properties.sql }}
+{%- if event.properties.aws_iot_sql_version is defined %}
+            AwsIotSqlVersion: {{ event.properties.aws_iot_sql_version }}
+{%- endif %}
+{# END event.type == 'IoTRule' #}
+{%- elif event.type == 'Kinesis' %}
+{# BEGIN event.type == 'Kinesis' #}
+            StartingPosition: {{ event.properties.starting_position }}
+            Stream: {{ event.properties.stream }}
+{%- if event.properties.batch_size is defined %}
+            BatchSize: {{ event.properties.batch_size }}
+{%- endif %}
+{%- if event.properties.bisect_batch_on_function_error is defined %}
+            BisectBatchOnFunctionError: {{ event.properties.bisect_batch_on_function_error | lower}}
+{%- endif %}
+{%- if event.properties.destination_config is defined %}
+            {{ prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.enabled is defined %}
+            Enabled: {{ event.properties.enabled | lower}}
+{%- endif %}
+{%- if event.properties.filter_criteria is defined %}
+            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.function_response_types is defined %}
+            FunctionResponseTypes:
+{%- for item in event.properties.function_response_types %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.kms_key_arn is defined %}
+            KmsKeyArn: {{ event.properties.kms_key_arn | trim }}
+{%- endif %}
+{%- if event.properties.maximum_batching_window_in_seconds is defined %}
+            MaximumBatchingWindowInSeconds: {{ event.properties.maximum_batching_window_in_seconds }}
+{%- endif %}
+{%- if event.properties.maximum_record_age_in_seconds is defined %}
+            MaximumRecordAgeInSeconds: {{ event.properties.maximum_record_age_in_seconds }}
+{%- endif %}
+{%- if event.properties.maximum_retry_attempts is defined %}
+            MaximumRetryAttempts: {{ event.properties.maximum_retry_attempts }}
+{%- endif %}
+{%- if event.properties.metrics_config is defined %}
+            {{ prop_function.prep_metrics_config(event.properties.metrics_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.parallelization_factor is defined %}
+            ParallelizationFactor: {{ event.properties.parallelization_factor }}
+{%- endif %}
+{%- if event.properties.starting_position_timestamp is defined %}
+            StartingPositionTimestamp: {{ event.properties.starting_position_timestamp }}
+{%- endif %}
+{%- if event.properties.tumbling_window_in_seconds is defined %}
+            TumblingWindowInSeconds: {{ event.properties.tumbling_window_in_seconds }}
+{%- endif %}
+{# END event.type == 'Kinesis' #}
+{%- elif event.type == 'MQ' %}
+{# BEGIN event.type == 'MQ' #}
+            Broker: {{ event.properties.broker }}
+            Queues:
+{%- for item in event.properties.queues %}
+              - {{ item }}
+{%- endfor %}
+            {{ prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
+{%- if event.properties.batch_size is defined %}
+            BatchSize: {{ event.properties.batch_size }}
+{%- endif %}
+{%- if event.properties.dynamic_policy_name is defined %}
+            DynamicPolicyName: {{ event.properties.dynamic_policy_name | lower }}
+{%- endif %}
+{%- if event.properties.enabled is defined %}
+            Enabled: {{ event.properties.enabled | lower }}
+{%- endif %}
+{%- if event.properties.filter_criteria is defined %}
+            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.kms_key_arn is defined %}
+            KmsKeyArn: {{ event.properties.kms_key_arn }}
+{%- endif %}
+{%- if event.properties.maximum_batching_window_in_seconds is defined %}
+            MaximumBatchingWindowInSeconds: {{ event.properties.maximum_batching_window_in_seconds }}
+{%- endif %}
+{%- if event.properties.secrets_manager_kms_key_id is defined %}
+            SecretsManagerKmsKeyId: {{ event.properties.maximum_batching_window_in_seconds | trim }}
+{%- endif %}
+{# END event.type == 'MQ' #}
+{%- elif event.type == 'MSK' %}
+{# BEGIN event.type == 'MSK' #}
+            Stream: {{ event.properties.stream }}
+            Topics:
+{%- for item in event.properties.topics %}
+              - {{ item }}
+{%- endfor %}
+{%- if event.properties.consumer_group_id is defined %}
+            ConsumerGroupId: {{event.properties.consumer_group_id }}
+{%- endif %}
+{%- if event.properties.destination_config is defined %}
+            {{ prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.filter_criteria is defined %}
+            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.kms_key_arn is defined %}
+            KmsKeyArn: {{ event.properties.kms_key_arn | trim }}
+{%- endif %}
+{%- if event.properties.maximum_batching_window_in_seconds is defined %}
+            MaximumBatchingWindowInSeconds: {{ event.properties.maximum_batching_window_in_seconds }}
+{%- endif %}
+{%- if event.properties.provisioned_poller_config is defined %}
+            {{ prop_function.prep_provisioned_poller_config(event.properties.provisioned_poller_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.source_access_configurations is defined %}
+            {{ prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.starting_position is defined %}
+            StartingPosition: {{ event.properties.starting_position }}
+{%- endif %}
+{%- if event.properties.starting_position_timestamp is defined %}
+            StartingPositionTimestamp: {{ event.properties.starting_position_timestamp }}
+{%- endif %}
+{# END event.type == 'MSK' #}
+{%- elif event.type == 'S3' %}
+{# BEGIN event.type == 'S3' #}
+            Bucket: {{ event.properties.bucket }}
+{%- if event.properties.events is string %}
+            Events: {{ event.properties.events }}
+{%- elif event.properties.events is iterable %}
+            Events:
+{%- for event in event.properties.events %}
+              - {{ event }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.filter is defined %}{# BEGIN if event.properties.filter is defined #}
+            Filter:
+              S3Key:
+                Rules:
+{%- for rule in event.properties.filter.s3_key.rules %}
+                  - Name: {{ rule.name }}
+                    Value: {{ rule.value }}
+{%- endfor %}
+{%- endif %}{# END if event.properties.filter is defined #}
+{# END event.type == 'S3' #}
+{%- elif event.type == 'Schedule' %}
+{# BEGIN event.type == 'Schedule' #}
+            Schedule: {{ event.properties.schedule }}
+{%- if event.properties.dead_letter_config is defined %}
+            {{ prop_function.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.description is defined %}
+            Description: {{ event.properties.description }}
+{%- endif %}
+{%- if event.properties.enabled is defined %}
+            Enabled: {{ event.properties.enabled | lower }}
+{%- endif %}
+{%- if event.properties.input is defined %}
+            Input: {{ event.properties.input }}
+{%- endif %}
+{%- if event.properties.name is defined %}
+            Name: {{ event.properties.name }}
+{%- endif %}
+{%- if event.properties.retry_policy is defined %}
+            {{ prop_function.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.state is defined %}
+            State: {{ event.properties.state }}
+{%- endif %}
+{# END event.type == 'Schedule' #}
+{%- elif event.type == 'ScheduleV2' %}
+{# BEGIN event.type == 'ScheduleV2' #}
+            ScheduleExpression: {{ event.properties.schedule_expression }}
+{%- if event.properties.dead_letter_config is defined %}
+            {{ prop_function.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.description is defined %}
+            Description: {{ event.properties.description }}
+{%- endif %}
+{%- if event.properties.end_date is defined %}
+            EndDate: {{ event.properties.end_date }}
+{%- endif %}
+{%- if event.properties.flexible_time_window is defined %}
+            FlexibleTimeWindow:
+              Mode: {{ event.properties.flexible_time_window.mode }}
+{%- if event.properties.flexible_time_window.maximum_window_in_minutes is defined %}
+              MaximumWindowInMinutes: {{ event.properties.flexible_time_window.maximum_window_in_minutes }}
+{%- endif %}
+{%- endif %}
+{%- if event.properties.group_name is defined %}
+            GroupName: {{ event.properties.group_name }}
+{%- endif %}
+{%- if event.properties.input is defined %}
+            Input: {{ event.properties.input}}
+{%- endif %}
+{%- if event.properties.kms_key_arn is defined %}
+            KmsKeyArn: {{ event.properties.kms_key_arn | trim }}
+{%- endif %}
+{%- if event.properties.name is defined %}
+            Name: {{ event.properties.name }}
+{%- endif %}
+{%- if event.properties.omit_name is defined %}
+            OmitName: {{ event.properties.omit_name | lower }}
+{%- endif %}
+{%- if event.properties.permissions_boundary is defined %}
+            PermissionsBoundary: {{ event.properties.permissions_boundary }}
+{%- endif %}
+{%- if event.properties.retry_policy is defined %}
+            {{ prop_function.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.role_arn is defined %}
+            RoleArn: {{ event.properties.role_arn }}
+{%- endif %}
+{%- if event.properties.schedule_expression_timezone is defined %}
+            ScheduleExpressionTimezone: {{ event.properties.schedule_expression_timezone }}
+{%- endif %}
+{%- if event.properties.start_date is defined %}
+            StartDate: {{ event.properties.start_date }}
+{%- endif %}
+{%- if event.properties.state is defined %}
+            State: {{ event.properties.state }}
+{%- endif %}
+{# END event.type == 'ScheduleV2' #}
+{%- elif event.type == 'SelfManagedKafka' %}
+{# BEGIN event.type == 'SelfManagedKafka' #}
+            {{ prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
+            Topics:
+{%- for item in event.properties.topics %}
+              - {{ item }}
+{%- endfor %}
+{%- if event.properties.batch_size is defined %}
+            BatchSize: {{ event.properties.batch_size }}
+{%- endif %}
+{%- if event.properties.consumer_group_id is defined %}
+            ConsumerGroupId: {{ event.properties.consumer_group_id }}
+{%- endif %}
+{%- if event.properties.destination_config is defined %}
+            {{ prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.enabled is defined %}
+            Enabled: {{ event.properties.enabled | lower }}
+{%- endif %}
+{%- if event.properties.filter_criteria is defined %}
+            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.kafka_bootstrap_servers is defined %}
+            KafkaBootstrapServers:
+{%- for item in event.properties.kafka_bootstrap_servers %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.kms_key_arn is defined %}
+            KmsKeyArn: {{ event.properties.kms_key_arn | trim}}
+{%- endif %}
+{%- if event.properties.provisioned_poller_config is defined %}
+            {{ prop_function.prep_provisioned_poller_config(event.properties.provisioned_poller_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.starting_position is defined %}
+            StartingPosition: {{ event.properties.starting_position }}
+{%- endif %}
+{%- if event.properties.starting_position_timestamp is defined %}
+            StartingPositionTimestamp: {{ event.properties.starting_position_timestamp }}
+{%- endif %}
+{# END event.type == 'SelfManagedKafka' #}
+{%- elif event.type == 'SNS' %}
+{# BEGIN event.type == 'SNS' #}
+            Topic: {{ event.properties.topic }}
+{%- if event.properties.filter_policy is defined %}
+            FilterPolicy:
+              {{ event.properties.filter_policy | indent(width=14, first=false) }}
+{%- endif %}
+{%- if event.properties.filter_policy_scope is defined %}
+            FilterPolicyScope: {{ event.properties.filter_policy_scope }}
+{%- endif %}
+{%- if event.properties.redrive_policy is defined %}
+            RedrivePolicy:
+              {{ event.properties.redrive_policy | indent(width=14, first=false) }}
+{%- endif %}
+{%- if event.properties.region is defined %}
+            Region: {{ event.properties.region }}
+{%- endif %}
+{%- if event.properties.sqs_subscription is defined %}{# BEGIN if event.properties.sqs_subscription is defined #}
+{%- if event.properties.sqs_subscription is boolean %}{# BEGIN if event.properties.sqs_subscription is boolean #}
+            SqsSubscription: {{ event.properties.sqs_subscription | lower }}
+{%- else %}
+            SqsSubscription:
+              QueueArn: {{ event.properties.sqs_subscription.queue_arn }}
+              QueueUrl: {{ event.properties.sqs_subscription.queue_url }}
+{%- if event.properties.sqs_subscription.batch_size is defined %}
+              BatchSize: {{ event.properties.sqs_subscription.batch_size }}
+{%- endif %}
+{%- if event.properties.sqs_subscription.enabled is defined %}
+              Enabled: {{ event.properties.sqs_subscription.enabled }}
+{%- endif %}
+{%- if event.properties.sqs_subscription.queue_policy_logical_id is defined %}
+              QueuePolicyLogicalId: {{ event.properties.sqs_subscription.queue_policy_logical_id }}
+{%- endif %}
+{%- endif %}{# END if event.properties.sqs_subscription is boolean #}
+{%- endif %}{# END if event.properties.sqs_subscription is defined #}
+{# END event.type == 'SNS' #}
+{%- elif event.type == 'SQS' %}
+{# BEGIN event.type == 'SQS' #}
+            Queue: {{ event.properties.queue }}
+{%- if event.properties.batch_size is defined %}
+            BatchSize: {{ event.properties.batch_size }}
+{%- endif %}
+{%- if event.properties.enabled is defined %}
+            Enabled: {{ event.properties.enabled | lower }}
+{%- endif %}
+{%- if event.properties.filter_criteria is defined %}
+            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.function_response_types is defined %}
+            FunctionResponseTypes:
+{%- for item in event.properties.function_response_types %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.kms_key_arn is defined %}
+            KmsKeyArn: {{ event.properties.kms_key_arn }}
+{%- endif %}
+{%- if event.properties.maximum_batching_window_in_seconds is defined %}
+            MaximumBatchingWindowInSeconds: {{ event.properties.maximum_batching_window_in_seconds }}
+{%- endif %}
+{%- if event.properties.metrics_config is defined %}
+            {{ prop_function.prep_metrics_config(event.properties.metrics_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.scaling_config is defined %}
+            {{ prop_function.prep_scaling_config(event.properties.scaling_config) | indent(width=12, first=false) }}
+{%- endif %}
+{# END event.type == 'SQS' #}
+{%- endif %}{# END if event.type == 'AlexaSkill'/'Api'/'CloudWatchEvent'/'CloudWatchLogs'/'Cognito'/'DocumentDB'/'DynamoDB'/'EventBridgeRule'/'HttpApi'/'IoTRule'/'Kinesis'/'MQ'/'MSK'/'S3'/'Schedule'/'ScheduleV2'/'SelfManagedKafka'/'SNS'/'SQS' #}
+{%- endfor %}{# END for event_label, event in function.events.items() #}
+{%- endif %}{# END if function.events is defined #}
+{%- if function.file_system_configs is defined %}
+      {{ prop_function.prep_file_system_configs(function.file_system_configs) | indent(width=6, first=false) }}
+{%- endif %}
+{%- if function.function_name is defined %}
+      FunctionName: {{ function.function_name }}
+{%- endif %}
+{%- if function.function_url_config is defined %}
+      {{ prep_function_url_config(function.function_url_config) | indent(width=6, first=false) }}
+{%- endif %}
+{%- if function.handler is defined %}
+      Handler: {{ function.handler }}
+{%- endif %}
+{%- if function.image_config is defined %}{# BEGIN function.image_config is defined #}
+      ImageConfig:
+{%- if function.image_config.command is defined %}
+        Command:
+{%- for item in function.image_config.command %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if function.image_config.entry_point is defined %}
+        EntryPoint:
+{%- for item in function.image_config.entry_point %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if function.image_config.working_directory is defined %}
+        WorkingDirectory: {{ function.image_config.working_directory }}
+{%- endif %}
+{%- endif %}{# END function.image_config is defined #}
+{%- if function.image_uri is defined %}
+      ImageUri: {{ function.image_uri }}
+{%- endif %}
+{%- if function.inline_code is defined %}
+      InlineCode: |
+        {{ function.inline_code | indent(width=8, first=false) }}
+{%- endif %}
+{%- if function.kms_key_arn is defined %}
+      KmsKeyArn: {{ function.kms_key_arn }}
+{%- endif %}
+{%- if function.layers is defined %}
+      Layers:
+{%- for item in function.layers %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if function.logging_config is defined %}
+      {{ prop_function.prep_logging_config(function.logging_config) | indent(width=6, first=false) }}
+{%- endif %}
+{%- if function.memory_size is defined %}
+      MemorySize: {{ function.memory_size }}
+{%- endif %}
+{%- if function.package_type is defined %}
+      PackageType: {{ function.package_type }}
+{%- endif %}
+{%- if function.permissions_boundary is defined %}
+      PermissionsBoundary: {{ function.permissions_boundary }}
+{%- endif %}
+{%- if function.policies is defined %}{# BEGIN if function.policies is defined #}
+{%- if function.policies is string %}{# BEGIN if function.policies is string/iterable/mapping #}
+      Policies: {{ function.policies }}
+{%- elif function.policies is iterable %}
+      Policies:
+{%- for policy in function.policies %}
+        - PolicyName: {{ policy.policy_name }}
+{%- if policy.policy_document_json is defined %}
+          PolicyDocument: {{ policy.policy_document_json }}
+{%- else %}
+          PolicyDocument:
+            {{ policy.policy_document | indent(width=12, first=false) }}
+{%- endif %}
+{%- endfor %}
+{%- elif function.policies is mapping %}
+      Policies:
+{%- for key, value in function.policies.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if function.policies is string/iterable/mapping #}
+{%- endif %}{# END if function.policies is defined #}
+{%- if function.propagate_tags is defined %}
+      PropagateTags: {{ function.propagate_tags | lower }}
+{%- endif %}
+{%- if function.provisioned_concurrency_config is defined %}
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: {{ function.provisioned_concurrency_config.provisioned_concurrent_executions }}
+{%- endif %}
+{%- if function.recursive_loop is defined %}
+      RecursiveLoop: {{ function.recursive_loop }}
+{%- endif %}
+{%- if function.reserved_concurrent_executions is defined %}
+      ReservedConcurrentExecutions: {{ function.reserved_concurrent_executions }}
+{%- endif %}
+{%- if function.role is defined %}
+      Role: {{ function.role }}
+{%- endif %}
+{%- if function.role_path is defined %}
+      RolePath: {{ function.role_path }}
+{%- endif %}
+{%- if function.runtime is defined %}
+      Runtime: {{function.runtime }}
+{%- endif %}
+{%- if function.runtime_management_config is defined %}
+      {{ prop_function.prep_runtime_management_config(function.runtime_management_config) | indent(width=6, first=false) }}
+      RuntimeManagementConfig: RuntimeManagementConfig
+{%- endif %}
+{%- if function.snap_start is defined %}
+      SnapStart:
+        ApplyOn: {{ function.snap_start.apply_on }}
+{%- endif %}
+{%- if function.source_kms_key_arn is defined %}
+      SourceKMSKeyArn: {{ function.source_kms_key_arn | trim }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{sceptre_user_data.source_repo_url|default('None')}}
+{%- if function.tags is defined %}
+{%- for key, value in function.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if function.timeout is defined %}
+      Timeout: {{ function.timeout }}
+{%- endif %}
+{%- if function.tracing is defined %}
+      Tracing: {{ function.tracing }}
+{%- endif %}
+{%- if function.version_description is defined %}
+      VersionDescription: {{ function.version_description }}
+{%- endif %}
+{%- if function.vpc_config is defined %}
+      {{ prop_function.prep_vpc_config(function.vpc_config) | indent(width=6, first=false) }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for function in sceptre_user_data.functions %}
+{%- set function_name = function.name %}
+  {{ function_name }}:
+    Description: The Lambda Function name for {{ function_name }}
+    Value:
+      Ref: {{ function_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ function_name }}"
+
+  {{ function_name }}LogGroupName:
+    Description: The CloudWatch Logs LogGroupName for Lambda Function for {{ function_name }}
+    Value:
+      Fn::Join:
+        - ""
+        - - "/aws/lambda/"
+          - Ref: {{ function_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ function_name }}-LogGroupName"
+
+  {{ function_name }}Arn:
+    Description: The Lambda Function ARN for {{ function_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ function_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ function_name }}-Arn"
+{%- endfor %}
+{#
+# Supported structure as of 20250320:
+Type: AWS::Serverless::Function
+Properties:
+  Architectures: List
+  AssumeRolePolicyDocument: JSON
+  AutoPublishAlias: String
+  AutoPublishAliasAllProperties: Boolean
+  AutoPublishCodeSha256: String
+  CodeSigningConfigArn: String
+  CodeUri: String | FunctionCode
+    # FunctionCode
+    Bucket: String
+    Key: String
+    Version: String
+  DeadLetterQueue: Map | DeadLetterQueue
+  DeploymentPreference:
+    Alarms: List
+    Enabled: Boolean
+    Hooks:
+      PostTraffic: String
+      PreTraffic: String
+    PassthroughCondition: Boolean
+    Role: String
+    TriggerConfigurations:
+      -
+        TriggerEvents:
+          - String
+        TriggerName: String
+        TriggerTargetArn: String
+    Type: String
+  Description: String
+  Environment:
+    Variables:
+      Key: Value
+  EphemeralStorage:
+    Size: Integer
+  EventInvokeConfig:
+    DestinationConfig:
+      OnFailure:
+        Destination: String
+        Type: String
+      OnSuccess:
+        Destination: String
+        Type: String
+    MaximumEventAgeInSeconds: Integer
+    MaximumRetryAttempts: Integer
+  Events:
+    <EventLabel>:
+      Type: String
+      Properties: AlexaSkill | Api | CloudWatchEvent | CloudWatchLogs | Cognito | DocumentDB | DynamoDB | EventBridgeRule | HttpApi | IoTRule | Kinesis | MQ | MSK | S3 | Schedule | ScheduleV2 | SelfManagedKafka | SNS | SQS
+        # AlexaSkill
+        SkillId: String
+        # Api
+        Auth:
+          ApiKeyRequired: Boolean
+          AuthorizationScopes: List
+          Authorizer: String
+          InvokeRole: String
+          OverrideApiAuth: Boolean
+          ResourcePolicy:
+            AwsAccountBlacklist: List
+            AwsAccountWhitelist: List
+            CustomStatements: List
+            IntrinsicVpcBlacklist: List
+            IntrinsicVpcWhitelist: List
+            IntrinsicVpceBlacklist: List
+            IntrinsicVpceWhitelist: List
+            IpRangeBlacklist: List
+            IpRangeWhitelist: List
+            SourceVpcBlacklist: List
+            SourceVpcWhitelist: List
+        Method: String
+        Path: String
+        RequestModel:
+          Model: String
+          Required: Boolean
+          ValidateBody: Boolean
+          ValidateParameters: Boolean
+        RequestParameters: List of [ String | RequestParameter ]
+          - parameter:
+              Caching: Boolean
+              Required: Boolean
+        RestApiId: String
+        TimeoutInMillis: Integer
+        # CloudWatchEvent
+        Enabled: Boolean
+        EventBusName: String
+        Input: String
+        InputPath: String
+        Pattern: JSON
+        State: String
+        # CloudWatchLogs
+        FilterPattern: String
+        LogGroupName: String
+        # Cognito
+        Trigger:
+          -
+            CreateAuthChallenge: String
+            CustomEmailSender:
+              CustomEmailSender
+            CustomMessage: String
+            CustomSMSSender:
+              CustomSMSSender
+            DefineAuthChallenge: String
+            KMSKeyID: String
+            PostAuthentication: String
+            PostConfirmation: String
+            PreAuthentication: String
+            PreSignUp: String
+            PreTokenGeneration: String
+            PreTokenGenerationConfig:
+              PreTokenGenerationConfig
+            UserMigration: String
+            VerifyAuthChallengeResponse: String
+        UserPool: String
+        # DocumentDB
+        BatchSize: Integer
+        Cluster: String
+        CollectionName: String
+        DatabaseName: String
+        Enabled: Boolean
+        FilterCriteria:
+          Filters:
+            - Pattern: String
+        FullDocument: String
+        KmsKeyArn: String
+        MaximumBatchingWindowInSeconds: Integer
+        SecretsManagerKmsKeyId: String
+        SourceAccessConfigurations:
+          -
+            Type: String
+            URI: String
+        StartingPosition: String
+        StartingPositionTimestamp: Double
+        # DynamoDB
+        BatchSize: Integer
+        BisectBatchOnFunctionError: Boolean
+        DestinationConfig:
+          OnFailure:
+            Destination: String
+        Enabled: Boolean
+        FilterCriteria:
+          Filters:
+            - Pattern: String
+        FunctionResponseTypes:
+          - String
+        KmsKeyArn: String
+        MaximumBatchingWindowInSeconds: Integer
+        MaximumRecordAgeInSeconds: Integer
+        MaximumRetryAttempts: Integer
+        MetricsConfig:
+          Metrics:
+            - String
+        ParallelizationFactor: Integer
+        StartingPosition: String
+        StartingPositionTimestamp: Double
+        Stream: String
+        TumblingWindowInSeconds: Integer
+        # EventBridgeRule
+        DeadLetterConfig:
+          Arn: String
+          QueueLogicalId: String
+          Type: String
+        EventBusName: String
+        Input: String
+        InputPath: String
+        InputTransformer:
+          InputPathsMap:
+            Key: Value
+          InputTemplate: String
+        Pattern: JSON
+        RetryPolicy:
+          MaximumEventAgeInSeconds: Integer
+          MaximumRetryAttempts: Integer
+        RuleName: String
+        State: String
+        Target:
+          Id: String
+        # HttpApi
+        ApiId: String
+        Auth:
+          AuthorizationScopes:
+            - String
+          Authorizer: String
+        Method: String
+        Path: String
+        PayloadFormatVersion: String
+        RouteSettings: JSON
+        TimeoutInMillis: Integer
+        # IoTRule
+        AwsIotSqlVersion: String
+        Sql: String
+        # Kinesis
+        BatchSize: Integer
+        BisectBatchOnFunctionError: Boolean
+        DestinationConfig:
+          OnFailure:
+            Destination: String
+        Enabled: Boolean
+        FilterCriteria:
+          Filters:
+            - Pattern: String
+        FunctionResponseTypes:
+          - String
+        KmsKeyArn: String
+        MaximumBatchingWindowInSeconds: Integer
+        MaximumRecordAgeInSeconds: Integer
+        MaximumRetryAttempts: Integer
+        MetricsConfig:
+          Metrics:
+            - String
+        ParallelizationFactor: Integer
+        StartingPosition: String
+        StartingPositionTimestamp: Double
+        Stream: String
+        TumblingWindowInSeconds: Integer
+        # MQ
+        BatchSize: Integer
+        Broker: String
+        DynamicPolicyName: Boolean
+        Enabled: Boolean
+        FilterCriteria:
+          Filters:
+            - Pattern: String
+        KmsKeyArn: String
+        MaximumBatchingWindowInSeconds: Integer
+        Queues:
+          - String
+        SecretsManagerKmsKeyId: String
+        SourceAccessConfigurations:
+          -
+            Type: String
+            URI: String
+        # MSK
+        ConsumerGroupId: String
+        DestinationConfig:
+          OnFailure:
+            Destination: String
+        FilterCriteria:
+          Filters:
+            - Pattern: String
+        KmsKeyArn: String
+        MaximumBatchingWindowInSeconds: Integer
+        ProvisionedPollerConfig:
+          MaximumPollers: Integer
+          MinimumPollers: Integer
+        SourceAccessConfigurations:
+          -
+            Type: String
+            URI: String
+        StartingPosition: String
+        StartingPositionTimestamp: Double
+        Stream: String
+        Topics:
+          - String
+        # S3
+        Bucket: String
+        Events:
+          - String
+        Filter:
+          S3Key:
+            Rules:
+              -
+                Name: String
+                Value: String
+        # Schedule
+        DeadLetterConfig:
+          Arn: String
+          QueueLogicalId: String
+          Type: String
+        Description: String
+        Enabled: Boolean
+        Input: String
+        Name: String
+        RetryPolicy:
+          MaximumEventAgeInSeconds: Integer
+          MaximumRetryAttempts: Integer
+        Schedule: String
+        State: String
+        # ScheduleV2
+        DeadLetterConfig:
+          Arn: String
+          QueueLogicalId: String
+          Type: String
+        Description: String
+        EndDate: String
+        FlexibleTimeWindow:
+          MaximumWindowInMinutes: Number
+          Mode: String
+        GroupName: String
+        Input: String
+        KmsKeyArn: String
+        Name: String
+        OmitName: Boolean
+        PermissionsBoundary: String
+        RetryPolicy:
+          MaximumEventAgeInSeconds: Integer
+          MaximumRetryAttempts: Integer
+        RoleArn: String
+        ScheduleExpression: String
+        ScheduleExpressionTimezone: String
+        StartDate: String
+        State: String
+        # SelfManagedKafka
+        BatchSize: Integer
+        ConsumerGroupId: String
+        DestinationConfig:
+          OnFailure:
+            Destination: String
+        FilterCriteria:
+          Filters:
+            - Pattern: String
+        Enabled: Boolean
+        FilterCriteria:
+          Filters:
+            - Pattern: String
+        KafkaBootstrapServers:
+          - String
+        KmsKeyArn: String
+        ProvisionedPollerConfig:
+          MaximumPollers: Integer
+          MinimumPollers: Integer
+        SourceAccessConfigurations:
+          -
+            Type: String
+            URI: String
+        StartingPosition: String
+        StartingPositionTimestamp: Double
+        Topics:
+          - String
+        # SNS
+        FilterPolicy: JSON
+        FilterPolicyScope: String
+        RedrivePolicy: Json
+        Region: String
+        SqsSubscription: Boolean | SqsSubscriptionObject
+          # SqsSubscriptionObject
+          BatchSize: String
+          Enabled: Boolean
+          QueueArn: String
+          QueuePolicyLogicalId: String
+          QueueUrl: String
+        Topic: String
+        # SQS
+        BatchSize: Integer
+        Enabled: Boolean
+        FilterCriteria:
+          Filters:
+            - Pattern: String
+        FunctionResponseTypes:
+          - String
+        KmsKeyArn: String
+        MaximumBatchingWindowInSeconds: Integer
+        MetricsConfig:
+          Metrics:
+            - String
+        Queue: String
+        ScalingConfig:
+          MaximumConcurrency: Integer
+  FileSystemConfigs:
+    -
+      Arn: String
+      LocalMountPath: String
+  FunctionName: String
+  FunctionUrlConfig:
+    AuthType: String
+    Cors:
+      AllowCredentials: Boolean
+      AllowHeaders:
+        - String
+      AllowMethods:
+        - String
+      AllowOrigins:
+        - String
+      ExposeHeaders:
+        - String
+      MaxAge: Integer
+    InvokeMode: String
+  Handler: String
+  ImageConfig:
+    Command:
+      - String
+    EntryPoint:
+      - String
+    WorkingDirectory: String
+  ImageUri: String
+  InlineCode: String
+  KmsKeyArn: String
+  Layers:
+    - String
+  LoggingConfig:
+    ApplicationLogLevel: String
+    LogFormat: String
+    LogGroup: String
+    SystemLogLevel: String
+  MemorySize: Integer
+  PackageType: String
+  PermissionsBoundary: String
+  Policies: String | List | Map
+    -
+      PolicyDocument: Json
+      PolicyName: String
+  PropagateTags: Boolean
+  ProvisionedConcurrencyConfig:
+    ProvisionedConcurrentExecutions: Integer
+  RecursiveLoop: String
+  ReservedConcurrentExecutions: Integer
+  Role: String
+  RolePath: String
+  Runtime: String
+  RuntimeManagementConfig:
+    RuntimeVersionArn: String
+    UpdateRuntimeOn: String
+  SnapStart:
+    ApplyOn: String
+  SourceKMSKeyArn: String
+  Tags: Map
+  Timeout: Integer
+  Tracing: String
+  VersionDescription: String
+  VpcConfig:
+    Ipv6AllowedForDualStack: Boolean
+    SecurityGroupIds:
+      - String
+    SubnetIds:
+      - String
+#}

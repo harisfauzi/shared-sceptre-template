@@ -1,0 +1,254 @@
+{%- macro prep_code_uri(code_uri) %}{# BEGIN macro prep_code_uri(code_uri) #}
+{%- if code_uri is string -%}{# BEGIN if code_uri is string #}
+CodeUri: {{ code_uri }}
+{%- elif code_uri is mapping -%}
+CodeUri:
+  Bucket: {{ code_uri.bucket }}
+  Key: {{ code_uri.key }}
+{%- if code_uri.version is defined %}
+  Version: {{ code_uri.version }}
+{%- endif %}
+{%- endif %}{# END if code_uri is string #}
+{%- endmacro %}{# END macro prep_code_uri(code_uri) #}
+
+{%- macro prep_deployment_preference(deployment_preference) %}{# BEGIN prep_deployment_preference(deployment_preference) #}
+DeploymentPreference:
+  Type: {{ deployment_preference.type }}
+{%- if deployment_preference.alarms is defined %}
+  Alarms:
+{%- for item in deployment_preference.alarms %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if deployment_preference.enabled is defined %}
+  Enabled: {{ deployment_preference.enabled }}
+{%- endif %}
+{%- if deployment_preference.hooks is defined %}{# BEGIN if deployment_preference.hooks is defined #}
+  Hooks:
+{%- if deployment_preference.hooks.post_traffic is defined %}
+    PostTraffic: {{ deployment_preference.hooks.post_traffic }}
+{%- endif %}
+{%- if deployment_preference.hooks.pre_traffic is defined %}
+    PreTraffic: {{ deployment_preference.hooks.pre_traffic }}
+{%- endif %}
+{%- endif %}{# END if deployment_preference.hooks is defined #}
+{%- if deployment_preference.passthrough_condition is defined %}
+  PassthroughCondition: {{ deployment_preference.passthrough_condition }}
+{%- endif %}
+{%- if deployment_preference.role is defined %}
+  Role: {{ deployment_preference.role }}
+{%- endif %}
+{%- if deployment_preference.trigger_configuration is defined %}
+  TriggerConfigurations:
+{%- for item in deployment_preference.trigger_configuration %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}{# END macro prep_deployment_preference(deployment_preference) #}
+
+{%- macro prep_environment(environment) %}{# BEGIN macro prep_environment(environment) #}
+Environment:
+{%- if environment.variables is defined %}
+  Variables:
+{%- for key, value in environment.variables.items() %}
+    {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}{# END macro prep_environment(environment) #}
+
+{%- macro prep_event_invoke_configuration(event_invoke_configuration) %}{# BEGIN macro prep_event_invoke_configuration(event_invoke_configuration) #}
+EventInvokeConfig:
+{%- if event_invoke_configuration.destination_config is defined %}{# BEGIN if event_invoke_configuration.destination_config is defined #}
+  DestinationConfig:
+{%- if event_invoke_configuration.destination_config.on_failure is defined %}
+    OnFailure:
+{%- if event_invoke_configuration.destination_config.on_failure.destination is defined %}
+      Destination: {{ event_invoke_configuration.destination_config.on_failure.destination | trim }}
+{%- endif %}
+{%- if event_invoke_configuration.destination_config.on_failure.type is defined %}
+      Type: {{ event_invoke_configuration.destination_config.on_failure.type }}
+{%- endif %}
+{%- endif %}
+{%- if event_invoke_configuration.destination_config.on_success is defined %}
+    OnSuccess:
+{%- if event_invoke_configuration.destination_config.on_success.destination is defined %}
+      Destination: {{ event_invoke_configuration.destination_config.on_success.destination }}
+{%- endif %}
+{%- if event_invoke_configuration.destination_config.on_success.type is defined %}
+      Type: {{ event_invoke_configuration.destination_config.on_success.type }}
+{%- endif %}
+{%- endif %}
+{%- endif %}{# END if event_invoke_configuration.destination_config is defined #}
+{%- if event_invoke_configuration.maximum_event_age_in_seconds is defined %}
+  MaximumEventAgeInSeconds: {{ event_invoke_configuration.maximum_event_age_in_seconds }}
+{%- endif %}
+{%- if event_invoke_configuration.maximum_retry_attempts is defined %}
+  MaximumRetryAttempts: {{ event_invoke_configuration.maximum_retry_attempts }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_event_invoke_configuration(event_invoke_configuration) #}
+
+{%- macro prep_file_system_configs(file_system_configs) %}{# BEGIN macro prep_file_system_configs(file_system_configs) #}
+FileSystemConfigs:
+{%- for item in file_system_configs %}
+  - Arn: {{ item.arn }}
+    LocalMountPath: {{ item.local_mount_path }}
+{%- endfor %}
+{%- endmacro %}{# END macro prep_file_system_configs(file_system_configs) #}
+
+{%- macro prep_filter_criteria(filter_criteria) %}{# BEGIN macro prep_filter_criteria(filter_criteria) #}
+FilterCriteria:
+  Filters:
+{%- for filter in filter_criteria.filters %}
+    - Pattern: {{ filter.pattern }}
+{%- endfor %}
+{%- endmacro %}{# END macro prep_filter_criteria(filter_criteria) #}
+
+{%- macro prep_destination_config(destination_config) %}{# BEGIN macro prep_destination_config(destination_config) #}
+DestinationConfig:
+{%- if destination_config.on_failure is defined %}
+  OnFailure:
+{%- if destination_config.on_failure.destination is defined %}
+    Destination: {{ destination_config.on_failure.destination }}
+{%- endif %}
+{%- endif %}
+{%- endmacro %}{# END macro prep_destination_config(destination_config) #}
+
+{%- macro prep_metrics_config(metrics_config) %}{# BEGIN macro prep_metrics_config(metrics_config) #}
+MetricsConfig:
+{%- if metrics_config.metrics is defined %}
+  Metrics:
+{%- for metric in metrics_config.metrics %}
+    - {{ metric }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}{# END macro prep_metrics_config(metrics_config) #}
+
+{%- macro prep_source_access_configurations(source_access_configurations) %}{# BEGIN macro prep_source_access_configuration(source_access_configurations) #}
+SourceAccessConfigurations:
+{%- for item in source_access_configurations %}
+  -
+{%- if item.type is defined %}
+    Type: {{ item.type }}
+{%- endif %}
+{%- if item.uri is defined %}
+    URI: {{ item.uri }}
+{%- endif %}
+{%- endfor %}
+{%- endmacro %}{# END macro prep_source_access_configurations(source_access_configurations) #}
+
+{%- macro prep_provisioned_poller_config(provisioned_poller_config) %}{# BEGIN macro prep_provisioned_poller_config(provisioned_poller_config) #}
+ProvisionedPollerConfig:
+{%- if provisioned_poller_config.maximum_pollers is defined %}
+  MaximumPollers: {{ provisioned_poller_config.maximum_pollers }}
+{%- endif %}
+{%- if provisioned_poller_config.minimum_pollers is defined %}
+  MinimumPollers: {{ provisioned_poller_config.minimum_pollers }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_provisioned_poller_config(provisioned_poller_config) #}
+
+{%- macro prep_dead_letter_config(dead_letter_config) %}{# BEGIN macro prep_dead_letter_config(dead_letter_config) #}
+DeadLetterConfig:
+{%- if dead_letter_config.arn is defined %}
+  Arn: {{ dead_letter_config.arn | trim }}
+{%- endif %}
+{%- if dead_letter_config.queue_logical_id is defined %}
+  QueueLogicalId: {{ dead_letter_config.queue_logical_id }}
+{%- endif %}
+{%- if dead_letter_config.type is defined %}
+  Type: {{ dead_letter_config.type }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_dead_letter_config(dead_letter_config) #}
+
+{%- macro prep_retry_policy(retry_policy) %}{# BEGIN macro prep_retry_policy(retry_policy) #}
+RetryPolicy:
+{%- if retry_policy.maximum_event_age_in_seconds is defined %}
+  MaximumEventAgeInSeconds: {{ retry_policy.maximum_event_age_in_seconds }}
+{%- endif %}
+{%- if retry_policy.maximum_retry_attempts is defined %}
+  MaximumRetryAttempts: {{ retry_policy.maximum_retry_attempts }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_retry_policy(retry_policy) #}
+
+{%- macro prep_function_url_config(function_url_config) %}{# BEGIN macro prep_function_url_config(function_url_config) #}
+FunctionUrlConfig:
+  AuthType: {{ function_url_config.auth_type }}
+{%- if function_url_config.cors is defined %}{# BEGIN if function_url_config.cors is defined #}
+  Cors:
+{%- if function_url_config.cors.allow_credentials is defined %}
+    AllowCredentials: {{ function_url_config.cors.allow_credentials | lower }}
+{%- endif %}
+{%- if function_url_config.cors.allow_headers is defined %}
+    AllowHeaders:
+{%- for item in function_url_config.cors.allow_headers%}
+      - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if function_url_config.cors.allow_methods is defined %}
+    AllowMethods:
+{%- for item in function_url_config.cors.allow_methods%}
+      - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if function_url_config.cors.allow_origins is defined %}
+    AllowOrigins:
+{%- for item in function_url_config.cors.allow_origins %}
+      - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if function_url_config.cors.expose_headers is defined %}
+    ExposeHeaders:
+{%- for item in function_url_config.cors.expose_headers %}
+      - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if function_url_config.cors.max_age is defined %}
+    MaxAge: {{ function_url_config.cors.max_age }}
+{%- endif %}
+{%- endif %}{# END if function_url_config.cors is defined #}
+{%- if function_url_config.invoke_mode is defined %}
+  InvokeMode: {{ function_url_config.invoke_mode }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_function_url_config(function_url_config) #}
+
+{%- macro prep_logging_config(logging_config) %}{# BEGIN macro prep_logging_config(logging_config) #}
+LoggingConfig:
+{%- if logging_config.application_log_level is defined %}
+  ApplicationLogLevel: {{ logging_config.application_log_level }}
+{%- endif %}
+{%- if logging_config.log_format is defined %}
+  LogFormat: {{ logging_config.log_format }}
+{%- endif %}
+{%- if logging_config.log_group is defined %}
+  LogGroup: {{ logging_config.log_group }}
+{%- endif %}
+{%- if logging_config.system_log_level is defined %}
+  SystemLogLevel: {{ logging_config.system_log_level }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_logging_config(logging_config) #}
+
+{%- macro prep_runtime_management_config(runtime_management_config) %}{# BEGIN macro prep_runtime_management_config(runtime_management_config) #}
+RuntimeManagementConfig:
+  UpdateRuntimeOn: {{ runtime_management_config.update_runtime_on }}
+{%- if runtime_management_config.runtime_version_arn is defined %}
+  RuntimeVersionArn: {{ runtime_management_config.runtime_version_arn }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_runtime_management_config(runtime_management_config) #}
+
+{%- macro prep_vpc_config(vpc_config) %}{# BEGIN macro prep_vpc_config(vpc_config) #}
+VpcConfig:
+{%- if vpc_config.ipv6_allowed_for_dual_stack is defined %}
+  Ipv6AllowedForDualStack: {{ vpc_config.ipv6_allowed_for_dual_stack }}
+{%- endif %}
+{%- if vpc_config.security_group_ids is defined %}
+  SecurityGroupIds:
+{%- for item in vpc_config.security_group_ids %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if vpc_config.subnet_ids is defined %}
+  SubnetIds:
+{%- for item in vpc_config.subnet_ids %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}{# END macro prep_vpc_config(vpc_config) #}

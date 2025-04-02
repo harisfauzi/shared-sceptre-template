@@ -1,0 +1,44 @@
+{%- macro prep_lambda_authorizer_config(lambda_authorizer_config) %}{# BEGIN macro prep_lambda_authorizer_config(lambda_authorizer_config) #}
+LambdaAuthorizer:
+{%- if lambda_authorizer_config.authorizer_result_ttl_in_seconds is defined %}
+  AuthorizerResultTtlInSeconds: {{ lambda_authorizer_config.authorizer_result_ttl_in_seconds }}
+{%- endif %}
+{%- if lambda_authorizer_config.authorizer_uri is defined %}
+  AuthorizerUri: {{ lambda_authorizer_config.authorizer_uri }}
+{%- endif %}
+{%- if lambda_authorizer_config.identity_validation_expression is defined %}
+  IdentityValidationExpression: {{ lambda_authorizer_config.identity_validation_expression }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_lambda_authorizer_config(lambda_authorizer_config) #}
+
+{%- macro prep_openid_connect_config(openid_connect_config) %}{# BEGIN macro prep_openid_connect_config(openid_connect_config) #}
+OpenIDConnect:
+{%- if openid_connect_config.auth_ttl is defined %}
+  AuthTTL: {{ openid_connect_config.auth_ttl }}
+{%- endif %}
+{%- if openid_connect_config.client_id is defined %}
+  ClientId: {{ openid_connect_config.client_id }}
+{%- endif %}
+{%- if openid_connect_config.iat_ttl is defined %}
+  IatTTL: {{ openid_connect_config.iat_ttl }}
+{%- endif %}
+{%- if openid_connect_config.issuer is defined %}
+  Issuer: {{ openid_connect_config.issuer }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_openid_connect_config(openid_connect_config) #}
+
+{%- macro prep_user_pool(user_pool) %}{# BEGIN macro prep_user_pool(user_pool) #}
+UserPool:
+{%- if user_pool.app_id_client_regex is defined %}
+  AppIdClientRegex: {{ user_pool.app_id_client_regex }}
+{%- endif %}
+{%- if user_pool.aws_region is defined %}
+  AwsRegion: {{ user_pool.aws_region }}
+{%- endif %}
+{%- if user_pool.default_action is defined %}
+  DefaultAction: {{ user_pool.default_action }}
+{%- endif %}
+{%- if user_pool.user_pool_id is defined %}
+  UserPoolId: {{ user_pool.user_pool_id }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_user_pool(user_pool) #}

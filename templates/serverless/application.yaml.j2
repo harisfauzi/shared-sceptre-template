@@ -1,0 +1,79 @@
+---
+Description: {{sceptre_user_data.description|default('Serverless API(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Resources:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Type: AWS::Serverless::Application
+    DeletionPolicy: {{ application.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ application.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if application.location is string %}
+      Location: {{ application.location }}
+{%- elif application.location is mapping %}
+      Location:
+        # ApplicationLocationObject
+        ApplicationId: {{ application.location.application_id }}
+        SemanticVersion: {{ application.location.semantic_version }}
+{%- endif %}
+{%- if application.notification_arns is defined %}
+      NotificationARNs:
+{%- for item in application.notification_arns %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if application.parameters is defined %}
+      Parameters:
+{%- for key, value in application.parameters.items() %}
+         {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if application.tags is defined %}
+{%- for key, value in application.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if application.timeout_in_minutes is defined %}
+      TimeoutInMinutes: {{ application.timeout_in_minutes }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Description: The resource name for {{ application_name }}
+    Value:
+      Ref: {{ application_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}"
+
+  {{ application_name }}OutputsApplicationOutputName:
+    Description: The value of ApplicationOutputName for {{ application_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ application_name }}
+        - Outputs.ApplicationOutputName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}-OutputsApplicationOutputName"
+{%- endfor %}
+{#
+# Supported structure as of 20250322:
+Type: AWS::Serverless::Application
+Properties:
+  Location: String | ApplicationLocationObject
+    # ApplicationLocationObject
+    ApplicationId: String
+    SemanticVersion: String
+  NotificationARNs: List
+  Parameters: Map
+  Tags: Map
+  TimeoutInMinutes: Integer
+#}
