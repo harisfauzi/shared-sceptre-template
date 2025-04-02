@@ -65,12 +65,11 @@ Resources:
 {%- endif %}
 {%- if function.events is defined %}{# BEGIN if function.events is defined #}
       Events:
-{%- for event_label, event in function.events.items() %}
+{%- for event_label, event in function.events.items() %}{# BEGIN for event_label, event in function.events.items() #}
         {{ event_label }}:
-{%- endfor %}
           Type: {{ event.type }}
           Properties:
-{%- if event.type == 'AlexaSkill' %}
+{%- if event.type == 'AlexaSkill' %}{# BEGIN if event.type == 'AlexaSkill'/'Api'/'CloudWatchEvent'/'CloudWatchLogs'/'Cognito'/'DocumentDB'/'DynamoDB'/'EventBridgeRule'/'HttpApi'/'IoTRule'/'Kinesis'/'MQ'/'MSK'/'S3'/'Schedule'/'ScheduleV2'/'SelfManagedKafka'/'SNS'/'SQS' #}
 {# BEGIN event.type == 'AlexaSkill' #}
 {%- if event.properties.skill_id is defined %}
             SkillId: {{ event.properties.skill_id }}
@@ -184,7 +183,7 @@ Resources:
 {%- endif %}
 {%- endif %}{# END if event.properties.request_model is defined #}
 {%- if event.properties.request_parameters is defined %}{# BEGIN if event.properties.request_parameters is defined #}
-            RequestParameters: List of [ String | RequestParameter ]
+            RequestParameters:
 {%- for param in event.properties.request_parameters %}
 {%- if param is string %}
               - {{ param }}
@@ -211,7 +210,7 @@ Resources:
 {%- elif event.type == 'CloudWatchEvent' %}
 {# BEGIN event.type == 'CloudWatchEvent' #}
             Pattern:
-              {{ event.properties.pattern | indent(width=12, first=false) }}
+              {{ event.properties.pattern | indent(width=14, first=false) }}
 {%- if event.properties.enabled is defined %}
             Enabled: {{ event.properties.enabled }}
 {%- endif %}
@@ -524,10 +523,14 @@ Resources:
 {%- elif event.type == 'S3' %}
 {# BEGIN event.type == 'S3' #}
             Bucket: {{ event.properties.bucket }}
-            Events: String | List
+{%- if event.properties.events is string %}
+            Events: {{ event.properties.events }}
+{%- elif event.properties.events is iterable %}
+            Events:
 {%- for event in event.properties.events %}
               - {{ event }}
 {%- endfor %}
+{%- endif %}
 {%- if event.properties.filter is defined %}{# BEGIN if event.properties.filter is defined #}
             Filter:
               S3Key:
@@ -724,7 +727,8 @@ Resources:
             {{ prop_function.prep_scaling_config(event.properties.scaling_config) | indent(width=12, first=false) }}
 {%- endif %}
 {# END event.type == 'SQS' #}
-{%- endif %}
+{%- endif %}{# END if event.type == 'AlexaSkill'/'Api'/'CloudWatchEvent'/'CloudWatchLogs'/'Cognito'/'DocumentDB'/'DynamoDB'/'EventBridgeRule'/'HttpApi'/'IoTRule'/'Kinesis'/'MQ'/'MSK'/'S3'/'Schedule'/'ScheduleV2'/'SelfManagedKafka'/'SNS'/'SQS' #}
+{%- endfor %}{# END for event_label, event in function.events.items() #}
 {%- endif %}{# END if function.events is defined #}
 {%- if function.file_system_configs is defined %}
       {{ prop_function.prep_file_system_configs(function.file_system_configs) | indent(width=6, first=false) }}
@@ -785,6 +789,9 @@ Resources:
       PermissionsBoundary: {{ function.permissions_boundary }}
 {%- endif %}
 {%- if function.policies is defined %}{# BEGIN if function.policies is defined #}
+{%- if function.policies is string %}{# BEGIN if function.policies is string/iterable/mapping #}
+      Policies: {{ function.policies }}
+{%- elif function.policies is iterable %}
       Policies:
 {%- for policy in function.policies %}
         - PolicyName: {{ policy.policy_name }}
@@ -795,6 +802,12 @@ Resources:
             {{ policy.policy_document | indent(width=12, first=false) }}
 {%- endif %}
 {%- endfor %}
+{%- elif function.policies is mapping %}
+      Policies:
+{%- for key, value in function.policies.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if function.policies is string/iterable/mapping #}
 {%- endif %}{# END if function.policies is defined #}
 {%- if function.propagate_tags is defined %}
       PropagateTags: {{ function.propagate_tags | lower }}

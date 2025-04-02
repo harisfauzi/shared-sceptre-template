@@ -1,7 +1,7 @@
 ---
 {%- import 'macros/globals.yaml.j2' as globals %}
-{%- import 'macros/prop_api.yaml.j2' as prop_api %}
-Description: {{sceptre_user_data.description|default('Serverless API(s) for '+sceptre_user_data.project_code)}}
+{%- import 'macros/prop-state-machine.yaml.j2' as prop_state_machine %}
+Description: {{sceptre_user_data.description|default('Serverless StateMachine(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 {%- if sceptre_user_data.globals is defined %}
@@ -9,13 +9,391 @@ Transform: AWS::Serverless-2016-10-31
 {%- endif %}
 
 Resources:
-{%- for api in sceptre_user_data.apis %}
-{%- set api_name = api.name %}
-  {{ api_name }}:
-    Type: AWS::Serverless::Api
-    DeletionPolicy: {{ api.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ api.update_replace_policy | default('Delete') }}
+{%- for state_machine in sceptre_user_data.state_machines %}
+{%- set state_machine_name = state_machine.name %}
+  {{ state_machine_name }}:
+    Type: AWS::Serverless::StateMachine
+    DeletionPolicy: {{ state_machine.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ state_machine.update_replace_policy | default('Delete') }}
     Properties:
+{%- if state_machine.auto_publish_alias is defined %}
+      AutoPublishAlias: {{ state_machine.auto_publish_alias }}
+{%- endif %}
+{%- if state_machine.use_alias_as_event_target is defined %}
+      UseAliasAsEventTarget: {{ state_machine.use_alias_as_event_target }}
+{%- endif %}
+{%- if state_machine.definition is defined %}{# BEGIN state_machine.definition is defined #}
+      Definition:
+{%- for key, value in state_machine.definition.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END state_machine.definition is defined #}
+{%- if state_machine.definition_substitutions is defined %}{# BEGIN state_machine.definition_substitutions is defined#}
+      DefinitionSubstitutions: Map
+{%- for key, value in state_machine.definition_substitutions.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END state_machine.definition_substitutions is defined#}
+{%- if state_machine.definition_uri is defined %}{# BEGIN if state_machine.definition_uri is defined#}
+{%- if state_machine.definition_uri is string %}{# BEGIN if state_machine.definition_uri is string/mapping #}
+      DefinitionUri: {{ state_machine.definition_uri }}
+{%- elif state_machine.definition_uri is mapping %}
+      DefinitionUri:
+        # S3Location
+        Bucket: {{ state_machine.definition_uri.bucket }}
+        Key: {{ state_machine.definition_uri.key }}
+{%- if state_machine.definition_uri.version is defined %}
+        Version: {{ state_machine.definition_uri.version }}
+{%- endif %}
+{%- endif %}{# END if state_machine.definition_uri is string/mapping #}
+{%- endif %}{# END if state_machine.definition_uri is defined #}
+{%- if state_machine.deployment_preference is defined %}{# BEGIN if state_machine.deployment_preference is defined #}
+      DeploymentPreference:
+        StateMachineVersionArn: {{ state_machine.deployment_preference.state_machine_version_arn | trim }}
+        Type: {{ state_machine.deployment_preference.type }}
+{%- if state_machine.deployment_preference.alarms is defined %}{## BEGIN if state_machine.deployment_preference.alarms is defined #}
+        Alarms:
+{%- for item in state_machine.deployment_preference.alarms %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}{## END if state_machine.deployment_preference.alarms is defined #}
+{%- if state_machine.deployment_preference.interval is defined %}
+        Interval: {{ state_machine.deployment_preference.interval }}
+{%- endif %}
+{%- if state_machine.deployment_preference.percentage is defined %}
+        Percentage: {{ state_machine.deployment_preference.percentage }}
+{%- endif %}
+{%- endif %}{# END if state_machine.deployment_preference is defined #}
+{%- if state_machine.events is defined %}{############# BEGIN if state_machine.events is defined #############}
+      Events:
+{%- for logical_id, event in state_machine.events.items() %}{# BEGIN for logical_id, event in state_machine.events.items() #}
+        {{ logical_id }}:
+          Type: {{ event.type }}
+          Properties:
+{%- if event.type == 'Api' %}{# BEGIN if event.type == 'Api'/'Schedule'/'ScheduleV2'/'CloudWatchEvent'/'EventBridgeRule' #}
+            # Api
+            Method: {{ event.properties.method }}
+            Path: {{ event.properties.path }}
+{%- if event.properties.auth is defined %}{# BEGIN if event.properties.auth is defined #}
+            Auth:
+{%- if event.properties.auth.api_key_required is defined %}
+              ApiKeyRequired: {{ event.properties.auth.api_key_required | lower }}
+{%- endif %}
+{%- if event.properties.auth.authorization_scopes is defined %}
+              AuthorizationScopes:
+{%- for item in event.properties.auth.authorization_scopes %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.authorizer is defined %}
+              Authorizer: {{ event.properties.auth.authorizer }}
+{%- endif %}
+{%- if event.properties.auth.resource_policy is defined %}{# BEGIN if event.properties.auth.resource_policy is defined #}
+              ResourcePolicy:
+{%- if event.properties.auth.resource_policy.aws_account_blacklist is defined %}
+                AwsAccountBlacklist:
+{%- for item in event.properties.auth.resource_policy.aws_account_blacklist %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.aws_account_whitelist is defined %}
+                AwsAccountWhitelist:
+{%- for item in event.properties.auth.resource_policy.aws_account_whitelist %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.custom_statements is defined %}
+                CustomStatements:
+{%- for item in event.properties.auth.resource_policy.custom_statements %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.intrinsic_vpc_blacklist is defined %}
+                IntrinsicVpcBlacklist:
+{%- for item in event.properties.auth.resource_policy.intrinsic_vpc_blacklist %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.intrinsic_vpc_whitelist is defined %}
+                IntrinsicVpcWhitelist:
+{%- for item in event.properties.auth.resource_policy.intrinsic_vpc_whitelist %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.intrinsic_vpce_blacklist is defined %}
+                IntrinsicVpceBlacklist:
+{%- for item in event.properties.auth.resource_policy.intrinsic_vpce_blacklist %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.intrinsic_vpce_whitelist is defined %}
+                IntrinsicVpceWhitelist:
+{%- for item in event.properties.auth.resource_policy.intrinsic_vpce_whitelist %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.ip_range_blacklist is defined %}
+                IpRangeBlacklist:
+{%- for item in event.properties.auth.resource_policy.ip_range_blacklist %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.ip_range_whitelist is defined %}
+                IpRangeWhitelist:
+{%- for item in event.properties.auth.resource_policy.ip_range_whitelist %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.source_vpc_blacklist is defined %}
+                SourceVpcBlacklist:
+{%- for item in event.properties.auth.resource_policy.source_vpc_blacklist %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if event.properties.auth.resource_policy.source_vpc_whitelist is defined %}
+                SourceVpcWhitelist:
+{%- for item in event.properties.auth.resource_policy.source_vpc_whitelist %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END if event.properties.auth.resource_policy is defined #}
+{%- endif %}{# END if event.properties.auth is defined #}
+{%- if event.properties.rest_api_id is defined %}
+            RestApiId: {{ event.properties.rest_api_id }}
+{%- endif %}
+{%- if event.properties.unescape_mapping_template is defined %}
+            UnescapeMappingTemplate: {{ event.properties.unescape_mapping_template | lower }}
+{%- endif %}
+{%- elif event.type == 'Schedule' %}
+            # Schedule
+            Schedule: {{ event.properties.schedule }}
+{%- if event.properties.dead_letter_config is defined %}{# BEGIN if event.properties.dead_letter_config is defined #}
+            {{ prop_state_machine.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+{%- endif %}{# END if event.properties.dead_letter_config is defined #}
+{%- if event.properties.description is defined %}
+            Description: {{ event.properties.description }}
+{%- endif %}
+{%- if event.properties.enabled is defined %}
+            Enabled: {{ event.properties.enabled | lower }}
+{%- endif %}
+{%- if event.properties.input is defined %}
+            Input: {{ event.properties.input }}
+{%- endif %}
+{%- if event.properties.name is defined %}
+            Name: {{ event.properties.name }}
+{%- endif %}
+{%- if event.properties.retry_policy is defined %}{# BEGIN if event.properties.retry_policy is defined #}
+            {{ prop_state_machine.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+{%- endif %}{# END if event.properties.retry_policy is defined #}
+{%- if event.properties.role_arn is defined %}
+            RoleArn: {{ event.properties.role_arn | trim }}
+{%- endif %}
+{%- if event.properties.state is defined %}
+            State: {{ event.properties.state }}
+{%- endif %}
+{%- if event.properties.target is defined %}
+            Target: {{ event.properties.target }}
+{%- endif %}
+{%- elif event.type == 'ScheduleV2' %}
+            # ScheduleV2
+            ScheduleExpression: {{ event.properties.schedule_expression }}
+{%- if event.properties.dead_letter_config is defined %}
+            {{ prop_state_machine.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.description is defined %}
+            Description: {{ event.properties.description }}
+{%- endif %}
+{%- if event.properties.end_date is defined %}
+            EndDate: {{ event.properties.end_date }}
+{%- endif %}
+{%- if event.properties.flexible_time_window is defined %}{# BEGIN if event.properties.flexible_time_window is defined #}
+            FlexibleTimeWindow:
+              Mode: {{ event.properties.flexible_time_window.mode }}
+{%- if event.properties.flexible_time_window.maximum_window_in_minute is defined %}
+              MaximumWindowInMinutes: {{ event.properties.flexible_time_window.maximum_window_in_minute }}
+{%- endif %}
+{%- endif %}{# END if event.properties.flexible_time_window is defined #}
+{%- if event.properties.group_name is defined %}
+            GroupName: {{ event.properties.group_name }}
+{%- endif %}
+{%- if event.properties.input is defined %}
+            Input: {{ event.properties.input }}
+{%- endif %}
+{%- if event.properties.kms_key_arn is defined %}
+            KmsKeyArn: {{ event.properties.kms_key_arn | trim }}
+{%- endif %}
+{%- if event.properties.name is defined %}
+            Name: {{ event.properties.name}}
+{%- endif %}
+{%- if event.properties.omit_name is defined %}
+            OmitName: {{ event.properties.omit_name | lower }}
+{%- endif %}
+{%- if event.properties.permissions_boundary is defined %}
+            PermissionsBoundary: {{ event.properties.permissions_boundary }}
+{%- endif %}
+{%- if event.properties.retry_policy is defined %}
+            {{ prop_state_machine.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.role_arn is defined %}
+            RoleArn: {{ event.properties.role_arn }}
+{%- endif %}
+{%- if event.properties.schedule_expression_timezone is defined %}
+            ScheduleExpressionTimezone: {{ event.properties.schedule_expression_timezone }}
+{%- endif %}
+{%- if event.properties.start_date is defined %}
+            StartDate: {{ event.properties.start_date }}
+{%- endif %}
+{%- if event.properties.state is defined %}
+            State: {{ event.properties.state }}
+{%- endif %}
+{%- elif event.type == 'CloudWatchEvent' %}
+            # CloudWatchEvent
+{%- if event.properties.pattern_json is defined %}
+            Pattern: {{ event.properties.pattern_json}}
+{%- elif event.properties.pattern is defined %}
+            Pattern:
+              {{ event.properties.pattern | indent(width=14, first=false) }}
+{%- endif %}
+{%- if event.properties.event_bus_name is defined %}
+            EventBusName: {{ event.properties.event_bus_name }}
+{%- endif %}
+{%- if event.properties.input is defined %}
+            Input: {{ event.properties.input }}
+{%- endif %}
+{%- if event.properties.input_path is defined %}
+            InputPath: {{ event.properties.input_path }}
+{%- endif %}
+{%- elif event.type == 'EventBridgeRule' %}
+            # EventBridgeRule
+{%- if event.properties.pattern_json is defined %}
+            Pattern: {{ event.properties.pattern_json}}
+{%- elif event.properties.pattern is defined %}
+            Pattern:
+              {{ event.properties.pattern | indent(width=14, first=false) }}
+{%- endif %}
+{%- if event.properties.dead_letter_config is defined %}
+            {{ prop_state_machine.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.event_bus_name is defined %}
+            EventBusName: {{ event.properties.event_bus_name }}
+{%- endif %}
+{%- if event.properties.input is defined %}
+            Input: {{ event.properties.input }}
+{%- endif %}
+{%- if event.properties.input_path is defined %}
+            InputPath: {{ event.properties.input_path }}
+{%- endif %}
+{%- if event.properties.input_transformer is defined %}{# BEGIN if event.properties.input_transformer is defined #}
+            InputTransformer:
+              InputTemplate: {{ event.properties.input_transformer.input_template }}
+{%- if event.properties.input_transformer.input_paths_map is defined %}
+              InputPathsMap:
+{%- for key, value in event.properties.input_transformer.input_paths_map.items() %}
+                {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END if event.properties.input_transformer is defined #}
+{%- if event.properties.retry_policy is defined %}
+            {{ prop_state_machine.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+{%- endif %}
+{%- if event.properties.rule_name is defined %}
+            RuleName: {{ event.properties.rule_name }}
+{%- endif %}
+{%- if event.properties.state is defined %}
+            State: {{ event.properties.state }}
+{%- endif %}
+{%- if event.properties.target is defined %}
+            Target:
+              Id: {{ event.properties.target.id }}
+{%- endif %}
+{%- endif %}{# END if event.type == 'Api'/'Schedule'/'ScheduleV2'/'CloudWatchEvent'/'EventBridgeRule' #}
+{%- endfor %}{# END for logical_id, event in state_machine.events.items() #}
+{%- endif %}{############# END if state_machine.events is defined #############}
+{%- if state_machine.logging is defined %}{# BEGIN if state_machine.logging is defined #}
+      Logging:
+{%- if state_machine.logging.destinations is defined %}{# BEGIN if state_machine.logging.destinations is defined #}
+        Destinations:
+{%- for destination in state_machine.logging.destinations %}
+          - CloudWatchLogsLogGroup:
+{%- if destination.cloud_watch_logs_log_group.log_group_arn is defined %}
+              LogGroupArn: {{ destination.cloud_watch_logs_log_group.log_group_arn | trim }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if state_machine.logging.destinations is defined #}
+{%- if state_machine.logging.include_execution_data is defined %}
+        IncludeExecutionData: {{ state_machine.logging.include_execution_data }}
+{%- endif %}
+{%- if state_machine.logging.level is defined %}
+        Level: {{ state_machine.logging.level }}
+{%- endif %}
+{%- endif %}{# END if state_machine.logging is defined #}
+{%- if state_machine.state_machine_name is defined %}
+      Name: {{ state_machine.state_machine_name }}
+{%- endif %}
+{%- if state_machine.permission_boundary is defined %}
+      PermissionsBoundary: {{ state_machine.permission_boundary }}
+{%- endif %}
+{%- if state_machine.policies is defined %}{# BEGIN if state_machine.policies is defined #}
+{%- if state_machine.policies is string %}{# BEGIN if state_machine.policies is string/iterable/mapping #}
+      Policies: {{ state_machine.policies }}
+{%- elif state_machine.policies is iterable %}
+      Policies:
+{%- for item in state_machine.policies %}
+        - {{ item }}
+{%- endfor %}
+{%- elif state_machine.policies is mapping %}
+      Policies:
+{%- for key, value in state_machine.policies.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if state_machine.policies is string/iterable/mapping #}
+{%- endif %}{# END if state_machine.policies is defined #}
+{%- if state_machine.propagate_tags is defined %}
+      PropagateTags: {{ state_machine.propagate_tags | lower }}
+{%- endif %}
+{%- if state_machine.role_path is defined %}
+      RolePath: {{ state_machine.role_path }}
+{%- endif %}
+{%- if state_machine.role is defined %}
+      Role: {{ state_machine.role}}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{sceptre_user_data.source_repo_url|default('None')}}
+{%- if state_machine.tags is defined %}
+{%- for key, value in state_machine.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if state_machine.tracing is defined %}{# BEGIN if state_machine.tracing is defined #}
+      Tracing:
+{%- if state_machine.tracing.enabled is defined %}
+        Enabled: Boolean
+{%- endif %}
+{%- endif %}{# END if state_machine.tracing is defined#}
+{%- if state_machine.type is defined %}
+      Type: {{ state_machine.type }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for state_machine in sceptre_user_data.state_machines %}
+{%- set state_machine_name = state_machine.name %}
+  {{ state_machine_name }}:
+    Description: The ARN for {{ state_machine_name }}
+    Value:
+      Ref: {{ state_machine_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ state_machine_name }}"
+  {{ state_machine_name }}Name:
+    Description: The state machine name for {{ state_machine_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ state_machine_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ state_machine_name }}-Name"
 {%- endfor %}
 {#
 # Supported structure as of 20250320:

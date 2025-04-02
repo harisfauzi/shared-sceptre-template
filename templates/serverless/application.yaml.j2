@@ -13,7 +13,7 @@ Resources:
     Properties:
 {%- if application.location is string %}
       Location: {{ application.location }}
-{%- else %}
+{%- elif application.location is mapping %}
       Location:
         # ApplicationLocationObject
         ApplicationId: {{ application.location.application_id }}
@@ -26,7 +26,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if application.parameters is defined %}
-      Parameters: Map
+      Parameters:
 {%- for key, value in application.parameters.items() %}
          {{ key }}: {{ value }}
 {%- endfor %}

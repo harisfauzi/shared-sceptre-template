@@ -19,7 +19,7 @@ Resources:
       Destination:
 {%- for resource_reference in connector.destination %}
         -
-          {{ prop_connector.prep_resource_reference(connector.destination) | indent(width=10, first=false) }}
+          {{ prop_connector.prep_resource_reference(resource_reference) | indent(width=10, first=false) }}
 {%- endfor %}
 {%- endif %}
       Permissions:

@@ -1,0 +1,80 @@
+---
+template:
+  type: sam
+  path: templates/serverless/function.yaml.j2
+  artifact_bucket_name: serverless/s3-bucket1.yaml::ArtifactBucket
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test Jinja2 template.
+  functions:
+    - name: TestFunction1
+      handler: index.handler
+      runtime: python3.10
+      inline_code: |
+        def handler(event, context):
+          print("Hello world!")
+      reserved_concurrent_executions: 30
+      tracing: active
+      policies:
+        - policy_name: AWSLambdaExecute
+          policy_document: |
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: '*'
+      events:
+        ApiEvent:
+          type: Api
+          properties:
+            path: /path
+            method: get
+        AlexaSkillEvent:
+          type: AlexaSkill
+          properties:
+            skill_id: alexaskill
+        CloudWatchEventEvent:
+          type: CloudWatchEvent
+          properties:
+            pattern: |
+              detail:
+                state:
+                  - running
+        CloudWatchLogsEvent:
+          type: CloudWatchLogs
+          properties:
+            filter_pattern: Some pattern
+            log_group_name: /some/logs
+        CognitoEvent:
+          type: Cognito
+          properties:
+            trigger:
+              - PreSignUp
+              - PreAuthentication
+            user_pool: userpool
+        DocumentDBEvent:
+          type: DocumentDB
+          properties:
+            cluster: "!Sub arn:aws:rds:${AWS::Region}:${AWS::AccountId}:cluster:docdb-2023-01-01"
+            database_name: db1
+            source_access_configurations:
+              - type: BASIC_AUTH
+                uri: "!Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:doc-db"
+            starting_position: AT_TIMESTAMP
+            batch_size: 10
+            maximum_batching_window_in_seconds: 5
+            collection_name: collectoin1
+            full_document: UpdateLookup
+        DynamoDBEvent:
+          type: DocumeDynamoDBntDB
+          properties:
+            starting_position: AT_TIMESTAMP
+            stream: "!Sub arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Music/stream/2019-10-22T18:02:01.576"
+      tags:
+        Name: testfunction1
+
+stack_tags:
+  Test: serverless-function

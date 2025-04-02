@@ -1,6 +1,6 @@
 {%- macro prep_resource_reference(resource_reference) %}{# BEGIN macro prep_resource_reference(resource_reference) #}
 {%- if resource_reference.arn is defined %}
-Arn: {{ if resource_reference.arn }}
+Arn: {{ resource_reference.arn }}
 {%- endif %}
 {%- if resource_reference.id is defined %}
 Id: {{ resource_reference.id }}

@@ -233,13 +233,11 @@ Resources:
 {%- if graphqlapi.domain_name.description is defined %}
         Description: {{ graphqlapi.domain_name.description }}
 {%- endif %}
-        Tags: 
-          - Key: SourceRepoURL
-            Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        Tags:
+          SourceRepoURL: {{sceptre_user_data.source_repo_url|default('None')}}
 {%- if graphqlapi.domain_name.tags is defined %}
 {%- for key, value in graphqlapi.domain_name.tags.items() %}
-          - Key: {{ key }}
-            Value: {{ value }}
+          {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- endif %}{# END if graphqlapi.domain_name is defined #}
@@ -265,12 +263,10 @@ Resources:
       SchemaUri: {{ graphqlapi.schema_uri }}
 {%- endif %}
       Tags:
-        - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        SourceRepoURL: {{sceptre_user_data.source_repo_url|default('None')}}
 {%- if graphqlapi.tags is defined %}
 {%- for key, value in graphqlapi.tags.items() %}
-        - Key: {{ key }}
-          Value: {{ value }}
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if graphqlapi.xray_enabled is defined %}

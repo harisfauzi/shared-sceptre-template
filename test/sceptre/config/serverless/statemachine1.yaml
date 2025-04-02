@@ -1,0 +1,40 @@
+---
+template:
+  type: sam
+  path: templates/serverless/state-machine.yaml.j2
+  artifact_bucket_name: serverless/s3-bucket1.yaml::ArtifactBucket
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test Jinja2 template.
+  state_machines:
+    - name: TestStateMachine1
+      state_machine_name: TestStateMachine1
+      definition:
+        StartAt: HelloWorld
+        States:
+          HelloWorld:
+            Type: Pass
+            End: true
+      tags:
+        Environment: Test
+        Owner: TeamA
+    - name: TestStateMachine2
+      state_machine_name: TestStateMachine2
+      definition_uri:
+        bucket: my-bucket
+        key: state-machines/test-state-machine-2.asl.json
+        version: 1
+      deployment_preference:
+        type: CANARY
+        state_machine_version_arn: "!Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:myStateMachine:1"
+        alarms:
+          - Alarm1
+          - Alarm2
+      tags:
+        Environment: Production
+        Owner: TeamB
+
+stack_tags:
+  Test: serverless-statemachine

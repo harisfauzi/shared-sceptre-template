@@ -1,6 +1,7 @@
 {%- import 'macros/prop-api.yaml.j2' as prop_api %}
 {%- import 'macros/prop-function.yaml.j2' as prop_function %}
 {%- import 'macros/prop-http-api.yaml.j2' as prop_http_api %}
+{%- import 'macros/prop-simple-table.yaml.j2' as prop_simple_table %}
 {%- macro prep(globals) %}
 Globals:
 {%- if globals.api is defined %}{# BEGIN if globals.api is defined #}
@@ -211,11 +212,11 @@ Globals:
 
 {%- if globals.simple_table is defined and False %}
   SimpleTable:
-    SSESpecification:
+    {{ prop_simple_table.prep_sse_specification(globals.simple_table) | indent(width=4, first=false) }}
 {%- endif %}
 
 {%- if globals.state_machine is defined and False %}
   StateMachine:
-    PropagateTags:
+    PropagateTags: {{ globals.state_machine | lower }}
 {%- endif %}
 {%- endmacro %}

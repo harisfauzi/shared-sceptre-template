@@ -14,7 +14,7 @@ Resources:
       {# BEGIN layer_version.content_uri #}
 {%- if layer_version.content_uri is string %}{# BEGIN if layer_version.content_uri is string #}
       ContentUri: {{ layer_version.content_uri }}
-{%- if layer_version.content_uri is mapping %}
+{%- elif layer_version.content_uri is mapping %}
       ContentUri:
         Bucket: {{ layer_version.content_uri.bucket }}
         Key: {{ layer_version.content_uri.key }}

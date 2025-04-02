@@ -1,5 +1,5 @@
 {%- macro prep_access_log_settings(access_log_settings) %}{# BEGIN macro prep_access_log_settings(access_log_settings) #}
-AccessLogSetting:
+AccessLogSettings:
 {%- if access_log_settings.destination_arn is defined %}
   DestinationArn: {{ access_log_settings.destination_arn }}
 {%- endif %}
