@@ -64,24 +64,24 @@ Resources:
           DetailedStatusCodesMetrics:
             IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.detailed_status_codes_metrics.is_enabled }}
 {%- endif %}
-{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level is defined %}{# {%- if storage_lens.storage_lens_configuration.account_level.xxxxxxx is defined %} #}
+{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level is defined %}{# BEGIN if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level is defined #}
           StorageLensGroupLevel:
-{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria is defined %}
+{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria is defined %}{# BEGIN if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria is defined #}
             StorageLensGroupSelectionCriteria:
-{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.exclude is defined %}
+{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.exclude is defined %}{# BEGIN if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.exclude is defined #}
               Exclude:
 {%- for item in storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.exclude %}
                 - {{ item }}
 {%- endfor %}
-{%- endif %}
-{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.include is defined %}
+{%- endif %}{# END if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.exclude is defined #}
+{%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.include is defined %}{# BEGIN if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.include is defined #}
               Include:
 {%- for item in storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.include %}
                 - {{ item }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}
-{%- endif %}{# {%- endif storage_lens.storage_lens_configuration.account_level.xxxxxxx is defined %} #}
+{%- endif %}{# END if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria.include is defined #}
+{%- endif %}{# END if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria is defined #}
+{%- endif %}{# END if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level is defined #}
         Id: {{ storage_lens.storage_lens_configuration.id }}
         IsEnabled: {{ storage_lens.storage_lens_configuration.is_enabled }}
 {%- if storage_lens.storage_lens_configuration.aws_org is defined %}

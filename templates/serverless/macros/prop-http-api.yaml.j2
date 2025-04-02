@@ -1,0 +1,85 @@
+{%- macro prep_access_log_settings(access_log_settings) %}{# BEGIN macro prep_access_log_settings(access_log_settings) #}
+AccessLogSettings:
+{%- if access_log_settings.destination_arn is defined %}
+  DestinationArn: {{ access_log_settings.destination_arn }}
+{%- endif %}
+{%- if access_log_settings.format is defined %}
+  Format: {{ access_log_settings.format }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_access_log_settings(access_log_settings) #}
+
+{%- macro prep_auth(auth) %}{# BEGIN macro prep_auth(auth) #}
+Auth:
+{%- if auth.default_authorizer is defined %}
+  DefaultAuthorizer: {{ auth.default_authorizer }}
+{%- endif %}
+{%- if auth.enable_iam_authorizer is defined %}
+  EnableIamAuthorizer: {{ auth.enable_iam_authorizer | lower }}
+{%- endif %}
+{%- if auth.authorizers is defined %}{# BEGIN if auth.authorizers is defined #}
+  Authorizers:
+{%- for logical_id, authorizer in auth.authorizers.items() %}{# BEGIN for logical_id, authorizer in auth.authorizers.items() #}
+    {{ logical_id }}:
+      # OAuth2Authorizer
+{%- if authorizer.authorization_scopes is defined %}
+      AuthorizationScopes:
+{%- for item in authorizer.authorization_scopes %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if authorizer.identity_source is defined %}
+      IdentitySource: {{ authorizer.identity_source }}
+{%- endif %}
+{%- if authorizer.jwt_configuration is defined %}
+      JwtConfiguration:
+{%- for key, value in authorizer.jwt_configuration.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+      # LambdaAuthorizer
+{%- if authorizer.authorizer_payload_format_version is defined %}
+      AuthorizerPayloadFormatVersion: {{ authorizer.authorizer_payload_format_version }}
+{%- endif %}
+{%- if authorizer.enable_function_default_permission is defined %}
+      EnableFunctionDefaultPermissions: {{ authorizer.enable_function_default_permission | lower }}
+{%- endif %}
+{%- if authorizer.enable_simple_responses is defined %}
+      EnableSimpleResponses: {{ authorizer.enable_simple_responses | lower }}
+{%- endif %}
+{%- if authorizer.function_arn is defined %}
+      FunctionArn: {{ authorizer.enable_simple_responses | trim }}
+{%- endif %}
+{%- if authorizer.function_invoke_role is defined %}
+      FunctionInvokeRole: {{ authorizer.function_invoke_role | trim }}
+{%- endif %}
+{%- if authorizer.identity is defined %}{## BEGIN if authorizer.identity is defined#}
+      Identity:
+{%- if authorizer.identity.context is defined %}
+        Context:
+{%- for item in authorizer.identity.context %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if authorizer.identity.headers is defined %}
+        Headers:
+{%- for item in authorizer.identity.headers %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if authorizer.identity.query_strings is defined %}
+        QueryStrings:
+{%- for item in authorizer.identity.query_strings %}
+          - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if authorizer.identity.reauthorize_every is defined %}
+        ReauthorizeEvery: {{ authorizer.identity.reauthorize_every }}
+{%- endif %}
+{%- if authorizer.identity.stage_variables is defined %}
+        StageVariables:
+          - {{ authorizer.identity.stage_variables }}
+{%- endif %}
+{%- endif %}{## END if authorizer.identity is defined#}
+{%- endfor %}{# END for logical_id, authorizer in auth.authorizers.items() #}
+{%- endif %}{# END if auth.authorizers is defined #}
+{%- endmacro %}{# END macro prep_auth(auth) #}

@@ -1,0 +1,31 @@
+---
+template:
+  type: sam
+  path: templates/serverless/connector.yaml.j2
+  artifact_bucket_name: serverless/s3-bucket1.yaml::ArtifactBucket
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test Jinja2 template.
+  connectors:
+    - name: Connector1
+      source:
+        id: MyFunction
+      destination:
+        id: MyTable
+      permissions:
+        - Read
+        - Write
+    - name: Connector2
+      source:
+        id: MyFunction
+      destination:
+        - id: MyTable1
+        - id: MyTable2
+      permissions:
+        - Read
+        - Write
+
+stack_tags:
+  Test: serverless-connector

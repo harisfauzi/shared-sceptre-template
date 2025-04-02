@@ -1,0 +1,47 @@
+---
+template:
+  type: sam
+  path: templates/serverless/graphql-api.yaml.j2
+  artifact_bucket_name: serverless/s3-bucket1.yaml::ArtifactBucket
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test Jinja2 template.
+  graphqlapis:
+    - name: TestGraphQLAPI1
+      auth:
+        type: API_KEY
+      data_sources:
+        dynamo_db:
+          MyTable:
+            table_name: TestTable
+            description: Test DynamoDB Table
+        lambda:
+          MyFunction:
+            function_arn: arn:aws:lambda:us-west-2:123456789012:function:TestFunction
+            description: Test Lambda Function
+      functions:
+        MyFunction:
+          data_source: MyFunction
+          runtime:
+            name: nodejs
+            version: 14.x
+          inline_code: |
+            exports.handler = async (event) => {
+              return { statusCode: 200, body: "Hello World" };
+            };
+      resolvers:
+        Query:
+          GetItem:
+            pipeline:
+              - MyFunction
+            runtime:
+              name: nodejs
+              version: 20.x
+            field_name: getItem
+      tags:
+        Name: TestGraphQLAPI1
+
+stack_tags:
+  Test: serverless-graphqlapi

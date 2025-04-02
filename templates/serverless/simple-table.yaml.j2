@@ -1,0 +1,83 @@
+---
+{%- import 'macros/globals.yaml.j2' as globals %}
+{%- import 'macros/prop-simple-table.yaml.j2' as prop_simple_table %}
+Description: {{sceptre_user_data.description|default('Serverless SimpleTable(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+{%- if sceptre_user_data.globals is defined %}
+{{ globals.prep(sceptre_user_data.globals) }}
+{%- endif %}
+
+Resources:
+{%- for simple_table in sceptre_user_data.simple_tables %}
+{%- set simple_table_name = simple_table.name %}
+  {{ simple_table_name }}:
+    Type: AWS::Serverless::SimpleTable
+    DeletionPolicy: {{ simple_table.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ simple_table.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if simple_table.point_in_time_recovery_specification is defined %}{# BEGIN if simple_table.point_in_time_recovery_specification is defined #}
+      PointInTimeRecoverySpecification:
+{%- if simple_table.point_in_time_recovery_specification.point_in_time_recovery_enabled is defined %}
+        PointInTimeRecoveryEnabled: {{ simple_table.point_in_time_recovery_specification.point_in_time_recovery_enabled }}
+{%- endif %}
+{%- if simple_table.point_in_time_recovery_specification.recovery_period_in_days is defined %}
+        RecoveryPeriodInDays: {{ simple_table.point_in_time_recovery_specification.recovery_period_in_days }}
+{%- endif %}
+{%- endif %}{# END if simple_table.point_in_time_recovery_specification is defined #}
+{%- if simple_table.primary_key is defined %}{# BEGIN if simple_table.primary_key is defined #}
+      PrimaryKey:
+        Name: {{ simple_table.primary_key.name }}
+        Type: {{ simple_table.primary_key.type }}
+{%- endif %}{# END if simple_table.primary_key is defined #}
+{%- if simple_table.provisioned_throughput is defined %}{# BEGIN if simple_table.provisioned_throughput is defined #}
+      ProvisionedThroughput:
+        ReadCapacityUnits: {{ simple_table.provisioned_throughput.read_capacity_units }}
+        WriteCapacityUnits: {{ simple_table.provisioned_throughput.write_capacity_units }}
+{%- endif %}{# END if simple_table.provisioned_throughput is defined #}
+{%- if simple_table.sse_specification is defined %}
+      {{ prop_simple_table.prep_sse_specification(simple_table.sse_specification) | indent(width=6, first=false) }}
+{%- endif %}
+{%- if simple_table.table_name is defined %}
+      TableName: {{ simple_table.table_name }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if simple_table.map is defined %}
+{%- for key, value in simple_table.map.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for simple_table in sceptre_user_data.simple_tables %}
+{%- set simple_table_name = simple_table.name %}
+  {{ simple_table_name }}:
+    Description: The Dynamo DB table name for {{ simple_table_name }}
+    Value:
+      Ref: {{ simple_table_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ simple_table_name }}"
+{%- endfor %}
+{#
+# Supported structure as of 20250324:
+Type: AWS::Serverless::SimpleTable
+Properties:
+  PointInTimeRecoverySpecification:
+    PointInTimeRecoveryEnabled: Boolean
+    RecoveryPeriodInDays: Integer
+  PrimaryKey:
+    Name: String
+    Type: String
+  ProvisionedThroughput:
+    ReadCapacityUnits: Integer
+    WriteCapacityUnits: Integer
+  SSESpecification:
+    KMSMasterKeyId: String
+    SSEEnabled: Boolean
+    SSEType: String
+  TableName: String
+  Tags: Map
+#}

@@ -1,0 +1,33 @@
+---
+template:
+  type: sam
+  path: templates/serverless/layer-version.yaml.j2
+  artifact_bucket_name: serverless/s3-bucket1.yaml::ArtifactBucket
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test Jinja2 template.
+  layer_versions:
+    - name: TestLayerVersion1
+      content_uri:
+        bucket: my-bucket
+        key: layers/test-layer-version-1.zip
+        version: 1
+      compatible_runtimes:
+        - python3.8
+        - python3.9
+      layer_name: TestLayer1
+      license_info: "MIT"
+      description: "Test Layer Version 1"
+    - name: TestLayerVersion2
+      content_uri: "s3://my-bucket/layers/test-layer-version-2.zip"
+      compatible_runtimes:
+        - nodejs14.x
+        - nodejs16.x
+      layer_name: TestLayer2
+      license_info: "Apache-2.0"
+      description: "Test Layer Version 2"
+
+stack_tags:
+  Test: serverless-layerversion
