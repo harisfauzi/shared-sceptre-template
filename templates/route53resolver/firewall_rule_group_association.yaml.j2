@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Route53Resolver FirewallRu
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for firewall_rule_group_association in sceptre_user_data.firewall_rule_group_associations %}
 {%- set firewall_rule_group_association_name = firewall_rule_group_association.name %}
   {{ firewall_rule_group_association_name }}:
@@ -15,10 +14,10 @@ Resources:
       Priority: {{ firewall_rule_group_association.priority }}
       VpcId: {{ firewall_rule_group_association.vpc_id | trim }}
 {%- if firewall_rule_group_association.mutation_protection is defined %}
-      MutationProtection: String
+      MutationProtection: {{ firewall_rule_group_association.mutation_protection }}
 {%- endif %}
 {%- if firewall_rule_group_association.firewall_rule_group_association_name is defined %}
-      Name: String
+      Name: {{ firewall_rule_group_association.firewall_rule_group_association_name }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -33,7 +32,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for firewall_rule_group_association in sceptre_user_data.firewall_rule_group_associations %}
 {%- set firewall_rule_group_association_name = firewall_rule_group_association.name %}
   {{ firewall_rule_group_association_name }}:

@@ -96,7 +96,7 @@ Resources:
         CertificateArn: {{ http_api.domain.certificate_arn }}
         DomainName: {{ http_api.domain.domain_name }}
 {%- if http_api.domain.base_path is defined %}
-        BasePath: List
+        BasePath:
 {%- for item in http_api.domain.base_path %}
           - {{ item }}
 {%- endfor %}

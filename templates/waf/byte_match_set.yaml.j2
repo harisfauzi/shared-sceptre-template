@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('WAF ByteMatchSet(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for byte_match_set in sceptre_user_data.byte_match_sets %}
 {%- set byte_match_set_name = byte_match_set.name %}
   {{ byte_match_set_name }}:
@@ -18,7 +17,7 @@ Resources:
         - FieldToMatch:
             Type: {{ byte_match_tuple.field_to_match.type }}
 {%- if byte_match_tuple.field_to_match.data is defined %}
-            Data: String
+            Data: {{ byte_match_tuple.field_to_match.data }}
 {%- endif %}
           PositionalConstraint: {{ byte_match_tuple.positional_constraint }}
           TextTransformation: {{ byte_match_tuple.text_transformation }}
@@ -32,11 +31,9 @@ Resources:
 {%- endif %}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for byte_match_set in sceptre_user_data.byte_match_sets %}
 {%- set byte_match_set_name = byte_match_set.name %}
   {{ byte_match_set_name }}:

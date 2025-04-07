@@ -29,7 +29,7 @@ Resources:
 {%- endfor %}
 {%- endif %}{# END state_machine.definition is defined #}
 {%- if state_machine.definition_substitutions is defined %}{# BEGIN state_machine.definition_substitutions is defined#}
-      DefinitionSubstitutions: Map
+      DefinitionSubstitutions:
 {%- for key, value in state_machine.definition_substitutions.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}
@@ -367,7 +367,7 @@ Resources:
 {%- if state_machine.tracing is defined %}{# BEGIN if state_machine.tracing is defined #}
       Tracing:
 {%- if state_machine.tracing.enabled is defined %}
-        Enabled: Boolean
+        Enabled: {{ state_machine.tracing.enabled | lower }}
 {%- endif %}
 {%- endif %}{# END if state_machine.tracing is defined#}
 {%- if state_machine.type is defined %}

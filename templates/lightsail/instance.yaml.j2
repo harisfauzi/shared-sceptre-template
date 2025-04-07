@@ -119,7 +119,7 @@ Resources:
 {%- if instance.networking.monthly_transfer is defined %}
         MonthlyTransfer:
 {%- if instance.networking.monthly_transfer.gb_per_month_allocated is defined %}
-          GbPerMonthAllocated: String
+          GbPerMonthAllocated: {{ instance.networking.monthly_transfer.gb_per_month_allocated }}
 {%- endif %}
 {%- endif %}
 {%- endif %}{# END if instance.networking is defined #}

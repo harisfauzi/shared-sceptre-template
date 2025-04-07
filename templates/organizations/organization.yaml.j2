@@ -1,0 +1,96 @@
+---
+Description: {{sceptre_user_data.description|default('Organizations Organization(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for organization in sceptre_user_data.organizations %}
+{%- set organization_name = organization.name %}
+  {{ organization_name }}:
+    Type: AWS::Organizations::Organization
+    DeletionPolicy: {{ organization.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ organization.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if organization.feature_set is defined %}
+      FeatureSet: {{ organization.feature_set }}
+{%- endif %}
+{%- endfor %}
+
+{%- if not sceptre_user_data.no_outputs is defined or not sceptre_user_data.no_outputs %}
+Outputs:
+{%- for organization in sceptre_user_data.organizations %}
+{%- set organization_name = organization.name %}
+  {{ organization_name }}:
+    Description: Account Id for {{ organization_name }}
+    Value:
+      Ref: {{ organization_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organization_name }}"
+
+  {{ organization_name }}Arn:
+    Description: The ARN for {{ organization_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ organization_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organization_name }}-Arn"
+
+  {{ organization_name }}Id:
+    Description: The Id for {{ organization_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ organization_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organization_name }}-Id"
+
+  {{ organization_name }}ManagementAccountArn:
+    Description: The management account ARN for {{ organization_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ organization_name }}
+        - ManagementAccountArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organization_name }}-ManagementAccountArn"
+
+  {{ organization_name }}ManagementAccountEmail:
+    Description: The management account email for {{ organization_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ organization_name }}
+        - ManagementAccountEmail
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organization_name }}-ManagementAccountEmail"
+
+  {{ organization_name }}ManagementAccountId:
+    Description: The management account Id for {{ organization_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ organization_name }}
+        - ManagementAccountId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organization_name }}-ManagementAccountId"
+
+  {{ organization_name }}RootId:
+    Description: The root Id for {{ organization_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ organization_name }}
+        - RootId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organization_name }}-RootId"
+
+{%- endfor %}
+{%- endif %}{#
+# Supported structure as of 2025-04-07
+Type: AWS::Organizations::Organization
+Properties:
+  FeatureSet: String
+#}

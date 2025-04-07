@@ -1,0 +1,107 @@
+---
+Description: {{sceptre_user_data.description|default('Organizations Account(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- set ns1 = namespace() %}
+{%- set ns1.ii = 0 %}
+{%- set ns1.previous_account_name = '' %}
+{%- for account in sceptre_user_data.accounts %}
+{%- set ns1.ii = ns1.ii + 1 %}
+{%- set account_name = account.name %}
+  {{ account_name }}:
+    Type: AWS::Organizations::Account
+{%- if ns1.ii > 1 %}
+    DependsOn: {{ ns1.previous_account_name }}
+{%- endif %}
+{%- set ns1.previous_account_name = account_name %}
+    DeletionPolicy: {{ account.deletion_policy | default('Retain') }}
+    UpdateReplacePolicy: {{ account.update_replace_policy | default('Retain') }}
+    Properties:
+      AccountName: {{ account.account_name}}
+      Email: {{ account.email }}
+{%- if account.parent_ids is defined %}
+      ParentIds:
+{%- for item in account.parent_ids %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if account.role_name is defined %}
+      RoleName: {{ account.role_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if account.tags is defined %}
+{%- for key,value in account.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+{%- if not sceptre_user_data.no_outputs is defined or not sceptre_user_data.no_outputs %}
+Outputs:
+{%- for account in sceptre_user_data.accounts %}
+{%- set account_name = account.name %}
+  {{ account_name }}:
+    Description: Account ID for {{ account_name }}
+    Value:
+      Ref: {{ account_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ account_name }}"
+
+  {{ account_name }}Arn:
+    Description: The ARN for {{ account_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ account_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ account_name }}-Arn"
+
+  {{ account_name }}JoinedMethod:
+    Description: The joined method for {{ account_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ account_name }}
+        - JoinedMethod
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ account_name }}-JoinedMethod"
+
+  {{ account_name }}JoinedTimestamp:
+    Description: The joined timestamp for {{ account_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ account_name }}
+        - JoinedTimestamp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ account_name }}-JoinedTimestamp"
+
+  {{ account_name }}Status:
+    Description: The Status for {{ account_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ account_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ account_name }}-Status"
+{%- endfor %}
+{%- endif %}{#
+# Supported structure as of 2025-04-07
+Type: AWS::Organizations::Account
+Properties:
+  AccountName: String
+  Email: String
+  ParentIds:
+    - String
+  RoleName: String
+  Tags:
+    - Key: String
+      Value: String
+#}
