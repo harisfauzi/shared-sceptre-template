@@ -1,0 +1,72 @@
+---
+Description: {{sceptre_user_data.description|default('Organizations ResourcePolicy(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for resource_policy in sceptre_user_data.resource_policies %}
+{%- set resource_policy_name = resource_policy.name %}
+  {{ resource_policy_name }}:
+    Type: AWS::Organizations::ResourcePolicy
+    DeletionPolicy: {{ resource_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resource_policy.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if resource_policy.content_json is defined %}
+      Content: >-
+        {{ resource_policy.content_json | indent(width=8, first=false) }}
+{%- elif resource_policy.content is defined %}
+      Content:
+        {{ resource_policy.content | indent(width=8, first=false) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if resource_policy.tags is defined %}
+{%- for key,value in resource_policy.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+{%- if not sceptre_user_data.no_outputs is defined or not sceptre_user_data.no_outputs %}
+Outputs:
+{%- for resource_policy in sceptre_user_data.resource_policies %}
+{%- set resource_policy_name = resource_policy.name %}
+  {{ resource_policy_name }}:
+    Description: The Id for {{ resource_policy_name }}
+    Value:
+      Ref: {{ resource_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_policy_name }}"
+
+  {{ resource_policy_name }}Arn:
+    Description: The ARN for {{ resource_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resource_policy_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_policy_name }}-Arn"
+
+  {{ resource_policy_name }}Id:
+    Description: The Id for {{ resource_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resource_policy_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_policy_name }}-Id"
+
+{%- endfor %}
+{%- endif %}{#
+# Supported structure as of 2025-04-07
+Type: AWS::Organizations::ResourcePolicy
+Properties:
+  Content: Json
+  Tags:
+    - Key: String
+      Value: String
+#}

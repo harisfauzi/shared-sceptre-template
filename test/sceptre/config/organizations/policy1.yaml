@@ -1,0 +1,27 @@
+---
+template:
+  type: file
+  path: organizations/policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFormation template to test Jinja2 template.
+  policies:
+    - name: scp01
+      policy_name: SCP01
+      type: SERVICE_CONTROL_POLICY
+      content: |
+        Version: 2012-10-17
+        Statement:
+          - Sid: SCPDenyLeaveOrganization
+            Effect: Deny
+            Action:
+              - organizations:LeaveOrganization
+            Resource: "*"
+      target_ids:
+        - !stack_output organizations/organizationalunit1.yaml::top1
+      description: SCP to deny leave organization"
+      tags:
+        Name: test-organization-policy
+        Project: "{{ stack_group_config.project_code }}"

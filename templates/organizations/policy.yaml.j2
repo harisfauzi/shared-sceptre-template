@@ -1,0 +1,98 @@
+---
+Description: {{sceptre_user_data.description|default('Organizations Policy(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for policy in sceptre_user_data.policies %}
+{%- set policy_name = policy.name %}
+  {{ policy_name }}:
+    Type: AWS::Organizations::Policy
+    DeletionPolicy: {{ policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ policy.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ policy.policy_name }}
+      Type: {{ policy.type }}
+{%- if policy.content_json is defined %}
+      Content: >-
+        {{ policy.content_json | indent(width=8, first=false) }}
+{%- elif policy.content is defined %}
+      Content:
+        {{ policy.content | indent(width=8, first=false) }} 
+{%- endif %}
+{%- if policy.description is defined %}
+      Description: {{ policy.description }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if policy.tags is defined %}
+{%- for key,value in policy.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if policy.target_ids is defined %}
+      TargetIds:
+{%- for target_id in policy.target_ids %}
+        - {{ target_id }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+{%- if not sceptre_user_data.no_outputs is defined or not sceptre_user_data.no_outputs %}
+Outputs:
+{%- for policy in sceptre_user_data.policies %}
+{%- set policy_name = policy.name %}
+  {{ policy_name }}:
+    Description: The Id for {{ policy_name }}
+    Value:
+      Ref: {{ policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ policy_name }}"
+
+  {{ policy_name }}Arn:
+    Description: The ARN for {{ policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ policy_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ policy_name }}-Arn"
+
+  {{ policy_name }}AwsManaged:
+    Description: Indication if it's AWS managed policy for {{ policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ policy_name }}
+        - AwsManaged
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ policy_name }}-AwsManaged"
+
+  {{ policy_name }}Id:
+    Description: The Id for {{ policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ policy_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ policy_name }}-Id"
+
+{%- endfor %}
+{%- endif %}{#
+# Supported structure as of 2025-04-07
+Type: AWS::Organizations::Policy
+Properties:
+  Content: Json
+  Description: String
+  Name: String
+  Tags:
+    - Key: String
+      Value: String
+  TargetIds:
+    - String
+  Type: String
+#}

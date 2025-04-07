@@ -1,0 +1,68 @@
+---
+Description: {{sceptre_user_data.description|default('Organizations OrganizationalUnit(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for organizational_unit in sceptre_user_data.organizational_units %}
+{%- set organizational_unit_name = organizational_unit.name %}
+  {{ organizational_unit_name }}:
+    Type: AWS::Organizations::OrganizationalUnit
+    DeletionPolicy: {{ organizational_unit.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ organizational_unit.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ organizational_unit.organizational_unit_name }}
+      ParentId: {{ organizational_unit.parent_id }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if organizational_unit.tags is defined %}
+{%- for key,value in organizational_unit.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+{%- if not sceptre_user_data.no_outputs is defined or not sceptre_user_data.no_outputs %}
+Outputs:
+{%- for organizational_unit in sceptre_user_data.organizational_units %}
+{%- set organizational_unit_name = organizational_unit.name %}
+  {{ organizational_unit_name }}:
+    Description: The OU ID for {{ organizational_unit_name }}
+    Value:
+      Ref: {{ organizational_unit_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organizational_unit_name }}"
+
+  {{ organizational_unit_name }}Arn:
+    Description: The ARN for {{ organizational_unit_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ organizational_unit_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organizational_unit_name }}-Arn"
+
+  {{ organizational_unit_name }}Id:
+    Description: The Id for {{ organizational_unit_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ organizational_unit_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organizational_unit_name }}-Id"
+
+{%- endfor %}
+{%- endif %}{#
+# Supported structure as of 2025-04-07
+Type: AWS::Organizations::OrganizationalUnit
+Properties:
+  Name: String
+  ParentId: String
+  Tags:
+    - Key: String
+      Value: String
+#}
