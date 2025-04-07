@@ -1,0 +1,16 @@
+---
+template:
+  type: file
+  path: organizations/organizational-unit.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFormation template to test Jinja2 template.
+  organizational_units:
+    - name: top1
+      organizational_unit_name: top1
+      parent_id: !stack_output organizations/organization1.yaml::myorgId
+      tags:
+        Name: test-organization-ou
+        Project: "{{ stack_group_config.project_code }}"
