@@ -21,16 +21,16 @@ Resources:
       {{ prop_api.prep_access_log_setting(api.access_log_setting) | indent(width=6, first=false) }}
 {%- endif %}{# END if api.access_log_setting is defined #}
 {%- if api.always_deploy is defined %}
-      AlwaysDeploy: Boolean
+      AlwaysDeploy: {{ api.always_deploy }}
 {%- endif %}
 {%- if api.api_key_source_type is defined %}
-      ApiKeySourceType: String
+      ApiKeySourceType: {{ api.api_key_source_type }}
 {%- endif %}
 {%- if api.auth is defined %}{# BEGIN if api.auth is defined #}
       {{ prop_api.prep_auth(api.auth) | indent(width=6, first=false) }}
 {%- endif %}{# END if api.auth is defined #}
 {%- if api.binary_media_types is defined %}
-      BinaryMediaTypes: List
+      BinaryMediaTypes:
 {%- for item in api.binary_media_types %}
         - {{ item }}
 {%- endfor %}
@@ -113,7 +113,7 @@ Resources:
       TracingEnabled: {{ api.tracing_enabled }}
 {%- endif %}
 {%- if api.variables is defined %}
-      Variables: Map
+      Variables:
 {%- for key, value in api.variables.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}

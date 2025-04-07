@@ -77,7 +77,7 @@ ManagedRuleGroupStatement:
 {%- for managed_rule_group_config in statement.managed_rule_group_statement.managed_rule_group_configs %}
     -
 {%- if managed_rule_group_config.login_path is defined %}
-      LoginPath: String
+      LoginPath: {{ managed_rule_group_config.login_path }}
 {%- endif %}
 {%- if managed_rule_group_config.password_field is defined %}
       PasswordField:
