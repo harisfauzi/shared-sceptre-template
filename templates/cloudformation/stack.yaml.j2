@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFormation Stack(s) fo
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for stack in sceptre_user_data.stacks %}
 {%- set stack_name = stack.name %}
   {{ stack_name }}:
@@ -14,7 +13,9 @@ Resources:
       TemplateURL: {{ stack.template_url }}
 {%- if stack.notification_arns is defined %}
       NotificationARNs:
-        - String
+{%- for item in stack.notification_arns %}
+        - {{ item }}
+{%- endfor %}
 {%- endif %}
 {%- if stack.parameters is defined %}
       Parameters:
@@ -34,11 +35,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for stack in sceptre_user_data.stacks %}
 {%- set stack_name = stack.name %}
   {{ stack_name }}:
@@ -48,5 +47,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ stack_name }}"
-
 {%- endfor %}

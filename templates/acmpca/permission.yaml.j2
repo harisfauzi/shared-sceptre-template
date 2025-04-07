@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ACMPCA Permission(s) for '
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for permission in sceptre_user_data.permissions %}
 {%- set permission_name = permission.name %}
   {{ permission_name }}:
@@ -18,7 +17,6 @@ Resources:
       CertificateAuthorityArn: {{permission.certificate_authority_arn|trim}}
       Principal: {{permission.principal}}
 {%- if permission.source_account is defined %}
-      SourceAccount: String
+      SourceAccount: {{ permission.source_account }}
 {%- endif %}
-
 {%- endfor %}

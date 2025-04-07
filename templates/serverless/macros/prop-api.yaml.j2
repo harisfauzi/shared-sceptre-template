@@ -284,7 +284,7 @@ Domain:
   CertificateArn: {{ domain.certificate_arn }}
   DomainName: {{ domain.domain_name }}
 {%- if domain.base_path is defined %}
-  BasePath: List
+  BasePath:
 {%- for item in domain.base_path %}
     - {{ item}}
 {%- endfor %}
@@ -339,7 +339,7 @@ Domain:
 {%- macro prep_endpoint_configuration(endpoint_configuration) %}{# BEGIN macro prep_endpoint_configuration(endpoint_configuration) #}
 EndpointConfiguration:
 {%- if endpoint_configuration.type is defined %}
-  Type: String
+  Type: {{ endpoint_configuration.type }}
 {%- endif %}
 {%- if endpoint_configuration.vpc_endpoint_ids is defined %}
   VPCEndpointIds:
