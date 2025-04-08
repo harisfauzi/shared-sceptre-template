@@ -1,4 +1,4 @@
-{%- import 'macros/splot_fleet_instance_requirements.yaml.j2' as splot_fleet_instance_requirements %}
+{%- import 'macros/spot_fleet_instance_requirements.yaml.j2' as spot_fleet_instance_requirements %}
 {%- macro prep(launch_template_config) %}
 {%- if launch_template_config.launch_template_specification is defined %}
 LaunchTemplateSpecification:
@@ -18,7 +18,7 @@ Overrides:
 {%- endif %}
 {%- if override.instance_requirements is defined %}
     InstanceRequirements:
-{{ splot_fleet_instance_requirements.prep(override.instance_requirements) | indent(width=6, first=true) }}
+{{ spot_fleet_instance_requirements.prep(override.instance_requirements) | indent(width=6, first=true) }}
 {%- endif %}
 {%- if override.instance_type is defined %}
     InstanceType: {{ override.instance_type }}

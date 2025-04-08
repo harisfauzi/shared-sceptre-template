@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Gateway Route Table As
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for gateway_route_table_association in sceptre_user_data.gateway_route_table_associations %}
 {%- set gateway_route_table_association_name = gateway_route_table_association.name %}
   {{ gateway_route_table_association_name }}:
@@ -13,11 +12,9 @@ Resources:
     Properties:
       GatewayId: {{ gateway_route_table_association.gateway_id | trim }}
       RouteTableId: {{ gateway_route_table_association.route_table_id | trim }}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for gateway_route_table_association in sceptre_user_data.gateway_route_table_associations %}
 {%- set gateway_route_table_association_name = gateway_route_table_association.name %}
   {{ gateway_route_table_association_name }}:
@@ -27,7 +24,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ gateway_route_table_association_name }}"
-
   {{ gateway_route_table_association_name }}AssociationId:
     Description: The ID of the route table association for {{ gateway_route_table_association_name }}
     Value:
@@ -37,5 +33,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ gateway_route_table_association_name }}-AssociationId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-08:
+Type: AWS::EC2::GatewayRouteTableAssociation
+Properties:
+  GatewayId: String
+  RouteTableId: String
+#}

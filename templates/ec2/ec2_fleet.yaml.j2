@@ -79,7 +79,7 @@ Resources:
 {%- if override.instance_requirements.bare_metal is defined %}
                 BareMetal: {{ override.instance_requirements.bare_metal }}
 {%- endif %}
-{%- if override.instance_requirements.baseline_ebs_bandwidth_mbps is defined %}
+{%- if override.instance_requirements.baseline_ebs_bandwidth_mbps is defined %}{# BEGIN if override.instance_requirements.baseline_ebs_bandwidth_mbps is defined #}
                 BaselineEbsBandwidthMbps:
 {%- if override.instance_requirements.baseline_ebs_bandwidth_mbps.max is defined %}
                   Max: {{ override.instance_requirements.baseline_ebs_bandwidth_mbps.max }}
@@ -87,7 +87,19 @@ Resources:
 {%- if override.instance_requirements.baseline_ebs_bandwidth_mbps.min is defined %}
                   Min: {{ override.instance_requirements.baseline_ebs_bandwidth_mbps.min }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if override.instance_requirements.baseline_ebs_bandwidth_mbps is defined #}
+{%- if override.instance_requirements.baseline_performance_factors is defined %}{# BEGIN if override.instance_requirements.baseline_performance_factors is defined #}
+                BaselinePerformanceFactors:
+{%- if override.instance_requirements.baseline_performance_factors.cpu is defined %}{# BEGIN if override.instance_requirements.baseline_performance_factors.cpu is defined #}
+                  Cpu:
+{%- if override.instance_requirements.baseline_performance_factors.cpu.references is defined %}{# BEGIN if override.instance_requirements.baseline_performance_factors.cpu.references is defined #}
+                    References:
+{%- for reference in override.instance_requirements.baseline_performance_factors.cpu.references %}{# BEGIN for reference in override.instance_requirements.baseline_performance_factors.cpu.references #}
+                      - InstanceFamily: {{ reference.instance_family }}
+{%- endfor %}{# END for reference in override.instance_requirements.baseline_performance_factors.cpu.references #}
+{%- endif %}{# END if override.instance_requirements.baseline_performance_factors.cpu.references is defined #}
+{%- endif %}{# END if override.instance_requirements.baseline_performance_factors.cpu is defined #}
+{%- endif %}{# END if override.instance_requirements.baseline_performance_factors is defined #}
 {%- if override.instance_requirements.burstable_performance is defined %}
                 BurstablePerformance: {{ override.instance_requirements.burstable_performance }}
 {%- endif %}
@@ -337,7 +349,6 @@ Resources:
 {%- if ec2_fleet.valid_until is defined %}
       ValidUntil: {{ ec2_fleet.valid_until }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
@@ -350,7 +361,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ ec2_fleet_name }}"
-
   {{ ec2_fleet_name }}FleetId:
     Description: Fleet Id for {{ ec2_fleet_name }}
     Value:
@@ -360,9 +370,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ ec2_fleet_name }}-FleetId"
-
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20241027:
 Type: AWS::EC2::EC2Fleet
 Properties:

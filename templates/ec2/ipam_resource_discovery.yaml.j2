@@ -10,24 +10,30 @@ Resources:
     DeletionPolicy: {{ discovery.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ discovery.update_replace_policy | default('Delete') }}
     Properties:
-      {%- if discovery.description is defined %}
+{%- if discovery.description is defined %}
       Description: {{ discovery.description }}
-      {%- endif %}
-      {%- if discovery.operating_regions is defined %}
+{%- endif %}
+{%- if discovery.operating_regions is defined %}{# BEGIN if discovery.operating_regions is defined #}
       OperatingRegions:
-        {%- for region in discovery.operating_regions %}
+{%- for region in discovery.operating_regions %}
         - RegionName: {{ region.region_name }}
-        {%- endfor %}
-      {%- endif %}
+{%- endfor %}
+{%- endif %}{# END if discovery.operating_regions is defined #}
+{%- if discovery.organizational_unit_exclusions is defined %}{# BEGIN if discovery.organizational_unit_exclusions is defined #}
+      OrganizationalUnitExclusions:
+{%- for exclusion in discovery.organizational_unit_exclusions %}
+        - OrganizationsEntityPath: {{ exclusion.organizations_entity_path }}
+{%- endfor %}
+{%- endif %}{# END if discovery.organizational_unit_exclusions is defined#}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-        {%- if discovery.tags is defined %}
-        {%- for key, value in discovery.tags.items() %}
+{%- if discovery.tags is defined %}
+{%- for key, value in discovery.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
-        {%- endfor %}
-        {%- endif %}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -40,7 +46,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ discovery_name }}"
-
   {{ discovery_name }}IpamResourceDiscoveryArn:
     Description: ARN for {{ discovery_name }}
     Value:
@@ -50,7 +55,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ discovery_name }}-IpamResourceDiscoveryArn"
-
   {{ discovery_name }}IpamResourceDiscoveryRegion:
     Description: Region for {{ discovery_name }}
     Value:
@@ -60,7 +64,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ discovery_name }}-IpamResourceDiscoveryRegion"
-
   {{ discovery_name }}IsDefault:
     Description: Whether {{ discovery_name }} is default
     Value:
@@ -70,7 +73,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ discovery_name }}-IsDefault"
-
   {{ discovery_name }}OwnerId:
     Description: Owner ID for {{ discovery_name }}
     Value:
@@ -80,7 +82,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ discovery_name }}-OwnerId"
-
   {{ discovery_name }}State:
     Description: State of {{ discovery_name }}
     Value:
@@ -92,12 +93,14 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ discovery_name }}-State"
 {%- endfor %}
 {#
-# Supported structure as of 20250109:
+# Supported structure as of 2025-04-09:
 Type: AWS::EC2::IPAMResourceDiscovery
 Properties:
   Description: String
-  OperatingRegions: 
+  OperatingRegions:
     - RegionName: String
+  OrganizationalUnitExclusions:
+    - OrganizationsEntityPath: String
   Tags:
     - Key: String
       Value: String

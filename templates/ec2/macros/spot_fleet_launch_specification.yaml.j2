@@ -1,4 +1,4 @@
-{%- import 'macros/splot_fleet_instance_requirements.yaml.j2' as splot_fleet_instance_requirements %}
+{%- import 'macros/spot_fleet_instance_requirements.yaml.j2' as spot_fleet_instance_requirements %}
 {%- macro prep(launch_specification) %}
 ImageId: {{ launch_specification.image_id | trim }}
 {%- if launch_specification.block_device_mappings is defined %}{# BEGIN {%- if launch_specification.block_device_mappings is defined %} #}
@@ -43,7 +43,7 @@ IamInstanceProfile:
 {%- endif %}
 {%- if launch_specification.instance_requirements is defined %}{## BEGIN {%- if launch_specification.instance_requirements is defined %} #}
 InstanceRequirements:
-{{ splot_fleet_instance_requirements.prep(launch_specification.instance_requirements ) | indent(width=2, first=true) }}
+{{ spot_fleet_instance_requirements.prep(launch_specification.instance_requirements ) | indent(width=2, first=true) }}
 {%- endif %}{## END {%- if launch_specification.instance_requirements is defined %} #}
 {%- if launch_specification.instance_type is defined %}
 InstanceType: {{ launch_specification.instance_type }}

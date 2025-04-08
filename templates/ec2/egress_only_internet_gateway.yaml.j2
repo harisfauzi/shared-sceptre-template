@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Egress Only Internet G
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for egress_only_internet_gateway in sceptre_user_data.egress_only_internet_gateways %}
 {%- set egress_only_internet_gateway_name = egress_only_internet_gateway.name %}
   {{ egress_only_internet_gateway_name }}:
@@ -12,11 +11,9 @@ Resources:
     UpdateReplacePolicy: {{ egress_only_internet_gateway.update_replace_policy | default('Delete') }}
     Properties:
       VpcId: {{ egress_only_internet_gateway.vpc_id | trim }}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for egress_only_internet_gateway in sceptre_user_data.egress_only_internet_gateways %}
 {%- set egress_only_internet_gateway_name = egress_only_internet_gateway.name %}
   {{ egress_only_internet_gateway_name }}:
@@ -26,5 +23,9 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ egress_only_internet_gateway_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-08:
+Type: AWS::EC2::EgressOnlyInternetGateway
+Properties:
+  VpcId: String
+#}

@@ -1,0 +1,106 @@
+{############### BEGIN prep_block_device_mappings #################}
+{%- macro prep_block_device_mappings(block_device_mappings) %}
+BlockDeviceMappings:
+{%- for mapping in block_device_mappings %}{# BEGIN for mapping in block_device_mappings #}
+  - DeviceName: {{ mapping.device_name }}
+{%- if mapping.ebs is defined %}{# BEGIN if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+    Ebs:
+{%- if mapping.ebs.delete_on_termination is defined %}
+      DeleteOnTermination: {{ mapping.ebs.delete_on_termination | lower }}
+{%- endif %}
+{%- if mapping.ebs.encrypted is defined %}
+      Encrypted: {{ mapping.ebs.encrypted | lower}}
+{%- endif %}
+{%- if mapping.ebs.iops is defined %}
+      Iops: {{ mapping.ebs.iops }}
+{%- endif %}
+{%- if mapping.ebs.kms_key_id is defined %}
+      KmsKeyId: {{ mapping.ebs.kms_key_id | trim }}
+{%- endif %}
+{%- if mapping.ebs.snapshot_id is defined %}
+      SnapshotId: {{ mapping.ebs.snapshot_id | trim }}
+{%- endif %}
+{%- if mapping.ebs.volume_size is defined %}
+      VolumeSize: {{ mapping.ebs.volume_size }}
+{%- endif %}
+{%- if mapping.ebs.volume_type is defined %}
+      VolumeType: {{ mapping.ebs.volume_type }}
+{%- endif %}
+{%- elif mapping.virtual_name is defined %}{# ELSE if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+    VirtualName: {{ mapping.virtual_name }}
+{%- elif mapping.no_device is defined %}{# ELSE if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+    NoDevice: {}
+{%- endif %}{# END if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+{%- endfor %}{# END for mapping in block_device_mappings #}
+{%- endmacro %}
+{############### END prep_block_device_mappings #################}
+
+{############### BEGIN prep_network_interfaces #################}
+{%- macro prep_network_interfaces(network_interfaces) %}
+NetworkInterfaces:
+{%- for networkinterface in network_interfaces %}
+  -
+{%- if networkinterface.associate_carrier_ip_address is defined %}
+    AssociateCarrierIpAddress: {{ networkinterface.associate_carrier_ip_address | lower }}
+{%- endif %}
+{%- if networkinterface.associate_public_ip_address is defined %}
+    AssociatePublicIpAddress: {{ networkinterface.associate_public_ip_address | lower }}
+{%- endif %}
+{%- if networkinterface.delete_on_termination is defined %}
+    DeleteOnTermination: {{ networkinterface.delete_on_termination | lower }}
+{%- endif %}
+{%- if networkinterface.description is defined %}
+    Description: {{ networkinterface.description }}
+{%- endif %}
+{%- if networkinterface.device_index is defined %}
+    DeviceIndex: {{ networkinterface.device_index }}
+{%- endif %}
+{%- if networkinterface.ena_srd_specification is defined %}{# BEGIN if networkinterface.ena_srd_specification is defined #}
+    EnaSrdSpecification:
+{%- if networkinterface.ena_srd_specification.ena_srd_enabled is defined %}
+      EnaSrdEnabled: {{ networkinterface.ena_srd_specification.ena_srd_enabled | lower }}
+{%- endif %}
+{%- if networkinterface.ena_srd_specification.ena_srd_udp_specification is defined %}{# BEGIN if networkinterface.ena_srd_specification.ena_srd_udp_specification is defined #}
+      EnaSrdUdpSpecification:
+{%- if networkinterface.ena_srd_specification.ena_srd_udp_specification.ena_srd_udp_enabled is defined %}
+        EnaSrdUdpEnabled: {{ networkinterface.ena_srd_specification.ena_srd_udp_specification.ena_srd_udp_enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if networkinterface.ena_srd_specification.ena_srd_udp_specification is defined #}
+{%- endif %}{# END if networkinterface.ena_srd_specification is defined #}
+{%- if networkinterface.group_set is defined %}{# BEGIN if networkinterface.group_set is defined #}
+    GroupSet:
+{%- for item in networkinterface.group_set %}{# BEGIN for item in networkinterface.group_set #}
+      - {{ item }}
+{%- endfor %}{# END for item in networkinterface.group_set #}
+{%- endif %}{# END if networkinterface.group_set is defined #}
+{%- if networkinterface.ipv6_address_count is defined %}
+    Ipv6AddressCount: {{ networkinterface.ipv6_address_count }}
+{%- endif %}
+{%- if networkinterface.ipv6_addresses is defined %}
+    Ipv6Addresses:
+{%- for ipv6address in networkinterface.ipv6_addresses %}
+      - Ipv6Address: {{ ipv6address.ipv6_address }}
+{%- endfor %}
+{%- endif %}
+{%- if networkinterface.network_interface_id is defined %}
+    NetworkInterfaceId: {{ networkinterface.network_interface_id | trim }}
+{%- endif %}
+{%- if networkinterface.private_ip_address is defined %}
+    PrivateIpAddress: {{ networkinterface.private_ip_address }}
+{%- endif %}
+{%- if networkinterface.private_ip_addresses is defined %}
+    PrivateIpAddresses:
+{%- for specification in networkinterface.private_ip_addresses %}
+      - Primary: {{ specification.primary | lower }}
+        PrivateIpAddress: {{ specification.private_ip_address }}
+{%- endfor %}
+{%- endif %}
+{%- if networkinterface.secondary_private_ip_address_count is defined %}
+    SecondaryPrivateIpAddressCount: {{ networkinterface.secondary_private_ip_address_count }}
+{%- endif %}
+{%- if networkinterface.subnet_id is defined %}
+    SubnetId: {{ networkinterface.subnet_id | trim }}
+{%- endif %}
+{%- endfor %}
+{%- endmacro %}
+{############### END prep_network_interfaces #################}

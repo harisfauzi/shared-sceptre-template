@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Customer Gateway(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for customer_gateway in sceptre_user_data.customer_gateways %}
 {%- set customer_gateway_name = customer_gateway.name %}
   {{ customer_gateway_name }}:
@@ -46,8 +45,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ customer_gateway_name }}"
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20241027:
 Type: AWS::EC2::CustomerGateway
 Properties:

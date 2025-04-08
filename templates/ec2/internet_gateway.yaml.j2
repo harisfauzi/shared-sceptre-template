@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Internet Gateway(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for internet_gateway in sceptre_user_data.internet_gateways %}
 {%- set internet_gateway_name = internet_gateway.name %}
   {{ internet_gateway_name }}:
@@ -20,7 +19,6 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- if internet_gateway.vpc_id is defined %}
   {{ internet_gateway_name }}VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -35,13 +33,12 @@ Outputs:
 {%- for internet_gateway in sceptre_user_data.internet_gateways %}
 {%- set internet_gateway_name = internet_gateway.name %}
   {{ internet_gateway_name }}:
-    Description: The name for {{ internet_gateway_name }}
+    Description: The Internet Gateway Id for {{ internet_gateway_name }}
     Value:
       Ref: {{ internet_gateway_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ internet_gateway_name }}"
-
   {{ internet_gateway_name }}VPCGatewayAttachment:
     Description: The attachment ID for {{ internet_gateway_name }}VPCGatewayAttachment
     Value:
@@ -49,5 +46,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ internet_gateway_name }}VPCGatewayAttachment"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::InternetGateway
+Properties:
+  Tags:
+    - Tag
+#}
