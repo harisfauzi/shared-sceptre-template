@@ -1,0 +1,51 @@
+---
+template:
+  type: sam
+  path: templates/serverless/function.yaml.j2
+  artifact_bucket_name: serverless/s3-bucket1.yaml::ArtifactBucket
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test Jinja2 template.
+  apis:
+    - name: TestAPI2
+      stage_name: dev
+      api_name: TestAPI2
+      description: >
+        Test API Gateway from
+      endpoint_configuration:
+        type: REGIONAL
+      method_settings:
+        - http_method: ANY
+          resource_path: /
+  functions:
+    - name: TestFunction2
+      handler: index.handler
+      runtime: python3.10
+      inline_code: |
+        def handler(event, context):
+          print("Hello world!")
+      reserved_concurrent_executions: 30
+      tracing: active
+      policies:
+        - policy_name: AWSLambdaExecute
+          policy_document: |
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: '*'
+      events:
+        ApiEvent:
+          type: Api
+          properties:
+            path: /helloworld
+            method: ANY
+            rest_api_id: "!Ref TestAPI2"
+      tags:
+        Name: testfunction2
+
+stack_tags:
+  Test: serverless-function

@@ -1,6 +1,8 @@
 ---
 {%- import 'macros/globals.yaml.j2' as globals %}
 {%- import 'macros/prop-function.yaml.j2' as prop_function %}
+{%- import 'embedded-api.yaml.j2' as embedded_api %}
+{%- import 'embedded-http-api.yaml.j2' as embedded_http_api %}
 Description: {{sceptre_user_data.description|default('Serverless Function(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
@@ -9,6 +11,12 @@ Transform: AWS::Serverless-2016-10-31
 {%- endif %}
 
 Resources:
+{%- if sceptre_user_data.apis is defined %}
+{{ embedded_api.prep_api_resources(sceptre_user_data.apis, sceptre_user_data.source_repo_url) }}
+{%- endif %}
+{%- if sceptre_user_data.http_apis is defined %}
+{{ embedded_http_api.prep_http_api_resources(sceptre_user_data.http_apis, sceptre_user_data.source_repo_url) }}
+{%- endif %}
 {%- for function in sceptre_user_data.functions %}
 {%- set function_name = function.name %}
   {{ function_name }}:
@@ -864,6 +872,12 @@ Resources:
 {%- endfor %}
 
 Outputs:
+{%- if sceptre_user_data.apis is defined %}
+{{ embedded_api.prep_api_outputs(sceptre_user_data.apis) }}
+{%- endif %}
+{%- if sceptre_user_data.http_apis is defined %}
+{{ embedded_http_api.prep_http_api_outputs(sceptre_user_data.http_apis) }}
+{%- endif %}
 {%- for function in sceptre_user_data.functions %}
 {%- set function_name = function.name %}
   {{ function_name }}:

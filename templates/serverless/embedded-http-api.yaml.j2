@@ -1,15 +1,6 @@
----
-{%- import 'macros/globals.yaml.j2' as globals %}
 {%- import 'macros/prop-http-api.yaml.j2' as prop_http_api %}
-Description: {{sceptre_user_data.description|default('Serverless HttpApi(s) for '+sceptre_user_data.project_code)}}
-AWSTemplateFormatVersion: "2010-09-09"
-Transform: AWS::Serverless-2016-10-31
-{%- if sceptre_user_data.globals is defined %}
-{{ globals.prep(sceptre_user_data.globals) }}
-{%- endif %}
-
-Resources:
-{%- for http_api in sceptre_user_data.http_apis %}
+{%- macro prep_http_api_resources(http_apis, source_repo_url) %}{# BEGIN macro prep_http_api_resources(http_apis, source_repo_url) #}
+{%- for http_api in http_apis %}
 {%- set http_api_name = http_api.name %}
   {{ http_api_name }}:
     Type: AWS::Serverless::HttpApi
@@ -169,16 +160,17 @@ Resources:
         {{ http_api.stage_variables | indent(width=8, first=false) }}
 {%- endif %}
       Tags:
-        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+        SourceRepoURL: {{ source_repo_url | default('unknown') }}
 {%- if http_api.tags is defined %}
 {%- for key, value in http_api.tags.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
+{%- endmacro %}{# END macro prep_http_api_resources(http_apis, source_repo_url) #}
 
-Outputs:
-{%- for http_api in sceptre_user_data.http_apis %}
+{%- macro prep_http_api_outputs(http_apis) %}{# BEGIN macro prep_http_api_outputs(http_apis) #}
+{%- for http_api in http_apis %}
 {%- set http_api_name = http_api.name %}
   {{ http_api_name }}:
     Description: The API ID for {{ http_api_name }}
@@ -188,6 +180,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ http_api_name }}"
 {%- endfor %}
+{%- endmacro %}{# END macro prep_http_api_outputs(http_apis) #}
 {#
 # Supported structure as of 20250322:
 Type: AWS::Serverless::HttpApi
