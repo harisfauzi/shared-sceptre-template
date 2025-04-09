@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Transit Gateway Route Tabl
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for tgrt_propagation in sceptre_user_data.transit_gateway_route_table_propagations %}
 {%- set tgrt_propagation_name = tgrt_propagation.name %}
   {{ tgrt_propagation_name }}:
@@ -25,5 +24,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ tgrt_propagation_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TransitGatewayRouteTablePropagation
+Properties:
+  TransitGatewayAttachmentId: String
+  TransitGatewayRouteTableId: String
+#}

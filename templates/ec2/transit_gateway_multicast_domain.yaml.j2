@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Transit Gateway Multic
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for transit_gateway_multicast_domain in sceptre_user_data.transit_gateway_multicast_domains %}
 {%- set transit_gateway_multicast_domain_name = transit_gateway_multicast_domain.name %}
   {{ transit_gateway_multicast_domain_name }}:
@@ -12,12 +11,18 @@ Resources:
     UpdateReplacePolicy: {{ transit_gateway_multicast_domain.update_replace_policy | default('Delete') }}
     Properties:
       TransitGatewayId: {{ transit_gateway_multicast_domain.transit_gateway_id | trim }}
-{%- if transit_gateway_multicast_domain.options_json is defined %}
-      Options: {{ transit_gateway_multicast_domain.options_json }}
-{%- elif transit_gateway_multicast_domain.options is defined %}
+{%- if transit_gateway_multicast_domain.options is defined %}{# BEGIN if transit_gateway_multicast_domain.options is defined #}
       Options:
-{{ transit_gateway_multicast_domain.options | indent(width=8, first=true) }}
+{%- if transit_gateway_multicast_domain.options.auto_accept_shared_associations is defined %}
+        AutoAcceptSharedAssociations: {{ transit_gateway_multicast_domain.options.auto_accept_shared_associations }}
 {%- endif %}
+{%- if transit_gateway_multicast_domain.options.igmp_v2_support is defined %}
+        Igmpv2Support: {{ transit_gateway_multicast_domain.options.igmp_v2_support }}
+{%- endif %}
+{%- if transit_gateway_multicast_domain.options.static_sources_support is defined %}
+        StaticSourcesSupport: {{ transit_gateway_multicast_domain.options.static_sources_support }}
+{%- endif %}
+{%- endif %}{# END if transit_gateway_multicast_domain.options is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -27,11 +32,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for transit_gateway_multicast_domain in sceptre_user_data.transit_gateway_multicast_domains %}
 {%- set transit_gateway_multicast_domain_name = transit_gateway_multicast_domain.name %}
   {{ transit_gateway_multicast_domain_name }}:
@@ -41,7 +44,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}"
-
   {{ transit_gateway_multicast_domain_name }}CreationTime:
     Description: The time the multicast domain {{ transit_gateway_multicast_domain_name }} was created.
     Value:
@@ -51,7 +53,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-CreationTime"
-
   {{ transit_gateway_multicast_domain_name }}State:
     Description: The state of the multicast domain {{ transit_gateway_multicast_domain_name }}
     Value:
@@ -61,7 +62,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-State"
-
   {{ transit_gateway_multicast_domain_name }}TransitGatewayMulticastDomainArn:
     Description: The ARN of the multicast domain {{ transit_gateway_multicast_domain_name }}
     Value:
@@ -71,7 +71,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-TransitGatewayMulticastDomainArn"
-
   {{ transit_gateway_multicast_domain_name }}TransitGatewayMulticastDomainId:
     Description: The ID of the multicast domain {{ transit_gateway_multicast_domain_name }}
     Value:
@@ -81,5 +80,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_name }}-TransitGatewayMulticastDomainId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TransitGatewayMulticastDomain
+Properties:
+  Options:
+    AutoAcceptSharedAssociations: String
+    Igmpv2Support: String
+    StaticSourcesSupport: String
+  Tags:
+    - Tag
+  TransitGatewayId: String
+#}

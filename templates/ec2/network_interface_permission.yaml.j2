@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Network Interface Perm
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for network_interface_permission in sceptre_user_data.network_interface_permissions %}
 {%- set network_interface_permission_name = network_interface_permission.name %}
   {{ network_interface_permission_name }}:
@@ -14,11 +13,9 @@ Resources:
       AwsAccountId: {{ network_interface_permission.aws_account_id | trim }}
       NetworkInterfaceId: {{ network_interface_permission.network_interface_id | trim }}
       Permission: {{ network_interface_permission.permission }}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for network_interface_permission in sceptre_user_data.network_interface_permissions %}
 {%- set network_interface_permission_name = network_interface_permission.name %}
   {{ network_interface_permission_name }}:
@@ -28,5 +25,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_interface_permission_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::NetworkInterfacePermission
+Properties:
+  AwsAccountId: String
+  NetworkInterfaceId: String
+  Permission: String
+#}

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Volume(s) for '+sceptr
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for volume in sceptre_user_data.volumes %}
 {%- set volume_name = volume.name %}
   {{ volume_name }}:
@@ -13,10 +12,10 @@ Resources:
     Properties:
       AvailabilityZone: {{ volume.availability_zone }}
 {%- if volume.auto_enable_io is defined %}
-      AutoEnableIO: {{ volume.auto_enable_io }}
+      AutoEnableIO: {{ volume.auto_enable_io | lower }}
 {%- endif %}
 {%- if volume.encrypted is defined %}
-      Encrypted: {{ volume.encrypted }}
+      Encrypted: {{ volume.encrypted | lower }}
 {%- endif %}
 {%- if volume.iops is defined %}
       Iops: {{ volume.iops }}
@@ -25,7 +24,7 @@ Resources:
       KmsKeyId: {{ volume.kms_key_id | trim }}
 {%- endif %}
 {%- if volume.multi_attach_enabled is defined %}
-      MultiAttachEnabled: {{ volume.multi_attach_enabled }}
+      MultiAttachEnabled: {{ volume.multi_attach_enabled | lower }}
 {%- endif %}
 {%- if volume.outpost_arn is defined %}
       OutpostArn: {{ volume.outpost_arn | trim }}
@@ -51,11 +50,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for volume in sceptre_user_data.volumes %}
 {%- set volume_name = volume.name %}
   {{ volume_name }}:
@@ -65,5 +62,30 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ volume_name }}"
-
-{%- endfor %}
+  {{ volume_name }}VolumeId:
+    Description: Volume Id for {{ volume_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ volume_name }}
+        - VolumeId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ volume_name }}-VolumeId"
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::Volume
+Properties:
+  AutoEnableIO: Boolean
+  AvailabilityZone: String
+  Encrypted: Boolean
+  Iops: Integer
+  KmsKeyId: String
+  MultiAttachEnabled: Boolean
+  OutpostArn: String
+  Size: Integer
+  SnapshotId: String
+  Tags:
+    - Tag
+  Throughput: Integer
+  VolumeType: String
+#}

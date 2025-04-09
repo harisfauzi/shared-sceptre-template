@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 VPC Endpoint(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for vpc_endpoint in sceptre_user_data.vpc_endpoints %}
 {%- set vpc_endpoint_name = vpc_endpoint.name %}
   {{ vpc_endpoint_name }}:
@@ -11,16 +10,30 @@ Resources:
     DeletionPolicy: {{ vpc_endpoint.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ vpc_endpoint.update_replace_policy | default('Delete') }}
     Properties:
-      ServiceName: {{ vpc_endpoint.service_name }}
       VpcId: {{ vpc_endpoint.vpc_id | trim }}
+{%- if vpc_endpoint.dns_options is defined %}{# BEGIN if vpc_endpoint.dns_options is defined #}
+      DnsOptions:
+{%- if vpc_endpoint.dns_options.dns_record_ip_type is defined %}
+        DnsRecordIpType: {{ vpc_endpoint.dns_options.dns_record_ip_type }}
+{%- endif %}
+{%- if vpc_endpoint.dns_options.private_dns_only_for_inbound_resolver_endpoint is defined %}
+        PrivateDnsOnlyForInboundResolverEndpoint: {{ vpc_endpoint.dns_options.private_dns_only_for_inbound_resolver_endpoint }}
+{%- endif %}
+{%- endif %}{# END if vpc_endpoint.dns_options is defined #}
+{%- if vpc_endpoint.ip_address_type is defined %}
+      IpAddressType: {{ vpc_endpoint.ip_address_type }}
+{%- endif %}
 {%- if vpc_endpoint.policy_document_json is defined %}
       PolicyDocument: {{ vpc_endpoint.policy_document_json }}
 {%- elif vpc_endpoint.policy_document is defined %}
       PolicyDocument:
-{{ vpc_endpoint.policy_document | indent(width=8, first=true) }}
+        {{ vpc_endpoint.policy_document | indent(width=8, first=false) }}
 {%- endif %}
 {%- if vpc_endpoint.private_dns_enabled is defined %}
-      PrivateDnsEnabled: {{ vpc_endpoint.private_dns_enabled }}
+      PrivateDnsEnabled: {{ vpc_endpoint.private_dns_enabled | lower }}
+{%- endif %}
+{%- if vpc_endpoint.resource_configuration_arn is defined %}
+      ResourceConfigurationArn: {{ vpc_endpoint.resource_configuration_arn | trim }}
 {%- endif %}
 {%- if vpc_endpoint.route_table_ids is defined %}
       RouteTableIds:
@@ -34,6 +47,12 @@ Resources:
         - {{ security_group_id }}
 {%- endfor %}
 {%- endif %}
+{%- if vpc_endpoint.service_name is defined %}
+      ServiceName: {{ vpc_endpoint.service_name }}
+{%- endif %}
+{%- if vpc_endpoint.service_network_arn is defined %}
+      ServiceNetworkArn: {{ vpc_endpoint.service_network_arn | trim }}
+{%- endif %}
 {%- if vpc_endpoint.subnet_ids is defined %}
       SubnetIds:
 {%- for subnet_id in vpc_endpoint.subnet_ids %}
@@ -43,11 +62,9 @@ Resources:
 {%- if vpc_endpoint.vpc_endpoint_type is defined %}
       VpcEndpointType: {{ vpc_endpoint.vpc_endpoint_type }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for vpc_endpoint in sceptre_user_data.vpc_endpoints %}
 {%- set vpc_endpoint_name = vpc_endpoint.name %}
   {{ vpc_endpoint_name }}:
@@ -57,7 +74,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_endpoint_name }}"
-
   {{ vpc_endpoint_name }}CreationTimestamp:
     Description: The date and time the VPC endpoint {{ vpc_endpoint_name }} was created.
     Value:
@@ -67,5 +83,28 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_endpoint_name }}-CreationTimestamp"
-
-{%- endfor %}
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPCEndpoint
+Properties:
+  DnsOptions:
+    DnsRecordIpType: String
+    PrivateDnsOnlyForInboundResolverEndpoint: String
+  IpAddressType: String
+  PolicyDocument: Json
+  PrivateDnsEnabled: Boolean
+  ResourceConfigurationArn: String
+  RouteTableIds:
+    - String
+  SecurityGroupIds:
+    - String
+  ServiceName: String
+  ServiceNetworkArn: String
+  SubnetIds:
+    - String
+  Tags:
+    - Key: String
+      Value: String
+  VpcEndpointType: String
+  VpcId: String
+#}

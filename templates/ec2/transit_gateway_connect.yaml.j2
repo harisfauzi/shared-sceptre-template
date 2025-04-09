@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Transit Gateway Connec
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for transit_gateway_connect in sceptre_user_data.transit_gateway_connects %}
 {%- set transit_gateway_connect_name = transit_gateway_connect.name %}
   {{ transit_gateway_connect_name }}:
@@ -23,11 +22,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for transit_gateway_connect in sceptre_user_data.transit_gateway_connects %}
 {%- set transit_gateway_connect_name = transit_gateway_connect.name %}
   {{ transit_gateway_connect_name }}:
@@ -37,7 +34,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_name }}"
-
   {{ transit_gateway_connect_name }}CreationTime:
     Description: The creation time for {{ transit_gateway_connect_name }}
     Value:
@@ -47,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_name }}-CreationTime"
-
   {{ transit_gateway_connect_name }}State:
     Description: The state of the attachment for {{ transit_gateway_connect_name }}
     Value:
@@ -57,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_name }}-State"
-
   {{ transit_gateway_connect_name }}TransitGatewayAttachmentId:
     Description: The ID of the transit gateway attachment for {{ transit_gateway_connect_name }}
     Value:
@@ -67,7 +61,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_name }}-TransitGatewayAttachmentId"
-
   {{ transit_gateway_connect_name }}TransitGatewayId:
     Description: The ID of the transit gateway for {{ transit_gateway_connect_name }}
     Value:
@@ -77,5 +70,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_name }}-TransitGatewayId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TransitGatewayConnect
+Properties:
+  Options:
+    Protocol: String
+  Tags:
+    - Tag
+  TransportTransitGatewayAttachmentId: String
+#}

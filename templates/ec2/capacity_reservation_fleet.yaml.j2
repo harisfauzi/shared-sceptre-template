@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Capacity Reservation F
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for capacity_reservation_fleet in sceptre_user_data.capacity_reservation_fleets %}
 {%- set capacity_reservation_fleet_name = capacity_reservation_fleet.name %}
   {{ capacity_reservation_fleet_name }}:
@@ -31,7 +30,7 @@ Resources:
           AvailabilityZoneId: {{ instance_type_specification.availability_zone_id | trim }}
 {%- endif %}
 {%- if instance_type_specification.ebs_optimized is defined %}
-          EbsOptimized: {{ instance_type_specification.ebs_optimized }}
+          EbsOptimized: {{ instance_type_specification.ebs_optimized |lower }}
 {%- endif %}
 {%- if instance_type_specification.instance_platform is defined %}
           InstancePlatform: {{ instance_type_specification.instance_platform }}
@@ -75,11 +74,9 @@ Resources:
 {%- if capacity_reservation_fleet.total_target_capacity is defined %}
       TotalTargetCapacity: {{ capacity_reservation_fleet.total_target_capacity }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for capacity_reservation_fleet in sceptre_user_data.capacity_reservation_fleets %}
 {%- set capacity_reservation_fleet_name = capacity_reservation_fleet.name %}
   {{ capacity_reservation_fleet_name }}:
@@ -89,7 +86,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_fleet_name }}"
-
   {{ capacity_reservation_fleet_name }}CapacityReservationFleetId:
     Description: The ID of the Capacity Reservation Fleet. {{ capacity_reservation_fleet_name }}
     Value:
@@ -99,5 +95,30 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_fleet_name }}-CapacityReservationFleetId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-08
+Type: AWS::EC2::CapacityReservationFleet
+Properties:
+  AllocationStrategy: String
+  EndDate: String
+  InstanceMatchCriteria: String
+  InstanceTypeSpecifications:
+    -
+      AvailabilityZone: String
+      AvailabilityZoneId: String
+      EbsOptimized: Boolean
+      InstancePlatform: String
+      InstanceType: String
+      Priority: Integer
+      Weight: Number
+  NoRemoveEndDate: Boolean
+  RemoveEndDate: Boolean
+  TagSpecifications:
+    -
+      ResourceType: String
+      Tags:
+        - Key: String
+          Value: String
+  Tenancy: String
+  TotalTargetCapacity: Integer
+#}

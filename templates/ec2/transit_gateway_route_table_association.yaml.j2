@@ -24,5 +24,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ tgrt_association_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TransitGatewayRouteTableAssociation
+Properties:
+  TransitGatewayAttachmentId: String
+  TransitGatewayRouteTableId: String
+#}

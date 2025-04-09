@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 DHCP Options for '+sce
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for dhcp_option in sceptre_user_data.dhcp_options %}
 {%- set dhcp_option_name = dhcp_option.name %}
   {{ dhcp_option_name }}:
@@ -50,7 +49,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for dhcp_option in sceptre_user_data.dhcp_options %}
 {%- set dhcp_option_name = dhcp_option.name %}
   {{ dhcp_option_name }}:
@@ -60,7 +58,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ dhcp_option_name }}"
-
   {{ dhcp_option_name }}DhcpOptionsId:
     Description: The ID of the DHCP options set for {{ dhcp_option_name }}
     Value:
@@ -70,20 +67,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ dhcp_option_name }}-DhcpOptionsId"
-
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20241027:
 Type: AWS::EC2::DHCPOptions
 Properties:
   DomainName: String
-  DomainNameServers: 
+  DomainNameServers:
     - String
   Ipv6AddressPreferredLeaseTime: Integer
-  NetbiosNameServers: 
+  NetbiosNameServers:
     - String
   NetbiosNodeType: Integer
-  NtpServers: 
+  NtpServers:
     - String
   Tags:
     - Key: String

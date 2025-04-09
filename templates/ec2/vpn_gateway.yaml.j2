@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('VPN Gateway(s) for '+scept
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for vpn_gateway in sceptre_user_data.vpn_gateways %}
 {%- set vpn_gateway_name = vpn_gateway.name %}
   {{ vpn_gateway_name }}:
@@ -24,7 +23,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
       Type: ipsec.1
-
+{######### AWS::EC2::VPCGatewayAttachment ########}
 {%- if vpn_gateway.vpc_id is defined %}
   {{ vpn_gateway_name }}VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -33,7 +32,7 @@ Resources:
         Ref: {{ vpn_gateway_name }}
       VpcId: {{ vpn_gateway.vpc_id | trim }}
 {%- endif %}
-
+{######### AWS::EC2::VPNGatewayRoutePropagation ########}
 {%- if vpn_gateway.route_table_ids is defined %}
   {{ vpn_gateway_name }}VPNGatewayRoutePropagation:
     Type: AWS::EC2::VPNGatewayRoutePropagation
@@ -58,4 +57,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpn_gateway_name }}"
-{%- endfor %}
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPNGateway
+Properties:
+  AmazonSideAsn: Integer
+  Tags:
+    - Key: String
+      Value: String
+  Type: String
+#}

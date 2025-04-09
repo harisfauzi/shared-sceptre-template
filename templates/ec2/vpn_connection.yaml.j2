@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('VPN Connection(s) for '+sc
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for vpn_connection in sceptre_user_data.vpn_connections %}
 {%- set vpn_connection_name = vpn_connection.name %}
   {{ vpn_connection_name }}:
@@ -12,8 +11,27 @@ Resources:
     UpdateReplacePolicy: {{ vpn_connection.update_replace_policy | default('Delete') }}
     Properties:
       CustomerGatewayId: {{ vpn_connection.customer_gateway_id | trim }}
+      Type: ipsec.1
+{%- if vpn_connection.enable_acceleration is defined %}
+      EnableAcceleration: {{ vpn_connection.enable_acceleration | lower }}
+{%- endif %}
+{%- if vpn_connection.local_ipv4_network_cidr is defined %}
+      LocalIpv4NetworkCidr: {{ vpn_connection.local_ipv4_network_cidr }}
+{%- endif %}
+{%- if vpn_connection.local_ipv6_network_cidr is defined %}
+      LocalIpv6NetworkCidr: {{ vpn_connection.local_ipv6_network_cidr }}
+{%- endif %}
+{%- if vpn_connection.outside_ip_address_type is defined %}
+      OutsideIpAddressType: {{ vpn_connection.outside_ip_address_type }}
+{%- endif %}
+{%- if vpn_connection.remote_ipv4_network_cidr is defined %}
+      RemoteIpv4NetworkCidr: {{ vpn_connection.remote_ipv4_network_cidr }}
+{%- endif %}
+{%- if vpn_connection.remove_ipv6_network_cidr is defined %}
+      RemoteIpv6NetworkCidr: {{ vpn_connection.remove_ipv6_network_cidr }}
+{%- endif %}
 {%- if vpn_connection.static_routes_only is defined %}
-      StaticRoutesOnly: {{ vpn_connection.static_routes_only }}
+      StaticRoutesOnly: {{ vpn_connection.static_routes_only | lower }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -24,25 +42,117 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-      Type: ipsec.1
-{%- if vpn_connection.transit_gateway_id is defined %}
+{%- if vpn_connection.transit_gateway_id is defined %}{# BEGIN if vpn_connection.transit_gateway_id/vpn_connection.vpn_gateway_id is defined #}
       TransitGatewayId: {{ vpn_connection.transit_gateway_id | trim }}
-{%- elif vpn_connection.vpn_gateway_id is defined %}
+{%- elif vpn_connection.vpn_gateway_id is defined %}{# ELSE if vpn_connection.transit_gateway_id/vpn_connection.vpn_gateway_id is defined #}
       VpnGatewayId: {{ vpn_connection.vpn_gateway_id | trim }}
+{%- endif %}{# END if vpn_connection.transit_gateway_id/vpn_connection.vpn_gateway_id is defined #}
+{%- if vpn_connection.transport_transit_gateway_attachment_id is defined %}
+      TransportTransitGatewayAttachmentId: {{ vpn_connection.transport_transit_gateway_attachment_id | trim }}
 {%- endif %}
-{%- if vpn_connection.vpn_tunnel_option_specifications is defined %}
+{%- if vpn_connection.tunnel_inside_ip_version is defined %}
+      TunnelInsideIpVersion: {{ vpn_connection.tunnel_inside_ip_version }}
+{%- endif %}
+{%- if vpn_connection.vpn_tunnel_option_specifications is defined %}{# BEGIN if vpn_connection.vpn_tunnel_option_specifications is defined #}
       VpnTunnelOptionsSpecifications:
 {%- for specification in vpn_connection.vpn_tunnel_option_specifications %}
         -
+{%- if specification.dpd_timeout_action is defined %}
+          DPDTimeoutAction: {{ specification.dpd_timeout_action }}
+{%- endif %}
+{%- if specification.dpd_timeout_seconds is defined %}
+          DPDTimeoutSeconds: {{ specification.dpd_timeout_seconds }}
+{%- endif %}
+{%- if specification.enable_tunnel_lifecycle_control is defined %}
+          EnableTunnelLifecycleControl: {{ specification.enable_tunnel_lifecycle_control | lower }}
+{%- endif %}
+{%- if specification.ike_versions is defined %}{# BEGIN if specification.ike_versions is defined #}
+          IKEVersions:
+{%- for version in specification.ike_versions %}
+            - Value: {{ version.value }}
+{%- endfor %}
+{%- endif %}{# END if specification.ike_versions is defined #}
+{%- if specification.log_options is defined %}{# BEGIN if specification.log_options is defined #}
+          LogOptions:
+{%- if specification.log_options.cloudwatch_log_options is defined %}{# BEGIN if specification.log_options.cloudwatch_log_options is defined #}
+            CloudwatchLogOptions:
+{%- if specification.log_options.cloudwatch_log_options.log_enabled is defined %}
+              LogEnabled: {{ specification.log_options.cloudwatch_log_options.log_enabled | lower }}
+{%- endif %}
+{%- if specification.log_options.cloudwatch_log_options.log_group_arn is defined %}
+              LogGroupArn: {{ specification.log_options.cloudwatch_log_options.log_group_arn | trim }}
+{%- endif %}
+{%- if specification.log_options.cloudwatch_log_options.log_output_format is defined %}
+              LogOutputFormat: {{ specification.log_options.cloudwatch_log_options.log_output_format }}
+{%- endif %}
+{%- endif %}{# END if specification.log_options.cloudwatch_log_options is defined #}
+{%- endif %}{# END if specification.log_options is defined #}
+{%- if specification.phase1_dh_group_numbers is defined %}{# BEGIN if specification.phase1_dh_group_numbers is defined #}
+          Phase1DHGroupNumbers:
+{%- for number in specification.phase1_dh_group_numbers %}
+            - Value: {{ number.value }}
+{%- endfor %}
+{%- endif %}{# END if specification.phase1_dh_group_numbers is defined #}
+{%- if specification.phase1_encryption_algorithms is defined %}{# BEGIN if specification.phase1_encryption_algorithms is defined #}
+          Phase1EncryptionAlgorithms:
+{%- for algorithm in specification.phase1_encryption_algorithms %}
+            - Value: {{ algorithm.value }}
+{%- endfor %}
+{%- endif %}{# END if specification.phase1_encryption_algorithms is defined #}
+{%- if specification.phase1_integrity_algorithms is defined %}{# BEGIN if specification.phase1_integrity_algorithms is defined #}
+          Phase1IntegrityAlgorithms:
+{%- for algorithm in specification.phase1_integrity_algorithms %}
+            - Value: {{ algorithm.value }}
+{%- endfor %}
+{%- endif %}{# END if specification.phase1_integrity_algorithms is defined #}
+{%- if specification.phase1_lifetime_seconds is defined %}
+          Phase1LifetimeSeconds: {{ specification.phase1_lifetime_seconds }}
+{%- endif %}
+{%- if specification.phase2_dh_group_numbers is defined %}{# BEGIN if specification.phase2_dh_group_numbers is defined #}
+          Phase2DHGroupNumbers:
+{%- for number in specification.phase2_dh_group_numbers %}
+            - Value: {{ number.value }}
+{%- endfor %}
+{%- endif %}{# END if specification.phase2_dh_group_numbers is defined #}
+{%- if specification.phase2_encryption_algorithms is defined %}{# BEGIN if specification.phase2_encryption_algorithms is defined #}
+          Phase2EncryptionAlgorithms:
+{%- for algorithm in specification.phase2_encryption_algorithms %}
+            - Value: {{ algorithm.value }}
+{%- endfor %}
+{%- endif %}{# END if specification.phase2_encryption_algorithms is defined #}
+{%- if specification.phase2_integrity_algorithms is defined %}{# BEGIN if specification.phase2_integrity_algorithms is defined #}
+          Phase2IntegrityAlgorithms:
+{%- for algorithm in specification.phase2_integrity_algorithms %}
+            - Value: {{ algorithm.value }}
+{%- endfor %}
+{%- endif %}{# END if specification.phase2_integrity_algorithms is defined #}
+{%- if specification.phase2_lifetime_seconds is defined %}
+          Phase2LifetimeSeconds: {{ specification.phase2_lifetime_seconds }}
+{%- endif %}
 {%- if specification.pre_shared_key is defined %}
           PreSharedKey: {{ specification.pre_shared_key }}
+{%- endif %}
+{%- if specification.rekey_fuzz_percentage is defined %}
+          RekeyFuzzPercentage: {{ specification.rekey_fuzz_percentage }}
+{%- endif %}
+{%- if specification.rekey_margin_time_seconds is defined %}
+          RekeyMarginTimeSeconds: {{ specification.rekey_margin_time_seconds }}
+{%- endif %}
+{%- if specification.replay_window_size is defined %}
+          ReplayWindowSize: {{ specification.replay_window_size }}
+{%- endif %}
+{%- if specification.startup_action is defined %}
+          StartupAction: {{ specification.startup_action }}
 {%- endif %}
 {%- if specification.tunnel_inside_cidr is defined %}
           TunnelInsideCidr: {{ specification.tunnel_inside_cidr }}
 {%- endif %}
-{%- endfor %}
+{%- if specification.tunnel_inside_ipv6_cidr is defined %}
+          TunnelInsideIpv6Cidr: {{ specification.tunnel_inside_ipv6_cidr }}
 {%- endif %}
-
+{%- endfor %}
+{%- endif %}{# END if vpn_connection.vpn_tunnel_option_specifications is defined #}
+{############ AWS::EC2::VPNConnectionRoute ###########}
 {%- if vpn_connection.connection_routes is defined %}
 {%- for route in vpn_connection.connection_routes %}
 {%- set route_name = vpn_connection_name ~ route.name %}
@@ -66,4 +176,57 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpn_connection_name }}"
-{%- endfor %}
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPNConnection
+Properties:
+  CustomerGatewayId: String
+  EnableAcceleration: Boolean
+  LocalIpv4NetworkCidr: String
+  LocalIpv6NetworkCidr: String
+  OutsideIpAddressType: String
+  RemoteIpv4NetworkCidr: String
+  RemoteIpv6NetworkCidr: String
+  StaticRoutesOnly: Boolean
+  Tags:
+    - Key: String
+      Value: String
+  TransitGatewayId: String
+  TransportTransitGatewayAttachmentId: String
+  TunnelInsideIpVersion: String
+  Type: String
+  VpnGatewayId: String
+  VpnTunnelOptionsSpecifications:
+    -
+      DPDTimeoutAction: String
+      DPDTimeoutSeconds: Integer
+      EnableTunnelLifecycleControl: Boolean
+      IKEVersions:
+        - Value: String
+      LogOptions:
+        CloudwatchLogOptions:
+          LogEnabled: Boolean
+          LogGroupArn: String
+          LogOutputFormat: String
+      Phase1DHGroupNumbers:
+        - Value: Integer
+      Phase1EncryptionAlgorithms:
+        - Value: String
+      Phase1IntegrityAlgorithms:
+        - Value: String
+      Phase1LifetimeSeconds: Integer
+      Phase2DHGroupNumbers:
+        - Value: Integer
+      Phase2EncryptionAlgorithms:
+        - Value: String
+      Phase2IntegrityAlgorithms:
+        - Value: String
+      Phase2LifetimeSeconds: Integer
+      PreSharedKey: String
+      RekeyFuzzPercentage: Integer
+      RekeyMarginTimeSeconds: Integer
+      ReplayWindowSize: Integer
+      StartupAction: String
+      TunnelInsideCidr: String
+      TunnelInsideIpv6Cidr: String
+#}

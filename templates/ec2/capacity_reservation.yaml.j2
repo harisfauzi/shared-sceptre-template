@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Capacity Reservation(s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for capacity_reservation in sceptre_user_data.capacity_reservations %}
 {%- set capacity_reservation_name = capacity_reservation.name %}
   {{ capacity_reservation_name }}:
@@ -61,7 +60,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for capacity_reservation in sceptre_user_data.capacity_reservations %}
 {%- set capacity_reservation_name = capacity_reservation.name %}
   {{ capacity_reservation_name }}:
@@ -71,7 +69,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}"
-
   {{ capacity_reservation_name }}AvailabilityZone:
     Description: The Availability Zone for {{ capacity_reservation_name }}
     Value:
@@ -81,7 +78,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-AvailabilityZone"
-
   {{ capacity_reservation_name }}AvailableInstanceCount:
     Description: The remaining number of instances that can be launched in the Capacity Reservation {{ capacity_reservation_name }}
     Value:
@@ -91,7 +87,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-AvailableInstanceCount"
-
   {{ capacity_reservation_name }}InstanceType:
     Description: The type of instance for Capacity Reservation {{ capacity_reservation_name }}
     Value:
@@ -101,7 +96,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-InstanceType"
-
   {{ capacity_reservation_name }}Tenancy:
     Description: The tenancy of the Capacity Reservatio {{ capacity_reservation_name }}
     Value:
@@ -111,7 +105,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-Tenancy"
-
   {{ capacity_reservation_name }}TotalInstanceCount:
     Description: The total number of instances for which the Capacity Reservation reserves capacity for {{ capacity_reservation_name }}
     Value:
@@ -121,7 +114,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-TotalInstanceCount"
-
 {%- endfor %}
 {#
 # Supported structure as of 20241026:

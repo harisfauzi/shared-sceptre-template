@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Network Interface(s) f
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for network_interface in sceptre_user_data.network_interfaces %}
 {%- set network_interface_name = network_interface.name %}
   {{ network_interface_name }}:
@@ -12,8 +11,23 @@ Resources:
     UpdateReplacePolicy: {{ network_interface.update_replace_policy | default('Delete') }}
     Properties:
       SubnetId: {{ network_interface.subnet_id | trim }}
+{%- if network_interface.connection_tracking_specification is defined %}{# if network_interface.connection_tracking_specification is defined #}
+      ConnectionTrackingSpecification:
+{%- if network_interface.connection_tracking_specification.tcp_established_timeout is defined %}
+        TcpEstablishedTimeout: {{ network_interface.connection_tracking_specification.tcp_established_timeout }}
+{%- endif %}
+{%- if network_interface.connection_tracking_specification.udp_stream_timeout is defined %}
+        UdpStreamTimeout: {{ network_interface.connection_tracking_specification.udp_stream_timeout }}
+{%- endif %}
+{%- if network_interface.connection_tracking_specification.udp_timeout is defined %}
+        UdpTimeout: {{ network_interface.connection_tracking_specification.udp_timeout }}
+{%- endif %}
+{%- endif %}{# END if network_interface.connection_tracking_specification is defined #}
 {%- if network_interface.description is defined %}
       Description: {{ network_interface.description }}
+{%- endif %}
+{%- if network_interface.enable_primary_ipv6 is defined %}
+      EnablePrimaryIpv6: {{ network_interface.enable_primary_ipv6 | lower }}
 {%- endif %}
 {%- if network_interface.group_set is defined %}
       GroupSet:
@@ -24,22 +38,40 @@ Resources:
 {%- if network_interface.interface_type is defined %}
       InterfaceType: {{ network_interface.interface_type }}
 {%- endif %}
+{%- if network_interface.ipv4_prefix_count is defined %}
+      Ipv4PrefixCount: {{ network_interface.ipv4_prefix_count }}
+{%- endif %}
+{%- if network_interface.ipv4_prefixes is defined %}{# BEGIN if network_interface.ipv4_prefixes is defined #}
+      Ipv4Prefixes:
+{%- for prefix in network_interface.ipv4_prefixes %}
+        - Ipv4Prefix: {{ prefix.ipv4_prefix }}
+{%- endfor %}
+{%- endif %}{# END if network_interface.ipv4_prefixes is defined #}
 {%- if network_interface.ipv6_address_count is defined %}
       Ipv6AddressCount: {{ network_interface.ipv6_address_count }}
 {%- endif %}
-{%- if network_interface.ipv6_addresses is defined %}
+{%- if network_interface.ipv6_addresses is defined %}{# BEGIN if network_interface.ipv6_addresses is defined #}
       Ipv6Addresses:
 {%- for ipv6_address in network_interface.ipv6_addresses %}
         - Ipv6Address: {{ ipv6_address.ipv6_address }}
 {%- endfor %}
+{%- endif %}{# END if network_interface.ipv6_addresses is defined #}
+{%- if network_interface.ipv6_prefix_count is defined %}
+      Ipv6PrefixCount: {{ network_interface.ipv6_prefix_count }}
 {%- endif %}
+{%- if network_interface.ipv6_prefixes is defined %}{# BEGIN if network_interface.ipv6_prefixes is defined #}
+      Ipv6Prefixes:
+{%- for prefix in network_interface.ipv6_prefixes %}
+        - Ipv6Prefix: {{ prefix.ipv6_prefix }}
+{%- endfor %}
+{%- endif %}{# END if network_interface.ipv6_prefixes is defined #}
 {%- if network_interface.private_ip_address is defined %}
       PrivateIpAddress: {{ network_interface.private_ip_address }}
 {%- endif %}
 {%- if network_interface.private_ip_addresses is defined %}
       PrivateIpAddresses:
 {%- for private_ip_address in network_interface.private_ip_addresses %}
-        - Primary: {{ private_ip_address.primary }}
+        - Primary: {{ private_ip_address.primary | lower }}
           PrivateIpAddress: {{ private_ip_address.private_ip_address }}
 {%- endfor %}
 {%- endif %}
@@ -47,7 +79,7 @@ Resources:
       SecondaryPrivateIpAddressCount: {{ network_interface.secondary_private_ip_address_count }}
 {%- endif %}
 {%- if network_interface.source_dest_check is defined %}
-      SourceDestCheck: {{ network_interface.source_dest_check }}
+      SourceDestCheck: {{ network_interface.source_dest_check | lower }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -58,11 +90,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for network_interface in sceptre_user_data.network_interfaces %}
 {%- set network_interface_name = network_interface.name %}
   {{ network_interface_name }}:
@@ -72,7 +102,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_interface_name }}"
-
   {{ network_interface_name }}PrimaryPrivateIpAddress:
     Description: The primary private IP address of the network interface {{ network_interface_name }}
     Value:
@@ -82,5 +111,37 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_interface_name }}-PrimaryPrivateIpAddress"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::NetworkInterface
+Properties:
+  ConnectionTrackingSpecification:
+    TcpEstablishedTimeout: Integer
+    UdpStreamTimeout: Integer
+    UdpTimeout: Integer
+  Description: String
+  EnablePrimaryIpv6: Boolean
+  GroupSet:
+    - String
+  InterfaceType: String
+  Ipv4PrefixCount: Integer
+  Ipv4Prefixes:
+    - Ipv4Prefix: String
+  Ipv6AddressCount: Integer
+  Ipv6Addresses:
+    - Ipv6Address: String
+  Ipv6PrefixCount: Integer
+  Ipv6Prefixes:
+    - Ipv6Prefix: String
+  PrivateIpAddress: String
+  PrivateIpAddresses:
+    -
+      Primary: Boolean
+      PrivateIpAddress: String
+  SecondaryPrivateIpAddressCount: Integer
+  SourceDestCheck: Boolean
+  SubnetId: String
+  Tags:
+    - Key: String
+      Value: String
+#}

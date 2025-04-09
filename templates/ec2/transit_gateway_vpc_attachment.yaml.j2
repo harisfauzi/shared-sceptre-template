@@ -11,36 +11,39 @@ Resources:
     DeletionPolicy: {{ transit_gateway_vpc_attachment.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ transit_gateway_vpc_attachment.update_replace_policy | default('Delete') }}
     Properties:
-{%- if transit_gateway_vpc_attachment.add_subnet_ids is defined %}
-      AddSubnetIds:
-{%- for subnet_id intransit_gateway_vpc_attachment.add_subnet_ids %}
-        - {{ subnet_id | trim }}
-{%- endfor %}
-{%- endif %}
-{%- if transit_gateway_vpc_attachment.options_json is defined %}
-      Options: {{ transit_gateway_vpc_attachment.options_json }}
-{%- elif transit_gateway_vpc_attachment.options is defined %}
-      Options:
-{{ transit_gateway_vpc_attachment.options | indent(width=8, first=true) }}
-{%- endif %}
-{%- if transit_gateway_vpc_attachment.remove_subnet_ids is defined %}
-      RemoveSubnetIds:
-{%- for subnet_id in transit_gateway_vpc_attachment.remove_subnet_ids %}
-        - {{ subnet_id | trim }}
-{%- endfor %}
-{%- endif %}
-{%- if transit_gateway_vpc_attachment.subnet_ids is defined %}
       SubnetIds:
 {%- for subnet_id in transit_gateway_vpc_attachment.subnet_ids %}
         - {{ subnet_id }}
 {%- endfor %}
-{%- endif %}
-{%- if transit_gateway_vpc_attachment.transit_gateway_id is defined %}
       TransitGatewayId: {{ transit_gateway_vpc_attachment.transit_gateway_id | trim }}
-{%- endif %}
-{%- if transit_gateway_vpc_attachment.vpc_id is defined %}
       VpcId: {{ transit_gateway_vpc_attachment.vpc_id | trim }}
+{%- if transit_gateway_vpc_attachment.add_subnet_ids is defined %}{# BEGIN if transit_gateway_vpc_attachment.add_subnet_ids is defined #}
+      AddSubnetIds:
+{%- for subnet_id intransit_gateway_vpc_attachment.add_subnet_ids %}
+        - {{ subnet_id | trim }}
+{%- endfor %}
+{%- endif %}{# END if transit_gateway_vpc_attachment.add_subnet_ids is defined #}
+{%- if transit_gateway_vpc_attachment.options is defined %}{# BEGIN if transit_gateway_vpc_attachment.options is defined #}
+      Options:
+{%- if transit_gateway_vpc_attachment.options.appliance_mode_support is defined %}
+        ApplianceModeSupport: {{ transit_gateway_vpc_attachment.options.appliance_mode_support }}
 {%- endif %}
+{%- if transit_gateway_vpc_attachment.options.dns_support is defined %}
+        DnsSupport: {{ transit_gateway_vpc_attachment.options.dns_support }}
+{%- endif %}
+{%- if transit_gateway_vpc_attachment.options.ipv6_support is defined %}
+        Ipv6Support: {{ transit_gateway_vpc_attachment.options.ipv6_support }}
+{%- endif %}
+{%- if transit_gateway_vpc_attachment.options.security_group_referencing_support is defined %}
+        SecurityGroupReferencingSupport: {{ transit_gateway_vpc_attachment.options.security_group_referencing_support }}
+{%- endif %}
+{%- endif %}{# END if transit_gateway_vpc_attachment.options is defined #}
+{%- if transit_gateway_vpc_attachment.remove_subnet_ids is defined %}{# BEGIN if transit_gateway_vpc_attachment.remove_subnet_ids is defined #}
+      RemoveSubnetIds:
+{%- for subnet_id in transit_gateway_vpc_attachment.remove_subnet_ids %}
+        - {{ subnet_id | trim }}
+{%- endfor %}
+{%- endif %}{# END if transit_gateway_vpc_attachment.remove_subnet_ids is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -50,11 +53,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for transit_gateway_vpc_attachment in sceptre_user_data.transit_gateway_vpc_attachments %}
 {%- set transit_gateway_vpc_attachment_name = transit_gateway_vpc_attachment.name %}
   {{ transit_gateway_vpc_attachment_name }}:
@@ -64,7 +65,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_vpc_attachment_name }}"
-
   {{ transit_gateway_vpc_attachment_name }}Id:
     Description: The ID of the attachment {{ transit_gateway_vpc_attachment_name }}
     Value:
@@ -74,5 +74,24 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_vpc_attachment_name }}-Id"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TransitGatewayVpcAttachment
+Properties:
+  AddSubnetIds:
+    - String
+  Options:
+    ApplianceModeSupport: String
+    DnsSupport: String
+    Ipv6Support: String
+    SecurityGroupReferencingSupport: String
+  RemoveSubnetIds:
+    - String
+  SubnetIds:
+    - String
+  Tags:
+    - Key: String
+      Value: String
+  TransitGatewayId: String
+  VpcId: String
+#}

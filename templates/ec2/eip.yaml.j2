@@ -52,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ eip_name }}"
-
   {{ eip_name }}AllocationId:
     Description: The Allocation ID for {{ eip_name }}
     Value:
@@ -62,9 +61,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ eip_name }}-AllocationId"
-
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20241230:
 Type: AWS::EC2::EIP
 Properties:

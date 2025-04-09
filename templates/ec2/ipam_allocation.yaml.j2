@@ -11,16 +11,15 @@ Resources:
     UpdateReplacePolicy: {{ allocation.update_replace_policy | default('Delete') }}
     Properties:
       IpamPoolId: {{ allocation.ipam_pool_id }}
-      {%- if allocation.cidr is defined %}
+{%- if allocation.cidr is defined %}
       Cidr: {{ allocation.cidr }}
-      {%- endif %}
-      {%- if allocation.description is defined %}
+{%- endif %}
+{%- if allocation.description is defined %}
       Description: {{ allocation.description }}
-      {%- endif %}
-      {%- if allocation.netmask_length is defined %}
+{%- endif %}
+{%- if allocation.netmask_length is defined %}
       NetmaskLength: {{ allocation.netmask_length }}
-      {%- endif %}
-
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -33,7 +32,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ allocation_name }}"
-
   {{ allocation_name }}IpamPoolAllocationId:
     Description: The IPAM Pool Allocation ID for {{ allocation_name }}
     Value:
@@ -43,8 +41,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ allocation_name }}-IpamPoolAllocationId"
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20250109:
 Type: AWS::EC2::IPAMAllocation
 Properties:

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Security Group Ingress
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for security_group_ingress in sceptre_user_data.security_group_ingresss %}
 {%- set security_group_ingress_name = security_group_ingress.name %}
   {{ security_group_ingress_name }}:
@@ -42,5 +41,20 @@ Resources:
 {%- if security_group_ingress.to_port is defined %}
       ToPort: {{ security_group_ingress.to_port }}
 {%- endif %}
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::SecurityGroupIngress
+Properties:
+  CidrIp: String
+  CidrIpv6: String
+  Description: String
+  FromPort: Integer
+  GroupId: String
+  GroupName: String
+  IpProtocol: String
+  SourcePrefixListId: String
+  SourceSecurityGroupId: String
+  SourceSecurityGroupName: String
+  SourceSecurityGroupOwnerId: String
+  ToPort: Integer
+#}

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 VPC Endpoint Connectio
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for vpc_endpoint_connection_notification in sceptre_user_data.vpc_endpoint_connection_notifications %}
 {%- set vpc_endpoint_connection_notification_name = vpc_endpoint_connection_notification.name %}
   {{ vpc_endpoint_connection_notification_name }}:
@@ -22,11 +21,9 @@ Resources:
 {%- if vpc_endpoint_connection_notification.vpc_endpoint_id is defined %}
       VPCEndpointId: {{ vpc_endpoint_connection_notification.vpc_endpoint_id }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for vpc_endpoint_connection_notification in sceptre_user_data.vpc_endpoint_connection_notifications %}
 {%- set vpc_endpoint_connection_notification_name = vpc_endpoint_connection_notification.name %}
   {{ vpc_endpoint_connection_notification_name }}:
@@ -36,5 +33,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_endpoint_connection_notification_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPCEndpointConnectionNotification
+Properties:
+  ConnectionEvents:
+    - String
+  ConnectionNotificationArn: String
+  ServiceId: String
+  VPCEndpointId: String
+#}

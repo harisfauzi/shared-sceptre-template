@@ -7,6 +7,8 @@ Resources:
 {%- set key_pair_name = key_pair.name %}
   {{ key_pair_name }}:
     Type: AWS::EC2::KeyPair
+    DeletionPolicy: {{ key_pair.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ key_pair.update_replace_policy | default('Delete') }}
     Properties:
       KeyName: {{key_pair.key_name}}
 {%- if key_pair.key_format is defined %}
@@ -39,7 +41,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ key_pair_name }}"
-
   {{ key_pair_name }}KeyFingerprint:
     Description: KeyFingerprint for {{ key_pair_name }}
     Value:
@@ -49,7 +50,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ key_pair_name }}-KeyFingerprint"
-
   {{ key_pair_name }}KeyPairId:
     Description: The ID of the key pair for {{ key_pair_name }}
     Value:
@@ -59,9 +59,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ key_pair_name }}-KeyPairId"
-
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Current supported structure:
 Type: AWS::EC2::KeyPair
 Properties:

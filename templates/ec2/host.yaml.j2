@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Host(s) for '+sceptre_
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for host in sceptre_user_data.hosts %}
 {%- set host_name = host.name %}
   {{ host_name }}:
@@ -12,18 +11,30 @@ Resources:
     UpdateReplacePolicy: {{ host.update_replace_policy | default('Delete') }}
     Properties:
       AvailabilityZone: {{ host.availability_zone }}
-      InstanceType: {{ host.instance_type }}
+{%- if host.asset_id is defined %}
+      AssetId: {{ host.asset_id }}
+{%- endif %}
 {%- if host.auto_placement is defined %}
       AutoPlacement: {{ host.auto_placement }}
+{%- endif %}
+{%- if host.host_maintenance is defined %}
+      HostMaintenance: {{ host.host_maintenance }}
 {%- endif %}
 {%- if host.host_recovery is defined %}
       HostRecovery: {{ host.host_recovery }}
 {%- endif %}
-
+{%- if host.instance_family is defined %}
+      InstanceFamily: {{ host.instance_family }}
+{%- endif %}
+{%- if host.instance_type is defined %}
+      InstanceType: {{ host.instance_type }}
+{%- endif %}
+{%- if host.outpost_arn is defined %}
+      OutpostArn: {{ host.outpost_arn | trim }}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for host in sceptre_user_data.hosts %}
 {%- set host_name = host.name %}
   {{ host_name }}:
@@ -33,5 +44,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ host_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-08:
+Type: AWS::EC2::Host
+Properties:
+  AssetId: String
+  AutoPlacement: String
+  AvailabilityZone: String
+  HostMaintenance: String
+  HostRecovery: String
+  InstanceFamily: String
+  InstanceType: String
+  OutpostArn: String
+#}

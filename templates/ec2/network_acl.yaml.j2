@@ -20,7 +20,6 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- if nacl.nacl_entries is defined %}
 {%- for nacl_entry in nacl.nacl_entries %}
 {%- set nacl_entry_name = nacl_name ~ nacl_entry.rule_number %}
@@ -62,7 +61,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for nacl in sceptre_user_data.nacls %}
 {%- set nacl_name = nacl.name %}
   {{ nacl_name }}:
@@ -72,5 +70,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ nacl_name }}"
-
 {%- endfor %}

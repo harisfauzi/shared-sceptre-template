@@ -12,12 +12,12 @@ Resources:
     Properties:
       # Required property
       IpamPoolId: {{ cidr.ipam_pool_id | trim}}
-      {%- if cidr.cidr is defined %}
+{%- if cidr.cidr is defined %}
       Cidr: {{ cidr.cidr }}
-      {%- endif %}
-      {%- if cidr.netmask_length is defined %}
+{%- endif %}
+{%- if cidr.netmask_length is defined %}
       NetmaskLength: {{ cidr.netmask_length }}
-      {%- endif %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -30,7 +30,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cidr_name }}"
-
   {{ cidr_name }}IpamPoolCidrId:
     Description: IPAM Pool CIDR ID for {{ cidr_name }}
     Value:
@@ -40,7 +39,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cidr_name }}-IpamPoolCidrId"
-
   {{ cidr_name }}State:
     Description: State of {{ cidr_name }}
     Value:
@@ -50,8 +48,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cidr_name }}-State"
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20250108:
 Type: AWS::EC2::IPAMPoolCidr
 Properties:

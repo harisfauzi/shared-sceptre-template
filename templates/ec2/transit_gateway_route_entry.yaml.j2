@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Transit Gateway Route Tabl
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for transit_gateway_route_entry in sceptre_user_data.transit_gateway_route_entries %}
 {%- set transit_gateway_route_entry_name = transit_gateway_route_entry.name %}
   {{ transit_gateway_route_entry_name }}:
@@ -13,7 +12,7 @@ Resources:
     Properties:
       TransitGatewayRouteTableId: {{ transit_gateway_route_entry.transit_gateway_route_table_id | trim }}
 {%- if route.blackhole is defined %}
-      Blackhole: {{ route.blackhole }}
+      Blackhole: {{ route.blackhole | lower }}
 {%- endif %}
 {%- if route.destination_cidr_block is defined %}
       DestinationCidrBlock: {{ route.destination_cidr_block }}
@@ -33,5 +32,12 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_route_entry_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TransitGatewayRoute
+Properties:
+  Blackhole: Boolean
+  DestinationCidrBlock: String
+  TransitGatewayAttachmentId: String
+  TransitGatewayRouteTableId: String
+#}

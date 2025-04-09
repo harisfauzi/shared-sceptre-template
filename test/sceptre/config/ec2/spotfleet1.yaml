@@ -1,0 +1,51 @@
+---
+template:
+  type: file
+  path: ec2/spot_fleet.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  spot_fleets:
+    - name: fleet1
+      spot_fleet_request_config_data:
+        iam_fleet_role: "!Sub arn:aws:iam::${AWS::AccountId}:role/aws-ec2-spot-fleet-tagging-role"
+        target_capacity: 2
+        launch_template_configs:
+          - launch_template_specification:
+              launch_template_name: MyLaunchTemplate
+              version: abc
+    - name: fleet2
+      spot_fleet_request_config_data:
+        iam_fleet_role: "!Sub arn:aws:iam::${AWS::AccountId}:role/aws-ec2-spot-fleet-tagging-role"
+        target_capacity: 2
+        launch_template_configs:
+          - launch_template_specification:
+              launch_template_id: "!Ref fleet2LaunchTemplate"
+              version: "!GetAtt ['fleet2LaunchTemplate', 'LatestVersionNumber']"
+      launch_template_spec:
+        launch_template_data:
+          iam_instance_profile:
+            arn: "!Sub arn:aws:iam::${AWS::AccountId}:instance-profile/MyInstanceProfile"
+          image_id: ami-0c55b159cbfafe1f0
+          metadata_options:
+            http_tokens: required
+            http_put_response_hop_limit: 2
+            http_endpoint: enabled
+          block_device_mappings:
+            - device_name: /dev/sda1
+              ebs:
+                volume_size: 20
+                volume_type: gp3
+                delete_on_termination: true
+                encrypted: true
+          network_interfaces:
+            - associate_public_ip_address: true
+              delete_on_termination: true
+              description: Primary network interface
+              device_index: 0
+              group_set:
+                - sg-12345678
+              subnet_id: subnet-12345678
+stack_tags:
+  Test: ec2-spot-fleet

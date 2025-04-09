@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Transit Gateway Attachment
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for transit_gateway_attachment in sceptre_user_data.transit_gateway_attachments %}
 {%- set transit_gateway_attachment_name = transit_gateway_attachment.name %}
   {{ transit_gateway_attachment_name }}:
@@ -53,8 +52,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_attachment_name }}"
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20241028:
 Type: AWS::EC2::TransitGatewayAttachment
 Properties:

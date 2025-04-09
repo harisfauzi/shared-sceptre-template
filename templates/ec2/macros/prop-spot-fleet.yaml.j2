@@ -1,0 +1,459 @@
+{############### BEGIN prep_block_device_mappings #################}
+{%- macro prep_block_device_mappings(block_device_mappings) %}
+BlockDeviceMappings:
+{%- for mapping in block_device_mappings %}{# BEGIN for mapping in block_device_mappings #}
+  - DeviceName: {{ mapping.device_name }}
+{%- if mapping.ebs is defined %}{# BEGIN if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+    Ebs:
+{%- if mapping.ebs.delete_on_termination is defined %}
+      DeleteOnTermination: {{ mapping.ebs.delete_on_termination | lower }}
+{%- endif %}
+{%- if mapping.ebs.encrypted is defined %}
+      Encrypted: {{ mapping.ebs.encrypted | lower}}
+{%- endif %}
+{%- if mapping.ebs.iops is defined %}
+      Iops: {{ mapping.ebs.iops }}
+{%- endif %}
+{%- if mapping.ebs.snapshot_id is defined %}
+      SnapshotId: {{ mapping.ebs.snapshot_id | trim }}
+{%- endif %}
+{%- if mapping.ebs.volume_size is defined %}
+      VolumeSize: {{ mapping.ebs.volume_size }}
+{%- endif %}
+{%- if mapping.ebs.volume_type is defined %}
+      VolumeType: {{ mapping.ebs.volume_type }}
+{%- endif %}
+{%- elif mapping.virtual_name is defined %}{# ELSE if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+    VirtualName: {{ mapping.virtual_name }}
+{%- elif mapping.no_device is defined %}{# ELSE if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+    NoDevice: {}
+{%- endif %}{# END if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+{%- endfor %}{# END for mapping in block_device_mappings #}
+{%- endmacro %}
+{############### END prep_block_device_mappings #################}
+
+{################### BEGIN macro prep_instance_requirements_request ####################}
+{%- macro prep_instance_requirements_request(instance_requirements_request) %}
+{# implementation of https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-spotfleet-instancerequirementsrequest.html #}
+InstanceRequirements:
+{%- if instance_requirements_request.accelerator_count is defined %}{# BEGIN if instance_requirements_request.accelerator_count is defined #}
+  AcceleratorCount:
+{%- if instance_requirements_request.accelerator_count.max is defined %}
+    Max: {{ instance_requirements_request.accelerator_count.max }}
+{%- endif %}
+{%- if instance_requirements_request.accelerator_count.min is defined %}
+    Min: {{ instance_requirements_request.accelerator_count.min }}
+{%- endif %}
+{%- endif %}{# END if instance_requirements_request.accelerator_count is defined #}
+{%- if instance_requirements_request.accelerator_manufacturers is defined %}{# BEGIN if instance_requirements_request.accelerator_manufacturers is defined #}
+  AcceleratorManufacturers:
+{%- for item in instance_requirements_request.accelerator_manufacturers %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if instance_requirements_request.accelerator_manufacturers is defined #}
+{%- if instance_requirements_request.accelerator_names is defined %}{# BEGIN if instance_requirements_request.accelerator_names is defined #}
+  AcceleratorNames:
+{%- for item in instance_requirements_request.accelerator_names %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if instance_requirements_request.accelerator_names is defined #}
+{%- if instance_requirements_request.accelerator_total_memory_mib is defined %}{# BEGIN if instance_requirements_request.accelerator_total_memory_mib is defined #}
+  AcceleratorTotalMemoryMiB:
+{%- if instance_requirements_request.accelerator_total_memory_mib.max is defined %}
+    Max: {{ instance_requirements_request.accelerator_total_memory_mib.max }}
+{%- endif %}
+{%- if instance_requirements_request.accelerator_total_memory_mib.min is defined %}
+    Min: {{ instance_requirements_request.accelerator_total_memory_mib.min }}
+{%- endif %}
+{%- endif %}{# END if instance_requirements_request.accelerator_total_memory_mib is defined #}
+{%- if instance_requirements_request.accelerator_types is defined %}{# BEGIN if instance_requirements_request.accelerator_types is defined #}
+  AcceleratorTypes:
+{%- for item in instance_requirements_request.accelerator_types %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if instance_requirements_request.accelerator_types is defined #}
+{%- if instance_requirements_request.allowed_instance_types is defined %}{# BEGIN if instance_requirements_request.allowed_instance_types is defined #}
+  AllowedInstanceTypes:
+{%- for item in instance_requirements_request.allowed_instance_types %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if instance_requirements_request.allowed_instance_types is defined #}
+{%- if instance_requirements_request.bare_metal is defined %}
+  BareMetal: {{ instance_requirements_request.bare_metal }}
+{%- endif %}
+{%- if instance_requirements_request.baseline_ebs_bandwidth_mbps is defined %}{# BEGIN if instance_requirements_request.baseline_ebs_bandwidth_mbps is defined #}
+  BaselineEbsBandwidthMbps:
+{%- if instance_requirements_request.baseline_ebs_bandwidth_mbps.max is defined %}
+    Max: {{ instance_requirements_request.baseline_ebs_bandwidth_mbps.max }}
+{%- endif %}
+{%- if instance_requirements_request.baseline_ebs_bandwidth_mbps.min is defined %}
+    Min: {{ instance_requirements_request.baseline_ebs_bandwidth_mbps.min }}
+{%- endif %}
+{%- endif %}{# END if instance_requirements_request.baseline_ebs_bandwidth_mbps is defined #}
+{%- if instance_requirements_request.baseline_performance_factors is defined %}{# BEGIN if instance_requirements_request.baseline_performance_factors is defined #}
+  BaselinePerformanceFactors:
+{%- if instance_requirements_request.baseline_performance_factors.cpu is defined %}{# BEGIN if instance_requirements_request.baseline_performance_factors.cpu is defined #}
+    Cpu:
+{%- if instance_requirements_request.baseline_performance_factors.cpu.references is defined %}{# BEGIN if instance_requirements_request.baseline_performance_factors.cpu.references is defined #}
+      References:
+{%- for reference in instance_requirements_request.baseline_performance_factors.cpu.references %}
+        - InstanceFamily: {{ reference.instance_family }}
+{%- endfor %}
+{%- endif %}{# END if instance_requirements_request.baseline_performance_factors.cpu.references is defined #}
+{%- endif %}{# END if instance_requirements_request.baseline_performance_factors.cpu is defined #}
+{%- endif %}{# END if instance_requirements_request.baseline_performance_factors is defined #}
+{%- if instance_requirements_request.burstable_performance is defined %}
+  BurstablePerformance: {{ instance_requirements_request.burstable_performance }}
+{%- endif %}
+{%- if instance_requirements_request.cpu_manufacturers is defined %}{# BEGIN if instance_requirements_request.cpu_manufacturers is defined #}
+  CpuManufacturers:
+{%- for item in instance_requirements_request.cpu_manufacturers %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if instance_requirements_request.cpu_manufacturers is defined #}
+{%- if instance_requirements_request.excluded_instance_types is defined %}{# BEGIN if instance_requirements_request.excluded_instance_types is defined #}
+  ExcludedInstanceTypes:
+{%- for item in instance_requirements_request.excluded_instance_types %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if instance_requirements_request.excluded_instance_types is defined #}
+{%- if instance_requirements_request.instance_generations is defined %}{# BEGIN if instance_requirements_request.instance_generations is defined #}
+  InstanceGenerations:
+{%- for item in instance_requirements_request.instance_generations %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if instance_requirements_request.instance_generations is defined #}
+{%- if instance_requirements_request.local_storage is defined %}
+  LocalStorage: {{ instance_requirements_request.local_storage }}
+{%- endif %}
+{%- if instance_requirements_request.local_storage_types is defined %}{# BEGIN if instance_requirements_request.local_storage_types is defined #}
+  LocalStorageTypes:
+{%- for item in instance_requirements_request.local_storage_types %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if instance_requirements_request.local_storage_types is defined #}
+{%- if instance_requirements_request.max_spot_price_as_percentage_of_optimal_on_demand_price is defined %}
+  MaxSpotPriceAsPercentageOfOptimalOnDemandPrice: {{ instance_requirements_request.max_spot_price_as_percentage_of_optimal_on_demand_price }}
+{%- endif %}
+{%- if instance_requirements_request.memory_gib_per_vcpu is defined %}{# BEGIN if instance_requirements_request.memory_gib_per_vcpu is defined #}
+  MemoryGiBPerVCpu:
+{%- if instance_requirements_request.memory_gib_per_vcpu.max is defined %}
+    Max: {{ instance_requirements_request.memory_gib_per_vcpu.max }}
+{%- endif %}
+{%- if instance_requirements_request.memory_gib_per_vcpu.min is defined %}
+    Min: {{ instance_requirements_request.memory_gib_per_vcpu.min }}
+{%- endif %}
+{%- endif %}{# END if instance_requirements_request.memory_gib_per_vcpu is defined #}
+{%- if instance_requirements_request.memory_mib is defined %}{# BEGIN if instance_requirements_request.memory_mib is defined #}
+  MemoryMiB:
+{%- if instance_requirements_request.memory_mib.max is defined %}
+    Max: {{ instance_requirements_request.memory_mib.max }}
+{%- endif %}
+{%- if instance_requirements_request.memory_mib.min is defined %}
+    Min: {{ instance_requirements_request.memory_mib.min }}
+{%- endif %}
+{%- endif %}{# END if instance_requirements_request.memory_mib is defined #}
+{%- if instance_requirements_request.network_bandwidth_gbps is defined %}{# BEGIN if instance_requirements_request.network_bandwidth_gbps is defined #}
+  NetworkBandwidthGbps:
+{%- if instance_requirements_request.network_bandwidth_gbps.max is defined %}
+    Max: {{ instance_requirements_request.network_bandwidth_gbps.max }}
+{%- endif %}
+{%- if instance_requirements_request.network_bandwidth_gbps.min is defined %}
+    Min: {{ instance_requirements_request.network_bandwidth_gbps.min }}
+{%- endif %}
+{%- endif %}{# END if instance_requirements_request.network_bandwidth_gbps is defined #}
+{%- if instance_requirements_request.network_interface_count is defined %}{# BEGIN if instance_requirements_request.network_interface_count is defined #}
+  NetworkInterfaceCount:
+{%- if instance_requirements_request.network_interface_count.max is defined %}
+    Max: {{ instance_requirements_request.network_interface_count.max }}
+{%- endif %}
+{%- if instance_requirements_request.network_interface_count.min is defined %}
+    Min: {{ instance_requirements_request.network_interface_count.min }}
+{%- endif %}
+{%- endif %}{# END if instance_requirements_request.network_interface_count is defined #}
+{%- if instance_requirements_request.on_demand_max_price_percentage_over_lowest_price is defined %}
+  OnDemandMaxPricePercentageOverLowestPrice: {{ instance_requirements_request.on_demand_max_price_percentage_over_lowest_price }}
+{%- endif %}
+{%- if instance_requirements_request.require_hibernate_support is defined %}
+  RequireHibernateSupport: {{ instance_requirements_request.require_hibernate_support | lower }}
+{%- endif %}
+{%- if instance_requirements_request.spot_max_price_percentage_over_lowest_price is defined %}
+  SpotMaxPricePercentageOverLowestPrice: {{ instance_requirements_request.spot_max_price_percentage_over_lowest_price }}
+{%- endif %}
+{%- if instance_requirements_request.total_local_storage_gb is defined %}{# BEGIN if instance_requirements_request.total_local_storage_gb is defined #}
+  TotalLocalStorageGB:
+{%- if instance_requirements_request.total_local_storage_gb.max is defined %}
+    Max: {{ instance_requirements_request.total_local_storage_gb.max }}
+{%- endif %}
+{%- if instance_requirements_request.total_local_storage_gb.min is defined %}
+    Min: {{ instance_requirements_request.total_local_storage_gb.min }}
+{%- endif %}
+{%- endif %}{# END if instance_requirements_request.total_local_storage_gb is defined #}
+{%- if instance_requirements_request.vcpu_count is defined %}{# BEGIN if instance_requirements_request.vcpu_count is defined #}
+  VCpuCount:
+{%- if instance_requirements_request.vcpu_count.max is defined %}
+    Max: {{ instance_requirements_request.vcpu_count.max }}
+{%- endif %}
+{%- if instance_requirements_request.vcpu_count.min is defined %}
+    Min: {{ instance_requirements_request.vcpu_count.min }}
+{%- endif %}
+{%- endif %}{# END if instance_requirements_request.vcpu_count is defined #}
+{%- endmacro %}{#
+# Supported structure as of 2025-04-09:
+InstanceRequirements:
+  AcceleratorCount:
+    Max: Integer
+    Min: Integer
+  AcceleratorManufacturers:
+    - String
+  AcceleratorNames:
+    - String
+  AcceleratorTotalMemoryMiB:
+    Max: Integer
+    Min: Integer
+  AcceleratorTypes:
+    - String
+  AllowedInstanceTypes:
+    - String
+  BareMetal: String
+  BaselineEbsBandwidthMbps:
+    Max: Integer
+    Min: Integer
+  BaselinePerformanceFactors:
+    Cpu:
+      References:
+        - InstanceFamily: String
+  BurstablePerformance: String
+  CpuManufacturers:
+    - String
+  ExcludedInstanceTypes:
+    - String
+  InstanceGenerations:
+    - String
+  LocalStorage: String
+  LocalStorageTypes:
+    - String
+  MaxSpotPriceAsPercentageOfOptimalOnDemandPrice: Integer
+  MemoryGiBPerVCpu:
+    Max: Integer
+    Min: Integer
+  MemoryMiB:
+    Max: Integer
+    Min: Integer
+  NetworkBandwidthGbps:
+    Max: Integer
+    Min: Integer
+  NetworkInterfaceCount:
+    Max: Integer
+    Min: Integer
+  OnDemandMaxPricePercentageOverLowestPrice: Integer
+  RequireHibernateSupport: Boolean
+  SpotMaxPricePercentageOverLowestPrice: Integer
+  TotalLocalStorageGB:
+    Max: Integer
+    Min: Integer
+  VCpuCount:
+    Max: Integer
+    Min: Integer
+#}
+{################### END macro prep_instance_requirements_request ####################}
+
+{################### BEGIN macro prep_launch_specification ####################}
+{%- macro prep_spot_fleet_launch_specification(launch_specification) %}
+ImageId: {{ launch_specification.image_id | trim }}
+{%- if launch_specification.block_device_mappings is defined %}{# BEGIN {%- if launch_specification.block_device_mappings is defined %} #}
+{{ prep_block_device_mappings(launch_specification.block_device_mappings) }}
+{%- endif %}{# END {%- if launch_specification.block_device_mappings is defined %} #}
+{%- if launch_specification.ebs_optimized is defined %}
+EbsOptimized: {{ launch_specification.ebs_optimized | lower }}
+{%- endif %}
+{%- if launch_specification.iam_instance_profile is defined %}
+IamInstanceProfile:
+  Arn: {{ launch_specification.iam_instance_profile.arn | trim }}
+{%- endif %}
+{%- if launch_specification.instance_requirements is defined %}{## BEGIN {%- if launch_specification.instance_requirements is defined %} #}
+{{ prep_instance_requirements_request(launch_specification.instance_requirements) }}
+{%- endif %}{## END {%- if launch_specification.instance_requirements is defined %} #}
+{%- if launch_specification.instance_type is defined %}
+InstanceType: {{ launch_specification.instance_type }}
+{%- endif %}
+{%- if launch_specification.kernel_id is defined %}
+KernelId: {{ launch_specification.kernel_id | trim }}
+{%- endif %}
+{%- if launch_specification.key_name is defined %}
+KeyName: {{ launch_specification.key_name }}
+{%- endif %}
+{%- if launch_specification.monitoring is defined %}
+Monitoring:
+  Enabled: {{ launch_specification.monitoring.enabled | lower }}
+{%- endif %}
+{%- if launch_specification.network_interfaces is defined %}{# BEGIN {%- if launch_specification.network_interfaces is defined %} #}
+NetworkInterfaces:
+{%- for network_interface in launch_specification.network_interfaces %}
+  -
+{%- if network_interface.associate_public_ip_address is defined %}
+    AssociatePublicIpAddress: {{ network_interface.associate_public_ip_address | lower }}
+{%- endif %}
+{%- if network_interface.delete_on_termination is defined %}
+    DeleteOnTermination: {{ network_interface.delete_on_termination | lower }}
+{%- endif %}
+{%- if network_interface.description is defined %}
+    Description: {{ network_interface.description }}
+{%- endif %}
+{%- if network_interface.device_index is defined %}
+    DeviceIndex: {{ network_interface.device_index }}
+{%- endif %}
+{%- if network_interface.groups is defined %}
+    Groups:
+{%- for group in network_interface.groups %}
+      - {{ group }}
+{%- endfor %}
+{%- endif %}
+{%- if network_interface.ipv6_address_count is defined %}
+    Ipv6AddressCount: {{ network_interface.ipv6_address_count }}
+{%- endif %}
+{%- if network_interface.ipv6_addresses is defined %}
+    Ipv6Addresses:
+{%- for ipv6_address in network_interface.ipv6_addresses %}
+      - Ipv6Address: {{ ipv6_address.ipv6_address }}
+{%- endfor %}
+{%- endif %}
+{%- if network_interface.network_interface_id is defined %}
+    NetworkInterfaceId: {{ network_interface.network_interface_id | trim }}
+{%- endif %}
+{%- if network_interface.private_ip_addresses is defined %}
+    PrivateIpAddresses:
+{%- for private_ip_address in network_interface.private_ip_addresses %}
+      - PrivateIpAddress: {{ private_ip_address.private_ip_address }}
+{%- if private_ip_address.primary is defined %}
+        Primary: {{ private_ip_address.primary | lower }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if network_interface.secondary_private_ip_address_count is defined %}
+    SecondaryPrivateIpAddressCount: {{ network_interface.secondary_private_ip_address_count }}
+{%- endif %}
+{%- if network_interface.subnet_id is defined %}
+    SubnetId: {{ network_interface.subnet_id | trim }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END {%- if launch_specification.network_interfaces is defined %} #}
+{%- if launch_specification.placement is defined %}
+Placement:
+{%- if launch_specification.placement.availability_zone is defined %}
+  AvailabilityZone: {{ launch_specification.placement.availability_zone }}
+{%- endif %}
+{%- if launch_specification.placement.group_name is defined %}
+  GroupName: {{ launch_specification.placement.group_name }}
+{%- endif %}
+{%- if launch_specification.placement.tenancy is defined %}
+  Tenancy: {{ launch_specification.placement.tenancy }}
+{%- endif %}
+{%- endif %}
+{%- if launch_specification.ramdisk_id is defined %}
+RamdiskId: {{ launch_specification.ramdisk_id }}
+{%- endif %}
+{%- if launch_specification.security_groups is defined %}
+SecurityGroups:
+{%- for security_group in launch_specification.security_groups %}
+  - GroupId: {{ security_group.group_id }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_specification.spot_price is defined %}
+SpotPrice: {{ launch_specification.spot_price }}
+{%- endif %}
+{%- if launch_specification.subnet_id is defined %}
+SubnetId: {{ launch_specification.subnet_id | trim }}
+{%- endif %}
+{%- if launch_specification.tag_specifications is defined %}
+{{ prep_tag_specifications(launch_specification.tag_specifications) }}
+{%- endif %}
+{%- if launch_specification.user_data is defined %}
+UserData:
+  {{ launch_specification.user_data | indent(width=2, first=false) }}
+{%- endif %}
+{%- if launch_specification.weighted_capacity is defined %}
+WeightedCapacity: {{ launch_specification.weighted_capacity }}
+{%- endif %}
+{%- endmacro %}{#
+# Supported structure as of 2025-04-09:
+BlockDeviceMappings:
+  -
+    DeviceName: String
+    Ebs: 
+      DeleteOnTermination: Boolean
+      Encrypted: Boolean
+      Iops: Integer
+      SnapshotId: String
+      VolumeSize: Integer
+      VolumeType: String
+    NoDevice: String
+    VirtualName: String
+EbsOptimized: Boolean
+IamInstanceProfile:
+  Arn: String
+ImageId: String
+InstanceRequirements:
+  InstanceRequirementsRequest
+InstanceType: String
+KernelId: String
+KeyName: String
+Monitoring:
+  Enabled: Boolean
+NetworkInterfaces:
+  -
+    AssociatePublicIpAddress: Boolean
+    DeleteOnTermination: Boolean
+    Description: String
+    DeviceIndex: Integer
+    Groups:
+      - String
+    Ipv6AddressCount: Integer
+    Ipv6Addresses:
+      - Ipv6Address: String
+    NetworkInterfaceId: String
+    PrivateIpAddresses:
+      -
+        Primary: Boolean
+        PrivateIpAddress: String
+    SecondaryPrivateIpAddressCount: Integer
+    SubnetId: String
+Placement:
+  SpotPlacement
+RamdiskId: String
+SecurityGroups:
+  - GroupIdentifier
+SpotPrice: String
+SubnetId: String
+TagSpecifications:
+  - SpotFleetTagSpecification
+UserData: String
+WeightedCapacity: Number
+#}
+{################### END macro prep_launch_specification ####################}
+
+{%- macro prep_tag_specifications(tag_specifications) %}
+TagSpecifications:
+{%- for spec in tag_specifications %}{# BEGIN for spec in tag_specifications #}
+  -
+{%- if spec.resource_type is defined %}
+    ResourceType: {{ spec.resource_type }}
+{%- endif %}
+{%- if spec.tags is defined %}{# BEGIN if spec.tags is defined #}
+    Tags:
+{%- for key, value in spec.tags.items() %}
+      - Key: {{ key }}
+        Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if spec.tags is defined #}
+{%- endfor %}{# END for spec in tag_specifications #}
+{%- endmacro %}{#
+# Supported structure as of 2025-04-09:
+TagSpecifications:
+  -
+    ResourceType: String
+    Tags:
+      -
+        Key: String
+        Value: String
+#}

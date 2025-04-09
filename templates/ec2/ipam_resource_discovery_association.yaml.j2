@@ -16,12 +16,12 @@ Resources:
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-  {%- if association.tags is defined %}
-  {%- for key, value in association.tags.items() %}
+{%- if association.tags is defined %}
+{%- for key, value in association.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
-  {%- endfor %}
-  {%- endif %}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -34,7 +34,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ association_name }}"
-
   {{ association_name }}IpamArn:
     Description: IPAM ARN for {{ association_name }}
     Value:
@@ -44,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ association_name }}-IpamArn"
-
   {{ association_name }}IpamRegion:
     Description: IPAM Region for {{ association_name }}
     Value:
@@ -54,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ association_name }}-IpamRegion"
-
   {{ association_name }}IpamResourceDiscoveryAssociationArn:
     Description: Resource Discovery Association ARN for {{ association_name }}
     Value:
@@ -64,7 +61,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ association_name }}-IpamResourceDiscoveryAssociationArn"
-
   {{ association_name }}AssociationId:
     Description: Resource Discovery Association ID for {{ association_name }}
     Value:
@@ -74,7 +70,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ association_name }}-AssociationId"
-
   {{ association_name }}IsDefault:
     Description: Whether {{ association_name }} is default
     Value:
@@ -84,7 +79,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ association_name }}-IsDefault"
-
   {{ association_name }}OwnerId:
     Description: Owner ID for {{ association_name }}
     Value:
@@ -94,7 +88,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ association_name }}-OwnerId"
-
   {{ association_name }}ResourceDiscoveryStatus:
     Description: Resource Discovery Status for {{ association_name }}
     Value:
@@ -104,7 +97,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ association_name }}-ResourceDiscoveryStatus"
-
   {{ association_name }}State:
     Description: State of {{ association_name }}
     Value:
@@ -114,8 +106,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ association_name }}-State"
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20250107:
 Type: AWS::EC2::IPAMResourceDiscoveryAssociation
 Properties:

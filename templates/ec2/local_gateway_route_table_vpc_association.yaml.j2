@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 LocalGatewayRouteTable
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for local_gateway_route_table_vpc_association in sceptre_user_data.local_gateway_route_table_vpc_associations %}
 {%- set local_gateway_route_table_vpc_association_name = local_gateway_route_table_vpc_association.name %}
   {{ local_gateway_route_table_vpc_association_name }}:
@@ -22,11 +21,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for local_gateway_route_table_vpc_association in sceptre_user_data.local_gateway_route_table_vpc_associations %}
 {%- set local_gateway_route_table_vpc_association_name = local_gateway_route_table_vpc_association.name %}
   {{ local_gateway_route_table_vpc_association_name }}:
@@ -36,7 +33,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_table_vpc_association_name }}"
-
   {{ local_gateway_route_table_vpc_association_name }}LocalGatewayId:
     Description: The ID of the local gateway for {{ local_gateway_route_table_vpc_association_name }}
     Value:
@@ -46,7 +42,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_table_vpc_association_name }}-LocalGatewayId"
-
   {{ local_gateway_route_table_vpc_association_name }}LocalGatewayRouteTableVpcAssociationId:
     Description: The ID of the association for {{ local_gateway_route_table_vpc_association_name }}
     Value:
@@ -56,7 +51,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_table_vpc_association_name }}-LocalGatewayRouteTableVpcAssociationId"
-
   {{ local_gateway_route_table_vpc_association_name }}State:
     Description: The state of the association for {{ local_gateway_route_table_vpc_association_name }}
     Value:
@@ -66,5 +60,12 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_table_vpc_association_name }}-State"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::LocalGatewayRouteTableVPCAssociation
+Properties:
+  LocalGatewayRouteTableId: String
+  Tags:
+    - Tag
+  VpcId: String
+#}

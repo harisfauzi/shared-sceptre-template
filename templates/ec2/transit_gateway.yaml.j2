@@ -70,7 +70,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_name }}"
-
   {{ transit_gateway_name }}Arn:
     Description: The ARN of {{ transit_gateway_name }}
     Value:
@@ -81,8 +80,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_name }}-Arn"
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20241027:
 Type: AWS::EC2::TransitGateway
 Properties:

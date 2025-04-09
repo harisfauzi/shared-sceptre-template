@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 VPC Endpoint Service(s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for vpc_endpoint_service in sceptre_user_data.vpc_endpoint_services %}
 {%- set vpc_endpoint_service_name = vpc_endpoint_service.name %}
   {{ vpc_endpoint_service_name }}:
@@ -12,25 +11,50 @@ Resources:
     UpdateReplacePolicy: {{ vpc_endpoint_service.update_replace_policy | default('Delete') }}
     Properties:
 {%- if vpc_endpoint_service.acceptance_required is defined %}
-      AcceptanceRequired: {{ vpc_endpoint_service.acceptance_required }}
+      AcceptanceRequired: {{ vpc_endpoint_service.acceptance_required | lower }}
 {%- endif %}
-{%- if vpc_endpoint_service.gateway_load_balancer_arns is defined %}
+{%- if vpc_endpoint_service.contributor_insights_enabled is defined %}
+      ContributorInsightsEnabled: {{ vpc_endpoint_service.contributor_insights_enabled | lower }}
+{%- endif %}
+{%- if vpc_endpoint_service.gateway_load_balancer_arns is defined %}{# BEGIN if vpc_endpoint_service.gateway_load_balancer_arns is defined #}
       GatewayLoadBalancerArns:
-{%- for gateway_load_balancer_arn in vpc_endpoint_service.gateway_load_balancer_arns %}
-        - {{ gateway_load_balancer_arn | trim }}
+{%- for item in vpc_endpoint_service.gateway_load_balancer_arns %}
+        - {{ item | trim }}
 {%- endfor %}
-{%- endif %}
-{%- if vpc_endpoint_service.network_load_balancer_arns is defined %}
+{%- endif %}{# END if vpc_endpoint_service.gateway_load_balancer_arns is defined #}
+{%- if vpc_endpoint_service.network_load_balancer_arns is defined %}{# BEGIN if vpc_endpoint_service.network_load_balancer_arns is defined #}
       NetworkLoadBalancerArns:
-{%- for network_load_balancer_arn in vpc_endpoint_service.network_load_balancer_arns %}
-        - {{ network_load_balancer_arn | trim }}
+{%- for item in vpc_endpoint_service.network_load_balancer_arns %}
+        - {{ item | trim }}
+{%- endfor %}
+{%- endif %}{# END if vpc_endpoint_service.network_load_balancer_arns is defined #}
+{%- if vpc_endpoint_service.payer_responsibility is defined %}
+      PayerResponsibility: {{ vpc_endpoint_service.payer_responsibility }}
+{%- endif %}
+{%- if vpc_endpoint_service.supported_ip_address_type is defined %}{# BEGIN if vpc_endpoint_service.supported_ip_address_type is defined #}
+      SupportedIpAddressTypes:
+{%- for item in vpc_endpoint_service.supported_ip_address_type %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if vpc_endpoint_service.supported_ip_address_type is defined #}
+{%- if vpc_endpoint_service.supported_regions is defined %}{# BEGIN if vpc_endpoint_service.supported_regions is defined #}
+      SupportedRegions:
+{%- for item in vpc_endpoint_service.supported_regions %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if vpc_endpoint_service.supported_regions is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if vpc_endpoint_service.tags is defined %}
+{%- for key,value in vpc_endpoint_service.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for vpc_endpoint_service in sceptre_user_data.vpc_endpoint_services %}
 {%- set vpc_endpoint_service_name = vpc_endpoint_service.name %}
   {{ vpc_endpoint_service_name }}:
@@ -40,5 +64,31 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_endpoint_service_name }}"
-
-{%- endfor %}
+  {{ vpc_endpoint_service_name }}ServiceId:
+    Description: The ID of the VPC endpoint service configuration for {{ vpc_endpoint_service_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vpc_endpoint_service_name }}
+        - ServiceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_endpoint_service_name }}-ServiceId"
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPCEndpointService
+Properties:
+  AcceptanceRequired: Boolean
+  ContributorInsightsEnabled: Boolean
+  GatewayLoadBalancerArns:
+    - String
+  NetworkLoadBalancerArns:
+    - String
+  PayerResponsibility: String
+  SupportedIpAddressTypes:
+    - String
+  SupportedRegions:
+    - String
+  Tags:
+    - Key: String
+      Value: String
+#}

@@ -32,9 +32,40 @@ Resources:
         Type: {{ nacl_entry.icmp.type }}
 {%- endif %}
 {%- endif %}
-{%- if nacl_entry.port_range is defined %}
+{%- if nacl_entry.port_range is defined %}{# BEGIN if nacl_entry.port_range is defined #}
       PortRange:
+{%- if nacl_entry.port_range.from is defined %}
         From: {{ nacl_entry.port_range.from }}
+{%- endif %}
+{%- if nacl_entry.port_range.to is defined %}
         To: {{ nacl_entry.port_range.to }}
 {%- endif %}
+{%- endif %}{# END if nacl_entry.port_range is defined #}
 {%- endfor %}
+
+Outputs:
+{%- for nacl_entry in sceptre_user_data.network_acl_entries %}
+{%- set nacl_entry_name = nacl_entry.name %}
+  {{ nacl_entry_name }}:
+    Description: The NACL entry ID for {{ nacl_entry_name }}
+    Value:
+      Ref: {{ nacl_entry_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nacl_entry_name }}"
+{%- endfor %}{#
+# Supported structure as of 2025-04-08:
+Type: AWS::EC2::NetworkAclEntry
+Properties:
+  CidrBlock: String
+  Egress: Boolean
+  Icmp:
+    Icmp
+  Ipv6CidrBlock: String
+  NetworkAclId: String
+  PortRange:
+    PortRange
+  Protocol: Integer
+  RuleAction: String
+  RuleNumber: Integer
+#}

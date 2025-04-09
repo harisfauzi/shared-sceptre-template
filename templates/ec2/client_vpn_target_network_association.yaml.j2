@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Client VPN Target Netw
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for client_vpn_tna in sceptre_user_data.client_vpn_target_network_associations %}
 {%- set client_vpn_tna_name = client_vpn_tna.name %}
   {{ client_vpn_tna_name }}:
