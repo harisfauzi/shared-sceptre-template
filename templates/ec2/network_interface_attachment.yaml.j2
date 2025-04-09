@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Network Interface Atta
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for network_interface_attachment in sceptre_user_data.network_interface_attachments %}
 {%- set network_interface_attachment_name = network_interface_attachment.name %}
   {{ network_interface_attachment_name }}:
@@ -15,13 +14,23 @@ Resources:
       InstanceId: {{ network_interface_attachment.instance_id | trim }}
       NetworkInterfaceId: {{ network_interface_attachment.network_interface_id | trim }}
 {%- if network_interface_attachment.delete_on_termination is defined %}
-      DeleteOnTermination: {{ network_interface_attachment.delete_on_termination }}
+      DeleteOnTermination: {{ network_interface_attachment.delete_on_termination | lower }}
 {%- endif %}
-
+{%- if network_interface_attachment.ena_srd_specification is defined %}{# BEGIN if network_interface_attachment.ena_srd_specification is defined #}
+      EnaSrdSpecification:
+{%- if network_interface_attachment.ena_srd_specification.ena_srd_enabled is defined %}
+        EnaSrdEnabled: {{ network_interface_attachment.ena_srd_specification.ena_srd_enabled | lower }}
+{%- endif %}
+{%- if network_interface_attachment.ena_srd_specification.ena_srd_udp_specification is defined %}{# BEGIN if network_interface_attachment.ena_srd_specification.ena_srd_udp_specification is defined #}
+        EnaSrdUdpSpecification:
+{%- if network_interface_attachment.ena_srd_specification.ena_srd_udp_specification.ena_srd_udp_enabled is defined %}
+          EnaSrdUdpEnabled: {{ network_interface_attachment.ena_srd_specification.ena_srd_udp_specification.ena_srd_udp_enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if network_interface_attachment.ena_srd_specification.ena_srd_udp_specification is defined #}
+{%- endif %}{# END if network_interface_attachment.ena_srd_specification is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for network_interface_attachment in sceptre_user_data.network_interface_attachments %}
 {%- set network_interface_attachment_name = network_interface_attachment.name %}
   {{ network_interface_attachment_name }}:
@@ -31,5 +40,25 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_interface_attachment_name }}"
-
-{%- endfor %}
+  {{ network_interface_attachment_name }}AttachmentId:
+    Description: The attachment Id for {{ network_interface_attachment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_interface_attachment_name }}
+        - AttachmentId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_interface_attachment_name }}-AttachmentId"
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::NetworkInterfaceAttachment
+Properties:
+  DeleteOnTermination: Boolean
+  DeviceIndex: String
+  EnaSrdSpecification:
+    EnaSrdEnabled: Boolean
+    EnaSrdUdpSpecification:
+      EnaSrdUdpEnabled: Boolean
+  InstanceId: String
+  NetworkInterfaceId: String
+#}

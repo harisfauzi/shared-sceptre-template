@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 VolumeAttachment(s) fo
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for volume_attachment in sceptre_user_data.volume_attachments %}
 {%- set volume_attachment_name = volume_attachment.name %}
   {{ volume_attachment_name }}:
@@ -14,5 +13,11 @@ Resources:
       Device: {{ volume_attachment.device }}
       InstanceId: {{ volume_attachment.instance_id | trim }}
       VolumeId: {{ volume_attachment.volume_id | trim }}
-
-{%- endfor %}
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VolumeAttachment
+Properties:
+  Device: String
+  InstanceId: String
+  VolumeId: String
+#}

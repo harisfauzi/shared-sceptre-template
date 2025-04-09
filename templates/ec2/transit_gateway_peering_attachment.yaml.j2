@@ -15,10 +15,6 @@ Resources:
       PeerRegion: {{ transit_gateway_peering_attachment.peer_region }}
       PeerTransitGatewayId: {{ transit_gateway_peering_attachment.peer_transit_gateway_id | trim }}
       TransitGatewayId: {{ transit_gateway_peering_attachment.transit_gateway_id | trim }}
-{%- if transit_gateway_peering_attachment.options is defined %}
-      Options:
-        DynamicRouting: {{ transit_gateway_peering_attachment.options.dynamic_routing }}
-{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -28,11 +24,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for transit_gateway_peering_attachment in sceptre_user_data.transit_gateway_peering_attachments %}
 {%- set transit_gateway_peering_attachment_name = transit_gateway_peering_attachment.name %}
   {{ transit_gateway_peering_attachment_name }}:
@@ -42,7 +36,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}"
-
   {{ transit_gateway_peering_attachment_name }}CreationTime:
     Description: The time the transit gateway peering attachment was created for {{ transit_gateway_peering_attachment_name }}
     Value:
@@ -52,7 +45,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}-CreationTime"
-
   {{ transit_gateway_peering_attachment_name }}State:
     Description: The state of the transit gateway peering attachment {{ transit_gateway_peering_attachment_name }}
     Value:
@@ -62,7 +54,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}-State"
-
   {{ transit_gateway_peering_attachment_name }}TransitGatewayAttachmentId:
     Description: The ID of the transit gateway peering attachment {{ transit_gateway_peering_attachment_name }}
     Value:
@@ -72,5 +63,14 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_peering_attachment_name }}-TransitGatewayAttachmentId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TransitGatewayPeeringAttachment
+Properties:
+  PeerAccountId: String
+  PeerRegion: String
+  PeerTransitGatewayId: String
+  Tags:
+    - Tag
+  TransitGatewayId: String
+#}

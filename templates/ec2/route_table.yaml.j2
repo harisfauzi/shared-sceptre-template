@@ -1,4 +1,5 @@
 ---
+{%- import 'macros/prop-route-entry.yaml.j2' as prop_route_entry %}
 Description: {{sceptre_user_data.description|default('Route table(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
@@ -20,56 +21,13 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
-{%- if route_table.route_entries is defined %}
-{%- for route_entry in route_table.route_entries %}{# BEGIN {%- for route_entry in route_table.route_entries %} #}
+{%- if route_table.route_entries is defined %}{# BEGIN if route_table.route_entries is defined #}
+{%- for route_entry in route_table.route_entries %}{# BEGIN for route_entry in route_table.route_entries #}
 {%- set route_entry_name = route_table_name ~ route_entry.name %}
   {{ route_entry_name }}:
-    Type: AWS::EC2::Route
-    DeletionPolicy: {{ route_entry.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ route_entry.update_replace_policy | default('Delete') }}
-    Properties:
-      RouteTableId:
-        Ref: {{ route_table_name }}
-{%- if route_entry.destination_cidr_block is defined %}
-      DestinationCidrBlock: {{ route_entry.destination_cidr_block }}
-{%- elif route_entry.destination_ipv6_cidr_block is defined %}
-      DestinationIpv6CidrBlock: {{ route_entry.destination_ipv6_cidr_block }}
-{%- endif %}
-{%- if route_entry.carrier_gateway_id is defined %}
-      CarrierGatewayId: {{ route_entry.carrier_gateway_id | trim }}
-{%- endif %}
-{%- if route_entry.egress_only_internet_gateway_id is defined %}
-      EgressOnlyInternetGatewayId: {{ route_entry.egress_only_internet_gateway_id | trim }}
-{%- endif %}
-{%- if route_entry.gateway_id is defined %}
-      GatewayId: {{ route_entry.gateway_id | trim }}
-{%- endif %}
-{%- if route_entry.instance_id is defined %}
-      InstanceId: {{ route_entry.instance_id | trim }}
-{%- endif %}
-{%- if route_entry.local_gateway_id is defined %}
-      LocalGatewayId: {{ route_entry.local_gateway_id | trim }}
-{%- endif %}
-{%- if route_entry.nat_gateway_id is defined %}
-      NatGatewayId: {{ route_entry.nat_gateway_id | trim }}
-{%- endif %}
-{%- if route_entry.network_interface_id is defined %}
-      NetworkInterfaceId: {{ route_entry.network_interface_id | trim }}
-{%- endif %}
-{%- if route_entry.transit_gateway_id is defined %}
-      TransitGatewayId: {{ route_entry.transit_gateway_id | trim }}
-{%- endif %}
-{%- if route_entry.vpc_endpoint_id is defined %}
-      VpcEndpointId: {{ route_entry.vpc_endpoint_id | trim }}
-{%- endif %}
-{%- if route_entry.vpc_peering_connection_id is defined %}
-      VpcPeeringConnectionId: {{ route_entry.vpc_peering_connection_id | trim }}
-{%- endif %}
-
-{%- endfor %}{# END {%- for route_entry in route_table.route_entries %} #}
-{%- endif %}
-
+{{ prop_route_entry.prep_route_entry(route_entry) }}
+{%- endfor %}{# END for route_entry in route_table.route_entries #}
+{%- endif %}{# END if route_table.route_entries is defined #}
 {%- endfor %}
 
 Outputs:
@@ -82,5 +40,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ route_table_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::RouteTable
+Properties:
+  Tags:
+    - Tag
+  VpcId: String
+#}

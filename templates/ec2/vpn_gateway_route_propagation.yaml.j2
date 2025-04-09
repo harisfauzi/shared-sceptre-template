@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 VPN Gateway Route Prop
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for vpn_gateway_route_propagation in sceptre_user_data.vpn_gateway_route_propagations %}
 {%- set vpn_gateway_route_propagation_name = vpn_gateway_route_propagation.name %}
   {{ vpn_gateway_route_propagation_name }}:
@@ -16,11 +15,9 @@ Resources:
         - {{ route_table_id | trim }}
 {%- endfor %}
       VpnGatewayId: {{ vpn_gateway_route_propagation.vpn_gateway_id | trim }}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for vpn_gateway_route_propagation in sceptre_user_data.vpn_gateway_route_propagations %}
 {%- set vpn_gateway_route_propagation_name = vpn_gateway_route_propagation.name %}
   {{ vpn_gateway_route_propagation_name }}:
@@ -30,5 +27,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpn_gateway_route_propagation_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPNGatewayRoutePropagation
+Properties:
+  RouteTableIds:
+    - String
+  VpnGatewayId: String
+#}

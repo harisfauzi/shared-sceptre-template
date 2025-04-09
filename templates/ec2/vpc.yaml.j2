@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('VPC for '+sceptre_user_dat
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for vpc in sceptre_user_data.vpcs %}
 {%- set vpc_name = vpc.name %}
   {{ vpc_name }}:
@@ -15,6 +14,12 @@ Resources:
       EnableDnsHostnames: {{ vpc.enable_dns_hostnames | default('false') }}
       EnableDnsSupport: {{ vpc.enable_dns_support | default('true') }}
       InstanceTenancy: {{ vpc.instance_tenancy | default('default') }}
+{%- if vpc.ipv4_ipam_pool_id is defined %}
+      Ipv4IpamPoolId: {{ vpc.ipv4_ipam_pool_id }}
+{%- endif %}
+{%- if vpc.ipv4_netmask_length is defined %}
+      Ipv4NetmaskLength: {{ vpc.ipv4_netmask_length }}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -24,7 +29,6 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- if vpc.use_ipv6 %}
   {{ vpc_name }}CidrBlock:
     Type: AWS::EC2::VPCCidrBlock
@@ -38,7 +42,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for vpc in sceptre_user_data.vpcs %}
 {%- set vpc_name = vpc.name %}
   {{ vpc_name }}:
@@ -48,7 +51,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_name }}"
-
   {{ vpc_name }}CidrBlock:
     Description: The IPv4 CIDR block for {{ vpc_name }}
     Value:
@@ -58,7 +60,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_name }}-CidrBlock"
-
 {%- if vpc.use_ipv6 %}
   {{ vpc_name }}CidrBlockIPv6:
     Description: The IPv6 CIDR block for {{ vpc_name }}
@@ -71,7 +72,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_name }}-CidrBlockIPv6"
-
   {{ vpc_name }}Block:
     Description: Association ID of VPCCidrBlock for {{ vpc_name }}
     Value:
@@ -80,4 +80,17 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_name }}-Block"
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPC
+Properties:
+  CidrBlock: String
+  EnableDnsHostnames: Boolean
+  EnableDnsSupport: Boolean
+  InstanceTenancy: String
+  Ipv4IpamPoolId: String
+  Ipv4NetmaskLength: Integer
+  Tags:
+    - Key: String
+      Value: String
+#}

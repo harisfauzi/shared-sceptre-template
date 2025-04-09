@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Placement Group(s) for
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for placement_group in sceptre_user_data.placement_groups %}
 {%- set placement_group_name = placement_group.name %}
   {{ placement_group_name }}:
@@ -11,14 +10,27 @@ Resources:
     DeletionPolicy: {{ placement_group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ placement_group.update_replace_policy | default('Delete') }}
     Properties:
+{%- if placement_group.partition_count is defined %}
+      PartitionCount: {{ placement_group.partition_count }}
+{%- endif %}
+{%- if placement_group.spread_level is defined %}
+      SpreadLevel: {{ placement_group.spread_level }}
+{%- endif %}
 {%- if placement_group.strategy is defined %}
       Strategy: {{ placement_group.strategy }}
 {%- endif %}
-
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if placement_group.tags is defined %}
+{%- for key,value in placement_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for placement_group in sceptre_user_data.placement_groups %}
 {%- set placement_group_name = placement_group.name %}
   {{ placement_group_name }}:
@@ -28,5 +40,23 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ placement_group_name }}"
-
-{%- endfor %}
+  {{ placement_group_name }}GroupName:
+    Description: The name of placement group for {{ placement_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ placement_group_name }}
+        - GroupName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ placement_group_name }}-GroupName"
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::PlacementGroup
+Properties:
+  PartitionCount: Integer
+  SpreadLevel: String
+  Strategy: String
+  Tags:
+    - Key: String
+      Value: String
+#}

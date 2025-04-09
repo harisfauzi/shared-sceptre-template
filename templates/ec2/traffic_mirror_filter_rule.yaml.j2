@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Traffic Mirror Filter 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for traffic_mirror_filter_rule in sceptre_user_data.traffic_mirror_filter_rules %}
 {%- set traffic_mirror_filter_rule_name = traffic_mirror_filter_rule.name %}
   {{ traffic_mirror_filter_rule_name }}:
@@ -33,11 +32,9 @@ Resources:
         FromPort: {{ traffic_mirror_filter_rule.source_port_range.from_port }}
         ToPort: {{ traffic_mirror_filter_rule.source_port_range.to_port }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for traffic_mirror_filter_rule in sceptre_user_data.traffic_mirror_filter_rules %}
 {%- set traffic_mirror_filter_rule_name = traffic_mirror_filter_rule.name %}
   {{ traffic_mirror_filter_rule_name }}:
@@ -47,5 +44,25 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_filter_rule_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TrafficMirrorFilterRule
+Properties:
+  Description: String
+  DestinationCidrBlock: String
+  DestinationPortRange:
+    FromPort: Integer
+    ToPort: Integer
+  Protocol: Integer
+  RuleAction: String
+  RuleNumber: Integer
+  SourceCidrBlock: String
+  SourcePortRange:
+    FromPort: Integer
+    ToPort: Integer
+  Tags:
+    - Key: String
+      Value: String
+  TrafficDirection: String
+  TrafficMirrorFilterId: String
+#}

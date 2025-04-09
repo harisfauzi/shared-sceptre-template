@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Security Group Egress(
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for security_group_egress in sceptre_user_data.security_group_egresss %}
 {%- set security_group_egress_name = security_group_egress.name %}
   {{ security_group_egress_name }}:
@@ -31,11 +30,9 @@ Resources:
 {%- if security_group_egress.to_port is defined %}
       ToPort: {{ security_group_egress.to_port }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for security_group_egress in sceptre_user_data.security_group_egresss %}
 {%- set security_group_egress_name = security_group_egress.name %}
   {{ security_group_egress_name }}:
@@ -45,5 +42,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ security_group_egress_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::SecurityGroupEgress
+Properties:
+  CidrIp: String
+  CidrIpv6: String
+  Description: String
+  DestinationPrefixListId: String
+  DestinationSecurityGroupId: String
+  FromPort: Integer
+  GroupId: String
+  IpProtocol: String
+  ToPort: Integer
+#}
