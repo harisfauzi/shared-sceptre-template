@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 NAT Gateway(s) for '+s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for nat_gateway in sceptre_user_data.nat_gateways %}
 {%- set nat_gateway_name = nat_gateway.name %}
   {{ nat_gateway_name }}:
@@ -18,6 +17,27 @@ Resources:
 {%- if nat_gateway.connectivity_type is defined %}
       ConnectivityType: {{ nat_gateway.connectivity_type }}
 {%- endif %}
+{%- if nat_gateway.max_drain_duration_seconds is defined %}
+      MaxDrainDurationSeconds: {{ nat_gateway.max_drain_duration_seconds }}
+{%- endif %}
+{%- if nat_gateway.private_ip_address is defined %}
+      PrivateIpAddress: {{ nat_gateway.private_ip_address }}
+{%- endif %}
+{%- if nat_gateway.secondary_allocation_ids is defined %}{# BEGIN if nat_gateway.secondary_allocation_ids is defined #}
+      SecondaryAllocationIds:
+{%- for item in nat_gateway.secondary_allocation_ids %}{# BEGIN for item in nat_gateway.secondary_allocation_ids #}
+        - String
+{%- endfor %}{# END for item in nat_gateway.secondary_allocation_ids #}
+{%- endif %}{# END if nat_gateway.secondary_allocation_ids is defined#}
+{%- if nat_gateway.secondary_private_ip_address_count is defined %}
+      SecondaryPrivateIpAddressCount: {{ nat_gateway.secondary_private_ip_address_count }}
+{%- endif %}
+{%- if nat_gateway.secondary_private_ip_addresses is defined %}{# BEGIN if nat_gateway.secondary_private_ip_addresses is defined #}
+      SecondaryPrivateIpAddresses:
+{%- for item in nat_gateway.secondary_private_ip_addresses %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if nat_gateway.secondary_private_ip_addresses is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -30,7 +50,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for nat_gateway in sceptre_user_data.nat_gateways %}
 {%- set nat_gateway_name = nat_gateway.name %}
   {{ nat_gateway_name }}:
@@ -40,5 +59,21 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ nat_gateway_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-08:
+Type: AWS::EC2::NatGateway
+Properties:
+  AllocationId: String
+  ConnectivityType: String
+  MaxDrainDurationSeconds: Integer
+  PrivateIpAddress: String
+  SecondaryAllocationIds:
+    - String
+  SecondaryPrivateIpAddressCount: Integer
+  SecondaryPrivateIpAddresses:
+    - String
+  SubnetId: String
+  Tags:
+    - Key: String
+      Value: String
+#}

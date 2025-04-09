@@ -20,7 +20,7 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
+{######### AWS::EC2::TransitGatewayRoute #########}
 {%- if transit_gateway_route_table.routes is defined %}
 {%- for route in transit_gateway_route_table.routes %}
   {{ transit_gateway_route_table_name }}{{ route.name }}:
@@ -31,7 +31,7 @@ Resources:
       TransitGatewayRouteTableId:
         Ref: {{ transit_gateway_route_table_name }}
 {%- if route.blackhole is defined %}
-      Blackhole: {{ route.blackhole }}
+      Blackhole: {{ route.blackhole | lower }}
 {%- endif %}
 {%- if route.destination_cidr_block is defined %}
       DestinationCidrBlock: {{ route.destination_cidr_block }}
@@ -53,4 +53,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_route_table_name }}"
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TransitGatewayRouteTable
+Properties:
+  Tags:
+    - Tag
+  TransitGatewayId: String
+#}

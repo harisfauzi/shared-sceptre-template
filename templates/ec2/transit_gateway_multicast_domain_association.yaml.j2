@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Transit Gateway Multic
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for transit_gateway_multicast_domain_association in sceptre_user_data.transit_gateway_multicast_domain_associations %}
 {%- set transit_gateway_multicast_domain_association_name = transit_gateway_multicast_domain_association.name %}
   {{ transit_gateway_multicast_domain_association_name }}:
@@ -14,11 +13,9 @@ Resources:
       SubnetId: {{ transit_gateway_multicast_domain_association.subnet_id | trim }}
       TransitGatewayAttachmentId: {{ transit_gateway_multicast_domain_association.transit_gateway_attachment_id | trim }}
       TransitGatewayMulticastDomainId: {{ transit_gateway_multicast_domain_association.transit_gateway_multicast_domain_id | trim }}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for transit_gateway_multicast_domain_association in sceptre_user_data.transit_gateway_multicast_domain_associations %}
 {%- set transit_gateway_multicast_domain_association_name = transit_gateway_multicast_domain_association.name %}
   {{ transit_gateway_multicast_domain_association_name }}:
@@ -28,7 +25,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_association_name }}"
-
   {{ transit_gateway_multicast_domain_association_name }}ResourceId:
     Description: The ID of the resource {{ transit_gateway_multicast_domain_association_name }}
     Value:
@@ -38,7 +34,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_association_name }}-ResourceId"
-
   {{ transit_gateway_multicast_domain_association_name }}ResourceType:
     Description: The type of resource for {{ transit_gateway_multicast_domain_association_name }}
     Value:
@@ -48,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_association_name }}-ResourceType"
-
   {{ transit_gateway_multicast_domain_association_name }}State:
     Description: The state of the resource {{ transit_gateway_multicast_domain_association_name }}
     Value:
@@ -58,5 +52,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_domain_association_name }}-State"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TransitGatewayMulticastDomainAssociation
+Properties:
+  SubnetId: String
+  TransitGatewayAttachmentId: String
+  TransitGatewayMulticastDomainId: String
+#}

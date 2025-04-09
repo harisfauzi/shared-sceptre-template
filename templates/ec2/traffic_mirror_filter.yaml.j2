@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Traffic Mirror Filter(
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for traffic_mirror_filter in sceptre_user_data.traffic_mirror_filters %}
 {%- set traffic_mirror_filter_name = traffic_mirror_filter.name %}
   {{ traffic_mirror_filter_name }}:
@@ -29,11 +28,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for traffic_mirror_filter in sceptre_user_data.traffic_mirror_filters %}
 {%- set traffic_mirror_filter_name = traffic_mirror_filter.name %}
   {{ traffic_mirror_filter_name }}:
@@ -44,4 +41,14 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_filter_name }}"
 
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TrafficMirrorFilter
+Properties:
+  Description: String
+  NetworkServices:
+    - String
+  Tags:
+    - Key: String
+      Value: String
+#}

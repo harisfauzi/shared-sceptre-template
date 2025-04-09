@@ -1,13 +1,18 @@
 ---
-{%- import 'macros/spot_fleet_launch_specification.yaml.j2' as spot_fleet_launch_specification %}
-{%- import 'macros/spot_fleet_launch_template_config.yaml.j2' as spot_fleet_launch_template_config %}
+{%- import 'macros/prop-launch-template.yaml.j2' as prop_launch_template %}
+{%- import 'macros/prop-spot-fleet.yaml.j2' as prop_spot_fleet %}
 Description: {{sceptre_user_data.description|default('EC2 Spot Fleet(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for spot_fleet in sceptre_user_data.spot_fleets %}
 {%- set spot_fleet_name = spot_fleet.name %}
+{%- if spot_fleet.launch_template_spec is defined %}{# BEGIN if spot_fleet.launch_template_spec is defined #}
+{%- set launch_template = spot_fleet.launch_template_spec %}
+{%- set launch_template_name = spot_fleet_name ~ 'LaunchTemplate' %}
+  {{ launch_template_name }}:
+{{ prop_launch_template.prep_launch_template(launch_template) }}
+{%- endif %}{# END if spot_fleet.launch_template_spec is defined #}
   {{ spot_fleet_name }}:
     Type: AWS::EC2::SpotFleet
 {%- if spot_fleet.metadata is defined %}
@@ -35,36 +40,75 @@ Resources:
 {%- if spot_fleet.spot_fleet_request_config_data.instance_pools_to_use_count is defined %}
         InstancePoolsToUseCount: {{ spot_fleet.spot_fleet_request_config_data.instance_pools_to_use_count }}
 {%- endif %}
-{%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %}{# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %} #}
+{%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %}{# BEGIN if spot_fleet.spot_fleet_request_config_data.launch_specifications/spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined #}
         LaunchSpecifications:
 {%- for launch_specification in spot_fleet.spot_fleet_request_config_data.launch_specifications %}
           -
-{{ spot_fleet_launch_specification.prep(launch_specification) | indent(width=12, first=True) }}
+            {{ prop_spot_fleet.prep_spot_fleet_launch_specification(launch_specification) | indent(width=12, first=True)}}
 {%- endfor %}
-{# END {%- if spot_fleet.spot_fleet_request_config_data.launch_specifications is defined %} #}
-{%- elif spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %}{# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %} #}
+{%- elif spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %}{# ELSE if spot_fleet.spot_fleet_request_config_data.launch_specifications/spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined #}
         LaunchTemplateConfigs:
-{%- for launch_template_config in spot_fleet.spot_fleet_request_config_data.launch_template_configs %}
-
-{%- endfor %}
-{%- endif %}{# END {%- if spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %} #}
-{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %}{# BEGIN {%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %} #}
+{%- for launch_template_config in spot_fleet.spot_fleet_request_config_data.launch_template_configs %}{# BEGIN for launch_template_config in spot_fleet.spot_fleet_request_config_data.launch_template_configs #}
+          -
+{%- if launch_template_config.launch_template_specification is defined %}{# BEGIN if launch_template_config.launch_template_specification is defined #}
+            LaunchTemplateSpecification:
+{%- if launch_template_config.launch_template_specification.launch_template_id is defined %}
+              LaunchTemplateId: {{ launch_template_config.launch_template_specification.launch_template_id }}
+{%- elif launch_template_config.launch_template_specification.launch_template_name is defined %}
+              LaunchTemplateName: {{ launch_template_config.launch_template_specification.launch_template_name }}
+{%- endif %}
+              Version: {{ launch_template_config.launch_template_specification.version }}
+{%- endif %}{# END if launch_template_config.launch_template_specification is defined #}
+{%- if launch_template_config.overrides is defined %}{# BEGIN if launch_template_config.overrides is defined #}
+            Overrides:
+{%- for override in launch_template_config.overrides %}{# BEGIN for override in launch_template_config.overrides #}
+              -
+{%- if override.availability_zone is defined %}
+                AvailabilityZone: {{ override.availability_zone }}
+{%- endif %}
+{%- if override.instance_requirements is defined %}
+                {{ prop_spot_fleet.prep_instance_requirements_request(override.instance_requirements) | indent(width=16, first=false) }}
+{%- endif %}
+{%- if override.instance_type is defined %}
+                InstanceType: {{ override.instance_type }}
+{%- endif %}
+{%- if override.priority is defined %}
+                Priority: {{ override.priority }}
+{%- endif %}
+{%- if override.spot_price is defined %}
+                SpotPrice: {{ override.spot_price }}
+{%- endif %}
+{%- if override.subnet_id is defined %}
+                SubnetId: {{ override.subnet_id }}
+{%- endif %}
+{%- if override.weighted_capacity is defined %}
+                WeightedCapacity: {{ override.weighted_capacity }}
+{%- endif %}
+{%- endfor %}{# END for override in launch_template_config.overrides #}
+{%- endif %}{# END if launch_template_config.overrides is defined #}
+{%- endfor %}{# END for launch_template_config in spot_fleet.spot_fleet_request_config_data.launch_template_configs #}
+{%- endif %}{# END if spot_fleet.spot_fleet_request_config_data.launch_specifications/spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined #}
+{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %}{# BEGIN if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined #}
         LoadBalancersConfig:
-{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config.classic_load_balancers_config is defined %}
+{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config.classic_load_balancers_config is defined %}{# BEGIN if spot_fleet.spot_fleet_request_config_data.load_balancers_config.classic_load_balancers_config is defined #}
           ClassicLoadBalancersConfig:
+{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config.classic_load_balancers_config.classic_load_balancers is defined %}
             ClassicLoadBalancers:
 {%- for load_balancer in spot_fleet.spot_fleet_request_config_data.load_balancers_config.classic_load_balancers_config.classic_load_balancers %}
               - Name: {{ load_balancer | trim }}
 {%- endfor %}
 {%- endif %}
-{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config.target_groups_config is defined %}
+{%- endif %}{# END if spot_fleet.spot_fleet_request_config_data.load_balancers_config.classic_load_balancers_config is defined #}
+{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config.target_groups_config is defined %}{# BEGIN if spot_fleet.spot_fleet_request_config_data.load_balancers_config.target_groups_config is defined #}
           TargetGroupsConfig:
+{%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config.target_groups_config.target_groups is defined %}{# BEGIN if spot_fleet.spot_fleet_request_config_data.load_balancers_config.target_groups_config.target_groups is defined #}
             TargetGroups:
 {%- for target_group in spot_fleet.spot_fleet_request_config_data.load_balancers_config.target_groups_config.target_groups %}
               - Arn: {{ target_group | trim }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}{# END {%- if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined %} #}
+{%- endif %}{# END if spot_fleet.spot_fleet_request_config_data.load_balancers_config.target_groups_config.target_groups is defined #}
+{%- endif %}{# END if spot_fleet.spot_fleet_request_config_data.load_balancers_config.target_groups_config is defined #}
+{%- endif %}{# END if spot_fleet.spot_fleet_request_config_data.load_balancers_config is defined #}
 {%- if spot_fleet.spot_fleet_request_config_data.on_demand_allocation_strategy is defined %}
         OnDemandAllocationStrategy: {{ spot_fleet.spot_fleet_request_config_data.on_demand_allocation_strategy }}
 {%- endif %}
@@ -79,6 +123,7 @@ Resources:
 {%- endif %}
 {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %}{## BEGIN {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %} #}
         SpotMaintenanceStrategies:
+{%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance is defined %}{# BEGIN if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance is defined #}
           CapacityRebalance:
 {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance.replacement_strategy is defined %}
             ReplacementStrategy: {{ spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance.replacement_strategy }}
@@ -86,6 +131,7 @@ Resources:
 {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance.termination_delay is defined %}
             TerminationDelay: {{ spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance.termination_delay }}
 {%- endif %}
+{%- endif %}{# END if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies.capacity_rebalance is defined #}
 {%- endif %}{## END {%- if spot_fleet.spot_fleet_request_config_data.spot_maintenance_strategies is defined %} #}
 {%- if spot_fleet.spot_fleet_request_config_data.spot_max_total_price is defined %}
         SpotMaxTotalPrice: {{ spot_fleet.spot_fleet_request_config_data.spot_max_total_price }}
@@ -93,11 +139,14 @@ Resources:
 {%- if spot_fleet.spot_fleet_request_config_data.spot_price is defined %}
         SpotPrice: {{ spot_fleet.spot_fleet_request_config_data.spot_price }}
 {%- endif %}
+{%- if spot_fleet.spot_fleet_request_config_data.tag_specifications is defined %}
+        {{ prop_spot_fleet.prep_tag_specifications(spot_fleet.spot_fleet_request_config_data.tag_specifications) | indent(width=8, first=false) }}
+{%- endif %}
 {%- if spot_fleet.spot_fleet_request_config_data.target_capacity_unit_type is defined %}
         TargetCapacityUnitType: {{ spot_fleet.spot_fleet_request_config_data.target_capacity_unit_type }}
 {%- endif %}
 {%- if spot_fleet.spot_fleet_request_config_data.terminate_instances_with_expiration is defined %}
-        TerminateInstancesWithExpiration: {{ spot_fleet.spot_fleet_request_config_data.terminate_instances_with_expiration }}
+        TerminateInstancesWithExpiration: {{ spot_fleet.spot_fleet_request_config_data.terminate_instances_with_expiration | lower }}
 {%- endif %}
 {%- if spot_fleet.spot_fleet_request_config_data.type is defined %}
         Type: {{ spot_fleet.spot_fleet_request_config_data.type }}
@@ -108,11 +157,9 @@ Resources:
 {%- if spot_fleet.spot_fleet_request_config_data.valid_until is defined %}
         ValidUntil: {{ spot_fleet.spot_fleet_request_config_data.valid_until }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for spot_fleet in sceptre_user_data.spot_fleets %}
 {%- set spot_fleet_name = spot_fleet.name %}
   {{ spot_fleet_name }}:
@@ -122,7 +169,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ spot_fleet_name }}"
-
   {{ spot_fleet_name }}Id:
     Description: The ID of the Spot Fleet {{ spot_fleet_name }}
     Value:
@@ -132,5 +178,228 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ spot_fleet_name }}-Id"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::SpotFleet
+Properties:
+  SpotFleetRequestConfigData:
+    AllocationStrategy: String
+    Context: String
+    ExcessCapacityTerminationPolicy: String
+    IamFleetRole: String
+    InstanceInterruptionBehavior: String
+    InstancePoolsToUseCount: Integer
+    LaunchSpecifications:
+      -
+        BlockDeviceMappings:
+          -
+            DeviceName: String
+            Ebs:
+              DeleteOnTermination: Boolean
+              Encrypted: Boolean
+              Iops: Integer
+              SnapshotId: String
+              VolumeSize: Integer
+              VolumeType: String
+            NoDevice: String
+            VirtualName: String
+        EbsOptimized: Boolean
+        IamInstanceProfile:
+          Arn: String
+        ImageId: String
+        InstanceRequirements:
+          AcceleratorCount:
+            Max: Integer
+            Min: Integer
+          AcceleratorManufacturers:
+            - String
+          AcceleratorNames:
+            - String
+          AcceleratorTotalMemoryMiB:
+            Max: Integer
+            Min: Integer
+          AcceleratorTypes:
+            - String
+          AllowedInstanceTypes:
+            - String
+          BareMetal: String
+          BaselineEbsBandwidthMbps:
+            Max: Integer
+            Min: Integer
+          BaselinePerformanceFactors:
+            Cpu:
+              References:
+                - InstanceFamily: String
+          BurstablePerformance: String
+          CpuManufacturers:
+            - String
+          ExcludedInstanceTypes:
+            - String
+          InstanceGenerations:
+            - String
+          LocalStorage: String
+          LocalStorageTypes:
+            - String
+          MaxSpotPriceAsPercentageOfOptimalOnDemandPrice: Integer
+          MemoryGiBPerVCpu:
+            Max: Integer
+            Min: Integer
+          MemoryMiB:
+            Max: Integer
+            Min: Integer
+          NetworkBandwidthGbps:
+            Max: Integer
+            Min: Integer
+          NetworkInterfaceCount:
+            Max: Integer
+            Min: Integer
+          OnDemandMaxPricePercentageOverLowestPrice: Integer
+          RequireHibernateSupport: Boolean
+          SpotMaxPricePercentageOverLowestPrice: Integer
+          TotalLocalStorageGB:
+            Max: Integer
+            Min: Integer
+          VCpuCount:
+            Max: Integer
+            Min: Integer
+        InstanceType: String
+        KernelId: String
+        KeyName: String
+        Monitoring:
+          Enabled: Boolean
+        NetworkInterfaces:
+          -
+            AssociatePublicIpAddress: Boolean
+            DeleteOnTermination: Boolean
+            Description: String
+            DeviceIndex: Integer
+            Groups:
+              - String
+            Ipv6AddressCount: Integer
+            Ipv6Addresses:
+              - Ipv6Address: String
+            NetworkInterfaceId: String
+            PrivateIpAddresses:
+              -
+                Primary: Boolean
+                PrivateIpAddress: String
+            SecondaryPrivateIpAddressCount: Integer
+            SubnetId: String
+        Placement:
+          AvailabilityZone: String
+          GroupName: String
+          Tenancy: String
+        RamdiskId: String
+        SecurityGroups:
+          - GroupId: String
+        SpotPrice: String
+        SubnetId: String
+        TagSpecifications:
+          -
+            ResourceType: String
+            Tags:
+              -
+                Key: String
+                Value: String
+        UserData: String
+        WeightedCapacity: Number
+    LaunchTemplateConfigs:
+      -
+        LaunchTemplateSpecification:
+          LaunchTemplateId: String
+          LaunchTemplateName: String
+          Version: String
+        Overrides:
+          -
+            AvailabilityZone: String
+            InstanceRequirements:
+              AcceleratorCount:
+                Max: Integer
+                Min: Integer
+              AcceleratorManufacturers:
+                - String
+              AcceleratorNames:
+                - String
+              AcceleratorTotalMemoryMiB:
+                Max: Integer
+                Min: Integer
+              AcceleratorTypes:
+                - String
+              AllowedInstanceTypes:
+                - String
+              BareMetal: String
+              BaselineEbsBandwidthMbps:
+                Max: Integer
+                Min: Integer
+              BaselinePerformanceFactors:
+                Cpu:
+                  References:
+                    - InstanceFamily: String
+              BurstablePerformance: String
+              CpuManufacturers:
+                - String
+              ExcludedInstanceTypes:
+                - String
+              InstanceGenerations:
+                - String
+              LocalStorage: String
+              LocalStorageTypes:
+                - String
+              MaxSpotPriceAsPercentageOfOptimalOnDemandPrice: Integer
+              MemoryGiBPerVCpu:
+                Max: Integer
+                Min: Integer
+              MemoryMiB:
+                Max: Integer
+                Min: Integer
+              NetworkBandwidthGbps:
+                Max: Integer
+                Min: Integer
+              NetworkInterfaceCount:
+                Max: Integer
+                Min: Integer
+              OnDemandMaxPricePercentageOverLowestPrice: Integer
+              RequireHibernateSupport: Boolean
+              SpotMaxPricePercentageOverLowestPrice: Integer
+              TotalLocalStorageGB:
+                Max: Integer
+                Min: Integer
+              VCpuCount:
+                Max: Integer
+                Min: Integer
+            InstanceType: String
+            Priority: Number
+            SpotPrice: String
+            SubnetId: String
+            WeightedCapacity: Number
+    LoadBalancersConfig:
+      ClassicLoadBalancersConfig:
+        ClassicLoadBalancers:
+          - Name: String
+      TargetGroupsConfig:
+        TargetGroups:
+          - Arn: String
+    OnDemandAllocationStrategy: String
+    OnDemandMaxTotalPrice: String
+    OnDemandTargetCapacity: Integer
+    ReplaceUnhealthyInstances: Boolean
+    SpotMaintenanceStrategies:
+      CapacityRebalance:
+        ReplacementStrategy: String
+        TerminationDelay: Integer
+    SpotMaxTotalPrice: String
+    SpotPrice: String
+    TagSpecifications:
+      -
+        ResourceType: String
+        Tags:
+          -
+            Key: String
+            Value: String
+    TargetCapacity: Integer
+    TargetCapacityUnitType: String
+    TerminateInstancesWithExpiration: Boolean
+    Type: String
+    ValidFrom: String
+    ValidUntil: String
+#}

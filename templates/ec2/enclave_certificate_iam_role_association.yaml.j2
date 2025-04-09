@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 EnclaveCertificateIamR
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for enclave_certificate_iam_role_assocation in sceptre_user_data.enclave_certificate_iam_role_assocations %}
 {%- set enclave_certificate_iam_role_assocation_name = enclave_certificate_iam_role_assocation.name %}
   {{ enclave_certificate_iam_role_assocation_name }}:
@@ -13,11 +12,9 @@ Resources:
     Properties:
       CertificateArn: {{ enclave_certificate_iam_role_assocation.certificate_arn | trim }}
       RoleArn: {{ enclave_certificate_iam_role_assocation.role_arn | trim }}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for enclave_certificate_iam_role_assocation in sceptre_user_data.enclave_certificate_iam_role_assocations %}
 {%- set enclave_certificate_iam_role_assocation_name = enclave_certificate_iam_role_assocation.name %}
   {{ enclave_certificate_iam_role_assocation_name }}:
@@ -27,7 +24,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ enclave_certificate_iam_role_assocation_name }}"
-
   {{ enclave_certificate_iam_role_assocation_name }}CertificateS3BucketName:
     Description: >
       The name of the Amazon S3 bucket to which the certificate
@@ -39,7 +35,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ enclave_certificate_iam_role_assocation_name }}-CertificateS3BucketName"
-
   {{ enclave_certificate_iam_role_assocation_name }}CertificateS3ObjectKey:
     Description: >
       The Amazon S3 object key where the certificate, certificate chain,
@@ -52,7 +47,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ enclave_certificate_iam_role_assocation_name }}-CertificateS3ObjectKey"
-
   {{ enclave_certificate_iam_role_assocation_name }}EncryptionKmsKeyId:
     Description: >
       The ID of the AWS KMS key used to encrypt the private key
@@ -64,5 +58,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ enclave_certificate_iam_role_assocation_name }}-EncryptionKmsKeyId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-08:
+Type: AWS::EC2::EnclaveCertificateIamRoleAssociation
+Properties:
+  CertificateArn: String
+  RoleArn: String
+#}

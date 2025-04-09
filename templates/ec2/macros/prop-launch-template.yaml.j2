@@ -1,0 +1,594 @@
+{######### BEGIN MACRO prep_block_device_mappings #########}
+{%- macro prep_block_device_mappings(block_device_mappings) %}
+BlockDeviceMappings:
+{%- for mapping in block_device_mappings %}
+  - DeviceName: {{ mapping.device_name }}
+{%- if mapping.ebs is defined %}{# BEGIN if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+    Ebs:
+{%- if mapping.ebs.delete_on_termination is defined %}
+      DeleteOnTermination: {{ mapping.ebs.delete_on_termination | lower }}
+{%- endif %}
+{%- if mapping.ebs.encrypted is defined %}
+      Encrypted: {{ mapping.ebs.encrypted | lower }}
+{%- endif %}
+{%- if mapping.ebs.iops is defined %}
+      Iops: {{ mapping.ebs.iops }}
+{%- endif %}
+{%- if mapping.ebs.kms_key_id is defined %}
+      KmsKeyId: {{ mapping.ebs.kms_key_id | trim }}
+{%- endif %}
+{%- if mapping.ebs.snapshot_id is defined %}
+      SnapshotId: {{ mapping.ebs.snapshot_id | trim }}
+{%- endif %}
+{%- if mapping.ebs.throughput is defined %}
+      Throughput: {{ mapping.ebs.throughput }}
+{%- endif %}
+{%- if mapping.ebs.volume_size is defined %}
+      VolumeSize: {{ mapping.ebs.volume_size }}
+{%- endif %}
+{%- if mapping.ebs.volume_type is defined %}
+      VolumeType: {{ mapping.ebs.volume_type }}
+{%- endif %}
+{%- elif mapping.virtual_name is defined %}{# ELSE if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+    VirtualName: {{ mapping.virtual_name }}
+{%- elif mapping.no_device is defined %}{# ELSE if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+    NoDevice: {}
+{%- endif %}{# END if mapping.ebs/mapping.no_device/mapping.virtual_name is defined #}
+{%- endfor %}
+{%- endmacro %}
+{######### END MACRO prep_block_device_mappings #########}
+
+{######### BEGIN MACRO prep_network_interfaces #########}
+{%- macro prep_network_interfaces(network_interfaces) %}
+NetworkInterfaces:
+{%- for networkinterface in network_interfaces %}{# BEGIN for networkinterface in network_interfaces #}
+  -
+{%- if networkinterface.associate_carrier_ip_address is defined %}
+    AssociateCarrierIpAddress: {{ networkinterface.associate_carrier_ip_address | lower }}
+{%- endif %}
+{%- if networkinterface.associate_public_ip_address is defined %}
+    AssociatePublicIpAddress: {{ networkinterface.associate_public_ip_address | lower }}
+{%- endif %}
+{%- if networkinterface.connection_tracking_specification is defined %}{# BEGIN if networkinterface.connection_tracking_specification is defined #}
+    ConnectionTrackingSpecification:
+{%- if networkinterface.connection_tracking_specification.tcp_established_timeout is defined %}
+      TcpEstablishedTimeout: {{ networkinterface.connection_tracking_specification.tcp_established_timeout }}
+{%- endif %}
+{%- if networkinterface.connection_tracking_specification.udp_stream_timeout is defined %}
+      UdpStreamTimeout: {{ networkinterface.connection_tracking_specification.udp_stream_timeout }}
+{%- endif %}
+{%- if networkinterface.connection_tracking_specification.udp_timeout is defined %}
+      UdpTimeout: {{ networkinterface.connection_tracking_specification.udp_timeout }}
+{%- endif %}
+{%- endif %}{# END if networkinterface.connection_tracking_specification is defined #}
+{%- if networkinterface.delete_on_termination is defined %}
+    DeleteOnTermination: {{ networkinterface.delete_on_termination | lower }}
+{%- endif %}
+{%- if networkinterface.description is defined %}
+    Description: {{ networkinterface.description }}
+{%- endif %}
+{%- if networkinterface.device_index is defined %}
+    DeviceIndex: {{ networkinterface.device_index }}
+{%- endif %}
+{%- if networkinterface.ena_srd_specification is defined %}{# BEGIN if networkinterface.ena_srd_specification is defined #}
+    EnaSrdSpecification:
+{%- if networkinterface.ena_srd_specification.ena_srd_enabled is defined %}
+      EnaSrdEnabled: {{networkinterface.ena_srd_specification.ena_srd_enabled | lower }}
+{%- endif %}
+{%- if networkinterface.ena_srd_specification.ena_srd_udp_specification is defined %}{# BEGIN if networkinterface.ena_srd_specification.ena_srd_udp_specification is defined #}
+      EnaSrdUdpSpecification:
+{%- if networkinterface.ena_srd_specification.ena_srd_udp_specification.ena_srd_udp_enabled is defined %}
+        EnaSrdUdpEnabled: {{ networkinterface.ena_srd_specification.ena_srd_udp_specification.ena_srd_udp_enabled }}
+{%- endif %}
+{%- endif %}{# END if networkinterface.ena_srd_specification.ena_srd_udp_specification is defined #}
+{%- endif %}{# END if networkinterface.ena_srd_specification is defined #}
+{%- if networkinterface.groups is defined %}{# BEGIN if networkinterface.groups is defined #}
+    Groups:
+{%- for item in networkinterface.groups %}{# BEGIN for item in networkinterface.groups #}
+      - {{ item }}
+{%- endfor %}{# END for item in networkinterface.groups #}
+{%- endif %}{# END if networkinterface.groups is defined #}
+{%- if networkinterface.interface_type is defined %}
+    InterfaceType: {{ networkinterface.interface_type }}
+{%- endif %}
+{%- if networkinterface.ipv4_prefix_count is defined %}
+    Ipv4PrefixCount: {{ networkinterface.ipv4_prefix_count }}
+{%- endif %}
+{%- if networkinterface.ipv4_prefixes is defined %}{# BEGIN if networkinterface.ipv4_prefixes is defined #}
+    Ipv4Prefixes:
+{%- for item in networkinterface.ipv4_prefixes %}{# BEGIN for item in networkinterface.ipv4_prefixes #}
+      - Ipv4Prefix: {{ item.ipv4_prefix }}
+{%- endfor %}{# END for item in networkinterface.ipv4_prefixes #}
+{%- endif %}{# END if networkinterface.ipv4_prefixes is defined #}
+{%- if networkinterface.ipv6_address_count is defined %}
+    Ipv6AddressCount: {{ networkinterface.ipv6_address_count }}
+{%- endif %}
+{%- if networkinterface.ipv6_addresses is defined %}{# BEGIN if networkinterface.ipv6_addresses is defined #}
+    Ipv6Addresses:
+{%- for ipv6address in networkinterface.ipv6_addresses %}{# BEGIN for ipv6address in networkinterface.ipv6_addresses #}
+        - Ipv6Address: {{ ipv6address.Ipv6Address }}
+{%- endfor %}{# END for ipv6address in networkinterface.ipv6_addresses #}
+{%- endif %}{# END if networkinterface.ipv6_addresses is defined #}
+{%- if networkinterface.ipv6_prefix_count is defined %}
+    Ipv6PrefixCount: {{ networkinterface.ipv6_prefix_count }}
+{%- endif %}
+{%- if networkinterface.ipv6_prefixes is defined %}{# BEGIN if networkinterface.ipv6_prefixes is defined #}
+    Ipv6Prefixes:
+{%- for item in networkinterface.ipv6_prefixes %}{# BEGIN for item in networkinterface.ipv6_prefixes #}
+      - Ipv6Prefix: {{ item.ipv6_prefix }}
+{%- endfor %}{# END for item in networkinterface.ipv6_prefixes #}
+{%- endif %}{# END if networkinterface.ipv6_prefixes is defined #}
+{%- if networkinterface.network_card_index is defined %}
+    NetworkCardIndex: {{ networkinterface.network_card_index }}
+{%- endif %}
+{%- if networkinterface.network_interface_id is defined %}
+    NetworkInterfaceId: {{ networkinterface.network_interface_id | trim }}
+{%- endif %}
+{%- if networkinterface.primary_ipv6 is defined %}
+    PrimaryIpv6: {{ networkinterface.primary_ipv6 | lower }}
+{%- endif %}
+{%- if networkinterface.private_ip_address is defined %}
+    PrivateIpAddress: {{ networkinterface.private_ip_address }}
+{%- endif %}
+{%- if networkinterface.private_ip_addresses is defined %}{# BEGIN if networkinterface.private_ip_addresses is defined #}
+    PrivateIpAddresses:
+{%- for address in networkinterface.private_ip_addresses %}{# BEGIN for address in networkinterface.private_ip_addresses #}
+      -
+{%- if address.primary is defined %}
+        Primary: {{ address.primary | lower }}
+{%- endif %}
+{%- if address.private_ip_address is defined %}
+        PrivateIpAddress: {{ address.private_ip_address }}
+{%- endif %}
+{%- endfor %}{# END for address in networkinterface.private_ip_addresses #}
+{%- endif %}{# END if networkinterface.private_ip_addresses is defined #}
+{%- if networkinterface.secondary_private_ip_address_count is defined %}
+    SecondaryPrivateIpAddressCount: {{ networkinterface.secondary_private_ip_address_count }}
+{%- endif %}
+{%- if networkinterface.subnet_id is defined %}
+    SubnetId: {{ networkinterface.subnet_id | trim }}
+{%- endif %}
+{%- endfor %}{# END for networkinterface in network_interfaces #}
+{%- endmacro %}
+{######### END MACRO prep_network_interfaces #########}
+
+{######### BEGIN MACRO prep_launch_template #########}
+{%- macro prep_launch_template(launch_template) %}
+    Type: AWS::EC2::LaunchTemplate
+{%- if launch_template.metadata is defined %}
+    Metadata:
+      {{ launch_template.metadata | indent(width=6, first=false) }}
+{%- endif %}
+    DeletionPolicy: {{ launch_template.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ launch_template.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if launch_template.launch_template_data is defined %}{# BEGIN if launch_template.launch_template_data is defined #}
+      LaunchTemplateData:
+{%- if launch_template.launch_template_data.block_device_mappings is defined %}{# BEGIN if launch_template.launch_template_data.block_device_mappings is defined #}
+        {{ prep_block_device_mappings(launch_template.launch_template_data.block_device_mappings) | indent(width=8, first=false) }}
+{%- endif %}{# END if launch_template.launch_template_data.block_device_mappings is defined #}
+{%- if launch_template.launch_template_data.capacity_reservation_specification is defined %}{# BEGIN if launch_template.launch_template_data.capacity_reservation_specification is defined #}
+        CapacityReservationSpecification:
+{%- if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_preference is defined %}{# BEGIN if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_preference is defined #}
+          CapacityReservationPreference: {{ launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_preference }}
+{%- endif %}{# END if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_preference is defined #}
+{%- if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target is defined %}{# BEGIN if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target is defined #}
+          CapacityReservationTarget:
+{%- if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_id is defined %}{# BEGIN if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_id is defined #}
+            CapacityReservationId: {{ launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_id | trim }}
+{%- endif %}{# END if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_id is defined #}
+{%- if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_resource_group_arn is defined %}{# BEGIN if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_resource_group_arn is defined #}
+            CapacityReservationResourceGroupArn: {{ launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_resource_group_arn | trim }}}
+{%- endif %}{# END if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_resource_group_arn is defined #}
+{%- endif %}{# END if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target is defined #}
+{%- endif %}{# END if launch_template.launch_template_data.capacity_reservation_specification is defined #}
+{%- if launch_template.launch_template_data.cpu_options is defined %}{## BEGIN if launch_template.launch_template_data.cpu_options is defined ##}}
+        CpuOptions:
+{%- if launch_template.launch_template_data.cpu_options.amd_sev_snp is defined %}
+          AmdSevSnp: {{ launch_template.launch_template_data.cpu_options.amd_sev_snp }}
+{%- endif %}
+{%- if launch_template.launch_template_data.cpu_options.core_count is defined %}
+          CoreCount: {{ launch_template.launch_template_data.cpu_options.core_count }}
+{%- endif %}
+{%- if launch_template.launch_template_data.cpu_options.threads_per_core is defined %}
+          ThreadsPerCore: {{ launch_template.launch_template_data.cpu_options.threads_per_core }}
+{%- endif %}
+{%- endif %}{## END {%- if launch_template.launch_template_data.cpu_options is defined %} ##}
+{%- if launch_template.launch_template_data.credit_specification is defined %}{# BEGIN if launch_template.launch_template_data.credit_specification is defined #}
+        CreditSpecification:
+{%- if launch_template.launch_template_data.credit_specification.cpu_credits is defined %}
+          CpuCredits: {{ launch_template.launch_template_data.credit_specification.cpu_credits }}
+{%- endif %}
+{%- endif %}{# END if launch_template.launch_template_data.credit_specification is defined #}
+{%- if launch_template.launch_template_data.disable_api_stop is defined %}
+        DisableApiStop: {{ launch_template.launch_template_data.disable_api_stop | lower }}
+{%- endif %}
+{%- if launch_template.launch_template_data.disable_api_termination is defined %}
+        DisableApiTermination: {{ launch_template.launch_template_data.disable_api_termination | lower }}
+{%- endif %}
+{%- if launch_template.launch_template_data.ebs_optimized is defined %}
+        EbsOptimized: {{ launch_template.launch_template_data.ebs_optimized | lower }}
+{%- endif %}
+{%- if launch_template.launch_template_data.elastic_gpu_specifications is defined %}
+        ElasticGpuSpecifications:
+{%- for specification in launch_template.launch_template_data.elastic_gpu_specifications %}
+          - Type: {{ specification }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %}{## BEGIN {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
+        ElasticInferenceAccelerators:
+{%- for elastic_inference_accelerator in launch_template.launch_template_data.elastic_inference_accelerators %}{# BEGIN for elastic_inference_accelerator in launch_template.launch_template_data.elastic_inference_accelerators #}
+          -
+{%- if elastic_inference_accelerator.count is defined %}
+            Count: {{ elastic_inference_accelerator.count }}
+{%- endif %}
+{%- if elastic_inference_accelerator.type is defined %}
+            Type: {{ elastic_inference_accelerator.type }}
+{%- endif %}
+{%- endfor %}{# END for elastic_inference_accelerator in launch_template.launch_template_data.elastic_inference_accelerators #}
+{%- endif %}{## END {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
+{%- if launch_template.launch_template_data.enclave_options is defined %}{# BEGIN if launch_template.launch_template_data.enclave_options is defined #}
+        EnclaveOptions:
+{%- if launch_template.launch_template_data.enclave_options.enabled is defined %}
+          Enabled: {{ launch_template.launch_template_data.enclave_options.enabled }}
+{%- endif %}
+{%- endif %}{# END if launch_template.launch_template_data.enclave_options is defined #}
+{%- if launch_template.launch_template_data.hibernation_options is defined %}{# BEGIN if launch_template.launch_template_data.hibernation_options is defined #}
+        HibernationOptions:
+{%- if launch_template.launch_template_data.hibernation_options.configured is defined %}
+          Configured: {{ launch_template.launch_template_data.hibernation_options.configured }}
+{%- endif %}
+{%- endif %}{# END if launch_template.launch_template_data.hibernation_options is defined #}
+{%- if launch_template.launch_template_data.iam_instance_profile is defined %}{## BEGIN {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
+        IamInstanceProfile:
+{%- if launch_template.launch_template_data.iam_instance_profile.arn is defined%}
+          Arn: {{ launch_template.launch_template_data.iam_instance_profile.arn | trim }}
+{%- elif launch_template.launch_template_data.iam_instance_profile.name is defined%}
+          Name: {{ launch_template.launch_template_data.iam_instance_profile.name }}
+{%- endif %}
+{%- endif %}{## END {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
+{%- if launch_template.launch_template_data.image_id is defined %}{# BEGIN if launch_template.launch_template_data.image_id is defined #}
+        ImageId: {{ launch_template.launch_template_data.image_id | trim }}
+{%- endif %}{# END if launch_template.launch_template_data.image_id is defined #}
+{%- if launch_template.launch_template_data.instance_initiated_shutdown_behavior is defined %}{# BEGIN if launch_template.launch_template_data.instance_initiated_shutdown_behavior is defined #}
+        InstanceInitiatedShutdownBehavior: {{ launch_template.launch_template_data.instance_initiated_shutdown_behavior }}
+{%- endif %}{# END if launch_template.launch_template_data.instance_initiated_shutdown_behavior is defined #}
+{%- if launch_template.launch_template_data.instance_market_options is defined %}{## BEGIN if launch_template.launch_template_data.instance_market_options is defined ##}
+        InstanceMarketOptions:
+{%- if launch_template.launch_template_data.instance_market_options.market_type is defined %}{# BEGIN if launch_template.launch_template_data.instance_market_options.market_type is defined #}
+          MarketType: {{ launch_template.launch_template_data.instance_market_options.market_type }}
+{%- endif %}{# END if launch_template.launch_template_data.instance_market_options.market_type is defined #}
+{%- if launch_template.launch_template_data.instance_market_options.spot_options is defined %}{# BEGIN if launch_template.launch_template_data.instance_market_options.spot_options is defined #}
+          SpotOptions:
+{%- if launch_template.launch_template_data.instance_market_options.spot_options.block_duration_minutes is defined %}{# BEGIN if launch_template.launch_template_data.instance_market_options.spot_options.block_duration_minutes is defined #}
+            BlockDurationMinutes: {{ launch_template.launch_template_data.instance_market_options.spot_options.block_duration_minutes }}
+{%- endif %}{# END if launch_template.launch_template_data.instance_market_options.spot_options.block_duration_minutes is defined #}
+{%- if launch_template.launch_template_data.instance_market_options.spot_options.instance_interruption_behavior is defined %}{# BEGIN if launch_template.launch_template_data.instance_market_options.spot_options.instance_interruption_behavior is defined #}
+            InstanceInterruptionBehavior: {{ launch_template.launch_template_data.instance_market_options.spot_options.instance_interruption_behavior }}
+{%- endif %}{# END if launch_template.launch_template_data.instance_market_options.spot_options.instance_interruption_behavior is defined #}
+{%- if launch_template.launch_template_data.instance_market_options.spot_options.max_price is defined %}{# BEGIN if launch_template.launch_template_data.instance_market_options.spot_options.max_price is defined #}
+            MaxPrice: {{ launch_template.launch_template_data.instance_market_options.spot_options.max_price }}
+{%- endif %}{# END if launch_template.launch_template_data.instance_market_options.spot_options.max_price is defined #}
+{%- if launch_template.launch_template_data.instance_market_options.spot_options.spot_instance_type is defined %}{# BEGIN if launch_template.launch_template_data.instance_market_options.spot_options.spot_instance_type is defined #}
+            SpotInstanceType: {{ launch_template.launch_template_data.instance_market_options.spot_options.spot_instance_type }}
+{%- endif %}{# END if launch_template.launch_template_data.instance_market_options.spot_options.spot_instance_type is defined #}
+{%- if launch_template.launch_template_data.instance_market_options.spot_options.valid_until is defined %}{# BEGIN if launch_template.launch_template_data.instance_market_options.spot_options.valid_until is defined #}
+            ValidUntil: {{ launch_template.launch_template_data.instance_market_options.spot_options.valid_until }}
+{%- endif %}{# END if launch_template.launch_template_data.instance_market_options.spot_options.valid_until is defined #}
+{%- endif %}{# END if launch_template.launch_template_data.instance_market_options.spot_options is defined #}
+{%- endif %}{## END if launch_template.launch_template_data.instance_market_options is defined ##}
+{%- if launch_template.launch_template_data.instance_requirements is defined %}{# BEGIN if launch_template.launch_template_data.instance_requirements is defined #}
+        InstanceRequirements:
+{%- if launch_template.launch_template_data.instance_requirements.accelerator_count is defined %}
+          AcceleratorCount:
+{%- if launch_template.launch_template_data.instance_requirements.accelerator_count.max is defined %}
+            Max: {{ launch_template.launch_template_data.instance_requirements.accelerator_count.max }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.accelerator_count.min is defined %}
+            Min: {{ launch_template.launch_template_data.instance_requirements.accelerator_count.min }}
+{%- endif %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.accelerator_manufacturers is defined %}
+          AcceleratorManufacturers:
+{%- for manufacturer in launch_template.launch_template_data.instance_requirements.accelerator_manufacturers %}
+            - {{ manufacturer }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.accelerator_names is defined %}
+          AcceleratorNames:
+{%- for name in launch_template.launch_template_data.instance_requirements.accelerator_names %}
+            - {{ name }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.accelerator_total_memory_mib is defined %}
+          AcceleratorTotalMemoryMiB:
+{%- if launch_template.launch_template_data.instance_requirements.accelerator_total_memory_mib.max is defined %}
+            Max: {{ launch_template.launch_template_data.instance_requirements.accelerator_total_memory_mib.max }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.accelerator_total_memory_mib.min is defined %}
+            Min: {{ launch_template.launch_template_data.instance_requirements.accelerator_total_memory_mib.min }}
+{%- endif %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.accelerator_types is defined %}
+          AcceleratorTypes:
+{%- for type in launch_template.launch_template_data.instance_requirements.accelerator_types %}
+            - {{ type }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.allowed_instance_types is defined %}
+          AllowedInstanceTypes:
+{%- for instance_type in launch_template.launch_template_data.instance_requirements.allowed_instance_types %}
+            - {{ instance_type }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.bare_metal is defined %}
+          BareMetal: {{ launch_template.launch_template_data.instance_requirements.bare_metal }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.baseline_ebs_bandwidth_mbps is defined %}{# BEGIN if launch_template.launch_template_data.instance_requirements.baseline_ebs_bandwidth_mbps is defined #}
+          BaselineEbsBandwidthMbps:
+{%- if launch_template.launch_template_data.instance_requirements.baseline_ebs_bandwidth_mbps.max is defined %}
+            Max: {{ launch_template.launch_template_data.instance_requirements.baseline_ebs_bandwidth_mbps.max }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.baseline_ebs_bandwidth_mbps.min is defined %}
+            Min: {{ launch_template.launch_template_data.instance_requirements.baseline_ebs_bandwidth_mbps.min }}
+{%- endif %}
+{%- endif %}{# END if launch_template.launch_template_data.instance_requirements.baseline_ebs_bandwidth_mbps is defined #}
+{%- if launch_template.launch_template_data.instance_requirements.baseline_performance_factors is defined %}{# BEGIN if launch_template.launch_template_data.instance_requirements.baseline_performance_factors is defined #}
+          BaselinePerformanceFactors:
+{%- if launch_template.launch_template_data.instance_requirements.baseline_performance_factors.cpu is defined %}{# BEGIN if launch_template.launch_template_data.instance_requirements.baseline_performance_factors.cpu is defined #}
+            Cpu:
+{%- if launch_template.launch_template_data.instance_requirements.baseline_performance_factors.cpu.references is defined %}{# BEGIN if launch_template.launch_template_data.instance_requirements.baseline_performance_factors.cpu.references is defined #}
+              References:
+{%- for reference in launch_template.launch_template_data.instance_requirements.baseline_performance_factors.cpu.references %}{# BEGIN for reference in launch_template.launch_template_data.instance_requirements.baseline_performance_factors.cpu.references #}
+                - InstanceFamily: {{ reference.instance_family }}
+{%- endfor %}{# END for reference in launch_template.launch_template_data.instance_requirements.baseline_performance_factors.cpu.references #}
+{%- endif %}{# END if launch_template.launch_template_data.instance_requirements.baseline_performance_factors.cpu.references is defined #}
+{%- endif %}{# END if launch_template.launch_template_data.instance_requirements.baseline_performance_factors.cpu is defined #}
+{%- endif %}{# END if launch_template.launch_template_data.instance_requirements.baseline_performance_factors is defined #}
+{%- if launch_template.launch_template_data.instance_requirements.burstable_performance is defined %}
+          BurstablePerformance: {{ launch_template.launch_template_data.instance_requirements.burstable_performance }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.cpu_manufacturers is defined %}
+          CpuManufacturers:
+{%- for manufacturer in launch_template.launch_template_data.instance_requirements.cpu_manufacturers %}
+            - {{ manufacturer }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.exclude_instance_types is defined %}
+          ExcludedInstanceTypes:
+{%- for instance_type in launch_template.launch_template_data.instance_requirements.exclude_instance_types %}
+            - {{ instance_type }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.instance_generations is defined %}
+          InstanceGenerations:
+{%- for generation in launch_template.launch_template_data.instance_requirements.instance_generations %}
+            - {{ generation }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.local_storage is defined %}
+          LocalStorage: {{ launch_template.launch_template_data.instance_requirements.local_storage }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.local_storage_types is defined %}
+          LocalStorageTypes:
+{%- for type in launch_template.launch_template_data.instance_requirements.local_storage_types %}
+            - {{ type }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.max_spot_price_as_percentage_of_optimal_on_demand_price is defined %}
+          MaxSpotPriceAsPercentageOfOptimalOnDemandPrice: {{ launch_template.launch_template_data.instance_requirements.max_spot_price_as_percentage_of_optimal_on_demand_price }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.memory_gib_per_vcpu is defined %}
+          MemoryGiBPerVCpu:
+{%- if launch_template.launch_template_data.instance_requirements.memory_gib_per_vcpu.max is defined %}
+            Max: {{ launch_template.launch_template_data.instance_requirements.memory_gib_per_vcpu.max }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.memory_gib_per_vcpu.min is defined %}
+            Min: {{ launch_template.launch_template_data.instance_requirements.memory_gib_per_vcpu.min }}
+{%- endif %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.memory_mib is defined %}
+          MemoryMiB:
+{%- if launch_template.launch_template_data.instance_requirements.memory_mib.max is defined %}
+            Max: {{ launch_template.launch_template_data.instance_requirements.memory_mib.max }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.memory_mib.min is defined %}
+            Min: {{ launch_template.launch_template_data.instance_requirements.memory_mib.min }}
+{%- endif %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.network_bandwidth_gbps is defined %}
+          NetworkBandwidthGbps:
+{%- if launch_template.launch_template_data.instance_requirements.network_bandwidth_gbps.max is defined %}
+            Max: {{ launch_template.launch_template_data.instance_requirements.network_bandwidth_gbps.max }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.network_bandwidth_gbps.min is defined %}
+            Min: {{ launch_template.launch_template_data.instance_requirements.network_bandwidth_gbps.min }}
+{%- endif %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.network_interface_count is defined %}
+          NetworkInterfaceCount:
+{%- if launch_template.launch_template_data.instance_requirements.network_interface_count.max is defined %}
+            Max: {{ launch_template.launch_template_data.instance_requirements.network_interface_count.max }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.network_interface_count.min is defined %}
+            Min: {{ launch_template.launch_template_data.instance_requirements.network_interface_count.min }}
+{%- endif %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.on_demand_max_price_percentage_over_lowest_price is defined %}
+          OnDemandMaxPricePercentageOverLowestPrice: {{ launch_template.launch_template_data.instance_requirements.on_demand_max_price_percentage_over_lowest_price }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.require_hibernate_support is defined %}
+          RequireHibernateSupport: {{ launch_template.launch_template_data.instance_requirements.require_hibernate_support }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.spot_max_price_percentage_over_lowest_price is defined %}
+          SpotMaxPricePercentageOverLowestPrice: {{ launch_template.launch_template_data.instance_requirements.spot_max_price_percentage_over_lowest_price }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.total_local_storage_gb is defined %}
+          TotalLocalStorageGB:
+{%- if launch_template.launch_template_data.instance_requirements.total_local_storage_gb.max is defined %}
+            Max: {{ launch_template.launch_template_data.instance_requirements.total_local_storage_gb.max }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.total_local_storage_gb.min is defined %}
+            Min: {{ launch_template.launch_template_data.instance_requirements.total_local_storage_gb.min }}
+{%- endif %}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.vcpu_count is defined %}
+          VCpuCount:
+{%- if launch_template.launch_template_data.instance_requirements.vcpu_count.max is defined %}
+            Max: {{ launch_template.launch_template_data.instance_requirements.vcpu_count.max }}
+{%- endif %}
+{%- if launch_template.launch_template_data.instance_requirements.vcpu_count.min is defined %}
+            Min: {{ launch_template.launch_template_data.instance_requirements.vcpu_count.min }}
+{%- endif %}
+{%- endif %}
+{%- endif %}{# END if launch_template.launch_template_data.instance_requirements is defined #}
+{%- if launch_template.launch_template_data.instance_type is defined %}
+        InstanceType: {{ launch_template.launch_template_data.instance_type }}
+{%- endif %}
+{%- if launch_template.launch_template_data.kernel_id is defined %}
+        KernelId: {{ launch_template.launch_template_data.kernel_id }}
+{%- endif %}
+{%- if launch_template.launch_template_data.key_name is defined %}
+        KeyName: {{ launch_template.launch_template_data.key_name }}
+{%- endif %}
+{%- if launch_template.launch_template_data.license_specifications is defined %}{# BEGIN if launch_template.launch_template_data.license_specifications is defined #}
+        LicenseSpecifications:
+{%- for license_specification in launch_template.launch_template_data.license_specifications %}
+          - LicenseConfigurationArn: {{ license_specification.license_configuration_arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if launch_template.launch_template_data.license_specifications is defined #}
+{%- if launch_template.launch_template_data.maintenance_options is defined %}{# BEGIN if launch_template.launch_template_data.maintenance_options is defined #}
+        MaintenanceOptions:
+{%- if launch_template.launch_template_data.maintenance_options.auto_recovery is defined %}
+          AutoRecovery: {{ launch_template.launch_template_data.maintenance_options.auto_recovery }}
+{%- endif %}
+{%- endif %}{# END if launch_template.launch_template_data.maintenance_options is defined #}
+{%- if launch_template.launch_template_data.metadata_options is defined %}{## BEGIN {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
+        MetadataOptions:
+{%- if launch_template.launch_template_data.metadata_options.http_endpoint is defined %}
+          HttpEndpoint: {{ launch_template.launch_template_data.metadata_options.http_endpoint }}
+{%- endif %}
+{%- if launch_template.launch_template_data.metadata_options.http_protocol_ipv6 is defined %}
+          HttpProtocolIpv6: {{ launch_template.launch_template_data.metadata_options.http_protocol_ipv6 }}
+{%- endif %}
+{%- if launch_template.launch_template_data.metadata_options.http_put_response_hop_limit is defined %}
+          HttpPutResponseHopLimit: {{ launch_template.launch_template_data.metadata_options.http_put_response_hop_limit }}
+{%- endif %}
+{%- if launch_template.launch_template_data.metadata_options.http_tokens is defined %}
+          HttpTokens: {{ launch_template.launch_template_data.metadata_options.http_tokens }}
+{%- endif %}
+{%- if launch_template.launch_template_data.metadata_options.instance_metadata_tags is defined %}
+          InstanceMetadataTags: {{ launch_template.launch_template_data.metadata_options.instance_metadata_tags }}
+{%- endif %}
+{%- endif %}{## END {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
+{%- if launch_template.launch_template_data.monitoring is defined %}{# BEGIN if launch_template.launch_template_data.monitoring is defined #}
+        Monitoring:
+{%- if launch_template.launch_template_data.monitoring.enabled is defined %}
+          Enabled: {{ launch_template.launch_template_data.monitoring.enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if launch_template.launch_template_data.monitoring is defined #}
+{%- if launch_template.launch_template_data.network_interfaces is defined %}
+        {{ prep_network_interfaces(launch_template.launch_template_data.network_interfaces) | indent(width=8, first=false) }}
+{%- endif %}
+{%- if launch_template.launch_template_data.placement is defined %}{## BEGIN {%- if launch_template.launch_template_data.placement is defined %} ##}
+        Placement:
+{%- if launch_template.launch_template_data.placement.affinity is defined %}
+          Affinity: {{ launch_template.launch_template_data.placement.affinity }}
+{%- endif %}
+{%- if launch_template.launch_template_data.placement.availibility_zone is defined %}
+          AvailabilityZone: {{ launch_template.launch_template_data.placement.availibility_zone }}
+{%- endif %}
+{%- if launch_template.launch_template_data.placement.group_id is defined %}
+          GroupId: {{ launch_template.launch_template_data.placement.group_id }}
+{%- endif %}
+{%- if launch_template.launch_template_data.placement.group_name is defined %}
+          GroupName: {{ launch_template.launch_template_data.placement.group_name }}
+{%- endif %}
+{%- if launch_template.launch_template_data.placement.host_id is defined %}
+          HostId: {{ launch_template.launch_template_data.placement.host_id | trim }}
+{%- endif %}
+{%- if launch_template.launch_template_data.placement.host_resource_group_arn is defined %}
+          HostResourceGroupArn: {{ launch_template.launch_template_data.placement.host_resource_group_arn | trim }}
+{%- endif %}
+{%- if launch_template.launch_template_data.placement.partition_number is defined %}
+          PartitionNumber: {{ launch_template.launch_template_data.placement.partition_number }}
+{%- endif %}
+{%- if launch_template.launch_template_data.placement.spread_domain is defined %}
+          SpreadDomain: {{ launch_template.launch_template_data.placement.spread_domain }}
+{%- endif %}
+{%- if launch_template.launch_template_data.placement.tenancy is defined %}
+          Tenancy: {{ launch_template.launch_template_data.placement.tenancy }}
+{%- endif %}
+{%- endif %}{## END {%- if launch_template.launch_template_data.placement is defined %} ##}
+{%- if launch_template.launch_template_data.private_dns_name_options is defined %}{# BEGIN if launch_template.launch_template_data.private_dns_name_options is defined #}
+        PrivateDnsNameOptions:
+{%- if launch_template.launch_template_data.private_dns_name_options.enable_resource_name_dns_aaaa_record is defined %}
+          EnableResourceNameDnsAAAARecord: {{ launch_template.launch_template_data.private_dns_name_options.enable_resource_name_dns_aaaa_record | lower }}
+{%- endif %}
+{%- if launch_template.launch_template_data.private_dns_name_options.enable_resource_name_dns_a_record is defined %}
+          EnableResourceNameDnsARecord: {{ launch_template.launch_template_data.private_dns_name_options.enable_resource_name_dns_a_record | lower }}
+{%- endif %}
+{%- if launch_template.launch_template_data.private_dns_name_options.hostname_type is defined %}
+          HostnameType: {{ launch_template.launch_template_data.private_dns_name_options.hostname_type }}
+{%- endif %}
+{%- endif %}{# END if launch_template.launch_template_data.private_dns_name_options is defined #}
+{%- if launch_template.launch_template_data.ram_disk_id is defined %}
+        RamDiskId: {{ launch_template.launch_template_data.ram_disk_id | trim }}
+{%- endif %}
+{%- if launch_template.launch_template_data.security_group_ids is defined %}
+        SecurityGroupIds:
+{%- for security_group_id in launch_template.launch_template_data.security_group_ids %}
+          - {{ security_group_id | trim }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.security_groups is defined %}
+        SecurityGroups:
+{%- for security_group_name in launch_template.launch_template_data.security_groups %}
+          - {{ security_group_name }}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.tag_specifications is defined %}
+        TagSpecifications:
+{%- for tag_specification in launch_template.launch_template_data.tag_specifications %}
+          -
+{%- if tag_specification.resource_type is defined %}
+            ResourceType: {{ tag_specification.resource_type }}
+{%- endif %}
+{%- if tag_specification.tags is defined %}
+            Tags:
+{%- for key, value in tag_specification.tags.items() %}
+              - Key: {{ key }}
+                Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- if launch_template.launch_template_data.user_data is defined %}
+        UserData:
+          {{ launch_template.launch_template_data.user_data | indent(width=10, first=false) }}
+{%- endif %}
+{%- endif %}{# END if launch_template.launch_template_data is defined #}
+{%- if launch_template.launch_template_name is defined %}
+      LaunchTemplateName: {{ launch_template.launch_template_name }}
+{%- endif %}
+{%- if launch_template.tag_specifications is defined %}{# BEGIN if launch_template.tag_specifications is defined #}
+      TagSpecifications:
+{%- for tag_specification in launch_template.tag_specifications %}{# BEGIN for tag_specification in launch_template.tag_specifications #}
+        -
+{%- if tag_specification.resource_type is defined %}{# BEGIN if tag_specification.resource_type is defined #}
+          ResourceType: {{ tag_specification.resource_type }}
+{%- endif %}{# END if tag_specification.resource_type is defined #}
+{%- if tag_specification.tags is defined %}{# BEGIN if tag_specification.tags is defined #}
+          Tags:
+{%- for key, value in tag_specification.tags.items() %}{# BEGIN for key, value in tag_specification.tags.items() #}
+            - Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}{# END for key, value in tag_specification.tags.items() #}
+{%- endif %}{# END if tag_specification.tags is defined#}
+{%- endfor %}{# END for tag_specification in launch_template.tag_specifications #}
+{%- endif %}{# END if launch_template.tag_specifications is defined #}
+{%- if launch_template.version_description is defined %}
+      VersionDescription: {{ launch_template.version_description }}
+{%- endif %}
+{%- endmacro %}
+{######### END MACRO prep_launch_template #########}

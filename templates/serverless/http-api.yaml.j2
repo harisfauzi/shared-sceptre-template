@@ -64,7 +64,7 @@ Resources:
       DefaultRouteSettings: {{ http_api.default_route_settings_json }}
 {%- elif http_api.default_route_settings is defined %}
       DefaultRouteSettings:
-        {{ http_api.default_route_settings | indent(widht=8, first=false) }}
+        {{ http_api.default_route_settings | indent(width=8, first=false) }}
 {%- endif %}
 {%- if http_api.definition_body_json is defined %}
       DefinitionBody: {{ http_api.definition_body_json }}

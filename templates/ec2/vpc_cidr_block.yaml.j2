@@ -1,0 +1,76 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 VPC CIDR Block for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for vpc_cidr_block in sceptre_user_data.vpc_cidr_blocks %}
+{%- set vpc_cidr_block_name = vpc_cidr_block.name %}
+  {{ vpc_cidr_block_name }}:
+    Type: AWS::EC2::VPCCidrBlock
+    DeletionPolicy: {{ vpc_cidr_block.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_cidr_block.update_replace_policy | default('Delete') }}
+    Properties:
+      VpcId: {{ vpc_cidr_block.vpc_id }}
+{%- if vpc_cidr_block.amazon_provided_ipv6_cidr_block is defined %}
+      AmazonProvidedIpv6CidrBlock: {{ vpc_cidr_block.amazon_provided_ipv6_cidr_block | lower }}
+{%- endif %}
+{%- if vpc_cidr_block.cidr_block is defined %}
+      CidrBlock: {{ vpc_cidr_block.cidr_block }}
+{%- endif %}
+{%- if vpc_cidr_block.ipv4_ipam_pool_id is defined %}
+      Ipv4IpamPoolId: {{ vpc_cidr_block.ipv4_ipam_pool_id }}
+{%- endif %}
+{%- if vpc_cidr_block.ipv4_netmask_length is defined %}
+      Ipv4NetmaskLength: {{ vpc_cidr_block.ipv4_netmask_length }}
+{%- endif %}
+{%- if vpc_cidr_block.ipv6_cidr_block is defined %}
+      Ipv6CidrBlock: {{ vpc_cidr_block.ipv6_cidr_block }}
+{%- endif %}
+{%- if vpc_cidr_block.ipv6_cidr_block_network_border_group is defined %}
+      Ipv6CidrBlockNetworkBorderGroup: {{ vpc_cidr_block.ipv6_cidr_block_network_border_group }}
+{%- endif %}
+{%- if vpc_cidr_block.ipv6_ipam_pool_id is defined %}
+      Ipv6IpamPoolId: {{ vpc_cidr_block.ipv6_ipam_pool_id }}
+{%- endif %}
+{%- if vpc_cidr_block.ipv6_netmask_length is defined %}
+      Ipv6NetmaskLength: {{ vpc_cidr_block.ipv6_netmask_length }}
+{%- endif %}
+{%- if vpc_cidr_block.ipv6_pool is defined %}
+      Ipv6Pool: {{ vpc_cidr_block.ipv6_pool }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for vpc_cidr_block in sceptre_user_data.vpc_cidr_blocks %}
+{%- set vpc_cidr_block_name = vpc_cidr_block.name %}
+  {{ vpc_cidr_block_name }}:
+    Description: Association Id for {{ vpc_cidr_block_name }}
+    Value:
+      Ref: {{ vpc_cidr_block_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_cidr_block_name }}"
+  {{ vpc_cidr_block_name }}IpSource:
+    Description: The source that allocated the IP address space for {{ vpc_cidr_block_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vpc_cidr_block_name }}
+        - IpSource
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_cidr_block_name }}-IpSource"
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPCCidrBlock
+Properties:
+  AmazonProvidedIpv6CidrBlock: Boolean
+  CidrBlock: String
+  Ipv4IpamPoolId: String
+  Ipv4NetmaskLength: Integer
+  Ipv6CidrBlock: String
+  Ipv6CidrBlockNetworkBorderGroup: String
+  Ipv6IpamPoolId: String
+  Ipv6NetmaskLength: Integer
+  Ipv6Pool: String
+  VpcId: String
+#}

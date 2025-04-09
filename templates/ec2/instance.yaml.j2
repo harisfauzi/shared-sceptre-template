@@ -1,260 +1,25 @@
 ---
-{%- import 'macros/ec2_instance_blockdevicemapping.yaml.j2' as ec2_instance_blockdevicemapping %}
-{%- import 'macros/ec2_instance_networkinterface.yaml.j2' as ec2_instance_networkinterface %}
-{%- import 'macros/launch_template_blockdevicemapping.yaml.j2' as launch_template_blockdevicemapping %}
-{%- import 'macros/launch_template_networkinterface.yaml.j2' as launch_template_networkinterface %}
+{%- import 'macros/prop-launch-template.yaml.j2' as prop_launch_template %}
+{%- import 'macros/prop-instance.yaml.j2' as prop_instance %}
 Description: {{sceptre_user_data.description|default('EC2 Instances for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 {%- for instance in sceptre_user_data.instances %}
 {%- set instance_name = instance.name %}
-
-{%- if instance.launch_template_spec is defined %}{# BEGIN {%- if instance.launch_template is defined %} #}
+{%- if instance.launch_template_spec is defined %}{# BEGIN if instance.launch_template_spec is defined #}
 {%- set launch_template = instance.launch_template_spec %}
 {%- set launch_template_name = instance_name ~ 'LaunchTemplate' %}
   {{ launch_template_name }}:
-    Type: AWS::EC2::LaunchTemplate
-{%- if launch_template.metadata is defined %}
-    Metadata:
-{{ launch_template.metadata | indent(width=6,first=True) }}
-{%- endif %}
-    DeletionPolicy: {{ launch_template.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ launch_template.update_replace_policy | default('Delete') }}
-    Properties:
-{%- if launch_template.launch_template_data is defined %}{# BEGIN {%- if launch_template.launch_template_data is defined %} #}
-      LaunchTemplateData:
-{%- if launch_template.launch_template_data.block_device_mappings is defined %}
-{{ launch_template_blockdevicemapping.prep(launch_template.launch_template_data.block_device_mappings) }}
-{%- endif %}
-{%- if launch_template.launch_template_data.capacity_reservation_specification is defined %}
-        CapacityReservationSpecification:
-{%- if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_preference is defined %}
-          CapacityReservationPreference: {{ launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_preference }}
-{%- endif %}
-{%- if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target is defined %}
-          CapacityReservationTarget:
-{%- if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_id is defined %}
-            CapacityReservationId: {{ launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_id | trim }}
-{%- endif %}
-{%- if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_resource_group_arn is defined %}
-            CapacityReservationResourceGroupArn: {{ launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_resource_group_arn | trim }}}
-{%- endif %}
-{%- endif %}
-{%- endif %}
-{%- if launch_template.launch_template_data.cpu_options is defined %}{## BEGIN {%- if launch_template.launch_template_data.cpu_options is defined %} ##}}
-        CpuOptions:
-{%- if launch_template.launch_template_data.cpu_options.core_count is defined %}
-          CoreCount: {{ launch_template.launch_template_data.cpu_options.core_count }}
-{%- endif %}
-{%- if launch_template.launch_template_data.cpu_options.threads_per_core is defined %}
-          ThreadsPerCore: {{ launch_template.launch_template_data.cpu_options.threads_per_core }}
-{%- endif %}
-{%- endif %}{## END {%- if launch_template.launch_template_data.cpu_options is defined %} ##}
-{%- if launch_template.launch_template_data.credit_specification is defined %}
-        CreditSpecification:
-          CpuCredits: {{ launch_template.launch_template_data.credit_specification.cpu_credits }}
-{%- endif %}
-{%- if launch_template.launch_template_data.disable_api_termination is defined %}
-        DisableApiTermination: {{ launch_template.launch_template_data.disable_api_termination }}
-{%- endif %}
-{%- if launch_template.launch_template_data.ebs_optimized is defined %}
-        EbsOptimized: {{ launch_template.launch_template_data.ebs_optimized }}
-{%- endif %}
-{%- if launch_template.launch_template_data.elastic_gpu_specifications is defined %}
-        ElasticGpuSpecifications:
-{%- for specification in launch_template.launch_template_data.elastic_gpu_specifications %}
-          - Type: {{ specification }}
-{%- endfor %}
-{%- endif %}
-{%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %}{## BEGIN {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
-        ElasticInferenceAccelerators:
-{%- for elastic_inference_accelerator in launch_template.launch_template_data.elastic_inference_accelerators %}
-          -
-{%- if elastic_inference_accelerator.count is defined %}
-            Count: {{ elastic_inference_accelerator.count }}
-{%- endif %}
-{%- if elastic_inference_accelerator.type is defined %}
-            Type: {{ elastic_inference_accelerator.type }}
-{%- endif %}
-{%- endfor %}
-{%- endif %}{## END {%- if launch_template.launch_template_data.elastic_inference_accelerators is defined %} ##}
-{%- if launch_template.launch_template_data.enclave_options is defined %}
-        EnclaveOptions:
-          Enabled: {{ launch_template.launch_template_data.enclave_options.enabled }}
-{%- endif %}
-{%- if launch_template.launch_template_data.hibernation_options is defined %}
-        HibernationOptions:
-          Configured: {{ launch_template.launch_template_data.hibernation_options.configured }}
-{%- endif %}
-{%- if launch_template.launch_template_data.iam_instance_profile is defined %}{## BEGIN {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
-        IamInstanceProfile:
-{%- if launch_template.launch_template_data.iam_instance_profile.arn is defined%}
-          Arn: {{ launch_template.launch_template_data.iam_instance_profile.arn | trim }}
-{%- elif launch_template.launch_template_data.iam_instance_profile.name is defined%}
-          Name: {{ launch_template.launch_template_data.iam_instance_profile.name }}
-{%- endif %}
-{%- endif %}{## END {%- if launch_template.launch_template_data.iam_instance_profile is defined %} ##}
-{%- if launch_template.launch_template_data.image_id is defined %}
-        ImageId: {{ launch_template.launch_template_data.image_id | trim }}
-{%- endif %}
-{%- if launch_template.launch_template_data.instance_initiated_shutdown_behavior is defined %}
-        InstanceInitiatedShutdownBehavior: {{ launch_template.launch_template_data.instance_initiated_shutdown_behavior }}
-{%- endif %}
-{%- if launch_template.launch_template_data.instance_market_options is defined %}{## BEGIN {%- if launch_template.launch_template_data.instance_market_options is defined %} ##}
-        InstanceMarketOptions:
-{%- if launch_template.launch_template_data.instance_market_options.market_type is defined %}
-          MarketType: {{ launch_template.launch_template_data.instance_market_options.market_type }}
-{%- endif %}
-{%- if launch_template.launch_template_data.instance_market_options.spot_options is defined %}
-          SpotOptions:
-{%- if launch_template.launch_template_data.instance_market_options.spot_options.block_duration_minutes is defined %}
-            BlockDurationMinutes: {{ launch_template.launch_template_data.instance_market_options.spot_options.block_duration_minutes }}
-{%- endif %}
-{%- if launch_template.launch_template_data.instance_market_options.spot_options.instance_interruption_behavior is defined %}
-            InstanceInterruptionBehavior: {{ launch_template.launch_template_data.instance_market_options.spot_options.instance_interruption_behavior }}
-{%- endif %}
-{%- if launch_template.launch_template_data.instance_market_options.spot_options.max_price is defined %}
-            MaxPrice: {{ launch_template.launch_template_data.instance_market_options.spot_options.max_price }}
-{%- endif %}
-{%- if launch_template.launch_template_data.instance_market_options.spot_options.spot_instance_type is defined %}
-            SpotInstanceType: {{ launch_template.launch_template_data.instance_market_options.spot_options.spot_instance_type }}
-{%- endif %}
-{%- if launch_template.launch_template_data.instance_market_options.spot_options.valid_until is defined %}
-            ValidUntil: {{ launch_template.launch_template_data.instance_market_options.spot_options.valid_until }}
-{%- endif %}
-{%- endif %}
-{%- endif %}{## END {%- if launch_template.launch_template_data.instance_market_options is defined %} ##}
-{%- if launch_template.launch_template_data.instance_type is defined %}
-        InstanceType: {{ launch_template.launch_template_data.instance_type }}
-{%- endif %}
-{%- if launch_template.launch_template_data.kernel_id is defined %}
-        KernelId: {{ launch_template.launch_template_data.kernel_id }}
-{%- endif %}
-{%- if launch_template.launch_template_data.key_name is defined %}
-        KeyName: {{ launch_template.launch_template_data.key_name }}
-{%- endif %}
-{%- if launch_template.launch_template_data.license_specifications is defined %}
-        LicenseSpecifications:
-{%- for license_specification in launch_template.launch_template_data.license_specifications %}
-          - LicenseConfigurationArn: {{ license_specification.license_configuration_arn | trim }}
-{%- endfor %}
-{%- endif %}
-{%- if launch_template.launch_template_data.metadata_options is defined %}{## BEGIN {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
-        MetadataOptions:
-{%- if launch_template.launch_template_data.metadata_options.http_endpoint is defined %}
-          HttpEndpoint: {{ launch_template.launch_template_data.metadata_options.http_endpoint }}
-{%- endif %}
-{%- if launch_template.launch_template_data.metadata_options.http_protocol_ipv6 is defined %}
-          HttpProtocolIpv6: {{ launch_template.launch_template_data.metadata_options.http_protocol_ipv6 }}
-{%- endif %}
-{%- if launch_template.launch_template_data.metadata_options.http_put_response_hop_limit is defined %}
-          HttpPutResponseHopLimit: {{ launch_template.launch_template_data.metadata_options.http_put_response_hop_limit }}
-{%- endif %}
-{%- if launch_template.launch_template_data.metadata_options.http_tokens is defined %}
-          HttpTokens: {{ launch_template.launch_template_data.metadata_options.http_tokens }}
-{%- endif %}
-{%- if launch_template.launch_template_data.metadata_options.instance_metadata_tags is defined %}
-          InstanceMetadataTags: {{ launch_template.launch_template_data.metadata_options.instance_metadata_tags }}
-{%- endif %}
-{%- endif %}{## END {%- if launch_template.launch_template_data.metadata_options is defined %} ##}
-{%- if launch_template.launch_template_data.monitoring is defined %}
-        Monitoring:
-          Enabled: {{ launch_template.launch_template_data.monitoring.enabled }}
-{%- endif %}
-{%- if launch_template.launch_template_data.network_interfaces is defined %}
-{{ launch_template_networkinterface.prep(launch_template.launch_template_data.network_interfaces) }}
-{%- endif %}
-{%- if launch_template.launch_template_data.placement is defined %}{## BEGIN {%- if launch_template.launch_template_data.placement is defined %} ##}
-        Placement:
-{%- if launch_template.launch_template_data.placement.affinity is defined %}
-          Affinity: {{ launch_template.launch_template_data.placement.affinity }}
-{%- endif %}
-{%- if launch_template.launch_template_data.placement.availibility_zone is defined %}
-          AvailabilityZone: {{ launch_template.launch_template_data.placement.availibility_zone }}
-{%- endif %}
-{%- if launch_template.launch_template_data.placement.group_name is defined %}
-          GroupName: {{ launch_template.launch_template_data.placement.group_name }}
-{%- endif %}
-{%- if launch_template.launch_template_data.placement.host_id is defined %}
-          HostId: {{ launch_template.launch_template_data.placement.host_id | trim }}
-{%- endif %}
-{%- if launch_template.launch_template_data.placement.host_resource_group_arn is defined %}
-          HostResourceGroupArn: {{ launch_template.launch_template_data.placement.host_resource_group_arn | trim }}
-{%- endif %}
-{%- if launch_template.launch_template_data.placement.partition_number is defined %}
-          PartitionNumber: {{ launch_template.launch_template_data.placement.partition_number }}
-{%- endif %}
-{%- if launch_template.launch_template_data.placement.spread_domain is defined %}
-          SpreadDomain: {{ launch_template.launch_template_data.placement.spread_domain }}
-{%- endif %}
-{%- if launch_template.launch_template_data.placement.tenancy is defined %}
-          Tenancy: {{ launch_template.launch_template_data.placement.tenancy }}
-{%- endif %}
-{%- endif %}{## END {%- if launch_template.launch_template_data.placement is defined %} ##}
-{%- if launch_template.launch_template_data.ram_disk_id is defined %}
-        RamDiskId: {{ launch_template.launch_template_data.ram_disk_id | trim }}
-{%- endif %}
-{%- if launch_template.launch_template_data.security_group_ids is defined %}
-        SecurityGroupIds:
-{%- for security_group_id in launch_template.launch_template_data.security_group_ids %}
-          - {{ security_group_id | trim }}
-{%- endfor %}
-{%- endif %}
-{%- if launch_template.launch_template_data.security_groups is defined %}
-        SecurityGroups:
-{%- for security_group_name in launch_template.launch_template_data.security_groups %}
-          - {{ security_group_name }}
-{%- endfor %}
-{%- endif %}
-{%- if launch_template.launch_template_data.tag_specifications is defined %}
-        TagSpecifications:
-{%- for tag_specification in launch_template.launch_template_data.tag_specifications %}
-          -
-{%- if tag_specification.resource_type is defined %}
-            ResourceType: {{ tag_specification.resource_type }}
-{%- endif %}
-{%- if tag_specification.tags is defined %}
-            Tags:
-{%- for key, value in tag_specification.tags.items() %}
-              - Key: {{ key }}
-                Value: {{ value }}
-{%- endfor %}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if launch_template.launch_template_data.user_data is defined %}
-        UserData:
-{{ launch_template.launch_template_data.user_data | indent(width=10, first=true) }}
-{%- endif %}
-{%- endif %}{# END {%- if launch_template.launch_template_data is defined %} #}
-{%- if launch_template.launch_template_name is defined %}
-      LaunchTemplateName: {{ launch_template.launch_template_name }}
-{%- endif %}
-{%- if launch_template.tag_specifications is defined %}
-      TagSpecifications:
-{%- for tag_specification in launch_template.tag_specifications %}
-        -
-{%- if tag_specification.resource_type is defined %}
-          ResourceType: {{ tag_specification.resource_type }}
-{%- endif %}
-{%- if tag_specification.tags is defined %}
-          Tags:
-{%- for key, value in tag_specification.tags.items() %}
-            - Key: {{ key }}
-              Value: {{ value }}
-{%- endfor %}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- endif %}{# END {%- if instance.launch_template_spec is defined %} #}
-
+{{ prop_launch_template.prep_launch_template(launch_template) }}
+{%- endif %}{# END if instance.launch_template_spec is defined #}
+{######## BEGIN Type: AWS::EC2::Instance + optional AWS::EC2::EIPAssociation ########}
   {{ instance_name }}:
     Type: AWS::EC2::Instance
-{%- if instance.launch_template_spec is defined %}{# BEGIN {%- if instance.launch_template is defined %} #}
+{%- if instance.launch_template_spec is defined %}{# BEGIN if instance.launch_template_spec is defined #}
 {%- set launch_template_name = instance_name ~ 'LaunchTemplate' %}
     DependsOn: {{ launch_template_name }}
-{%- endif %}{# END {%- if instance.launch_template is defined %} #}
+{%- endif %}{# END if instance.launch_template_spec is defined #}
 {%- if instance.metadata is defined %}
     Metadata:
 {{ instance.metadata | indent(width=6,first=True) }}
@@ -282,49 +47,61 @@ Resources:
       AvailabilityZone: {{ instance.availability_zone }}
 {%- endif %}
 {%- if instance.block_device_mappings is defined %}
-{{ ec2_instance_blockdevicemapping.prep(instance.block_device_mappings) }}
+      {{ prop_instance.prep_block_device_mappings(instance.block_device_mappings) | indent(width=6, first=false) }}
 {%- endif %}
-{%- if instance.cpu_options is defined %}
+{%- if instance.cpu_options is defined %}{# BEGIN if instance.cpu_options is defined #}
       CpuOptions:
-{%- if instance.cpu_options.core_count is defined %}
+{%- if instance.cpu_options.core_count is defined %}{# BEGIN if instance.cpu_options.core_count is defined #}
         CoreCount: {{ instance.cpu_options.core_count }}
-{%- endif %}
-{%- if instance.cpu_options.threads_per_core is defined %}
+{%- endif %}{# END if instance.cpu_options.core_count is defined #}
+{%- if instance.cpu_options.threads_per_core is defined %}{# BEGIN if instance.cpu_options.threads_per_core is defined #}
         ThreadsPerCore: {{ instance.cpu_options.threads_per_core }}
-{%- endif %}
-{%- endif %}
-{%- if instance.credit_specification is defined %}
+{%- endif %}{# END if instance.cpu_options.threads_per_core is defined #}
+{%- endif %}{# END if instance.cpu_options is defined #}
+{%- if instance.credit_specification is defined %}{# BEGIN if instance.credit_specification is defined #}
       CreditSpecification:
-        CPUCredits: {{ instance.credit_specification.CPUCredits }}
+{%- if instance.credit_specification.cpu_credits is defined %}
+        CPUCredits: {{ instance.credit_specification.cpu_credits }}
 {%- endif %}
+{%- endif %}{# END if instance.credit_specification is defined #}
 {%- if instance.disable_api_termination is defined %}
-      DisableApiTermination: {{ instance.disable_api_termination }}
+      DisableApiTermination: {{ instance.disable_api_termination | lower }}
 {%- endif %}
 {%- if instance.ebs_optimized is defined %}
-      EbsOptimized: {{ instance.ebs_optimized }}
+      EbsOptimized: {{ instance.ebs_optimized | lower }}
 {%- endif %}
-{%- if instance.elastic_gpu_specifications is defined %}
+{%- if instance.elastic_gpu_specifications is defined %}{# BEGIN if instance.elastic_gpu_specifications is defined #}
       ElasticGpuSpecifications:
 {%- for specification in instance.elastic_gpu_specifications %}
         - Type: {{ specification.Type }}
 {%- endfor %}
-{%- endif %}
-{%- if instance.elastic_inference_accelerators is defined %}
+{%- endif %}{# END if instance.elastic_gpu_specifications is defined #}
+{%- if instance.elastic_inference_accelerators is defined %}{# BEGIN if instance.elastic_inference_accelerators is defined #}
       ElasticInferenceAccelerators:
-{%- for accelerator in instance.elastic_inference_accelerators %}
-        - Count: {{ accelerator.count }}
-          Type: {{ accelerator.Type }}
-{%- endfor %}
+{%- for accelerator in instance.elastic_inference_accelerators %}{# BEGIN for accelerator in instance.elastic_inference_accelerators #}
+        - Type: {{ accelerator.Type }}
+{%- if accelerator.count is defined %}
+          Count: {{ accelerator.count }}
 {%- endif %}
-{%- if instance.hibernation_options is defined %}
+{%- endfor %}{# END for accelerator in instance.elastic_inference_accelerators #}
+{%- endif %}{# END if instance.elastic_inference_accelerators is defined #}
+{%- if instance.enclave_options is defined %}{# BEGIN if instance.enclave_options is defined #}
+      EnclaveOptions:
+{%- if instance.enclave_options.enabled is defined %}
+        Enabled: {{ instance.enclave_options.enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if instance.enclave_options is defined #}
+{%- if instance.hibernation_options is defined %}{# BEGIN if instance.hibernation_options is defined #}
       HibernationOptions:
-        Configured: {{ instance.hibernation_options.Configured }}
+{%- if instance.hibernation_options.configured is defined %}
+        Configured: {{ instance.hibernation_options.configured }}
 {%- endif %}
+{%- endif %}{# END if instance.hibernation_options is defined #}
 {%- if instance.host_id is defined %}
       HostId: {{ instance.host_id | trim }}
 {%- endif %}
 {%- if instance.host_resource_group_arn is defined %}
-      HostResourceGroupArn: {{ instance.host_resource_group_arn }}
+      HostResourceGroupArn: {{ instance.host_resource_group_arn | trim }}
 {%- endif %}
 {%- if instance.iam_instance_profile is defined %}
       IamInstanceProfile: {{ instance.iam_instance_profile }}
@@ -355,30 +132,47 @@ Resources:
 {%- endif %}
 {%- if instance.launch_template is defined %}
       LaunchTemplate:
+{%- if instance.launch_template.version is defined %}
         Version: {{ instance.launch_template.version | trim }}
-{%- if instance.launch_template.launch_template_id is defined %}
-        LaunchTemplateId: {{ instance.launch_template.launch_template_id | trim }}
-{%- elif instance.launch_template.launch_templateName is defined %}
-        LaunchTemplateName: {{ instance.launch_template.launch_templateName }}
 {%- endif %}
+{%- if instance.launch_template.launch_template_id is defined %}{# BEGIN if instance.launch_template.launch_template_id/instance.launch_template.launch_template_name is defined #}
+        LaunchTemplateId: {{ instance.launch_template.launch_template_id | trim }}
+{%- elif instance.launch_template.launch_template_name is defined %}{# ELSE if instance.launch_template.launch_template_id/instance.launch_template.launch_template_name is defined #}
+        LaunchTemplateName: {{ instance.launch_template.launch_template_name }}
+{%- endif %}{# END if instance.launch_template.launch_template_id/instance.launch_template.launch_template_name is defined #}
 {%- endif %}
 {%- if instance.license_specifications is defined %}
       LicenseSpecifications:
 {%- for specification in instance.license_specifications %}
-        - LicenseConfigurationArn: {{ specification.license_configuration_arn }}
+        - LicenseConfigurationArn: {{ specification.license_configuration_arn | trim }}
 {%- endfor %}
 {%- endif %}
 {%- if instance.monitoring is defined %}
-      Monitoring: {{ instance.monitoring }}
+      Monitoring: {{ instance.monitoring | lower }}
 {%- endif %}
 {%- if instance.network_interfaces is defined %}
-{{ ec2_instance_networkinterface.prep(instance.network_interfaces) }}
+      {{ prop_instance.prep_network_interfaces(instance.network_interfaces) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if instance.placement_group_name is defined %}
       PlacementGroupName: {{ instance.placement_group_name }}
 {%- endif %}
+{%- if instance.private_dns_name_options is defined %}{# BEGIN if instance.private_dns_name_options is defined #}
+      PrivateDnsNameOptions:
+{%- if instance.private_dns_name_options.enable_resource_name_dns_aaaa_record is defined %}
+        EnableResourceNameDnsAAAARecord: {{ instance.private_dns_name_options.enable_resource_name_dns_aaaa_record | lower }}
+{%- endif %}
+{%- if instance.private_dns_name_options.enable_resource_name_dns_a_record is defined %}
+        EnableResourceNameDnsARecord: {{ instance.private_dns_name_options.enable_resource_name_dns_a_record | lower }}
+{%- endif %}
+{%- if instance.private_dns_name_options.hostname_type is defined %}
+        HostnameType: {{ instance.private_dns_name_options.hostname_type }}
+{%- endif %}
+{%- endif %}{# END if instance.private_dns_name_options is defined #}
 {%- if instance.private_ip_address is defined %}
       PrivateIpAddress: {{ instance.private_ip_address }}
+{%- endif %}
+{%- if instance.propagate_tags_to_volume_on_creation is defined %}
+      PropagateTagsToVolumeOnCreation: {{ instance.propagate_tags_to_volume_on_creation | lower }}
 {%- endif %}
 {%- if instance.ram_disk_id is defined %}
       RamdiskId: {{ instance.ram_disk_id | trim }}
@@ -396,50 +190,51 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if instance.source_dest_check is defined %}
-      SourceDestCheck: {{ instance.source_dest_check }}
+      SourceDestCheck: {{ instance.source_dest_check | lower }}
 {%- endif %}
-{%- if instance.ssm_associations is defined %}
+{%- if instance.ssm_associations is defined %}{# BEGIN if instance.ssm_associations is defined #}
       SsmAssociations:
-{%- for association in instance.ssm_associations %}
+{%- for association in instance.ssm_associations %}{# BEGIN for association in instance.ssm_associations #}
         - DocumentName: {{ association.document_name }}
-{%- if association.association_parameters is defined %}
+{%- if association.association_parameters is defined %}{# BEGIN if association.association_parameters is defined #}
           AssociationParameters:
-{%- for parameter in association.association_parameters %}
+{%- for parameter in association.association_parameters %}{# BEGIN for parameter in association.association_parameters #}
             -
-              Key: {{ parameter.Key }}
+              Key: {{ parameter.key }}
               Value:
-{%- for paramvalue in parameter.Value %}
-                - {{ paramvalue }}
+{%- for item in parameter.value %}
+                - {{ item }}
 {%- endfor %}
-{%- endfor %}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for parameter in association.association_parameters #}
+{%- endif %}{# END if association.association_parameters is defined #}
+{%- endfor %}{# END for association in instance.ssm_associations #}
+{%- endif %}{# END if instance.ssm_associations is defined #}
 {%- if instance.subnet_id is defined %}
       SubnetId: {{ instance.subnet_id | trim }}
 {%- endif %}
-{%- if instance.tags is defined %}
       Tags:
-{%- for key,value in instance.tags.items() %}
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if instance.tags is defined %}{# BEGIN if instance.tags is defined #}
+{%- for key, value in instance.tags.items() %}{# BEGIN for key, value in instance.tags.items() #}
         - Key: {{ key }}
           Value: {{ value }}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for key, value in instance.tags.items() #}
+{%- endif %}{# END if instance.tags is defined #}
 {%- if instance.tenancy is defined %}
       Tenancy: {{ instance.tenancy }}
 {%- endif %}
 {%- if instance.user_data is defined %}
       UserData:
-{{ instance.user_data | indent(width=8,first=True) }}
+        {{ instance.user_data | indent(width=8, first=false) }}
 {%- endif %}
-{%- if instance.volumes is defined %}
+{%- if instance.volumes is defined %}{# BEGIN if instance.volumes is defined #}
       Volumes:
-{%- for volume in instance.volumes %}
+{%- for volume in instance.volumes %}{# BEGIN for volume in instance.volumes #}
         - Device: {{ volume.device }}
           VolumeId: {{ volume.volume_id | trim }}
-{%- endfor %}
-{%- endif %}
-
+{%- endfor %}{# END for volume in instance.volumes #}
+{%- endif %}{# END if instance.volumes is defined #}
 {%- if instance.eip_allocation_id is defined %}
   {{ instance_name }}EIPAssociation:
     Type: AWS::EC2::EIPAssociation
@@ -450,8 +245,8 @@ Resources:
       InstanceId:
         Ref: {{ instance_name }}
 {%- endif %}
-
 {%- endfor %}
+{######## END Type: AWS::EC2::Instance + optional AWS::EC2::EIPAssociation ########}
 
 Outputs:
 {%- for instance in sceptre_user_data.instances %}
@@ -467,53 +262,142 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}"
-
   {{ instance_name }}AvailabilityZone:
     Description: The Availability Zone for {{ instance_name }}
     Value:
       Fn::GetAtt:
-      - {{ instance_name }}
-      - AvailabilityZone
+        - {{ instance_name }}
+        - AvailabilityZone
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}-AvailabilityZone"
-
   {{ instance_name }}PrivateDnsName:
     Description: The Private DNS Name for {{ instance_name }}
     Value:
       Fn::GetAtt:
-      - {{ instance_name }}
-      - PrivateDnsName
+        - {{ instance_name }}
+        - PrivateDnsName
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}-PrivateDnsName"
-
   {{ instance_name }}PrivateIp:
     Description: The Private IP address for {{ instance_name }}
     Value:
       Fn::GetAtt:
-      - {{ instance_name }}
-      - PrivateIp
+        - {{ instance_name }}
+        - PrivateIp
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}-PrivateIp"
-
-{# {%- if False %}
-  {{ instance_name }}PublicDnsName:
-    Description: The Public DNS Name for {{ instance_name }}
-    Value:
-      Fn::GetAtt: ["{{ instance_name }}", "PublicDnsName"]
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ instance_name }}PublicDnsName"
-
-  {{ instance_name }}PublicIp:
-    Description: The Public IP Address for {{ instance_name }}
-    Value:
-      Fn::GetAtt: ["{{ instance_name }}", "PublicIp"]
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ instance_name }}PublicIp"
-{%- endif %} #}
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-08:
+Type: AWS::EC2::Instance
+Properties:
+  AdditionalInfo: String
+  Affinity: String
+  AvailabilityZone: String
+  BlockDeviceMappings:
+    -
+      DeviceName: String
+      Ebs:
+        DeleteOnTermination: Boolean
+        Encrypted: Boolean
+        Iops: Integer
+        KmsKeyId: String
+        SnapshotId: String
+        VolumeSize: Integer
+        VolumeType: String
+      NoDevice: Json
+      VirtualName: String
+  CpuOptions:
+    CoreCount: Integer
+    ThreadsPerCore: Integer
+  CreditSpecification:
+    CPUCredits: String
+  DisableApiTermination: Boolean
+  EbsOptimized: Boolean
+  ElasticGpuSpecifications:
+    - Type: String
+  ElasticInferenceAccelerators:
+    -
+      Count: Integer
+      Type: String
+  EnclaveOptions:
+    Enabled: Boolean
+  HibernationOptions:
+    Configured: Boolean
+  HostId: String
+  HostResourceGroupArn: String
+  IamInstanceProfile: String
+  ImageId: String
+  InstanceInitiatedShutdownBehavior: String
+  InstanceType: String
+  Ipv6AddressCount: Integer
+  Ipv6Addresses:
+    - Ipv6Address: String
+  KernelId: String
+  KeyName: String
+  LaunchTemplate:
+    LaunchTemplateId: String
+    LaunchTemplateName: String
+    Version: String
+  LicenseSpecifications:
+    - LicenseConfigurationArn: String
+  Monitoring: Boolean
+  NetworkInterfaces:
+    -
+      AssociateCarrierIpAddress: Boolean
+      AssociatePublicIpAddress: Boolean
+      DeleteOnTermination: Boolean
+      Description: String
+      DeviceIndex: String
+      EnaSrdSpecification:
+        EnaSrdEnabled: Boolean
+        EnaSrdUdpSpecification:
+          EnaSrdUdpEnabled: Boolean
+      GroupSet:
+        - String
+      Ipv6AddressCount: Integer
+      Ipv6Addresses:
+        - Ipv6Address: String
+      NetworkInterfaceId: String
+      PrivateIpAddress: String
+      PrivateIpAddresses:
+        -
+          Primary: Boolean
+          PrivateIpAddress: String
+      SecondaryPrivateIpAddressCount: Integer
+      SubnetId: String
+  PlacementGroupName: String
+  PrivateDnsNameOptions:
+    EnableResourceNameDnsAAAARecord: Boolean
+    EnableResourceNameDnsARecord: Boolean
+    HostnameType: String
+  PrivateIpAddress: String
+  PropagateTagsToVolumeOnCreation: Boolean
+  RamdiskId: String
+  SecurityGroupIds:
+    - String
+  SecurityGroups:
+    - String
+  SourceDestCheck: Boolean
+  SsmAssociations:
+    -
+      AssociationParameters:
+        -
+          Key: String
+          Value:
+            - String
+      DocumentName: String
+  SubnetId: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  Tenancy: String
+  UserData: String
+  Volumes:
+    -
+      Device: String
+      VolumeId: String
+#}

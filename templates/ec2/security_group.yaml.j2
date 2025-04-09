@@ -79,11 +79,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for security_group in sceptre_user_data.security_groups %}
 {%- set security_group_name = security_group.name %}
   {{ security_group_name }}:
@@ -93,7 +91,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ security_group_name }}"
-
   {{ security_group_name }}GroupId:
     Description: SecurityGroup ID for {{ security_group_name }}
     Value:
@@ -103,7 +100,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ security_group_name }}-GroupId"
-
   {{ security_group_name }}VpcId:
     Description: VPC ID for {{ security_group_name }}
     Value:
@@ -113,5 +109,36 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ security_group_name }}-VpcId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::SecurityGroup
+Properties:
+  GroupDescription: String
+  GroupName: String
+  SecurityGroupEgress: 
+    -
+      CidrIp: String
+      CidrIpv6: String
+      Description: String
+      DestinationPrefixListId: String
+      DestinationSecurityGroupId: String
+      FromPort: Integer
+      IpProtocol: String
+      ToPort: Integer
+  SecurityGroupIngress: 
+    -
+      CidrIp: String
+      CidrIpv6: String
+      Description: String
+      FromPort: Integer
+      IpProtocol: String
+      SourcePrefixListId: String
+      SourceSecurityGroupId: String
+      SourceSecurityGroupName: String
+      SourceSecurityGroupOwnerId: String
+      ToPort: Integer
+  Tags: 
+    - Key: String
+      Value: String
+  VpcId: String
+#}

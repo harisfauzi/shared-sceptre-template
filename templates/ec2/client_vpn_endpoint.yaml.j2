@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Client Vpn Endpoint(s)
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for client_vpn_endpoint in sceptre_user_data.client_vpn_endpoints %}
 {%- set client_vpn_endpoint_name = client_vpn_endpoint.name %}
   {{ client_vpn_endpoint_name }}:
@@ -59,6 +58,9 @@ Resources:
 {%- if client_vpn_endpoint.description is defined %}
       Description: {{ client_vpn_endpoint.description }}
 {%- endif %}
+{%- if client_vpn_endpoint.disconnect_on_session_timeout is defined %}
+      DisconnectOnSessionTimeout: {{ client_vpn_endpoint.disconnect_on_session_timeout | lower }}
+{%- endif %}
 {%- if client_vpn_endpoint.dns_servers is defined %}
       DnsServers:
 {%- for dns_server in client_vpn_endpoint.dns_servers %}
@@ -110,7 +112,6 @@ Resources:
 {%- set ns1.ii = 0 %}
 {%- for subnet_id in client_vpn_endpoint.target_network_associations %}
 {%- set ns1.ii = ns1.ii + 1 %}
-
   {{ client_vpn_endpoint_name ~ "Target" ~ ("%03d" % ns1.ii) }}:
     Type: AWS::EC2::ClientVpnTargetNetworkAssociation
     DeletionPolicy: {{ client_vpn_endpoint.deletion_policy | default('Delete') }}
@@ -119,14 +120,11 @@ Resources:
       ClientVpnEndpointId:
         Ref: {{ client_vpn_endpoint_name }}
       SubnetId: {{ subnet_id | trim }}
-
 {%- endfor %}
 {%- endif %}{# END {%- if client_vpn_endpoint.target_network_associations is defined %}#}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for client_vpn_endpoint in sceptre_user_data.client_vpn_endpoints %}
 {%- set client_vpn_endpoint_name = client_vpn_endpoint.name %}
   {{ client_vpn_endpoint_name }}:
@@ -136,13 +134,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ client_vpn_endpoint_name }}"
-
 {%- if client_vpn_endpoint.target_network_associations is defined %}{# BEGIN {%- if client_vpn_endpoint.target_network_associations is defined %} #}
 {%- set ns1 = namespace() %}
 {%- set ns1.ii = 0 %}
 {%- for subnet_id in client_vpn_endpoint.target_network_associations %}
 {%- set ns1.ii = ns1.ii + 1 %}
-
   {{ client_vpn_endpoint_name ~ "Target" ~ ("%03d" % ns1.ii) }}:
     Description: The association ID for ClientVpnTargetNetworkAssociation {{ client_vpn_endpoint_name }}
     Value:
@@ -150,13 +146,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ client_vpn_endpoint_name ~ "Target" ~ ("%03d" % ns1.ii) }}"
-
 {%- endfor %}
 {%- endif %}{# END {%- if client_vpn_endpoint.target_network_associations is defined %}#}
-
-{%- endfor %}
-{#
-# Supported structure as of 20241027:
+{%- endfor %}{#
+# Supported structure as of 2025-04-08:
 Type: AWS::EC2::ClientVpnEndpoint
 Properties:
   AuthenticationOptions:
@@ -180,6 +173,7 @@ Properties:
     CloudwatchLogStream: String
     Enabled: Boolean
   Description: String
+  DisconnectOnSessionTimeout: Boolean
   DnsServers:
     - String
   SecurityGroupIds:

@@ -12,18 +12,18 @@ Resources:
     Properties:
       # Required property
       IpamId: {{ scope.ipam_id | trim }}
-      {%- if scope.description is defined %}
+{%- if scope.description is defined %}
       Description: {{ scope.description }}
-      {%- endif %}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-        {%- if scope.tags is defined %}
-        {%- for key,value in scope.tags.items() %}
+{%- if scope.tags is defined %}
+{%- for key,value in scope.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
-        {%- endfor %}
-        {%- endif %}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -36,7 +36,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ scope_name }}"
-
   {{ scope_name }}Arn:
     Description: The ARN for {{ scope_name }}
     Value:
@@ -46,7 +45,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ scope_name }}-Arn"
-
   {{ scope_name }}IpamArn:
     Description: The IPAM ARN for {{ scope_name }}
     Value:
@@ -56,7 +54,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ scope_name }}-IpamArn"
-
   {{ scope_name }}IpamScopeId:
     Description: The IPAM Scope ID for {{ scope_name }}
     Value:
@@ -66,7 +63,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ scope_name }}-IpamScopeId"
-
   {{ scope_name }}IpamScopeType:
     Description: The IPAM Scope Type for {{ scope_name }}
     Value:

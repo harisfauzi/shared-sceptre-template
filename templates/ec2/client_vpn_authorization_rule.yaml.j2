@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Client Vpn Authorizati
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for client_vpn_authorization_rule in sceptre_user_data.client_vpn_authorization_rules %}
 {%- set client_vpn_authorization_rule_name = client_vpn_authorization_rule.name %}
   {{ client_vpn_authorization_rule_name }}:
@@ -17,10 +16,18 @@ Resources:
       AccessGroupId: {{ client_vpn_authorization_rule.access_group_id | trim }}
 {%- endif %}
 {%- if client_vpn_authorization_rule.authorize_all_groups is defined %}
-      AuthorizeAllGroups: {{ client_vpn_authorization_rule.authorize_all_groups }}
+      AuthorizeAllGroups: {{ client_vpn_authorization_rule.authorize_all_groups | lower }}
 {%- endif %}
 {%- if client_vpn_authorization_rule.description is defined %}
       Description: {{ client_vpn_authorization_rule.description }}
 {%- endif %}
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-08
+Type: AWS::EC2::ClientVpnAuthorizationRule
+Properties:
+  AccessGroupId: String
+  AuthorizeAllGroups: Boolean
+  ClientVpnEndpointId: String
+  Description: String
+  TargetNetworkCidr: String
+#}

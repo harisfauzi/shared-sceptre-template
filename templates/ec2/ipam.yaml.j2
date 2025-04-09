@@ -10,30 +10,36 @@ Resources:
     DeletionPolicy: {{ ipam.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ ipam.update_replace_policy | default('Delete') }}
     Properties:
-      {%- if ipam.description is defined %}
+{%- if ipam.default_resource_discovery_organizational_unit_exclusions is defined %}{# BEGIN if ipam.default_resource_discovery_organizational_unit_exclusions is defined #}
+      DefaultResourceDiscoveryOrganizationalUnitExclusions:
+{%- for exclusion in ipam.default_resource_discovery_organizational_unit_exclusions %}
+        - OrganizationsEntityPath: {{ exclusion.organizations_entity_path }}
+{%- endfor %}
+{%- endif %}{# END if ipam.default_resource_discovery_organizational_unit_exclusions is defined#}
+{%- if ipam.description is defined %}
       Description: {{ ipam.description }}
-      {%- endif %}
-      {%- if ipam.enable_private_gua is defined %}
+{%- endif %}
+{%- if ipam.enable_private_gua is defined %}
       EnablePrivateGua: {{ ipam.enable_private_gua | lower }}
-      {%- endif %}
-      {%- if ipam.operating_regions is defined %}
+{%- endif %}
+{%- if ipam.operating_regions is defined %}
       OperatingRegions:
-        {%- for region in ipam.operating_regions %}
-        - RegionName: {{ region }}
-        {%- endfor %}
-      {%- endif %}
+{%- for region in ipam.operating_regions %}
+        - RegionName: {{ region.region_name }}
+{%- endfor %}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-        {%- if ipam.tags is defined %}
-        {%- for key,value in ipam.tags.items() %}
+{%- if ipam.tags is defined %}
+{%- for key, value in ipam.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
-        {%- endfor %}
-        {%- endif %}
-      {%- if ipam.tier is defined %}
+{%- endfor %}
+{%- endif %}
+{%- if ipam.tier is defined %}
       Tier: {{ ipam.tier }}
-      {%- endif %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -46,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ ipam_name }}"
-
   {{ ipam_name }}Arn:
     Description: The Private Default Scope ID for {{ ipam_name }}
     Value:
@@ -56,7 +61,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ ipam_name }}-Arn"
-
   {{ ipam_name }}PrivateDefaultScopeId:
     Description: The Private Default Scope ID for {{ ipam_name }}
     Value:
@@ -66,7 +70,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ ipam_name }}-PrivateDefaultScopeId"
-
   {{ ipam_name }}PublicDefaultScopeId:
     Description: The Public Default Scope ID for {{ ipam_name }}
     Value:
@@ -78,9 +81,11 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ ipam_name }}-PublicDefaultScopeId"
 {%- endfor %}
 {#
-# Supported structure as of 20250107:
+# Supported structure as of 2025-04-09:
 Type: AWS::EC2::IPAM
 Properties:
+  DefaultResourceDiscoveryOrganizationalUnitExclusions:
+    - OrganizationsEntityPath: String
   Description: String
   EnablePrivateGua: Boolean
   OperatingRegions: 

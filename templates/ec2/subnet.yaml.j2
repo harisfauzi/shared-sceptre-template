@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Subnet(s) for '+sceptre_us
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for subnet in sceptre_user_data.subnets %}
 {%- set subnet_name = subnet.name %}
   {{ subnet_name }}:
@@ -11,14 +10,33 @@ Resources:
     DeletionPolicy: {{ subnet.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ subnet.update_replace_policy | default('Delete') }}
     Properties:
-      CidrBlock: {{ subnet.cidr_block }}
 {%- if subnet.assign_ipv6_on_creation is defined %}
-      AssignIpv6AddressOnCreation: {{ subnet.assign_ipv6_on_creation }}
+      AssignIpv6AddressOnCreation: {{ subnet.assign_ipv6_on_creation | lower }}
 {%- endif %}
 {%- if subnet.availability_zone is defined %}
       AvailabilityZone: {{ subnet.availability_zone }}
 {%- endif %}
-{%- if subnet.ipv6_cidr_block is defined %}
+{%- if subnet.availability_zone_id is defined %}
+      AvailabilityZoneId: {{ subnet.availability_zone_id }}
+{%- endif %}
+{%- if subnet.cidr_block is defined %}
+      CidrBlock: {{ subnet.cidr_block }}
+{%- endif %}
+{%- if subnet.enable_dns_64 is defined %}
+      EnableDns64: {{ subnet.enable_dns_64 | lower }}
+{%- endif %}
+{%- if subnet.enable_lni_at_device_index is defined %}
+      EnableLniAtDeviceIndex: {{ subnet.enable_lni_at_device_index }}
+{%- endif %}
+{%- if subnet.ipv4_ipam_pool_id is defined %}
+      Ipv4IpamPoolId: {{ subnet.ipv4_ipam_pool_id }}
+{%- endif %}
+{%- if subnet.ipv4_netmask_length is defined %}
+      Ipv4NetmaskLength: {{ subnet.ipv4_netmask_length }}
+{%- endif %}
+{%- if subnet.ipv6_cidr_block_str is defined %}
+      Ipv6CidrBlock: {{ subnet.ipv6_cidr_block_str }}
+{%- elif subnet.ipv6_cidr_block is defined %}
       Ipv6CidrBlock:
         Fn::Select:
           - {{ subnet.ipv6_cidr_block.index }}
@@ -27,12 +45,33 @@ Resources:
               - {{ subnet.ipv6_cidr_block.array_size }}
               - {{ subnet.ipv6_cidr_block.subnet_size }}
 {%- endif %}
+{%- if subnet.ipv6_ipam_pool_id is defined %}
+      Ipv6IpamPoolId: {{ subnet.ipv6_ipam_pool_id }}
+{%- endif %}
+{%- if subnet.ipv6_native is defined %}
+      Ipv6Native: {{ subnet.ipv6_native }}
+{%- endif %}
+{%- if subnet.ipv6_netmask_length is defined %}
+      Ipv6NetmaskLength: {{ subnet.ipv6_netmask_length }}
+{%- endif %}
 {%- if subnet.map_public_ip_on_launch is defined %}
-      MapPublicIpOnLaunch: {{ subnet.map_public_ip_on_launch }}
+      MapPublicIpOnLaunch: {{subnet.map_public_ip_on_launch | lower }}
 {%- endif %}
 {%- if subnet.outpost_arn is defined %}
       OutpostArn: {{ subnet.outpost_arn }}
 {%- endif %}
+{%- if subnet.private_dns_name_options_on_launch is defined %}{# BEGIN if subnet.private_dns_name_options_on_launch is defined #}
+      PrivateDnsNameOptionsOnLaunch:
+{%- if subnet.private_dns_name_options_on_launch.enable_resource_name_dns_aaaa_record is defined %}
+        EnableResourceNameDnsAAAARecord: {{ subnet.private_dns_name_options_on_launch.enable_resource_name_dns_aaaa_record | lower }}
+{%- endif %}
+{%- if subnet.private_dns_name_options_on_launch.enable_resource_name_dns_a_record is defined %}
+        EnableResourceNameDnsARecord: {{ subnet.private_dns_name_options_on_launch.enable_resource_name_dns_a_record | lower }}
+{%- endif %}
+{%- if subnet.private_dns_name_options_on_launch.hostname_type is defined %}
+        HostnameType: {{ subnet.private_dns_name_options_on_launch.hostname_type }}
+{%- endif %}
+{%- endif %}{# END if subnet.private_dns_name_options_on_launch is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -43,7 +82,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
       VpcId: {{ subnet.vpc_id | trim }}
-
+{############ AWS::EC2::SubnetNetworkAclAssociation ############}
 {%- if subnet.network_acl_id is defined %}
   {{ subnet_name }}SubnetNetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
@@ -52,7 +91,7 @@ Resources:
       SubnetId:
         Ref: {{ subnet_name }}
 {%- endif %}
-
+{############# AWS::EC2::SubnetRouteTableAssociation ############}
 {%- if subnet.route_table_id is defined %}
   {{ subnet_name }}SubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
@@ -73,7 +112,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ subnet_name }}"
-
   {{ subnet_name }}AvailabilityZone:
     Description: AvailabilityZone for {{ subnet_name }}
     Value:
@@ -83,7 +121,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ subnet_name }}-AvailabilityZone"
-
   {{ subnet_name }}VpcId:
     Description: VPC ID for {{ subnet_name }}
     Value:
@@ -93,5 +130,31 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ subnet_name }}-VpcId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::Subnet
+Properties:
+  AssignIpv6AddressOnCreation: Boolean
+  AvailabilityZone: String
+  AvailabilityZoneId: String
+  CidrBlock: String
+  EnableDns64: Boolean
+  EnableLniAtDeviceIndex: Integer
+  Ipv4IpamPoolId: String
+  Ipv4NetmaskLength: Integer
+  Ipv6CidrBlock: String
+  Ipv6IpamPoolId: String
+  Ipv6Native: Boolean
+  Ipv6NetmaskLength: Integer
+  MapPublicIpOnLaunch: Boolean
+  OutpostArn: String
+  PrivateDnsNameOptionsOnLaunch:
+    EnableResourceNameDnsAAAARecord: Boolean
+    EnableResourceNameDnsARecord: Boolean
+    HostnameType: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  VpcId: String
+#}

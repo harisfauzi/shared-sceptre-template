@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 VPC Peering Connection
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for vpc_peering_connection in sceptre_user_data.vpc_peering_connections %}
 {%- set vpc_peering_connection_name = vpc_peering_connection.name %}
   {{ vpc_peering_connection_name }}:
@@ -26,16 +25,14 @@ Resources:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if vpc_peering_connection.tags is defined %}
-{%- for key,value in vpc_peering_connection.tags.items() %}
+{%- for key, value in vpc_peering_connection.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for vpc_peering_connection in sceptre_user_data.vpc_peering_connections %}
 {%- set vpc_peering_connection_name = vpc_peering_connection.name %}
   {{ vpc_peering_connection_name }}:
@@ -45,5 +42,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_peering_connection_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPCPeeringConnection
+Properties:
+  PeerOwnerId: String
+  PeerRegion: String
+  PeerRoleArn: String
+  PeerVpcId: String
+  Tags:
+    - Key: String
+      Value: String
+  VpcId: String
+#}

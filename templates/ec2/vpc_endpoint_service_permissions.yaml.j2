@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 VPC Endpoint Service P
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for vpc_endpoint_service_permissions in sceptre_user_data.vpc_endpoint_service_permissionss %}
 {%- set vpc_endpoint_service_permissions_name = vpc_endpoint_service_permissions.name %}
   {{ vpc_endpoint_service_permissions_name }}:
@@ -18,11 +17,9 @@ Resources:
         - {{ principal }}}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for vpc_endpoint_service_permissions in sceptre_user_data.vpc_endpoint_service_permissionss %}
 {%- set vpc_endpoint_service_permissions_name = vpc_endpoint_service_permissions.name %}
   {{ vpc_endpoint_service_permissions_name }}:
@@ -32,5 +29,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_endpoint_service_permissions_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPCEndpointServicePermissions
+Properties:
+  AllowedPrincipals: 
+    - String
+  ServiceId: String
+#}

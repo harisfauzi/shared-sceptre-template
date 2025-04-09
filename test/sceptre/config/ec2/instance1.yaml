@@ -1,0 +1,56 @@
+---
+template:
+  type: file
+  path: ec2/instance.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  instances:
+    - name: SimpleInstance
+      ami: ami-0c55b159cbfafe1f0
+      instance_type: t2.micro
+      key_name: my-key-pair
+      security_groups:
+        - sg-12345678
+      subnet_id: subnet-12345678
+      tags:
+        Name: SimpleInstance
+        Project: "{{ project_code }}"
+    - name: ComplexInstance
+      instance_type: t2.micro
+      key_name: my-key-pair
+      launch_template_spec:
+        launch_template_data:
+          iam_instance_profile:
+            arn: "!Sub arn:aws:iam::${AWS::AccountId}:instance-profile/MyInstanceProfile"
+          image_id: ami-0c55b159cbfafe1f0
+          metadata_options:
+            http_tokens: required
+            http_put_response_hop_limit: 2
+            http_endpoint: enabled
+          block_device_mappings:
+            - device_name: /dev/sda1
+              ebs:
+                volume_size: 20
+                volume_type: gp3
+                delete_on_termination: true
+                encrypted: true
+          network_interfaces:
+            - associate_public_ip_address: true
+              delete_on_termination: true
+              description: Primary network interface
+              device_index: 0
+              group_set:
+                - sg-12345678
+              subnet_id: subnet-12345678
+      ssm_associations:
+        - document_name: AWS-RunShellScript
+          association_parameters:
+            - key: tag:ResourceGroup
+              value:
+                - Group1
+                - Group2
+      tags:
+        Name: InstanceWithLaunchTemplate
+        Project: "{{ project_code }}"

@@ -1,9 +1,34 @@
 ---
+{%- macro prep_path_filter(path_filter) %}{# BEGIN macro prep_path_filter(path_filter) #}
+{%- if path_filter.destination_address is defined %}
+DestinationAddress: {{ path_filter.destination_address }}
+{%- endif %}
+{%- if path_filter.destination_range is defined %}{# BEGIN if path_filter.destination_range is defined #}
+DestinationPortRange:
+{%- if path_filter.destination_range.from_port is defined %}
+  FromPort: {{ path_filter.destination_range.from_port }}
+{%- endif %}
+{%- if path_filter.destination_range.to_port is defined %}
+  ToPort: {{ path_filter.destination_range.to_port }}
+{%- endif %}
+{%- endif %}{# END if path_filter.destination_range is defined #}
+{%- if path_filter.source_address is defined %}
+SourceAddress: {{ path_filter.source_address }}
+{%- endif %}
+{%- if path_filter.source_port_range is defined %}{# BEGIN if path_filter.source_port_range is defined #}
+SourcePortRange:
+{%- if path_filter.source_port_range.from_port is defined %}
+  FromPort: {{ path_filter.source_port_range.from_port }}
+{%- endif %}
+{%- if path_filter.source_port_range.to_port is defined %}
+  ToPort: {{ path_filter.source_port_range.to_port }}
+{%- endif %}
+{%- endif %}{# END if path_filter.source_port_range is defined #}
+{%- endmacro %}{# END macro prep_path_filter(path_filter) #}
 Description: {{sceptre_user_data.description|default('EC2 Network Insights Path(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for network_insights_path in sceptre_user_data.network_insights_paths %}
 {%- set network_insights_path_name = network_insights_path.name %}
   {{ network_insights_path_name }}:
@@ -11,14 +36,24 @@ Resources:
     DeletionPolicy: {{ network_insights_path.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ network_insights_path.update_replace_policy | default('Delete') }}
     Properties:
-      Destination: {{ network_insights_path.destination }}
       Protocol: {{ network_insights_path.protocol }}
       Source: {{ network_insights_path.source }}
+{%- if network_insights_path.destination is defined %}
+      Destination: {{ network_insights_path.destination }}
+{%- endif %}
 {%- if network_insights_path.destination_ip is defined %}
       DestinationIp: {{ network_insights_path.destination_ip }}
 {%- endif %}
 {%- if network_insights_path.destination_port is defined %}
       DestinationPort: {{ network_insights_path.destination_port }}
+{%- endif %}
+{%- if network_insights_path.filter_at_destination is defined %}
+      FilterAtDestination:
+        {{ prep_path_filter(network_insights_path.filter_at_destination) | indent(width=8, first=false) }}
+{%- endif %}
+{%- if network_insights_path.filter_at_source is defined %}
+      FilterAtSource:
+        {{ prep_path_filter(network_insights_path.filter_at_source) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if network_insights_path.source_ip is defined %}
       SourceIp: {{ network_insights_path.source_ip }}
@@ -32,11 +67,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for network_insights_path in sceptre_user_data.network_insights_paths %}
 {%- set network_insights_path_name = network_insights_path.name %}
   {{ network_insights_path_name }}:
@@ -46,7 +79,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insights_path_name }}"
-
   {{ network_insights_path_name }}CreatedDate:
     Description: The time stamp when the path was created for {{ network_insights_path_name }}
     Value:
@@ -56,7 +88,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insights_path_name }}-CreatedDate"
-
   {{ network_insights_path_name }}NetworkInsightsPathArn:
     Description: The ARN for {{ network_insights_path_name }}
     Value:
@@ -66,7 +97,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insights_path_name }}-NetworkInsightsPathArn"
-
   {{ network_insights_path_name }}NetworkInsightsPathId:
     Description: The ID of the path Id for {{ network_insights_path_name }}
     Value:
@@ -76,5 +106,31 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insights_path_name }}-NetworkInsightsPathId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::NetworkInsightsPath
+Properties:
+  Destination: String
+  DestinationIp: String
+  DestinationPort: Integer
+  FilterAtDestination:
+    DestinationAddress: String
+    DestinationPortRange:
+      FilterPortRange
+    SourceAddress: String
+    SourcePortRange:
+      FilterPortRange
+  FilterAtSource:
+    DestinationAddress: String
+    DestinationPortRange:
+      FilterPortRange
+    SourceAddress: String
+    SourcePortRange:
+      FilterPortRange
+  Protocol: String
+  Source: String
+  SourceIp: String
+  Tags:
+    - Key: String
+      Value: String
+#}

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 VPC Gateway Attachment
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for vpc_gateway_attachment in sceptre_user_data.vpc_gateway_attachments %}
 {%- set vpc_gateway_attachment_name = vpc_gateway_attachment.name %}
   {{ vpc_gateway_attachment_name }}:
@@ -17,11 +16,9 @@ Resources:
 {%- elif vpc_gateway_attachment.vpn_gateway_id is defined %}
       VpnGatewayId: {{ vpc_gateway_attachment.vpn_gateway_id }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for vpc_gateway_attachment in sceptre_user_data.vpc_gateway_attachments %}
 {%- set vpc_gateway_attachment_name = vpc_gateway_attachment.name %}
   {{ vpc_gateway_attachment_name }}:
@@ -31,6 +28,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_gateway_attachment_name }}"
-
-
-{%- endfor %}
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPCGatewayAttachment
+Properties:
+  InternetGatewayId: String
+  VpcId: String
+  VpnGatewayId: String
+#}

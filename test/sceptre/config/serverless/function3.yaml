@@ -1,0 +1,60 @@
+---
+template:
+  type: sam
+  path: templates/serverless/function.yaml.j2
+  artifact_bucket_name: serverless/s3-bucket1.yaml::ArtifactBucket
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test Jinja2 template.
+  http_apis:
+    - name: TestHTTPAPI3
+      stage_name: dev
+      http_api_name: TestHTTPAPI3
+      description: >
+        Test API Gateway from
+      fail_on_warnings: true
+      default_route_settings: |
+        ThrottlingBurstLimit: 200
+      route_settings: |
+        "GET /path":
+          ThrottlingBurstLimit: 500 # overridden in HttpApi Event
+  functions:
+    - name: TestFunction1
+      handler: index.handler
+      runtime: python3.10
+      inline_code: |
+        def handler(event, context):
+            import json
+            return {
+                "statusCode": 200,
+                "body": json.dumps(event)
+            }
+      reserved_concurrent_executions: 30
+      tracing: active
+      policies:
+        - policy_name: AWSLambdaExecute
+          policy_document: |
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: '*'
+      events:
+        HttpApiEvent:
+          type: HttpApi
+          properties:
+            api_id: "!Ref TestHTTPAPI3"
+            path: /path
+            method: GET
+            timeout_in_millis: 15000
+            payload_format_version: "'2.0'"
+            route_settings: |
+              ThrottlingBurstLimit: 600
+      tags:
+        Name: testfunction3
+
+stack_tags:
+  Test: serverless-function

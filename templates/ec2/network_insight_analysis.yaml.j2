@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 NetworkInsightsAnalysi
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for network_insight_analysis in sceptre_user_data.network_insight_analysiss %}
 {%- set network_insight_analysis_name = network_insight_analysis.name %}
   {{ network_insight_analysis_name }}:
@@ -12,6 +11,12 @@ Resources:
     UpdateReplacePolicy: {{ network_insight_analysis.update_replace_policy | default('Delete') }}
     Properties:
       NetworkInsightsPathId: {{ network_insight_analysis.network_insights_path_id | trim }}
+{%- if network_insight_analysis.additional_accounts is defined %}{# BEGIN if network_insight_analysis.additional_accounts is defined #}
+      AdditionalAccounts:
+{%- for item in network_insight_analysis.additional_accounts %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if network_insight_analysis.additional_accounts is defined #}
 {%- if network_insight_analysis.filter_in_arns is defined %}
       FilterInArns:
 {%- for filter_in_arn in network_insight_analysis.filter_in_arns %}
@@ -27,11 +32,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for network_insight_analysis in sceptre_user_data.network_insight_analysiss %}
 {%- set network_insight_analysis_name = network_insight_analysis.name %}
   {{ network_insight_analysis_name }}:
@@ -41,7 +44,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insight_analysis_name }}"
-
   {{ network_insight_analysis_name }}AlternatePathHints:
     Description: Potential intermediate components for {{ network_insight_analysis_name }}
     Value:
@@ -51,7 +53,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insight_analysis_name }}-AlternatePathHints"
-
   {{ network_insight_analysis_name }}Explanations:
     Description: The explanations for {{ network_insight_analysis_name }}
     Value:
@@ -61,7 +62,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insight_analysis_name }}-Explanations"
-
   {{ network_insight_analysis_name }}ForwardPathComponents:
     Description: The components in the path from source to destination for {{ network_insight_analysis_name }}
     Value:
@@ -71,7 +71,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insight_analysis_name }}-ForwardPathComponents"
-
   {{ network_insight_analysis_name }}NetworkInsightsAnalysisArn:
     Description: The Amazon Resource Name (ARN) of the network insights analysi for {{ network_insight_analysis_name }}
     Value:
@@ -81,7 +80,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insight_analysis_name }}-NetworkInsightsAnalysisArn"
-
   {{ network_insight_analysis_name }}NetworkInsightsAnalysisId:
     Description: The ID of the network insights analysis for {{ network_insight_analysis_name }}
     Value:
@@ -91,7 +89,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insight_analysis_name }}-NetworkInsightsAnalysisId"
-
   {{ network_insight_analysis_name }}NetworkPathFound:
     Description: Indication whether the destination is reachable from the source for {{ network_insight_analysis_name }}
     Value:
@@ -101,7 +98,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insight_analysis_name }}-NetworkPathFound"
-
   {{ network_insight_analysis_name }}ReturnPathComponents:
     Description: The components in the path from destination to source for {{ network_insight_analysis_name }}
     Value:
@@ -111,7 +107,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insight_analysis_name }}-ReturnPathComponents"
-
   {{ network_insight_analysis_name }}StartDate:
     Description: The time the analysis started for {{ network_insight_analysis_name }}
     Value:
@@ -121,7 +116,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insight_analysis_name }}-StartDate"
-
   {{ network_insight_analysis_name }}Status:
     Description: The status of the network insights analysis for {{ network_insight_analysis_name }}
     Value:
@@ -131,7 +125,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insight_analysis_name }}-Status"
-
   {{ network_insight_analysis_name }}StatusMessage:
     Description: The status message, if the status is failed for {{ network_insight_analysis_name }}
     Value:
@@ -141,5 +134,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ network_insight_analysis_name }}-StatusMessage"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-08:
+Type: AWS::EC2::NetworkInsightsAnalysis
+Properties:
+  AdditionalAccounts:
+    - String
+  FilterInArns:
+    - String
+  NetworkInsightsPathId: String
+  Tags:
+    - Key: String
+      Value: String
+#}

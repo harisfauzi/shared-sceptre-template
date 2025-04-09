@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Traffic Mirror Session
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for traffic_mirror_session in sceptre_user_data.traffic_mirror_sessions %}
 {%- set traffic_mirror_session_name = traffic_mirror_session.name %}
   {{ traffic_mirror_session_name }}:
@@ -33,11 +32,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for traffic_mirror_session in sceptre_user_data.traffic_mirror_sessions %}
 {%- set traffic_mirror_session_name = traffic_mirror_session.name %}
   {{ traffic_mirror_session_name }}:
@@ -47,5 +44,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_session_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TrafficMirrorSession
+Properties:
+  Description: String
+  NetworkInterfaceId: String
+  PacketLength: Integer
+  SessionNumber: Integer
+  Tags:
+    - Tag
+  TrafficMirrorFilterId: String
+  TrafficMirrorTargetId: String
+  VirtualNetworkId: Integer
+#}

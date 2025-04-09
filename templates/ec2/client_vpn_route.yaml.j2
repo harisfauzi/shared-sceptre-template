@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Client VPN Route(s) fo
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for client_vpn_route in sceptre_user_data.client_vpn_routes %}
 {%- set client_vpn_route_name = client_vpn_route.name %}
   {{ client_vpn_route_name }}:
@@ -17,5 +16,12 @@ Resources:
 {%- if client_vpn_route.description is defined %}
       Description: {{ client_vpn_route.description }}
 {%- endif %}
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-08
+Type: AWS::EC2::ClientVpnRoute
+Properties:
+  ClientVpnEndpointId: String
+  Description: String
+  DestinationCidrBlock: String
+  TargetVpcSubnetId: String
+#}

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 VPC DHCP Options Assoi
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for association in sceptre_user_data.associations %}
 {%- set association_name = association.name %}
   {{ association_name }}:
@@ -16,7 +15,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for association in sceptre_user_data.associations %}
 {%- set association_name = association.name %}
   {{ association_name }}:
@@ -26,5 +24,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ association_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Support structure as of 2025-04-09:
+Type: AWS::EC2::VPCDHCPOptionsAssociation
+Properties:
+  DhcpOptionsId: String
+  VpcId: String
+#}

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Traffic Mirror Target(
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for traffic_mirror_target in sceptre_user_data.traffic_mirror_targets %}
 {%- set traffic_mirror_target_name = traffic_mirror_target.name %}
   {{ traffic_mirror_target_name }}:
@@ -13,6 +12,9 @@ Resources:
     Properties:
 {%- if traffic_mirror_target.description is defined %}
       Description: {{ traffic_mirror_target.description }}
+{%- endif %}
+{%- if traffic_mirror_target.gateway_load_balancer_endpoint_id is defined %}
+      GatewayLoadBalancerEndpointId: {{ traffic_mirror_target.gateway_load_balancer_endpoint_id | trim }}
 {%- endif %}
 {%- if traffic_mirror_target.network_interface_id is defined %}
       NetworkInterfaceId: {{ traffic_mirror_target.network_interface_id | trim }}
@@ -29,11 +31,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for traffic_mirror_target in sceptre_user_data.traffic_mirror_targets %}
 {%- set traffic_mirror_target_name = traffic_mirror_target.name %}
   {{ traffic_mirror_target_name }}:
@@ -43,5 +43,14 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_target_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TrafficMirrorTarget
+Properties:
+  Description: String
+  GatewayLoadBalancerEndpointId: String
+  NetworkInterfaceId: String
+  NetworkLoadBalancerArn: String
+  Tags:
+    - Tag
+#}

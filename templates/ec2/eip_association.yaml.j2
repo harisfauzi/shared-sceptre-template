@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Elastic IP Association
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for eip_association in sceptre_user_data.eip_associations %}
 {%- set eip_association_name = eip_association.name %}
   {{ eip_association_name }}:
@@ -13,9 +12,6 @@ Resources:
     Properties:
 {%- if eip_association.allocation_id is defined %}
       AllocationId: {{ eip_association.allocation_id | trim }}
-{%- endif %}
-{%- if eip_association.eip is defined %}
-      EIP: {{ eip_association.eip }}
 {%- endif %}
 {%- if eip_association.instance_id is defined %}
       InstanceId: {{ eip_association.instance_id | trim }}
@@ -29,7 +25,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for eip_association in sceptre_user_data.eip_associations %}
 {%- set eip_association_name = eip_association.name %}
   {{ eip_association_name }}:
@@ -39,5 +34,12 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ eip_association_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-08:
+Type: AWS::EC2::EIPAssociation
+Properties:
+  AllocationId: String
+  InstanceId: String
+  NetworkInterfaceId: String
+  PrivateIpAddress: String
+#}

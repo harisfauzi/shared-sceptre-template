@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EC2 Transit Gateway Multic
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for transit_gateway_multicast_group_source in sceptre_user_data.transit_gateway_multicast_group_sources %}
 {%- set transit_gateway_multicast_group_source_name = transit_gateway_multicast_group_source.name %}
   {{ transit_gateway_multicast_group_source_name }}:
@@ -14,11 +13,9 @@ Resources:
       GroupIpAddress: {{ transit_gateway_multicast_group_source.group_ip_address }}
       NetworkInterfaceId: {{ transit_gateway_multicast_group_source.network_interface_id | trim }}
       TransitGatewayMulticastDomainId: {{ transit_gateway_multicast_group_source.transit_gateway_multicast_domain_id | trim }}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for transit_gateway_multicast_group_source in sceptre_user_data.transit_gateway_multicast_group_sources %}
 {%- set transit_gateway_multicast_group_source_name = transit_gateway_multicast_group_source.name %}
   {{ transit_gateway_multicast_group_source_name }}:
@@ -28,7 +25,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_source_name }}"
-
   {{ transit_gateway_multicast_group_source_name }}GroupMember:
     Description: Information about the registered transit gateway multicast domain group members for {{ transit_gateway_multicast_group_source_name }}
     Value:
@@ -38,7 +34,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_source_name }}-GroupMember"
-
   {{ transit_gateway_multicast_group_source_name }}GroupSource:
     Description: Indicates that the resource is a transit gateway group member for {{ transit_gateway_multicast_group_source_name }}
     Value:
@@ -48,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_source_name }}-GroupSource"
-
   {{ transit_gateway_multicast_group_source_name }}MemberType:
     Description: The type of group member for {{ transit_gateway_multicast_group_source_name }}
     Value:
@@ -58,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_source_name }}-MemberType"
-
   {{ transit_gateway_multicast_group_source_name }}ResourceId:
     Description: The ID of the resource for {{ transit_gateway_multicast_group_source_name }}
     Value:
@@ -68,7 +61,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_source_name }}-ResourceId"
-
   {{ transit_gateway_multicast_group_source_name }}ResourceType:
     Description: The type of resource for {{ transit_gateway_multicast_group_source_name }}
     Value:
@@ -78,7 +70,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_source_name }}-ResourceType"
-
   {{ transit_gateway_multicast_group_source_name }}SourceType:
     Description: The type of source for {{ transit_gateway_multicast_group_source_name }}
     Value:
@@ -88,7 +79,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_source_name }}-SourceType"
-
   {{ transit_gateway_multicast_group_source_name }}SubnetId:
     Description: The ID of the subnet for {{ transit_gateway_multicast_group_source_name }}
     Value:
@@ -98,7 +88,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_source_name }}-SubnetId"
-
   {{ transit_gateway_multicast_group_source_name }}TransitGatewayAttachmentId:
     Description: The ID of the transit gateway attachment for {{ transit_gateway_multicast_group_source_name }}
     Value:
@@ -108,5 +97,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_multicast_group_source_name }}-TransitGatewayAttachmentId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::TransitGatewayMulticastGroupSource
+Properties:
+  GroupIpAddress: String
+  NetworkInterfaceId: String
+  TransitGatewayMulticastDomainId: String
+#}
