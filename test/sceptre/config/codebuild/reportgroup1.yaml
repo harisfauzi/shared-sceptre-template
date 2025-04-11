@@ -1,0 +1,37 @@
+---
+template:
+  type: file
+  path: codebuild/report_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  report_groups:
+    - name: reportgroup1
+      report_group_name: ReportGroup1
+      type: TEST
+      export_config:
+        export_config_type: S3
+        s3_destination:
+          bucket: "example-bucket"
+          path: "reports/reportgroup1"
+          encryption_disabled: false
+          encryption_key: "!Sub arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/example-key"
+      tags:
+        Environment: "Production"
+        Owner: "Team1"
+    - name: reportgroup2
+      report_group_name: ReportGroup2
+      type: CODE_COVERAGE
+      export_config:
+        export_config_type: S3
+        s3_destination:
+          bucket: "example-bucket"
+          path: "reports/reportgroup2"
+          encryption_disabled: true
+      tags:
+        Environment: "Staging"
+        Owner: "Team2"
+
+stack_tags:
+  Test: codebuild-report-group
