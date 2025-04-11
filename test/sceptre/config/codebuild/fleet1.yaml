@@ -1,0 +1,40 @@
+---
+template:
+  type: file
+  path: codebuild/fleet.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  fleets:
+    - name: fleet1
+      fleet_name: Fleet1
+      base_capacity: 2
+      compute_configuration:
+        disk: 100
+        machine_type: BUILD_GENERAL1_LARGE
+        memory: 16
+        vcpu: 4
+      compute_type: BUILD_GENERAL1_LARGE
+      environment_type: LINUX_CONTAINER
+      fleet_service_role: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CodeBuildFleetServiceRole"
+      tags:
+        Environment: "Production"
+        Owner: "Team1"
+    - name: fleet2
+      fleet_name: Fleet2
+      base_capacity: 5
+      compute_configuration:
+        disk: 200
+        machine_type: BUILD_GENERAL1_XLARGE
+        memory: 32
+        vcpu: 8
+      compute_type: BUILD_GENERAL1_XLARGE
+      environment_type: WINDOWS_CONTAINER
+      fleet_service_role: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CodeBuildFleetServiceRole"
+      tags:
+        Environment: "Staging"
+        Owner: "Team2"
+
+stack_tags:
+  Test: codebuild-fleet

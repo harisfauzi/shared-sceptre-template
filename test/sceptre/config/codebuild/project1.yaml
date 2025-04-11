@@ -1,0 +1,53 @@
+---
+template:
+  type: file
+  path: codebuild/project.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  projects:
+    - name: project1
+      project_name: Project1
+      artifacts:
+        type: NO_ARTIFACTS
+      service_role: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CodeBuildServiceRole"
+      environment:
+        compute_type: BUILD_GENERAL1_SMALL
+        image: "aws/codebuild/standard:5.0"
+        type: LINUX_CONTAINER
+        environment_variables:
+          - name: ENV_VAR_1
+            value: "value1"
+          - name: ENV_VAR_2
+            value: "value2"
+      source:
+        type: GITHUB
+        location: "https://github.com/example/repo1"
+      tags:
+        Project: "Project1"
+        Owner: "Team1"
+    - name: project2
+      project_name: Project2
+      artifacts:
+        type: CODEPIPELINE
+        override_artifact_name: true
+      service_role: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/CodeBuildServiceRole"
+      environment:
+        compute_type: BUILD_GENERAL1_MEDIUM
+        image: "aws/codebuild/standard:5.0"
+        type: LINUX_CONTAINER
+        environment_variables:
+          - name: ENV_VAR_A
+            value: "valueA"
+          - name: ENV_VAR_B
+            value: "valueB"
+      source:
+        type: BITBUCKET
+        location: "https://bitbucket.org/example/repo2"
+      tags:
+        Project: "Project2"
+        Owner: "Team2"
+
+stack_tags:
+  Test: codebuild-project

@@ -1,0 +1,101 @@
+{############## BEGIN macro prep_artifacts #################}
+{%- macro prep_artifacts(artifacts) %}
+Type: {{ artifacts.type }}
+{%- if artifacts.artifact_identifier is defined %}
+ArtifactIdentifier: {{ artifacts.artifact_identifier }}
+{%- endif %}
+{%- if artifacts.encryption_disabled is defined %}
+EncryptionDisabled: {{ artifacts.encryption_disabled | lower }}
+{%- endif %}
+{%- if artifacts.location is defined %}
+Location: {{ artifacts.location }}
+{%- endif %}
+{%- if artifacts.name is defined %}
+Name: {{ artifacts.name }}
+{%- endif %}
+{%- if artifacts.namespace_type is defined %}
+NamespaceType: {{ artifacts.namespace_type }}
+{%- endif %}
+{%- if artifacts.override_artifact_name is defined %}
+OverrideArtifactName: {{ artifacts.override_artifact_name | lower }}
+{%- endif %}
+{%- if artifacts.packaging is defined %}
+Packaging: {{ artifacts.packaging }}
+{%- endif %}
+{%- if artifacts.path is defined %}
+Path: {{ artifacts.path }}
+{%- endif %}
+{%- endmacro %}{#
+# Supported structure as of 2025-04-11:
+ArtifactIdentifier: String
+EncryptionDisabled: Boolean
+Location: String
+Name: String
+NamespaceType: String
+OverrideArtifactName: Boolean
+Packaging: String
+Path: String
+Type: String
+#}
+{############## END macro prep_artifacts #################}
+
+{############## BEGIN macro prep_source #################}
+{%- macro prep_source(source) %}
+Type: {{ source.type }}
+{%- if source.auth is defined %}{# BEGIN if source.auth is defined #}
+Auth:
+  Type: {{ source.auth.type }}
+{%- if source.auth.resource is defined %}
+  Resource: {{ source.auth.resource }}
+{%- endif %}
+{%- endif %}{# END if source.auth is defined #}
+{%- if source.build_spec is defined %}
+BuildSpec: {{ source.build_spec }}
+{%- endif %}
+{%- if source.build_status_config is defined %}{# BEGIN if source.build_status_config is defined#}
+BuildStatusConfig:
+{%- if source.build_status_config.context is defined %}
+  Context: {{ source.build_status_config.context }}
+{%- endif %}
+{%- if source.build_status_config.target_url is defined %}
+  TargetUrl: {{ source.build_status_config.target_url }}
+{%- endif %}
+{%- endif %}{# END if source.build_status_config is defined#}
+{%- if source.git_clone_depth is defined %}
+GitCloneDepth: {{ source.git_clone_depth }}
+{%- endif %}
+{%- if source.git_submodules_config is defined %}
+GitSubmodulesConfig:
+  FetchSubmodules: {{ source.git_submodules_config.fetch_submodules | lower }}
+{%- endif %}
+{%- if source.insecure_ssl is defined %}
+InsecureSsl: {{ source.insecure_ssl | lower }}
+{%- endif %}
+{%- if source.location is defined %}
+Location: {{ source.location }}
+{%- endif %}
+{%- if source.report_build_status is defined %}
+ReportBuildStatus: {{ source.report_build_status | lower }}
+{%- endif %}
+{%- if source.source_identifier is defined %}
+SourceIdentifier: {{ source.source_identifier }}
+{%- endif %}
+{%- endmacro %}{#
+# Supported structure as of 2025-04-11:
+Auth:
+  Resource: String
+  Type: String
+BuildSpec: String
+BuildStatusConfig:
+  Context: String
+  TargetUrl: String
+GitCloneDepth: Integer
+GitSubmodulesConfig:
+  FetchSubmodules: Boolean
+InsecureSsl: Boolean
+Location: String
+ReportBuildStatus: Boolean
+SourceIdentifier: String
+Type: String
+#}
+{############## END macro prep_source #################}

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CodeBuild Report Group(s) 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for report_group in sceptre_user_data.report_groups %}
 {%- set report_group_name = report_group.name %}
   {{ report_group_name }}:
@@ -20,7 +19,7 @@ Resources:
           BucketOwner: {{ report_group.export_config.s3_destination.bucket_owner }}
 {%- endif %}
 {%- if report_group.export_config.s3_destination.encryption_disabled is defined %}
-          EncryptionDisabled: {{ report_group.export_config.s3_destination.encryption_disabled }}
+          EncryptionDisabled: {{ report_group.export_config.s3_destination.encryption_disabled | lower }}
 {%- endif %}
 {%- if report_group.export_config.s3_destination.encryption_key is defined %}
           EncryptionKey: {{ report_group.export_config.s3_destination.encryption_key }}
@@ -34,10 +33,10 @@ Resources:
 {%- endif %}
       Type: {{ report_group.type }}
 {%- if report_group.delete_reports is defined %}
-      DeleteReports: {{ report_group.delete_reports }}
+      DeleteReports: {{ report_group.delete_reports | lower }}
 {%- endif %}
 {%- if report_group.name is defined %}
-      Name: {{ report_group.name }}
+      Name: {{ report_group.report_group_name }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -51,7 +50,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for report_group in sceptre_user_data.report_groups %}
 {%- set report_group_name = report_group.name %}
   {{ report_group_name }}:
@@ -61,5 +59,33 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ report_group_name }}"
-
-{%- endfor %}
+  {{ report_group_name }}Arn:
+    Description: The ARN for {{ report_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ report_group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ report_group_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2025-04-11:
+Type: AWS::CodeBuild::ReportGroup
+Properties:
+  DeleteReports: Boolean
+  ExportConfig:
+    ExportConfigType: String
+    S3Destination:
+      Bucket: String
+      BucketOwner: String
+      EncryptionDisabled: Boolean
+      EncryptionKey: String
+      Packaging: String
+      Path: String
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  Type: String
+#}
