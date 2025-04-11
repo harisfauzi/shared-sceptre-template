@@ -1,0 +1,183 @@
+---
+Description: {{sceptre_user_data.description|default('CodeBuild Fleet(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for fleet in sceptre_user_data.fleets %}
+{%- set fleet_name = fleet.name %}
+  {{ fleet_name }}:
+    Type: AWS::CodeBuild::Fleet
+    DeletionPolicy: {{ fleet.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ fleet.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if fleet.base_capacity is defined %}
+      BaseCapacity: {{ fleet.base_capacity }}
+{%- endif %}
+{%- if fleet.compute_configuration is defined %}{# BEGIN if fleet.compute_configuration is defined #}
+      ComputeConfiguration:
+{%- if fleet.compute_configuration.disk is defined %}
+        disk: {{ fleet.compute_configuration.disk }}
+{%- endif %}
+{%- if fleet.compute_configuration.machine_type is defined %}
+        machineType: {{ fleet.compute_configuration.machine_type }}
+{%- endif %}
+{%- if fleet.compute_configuration.memory is defined %}
+        memory: {{ fleet.compute_configuration.memory }}
+{%- endif %}
+{%- if fleet.compute_configuration.vcpu is defined %}
+        vCpu: {{ fleet.compute_configuration.vcpu }}
+{%- endif %}
+{%- endif %}{# END if fleet.compute_configuration is defined #}
+{%- if fleet.compute_type is defined %}
+      ComputeType: {{ fleet.compute_type }}
+{%- endif %}
+{%- if fleet.environment_type is defined %}
+      EnvironmentType: {{ fleet.environment_type }}
+{%- endif %}
+{%- if fleet.fleet_proxy_configuration is defined %}{# BEGIN if fleet.fleet_proxy_configuration is defined #}
+      FleetProxyConfiguration:
+{%- if fleet.fleet_proxy_configuration.default_behavior is defined %}
+        DefaultBehavior: {{ fleet.fleet_proxy_configuration.default_behavior }}
+{%- endif %}
+{%- if fleet.fleet_proxy_configuration.ordered_proxy_rules is defined %}{# BEGIN if fleet.fleet_proxy_configuration.ordered_proxy_rules is defined #}
+        OrderedProxyRules:
+{%- for proxy_rule in fleet.fleet_proxy_configuration.ordered_proxy_rules %}{# BEGIN for proxy_rule in fleet.fleet_proxy_configuration.ordered_proxy_rules #}
+          -
+{%- if proxy_rule.effect is defined %}
+            Effect: {{ proxy_rule.effect }}
+{%- endif %}
+{%- if proxy_rule.entities is defined %}{# BEGIN if proxy_rule.entities is defined #}
+            Entities:
+{%- for item in proxy_rule.entities %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if proxy_rule.entities is defined #}
+{%- if proxy_rule.type is defined %}
+            Type: {{ proxy_rule.type }}
+{%- endif %}
+{%- endfor %}{# END for proxy_rule in fleet.fleet_proxy_configuration.ordered_proxy_rules #}
+{%- endif %}{# END if fleet.fleet_proxy_configuration.ordered_proxy_rules is defined #}
+{%- endif %}{# END if fleet.fleet_proxy_configuration is defined #}
+{%- if fleet.fleet_service_role is defined %}
+      FleetServiceRole: {{ fleet.fleet_service_role | trim }}
+{%- endif %}
+{%- if fleet.fleet_vpc_config is defined %}{# BEGIN if fleet.fleet_vpc_config is defined #}
+      FleetVpcConfig:
+{%- if fleet.vpc_config.security_group_ids is defined %}{# BEGIN if fleet.vpc_config.security_group_ids is defined #}
+        SecurityGroupIds:
+{%- for security_group_id in fleet.vpc_config.security_group_ids %}
+          - {{ security_group_id }}
+{%- endfor %}
+{%- endif %}{# END if fleet.vpc_config.security_group_ids is defined #}
+{%- if fleet.vpc_config.subnets is defined %}{# BEGIN if fleet.vpc_config.subnets is defined #}
+        Subnets:
+{%- for subnet in fleet.vpc_config.subnets %}
+          - {{ subnet }}
+{%- endfor %}
+{%- endif %}{# END if fleet.vpc_config.subnets is defined #}
+{%- if fleet.vpc_config.vpc_id is defined %}
+        VpcId: {{ fleet.vpc_config.vpc_id }}
+{%- endif %}
+{%- endif %}{# END if fleet.fleet_vpc_config is defined #}
+{%- if fleet.image_id is defined %}
+      ImageId: {{ fleet.image_id | trim }}
+{%- endif %}
+{%- if fleet.fleet_name is defined %}
+      Name: {{ fleet.fleet_name }}
+{%- endif %}
+{%- if fleet.overflow_behavior is defined %}
+      OverflowBehavior: {{ fleet.overflow_behavior }}
+{%- endif %}
+{%- if fleet.scaling_configuration is defined %}{# BEGIN if fleet.scaling_configuration is defined #}
+      ScalingConfiguration:
+{%- if fleet.scaling_configuration.max_capacity is defined %}
+        MaxCapacity: {{ fleet.scaling_configuration.max_capacity }}
+{%- endif %}
+{%- if fleet.scaling_configuration.scaling_type is defined %}
+        ScalingType: {{ fleet.scaling_configuration.scaling_type }}
+{%- endif %}
+{%- if fleet.scaling_configuration.target_tracking_scaling_configs is defined %}{# BEGIN if fleet.scaling_configuration.target_tracking_scaling_configs is defined #}
+        TargetTrackingScalingConfigs:
+{%- for config in fleet.scaling_configuration.target_tracking_scaling_configs %}
+          -
+{%- if config.metric_type is defined %}
+            MetricType: {{ config.metric_type }}
+{%- endif %}
+{%- if config.target_value is defined %}
+            TargetValue: {{ config.target_value }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if fleet.scaling_configuration.target_tracking_scaling_configs is defined #}
+{%- endif %}{# END if fleet.scaling_configuration is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if fleet.tags is defined %}
+{%- for key,value in fleet.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for fleet in sceptre_user_data.fleets %}
+{%- set fleet_name = fleet.name %}
+  {{ fleet_name }}:
+    Description: The ARN for {{ fleet_name }}
+    Value:
+      Ref: {{ fleet_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ fleet_name }}"
+  {{ fleet_name }}Arn:
+    Description: The ARN for {{ fleet_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ fleet_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ fleet_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2025-04-11:
+Type: AWS::CodeBuild::Fleet
+Properties:
+  BaseCapacity: Integer
+  ComputeConfiguration:
+    disk: Integer
+    machineType: String
+    memory: Integer
+    vCpu: Integer
+  ComputeType: String
+  EnvironmentType: String
+  FleetProxyConfiguration:
+    DefaultBehavior: String
+    OrderedProxyRules:
+      -
+        Effect: String
+        Entities:
+          - String
+        Type: String
+  FleetServiceRole: String
+  FleetVpcConfig:
+    SecurityGroupIds:
+      - String
+    Subnets:
+      - String
+    VpcId: String
+  ImageId: String
+  Name: String
+  OverflowBehavior: String
+  ScalingConfiguration:
+    MaxCapacity: Integer
+    ScalingType: String
+    TargetTrackingScalingConfigs:
+      -
+        MetricType: String
+        TargetValue: Number
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

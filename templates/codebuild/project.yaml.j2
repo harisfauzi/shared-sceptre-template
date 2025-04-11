@@ -1,11 +1,9 @@
 ---
-{%- import 'macros/project_artifacts.yaml.j2' as project_artifacts %}
-{%- import 'macros/project_source.yaml.j2' as project_source %}
+{%- import 'macros/prop-project.yaml.j2' as prop_project %}
 Description: {{sceptre_user_data.description|default('CodeBuild Project(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for project in sceptre_user_data.projects %}
 {%- set project_name = project.name %}
   {{ project_name }}:
@@ -14,7 +12,7 @@ Resources:
     UpdateReplacePolicy: {{ project.update_replace_policy | default('Delete') }}
     Properties:
       Artifacts:
-{{ project_artifacts.prep(project.artifacts) | indent(width=8, first=true) }}
+        {{ prop_project.prep_artifacts(project.artifacts) | indent(width=8, first=false) }}
       Environment:
         ComputeType: {{ project.environment.compute_type }}
         Image: {{ project.environment.image }}
@@ -22,21 +20,27 @@ Resources:
 {%- if project.environment.certificate is defined %}
         Certificate: {{ project.environment.certificate }}
 {%- endif %}
-{%- if project.environment.environment_variables is defined %}
+{%- if project.environment.environment_variables is defined %}{# BEGIN if project.environment.environment_variables is defined #}
         EnvironmentVariables:
-{%- for environment_variable in project.environment.environment_variables %}
+{%- for environment_variable in project.environment.environment_variables %}{# BEGIN for environment_variable in project.environment.environment_variables #}
           - Name: {{ environment_variable.name }}
             Value: {{ environment_variable.value }}
 {%- if environment_variable.type is defined %}
             Type: {{ environment_variable.type }}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{# END for environment_variable in project.environment.environment_variables #}
+{%- endif %}{# END if project.environment.environment_variables is defined #}
+{%- if project.environment.fleet is defined %}{# BEGIN if project.environment.fleet is defined #}
+        Fleet:
+{%- if project.environment.fleet.fleet_arn is defined %}
+          FleetArn: {{ project.environment.fleet.fleet_arn | trim }}
 {%- endif %}
+{%- endif %}{# END if project.environment.fleet is defined #}
 {%- if project.environment.image_pull_credentials_type is defined %}
         ImagePullCredentialsType: {{ project.environment.image_pull_credentials_type }}
 {%- endif %}
 {%- if project.environment.privileged_mode is defined %}
-        PrivilegedMode: {{ project.environment.privileged_mode }}
+        PrivilegedMode: {{ project.environment.privileged_mode | lower }}
 {%- endif %}
 {%- if project.environment.registry_credential is defined %}
         RegistryCredential:
@@ -45,17 +49,17 @@ Resources:
 {%- endif %}
       ServiceRole: {{ project.service_role }}
       Source:
-{{ project_source.prep(project.source) | indent(width=8, first=true) }}
+        {{ prop_project.prep_source(project.source) | indent(width=8, first=false) }}
 {%- if project.badge_enabled is defined %}
-      BadgeEnabled: {{ project.badge_enabled }}
+      BadgeEnabled: {{ project.badge_enabled | lower }}
 {%- endif %}
-{%- if project.build_batch_config is defined %}{# BEGIN {%- if project.build_batch_config is defined %} #}
+{%- if project.build_batch_config is defined %}{# BEGIN if project.build_batch_config is defined #}
       BuildBatchConfig:
 {%- if project.build_batch_config.batch_report_mode is defined %}
         BatchReportMode: {{ project.build_batch_config.batch_report_mode }}
 {%- endif %}
 {%- if project.build_batch_config.combine_artifacts is defined %}
-        CombineArtifacts: {{ project.build_batch_config.combine_artifacts }}
+        CombineArtifacts: {{ project.build_batch_config.combine_artifacts | lower }}
 {%- endif %}
 {%- if project.build_batch_config.restrictions is defined %}{## BEGIN {%- if project.build_batch_config.restrictions is defined %} #}
         Restrictions:
@@ -75,7 +79,7 @@ Resources:
 {%- if project.build_batch_config.timeout_in_mins is defined %}
         TimeoutInMins: {{ project.build_batch_config.timeout_in_mins }}
 {%- endif %}
-{%- endif %}{# END {%- if project.build_batch_config is defined %} #}
+{%- endif %}{# END if project.build_batch_config is defined #}
 {%- if project.cache is defined %}
       Cache:
         Type: {{ project.cache.type }}
@@ -98,9 +102,9 @@ Resources:
 {%- if project.encryption_key is defined %}
       EncryptionKey: {{ project.encryption_key }}
 {%- endif %}
-{%- if project.file_system_locations is defined %}
+{%- if project.file_system_locations is defined %}{# BEGIN if project.file_system_locations is defined #}
       FileSystemLocations:
-{%- for location in project.file_system_locations %}
+{%- for location in project.file_system_locations %}{# BEGIN for location in project.file_system_locations #}
         - Identifier: {{ location.identifier }}
           Location: {{ location.location }}
           MountPoint: {{ location.mount_option }}
@@ -108,8 +112,8 @@ Resources:
 {%- if location.mount_options is defined %}
           MountOptions: {{ location.mount_options }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for location in project.file_system_locations #}
+{%- endif %}{# END if project.file_system_locations is defined #}
 {%- if project.logs_config is defined %}{# BEGIN {%- if project.logs_config is defined %} #}
       LogsConfig:
 {%- if project.logs_config.cloud_watch_logs is defined %}
@@ -126,7 +130,7 @@ Resources:
         S3Logs:
           Status: {{ project.logs_config.s3_logs.status }}
 {%- if project.logs_config.s3_logs.encryption_disabled is defined %}
-          EncryptionDisabled: {{ project.logs_config.s3_logs.encryption_disabled }}
+          EncryptionDisabled: {{ project.logs_config.s3_logs.encryption_disabled | lower }}
 {%- endif %}
 {%- if project.logs_config.s3_logs.location is defined %}
           Location: {{ project.logs_config.s3_logs.location }}
@@ -142,75 +146,75 @@ Resources:
 {%- if project.resource_access_role is defined %}
       ResourceAccessRole: {{ project.resource_access_role }}
 {%- endif %}
-{%- if project.secondary_artifacts is defined %}
+{%- if project.secondary_artifacts is defined %}{# BEGIN if project.secondary_artifacts is defined #}
       SecondaryArtifacts:
-{%- for secondary_artifacts in project.secondary_artifacts %}
+{%- for secondary_artifacts in project.secondary_artifacts %}{# BEGIN for secondary_artifacts in project.secondary_artifacts #}
         -
-{{ project_artifacts.prep(secondary_artifacts) | indent(width=10, first=true) }}
-{%- endfor %}
-{%- endif %}
-{%- if project.secondary_sources is defined %}
+          {{ prop_project.prep_artifacts(secondary_artifacts) | indent(width=10, first=false) }}
+{%- endfor %}{# END for secondary_artifacts in project.secondary_artifacts #}
+{%- endif %}{# END if project.secondary_artifacts is defined #}
+{%- if project.secondary_sources is defined %}{# BEGIN if project.secondary_sources is defined #}
       SecondarySources:
-{%- for secondary_source in project.secondary_sources %}
+{%- for secondary_source in project.secondary_sources %}{# BEGIN for secondary_source in project.secondary_sources #}
         -
-{{ project_source.prep(secondary_source) | indent(width=10, first=true) }}
-{%- endfor %}
-{%- endif %}
-{%- if project.secondary_source_versions is defined %}
+          {{ prop_project.prep_source(secondary_source) | indent(width=10, first=false) }}
+{%- endfor %}{# END for secondary_source in project.secondary_sources #}
+{%- endif %}{# END if project.secondary_sources is defined #}
+{%- if project.secondary_source_versions is defined %}{# BEGIN if project.secondary_source_versions is defined #}
       SecondarySourceVersions:
-{%- for secondary_source_version in project.secondary_source_versions %}
+{%- for secondary_source_version in project.secondary_source_versions %}{# BEGIN for secondary_source_version in project.secondary_source_versions #}
         - SourceIdentifier: {{ secondary_source_version.source_identifier }}
 {%- if secondary_source_version.source_version is defined %}
           SourceVersion: {{ secondary_source_version.source_version }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for secondary_source_version in project.secondary_source_versions #}
+{%- endif %}{# END if project.secondary_source_versions is defined #}
 {%- if project.source_version is defined %}
       SourceVersion: {{ project.source_version }}
 {%- endif %}
 {%- if project.timeout_in_minutes is defined %}
       TimeoutInMinutes: {{ project.timeout_in_minutes }}
 {%- endif %}
-{%- if project.triggers is defined %}
+{%- if project.triggers is defined %}{# BEGIN if project.triggers is defined #}
       Triggers:
 {%- if project.triggers.build_type is defined %}
         BuildType: {{ project.triggers.build_type }}
 {%- endif %}
-{%- if project.triggers.filter_groups is defined %}
+{%- if project.triggers.filter_groups is defined %}{# BEGIN if project.triggers.filter_groups is defined #}
         FilterGroups:
-{%- for filter_group in project.triggers.filter_groups %}
+{%- for filter_group in project.triggers.filter_groups %}{# BEGIN for filter_group in project.triggers.filter_groups #}
           - Pattern: {{ filter_group.pattern }}
             Type: {{ filter_group.type }}
 {%- if filter_group.exclude_matched_pattern is defined %}
             ExcludeMatchedPattern: {{ filter_group.exclude_matched_pattern }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for filter_group in project.triggers.filter_groups #}
+{%- endif %}{# END if project.triggers.filter_groups is defined #}
 {%- if project.triggers.webhook is defined %}
-        Webhook: {{ project.triggers.webhook }}
+        Webhook: {{ project.triggers.webhook | lower }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if project.triggers is defined #}
 {%- if project.visibility is defined %}
       Visibility: {{ project.visibility }}
 {%- endif %}
-{%- if project.vpc_config is defined %}
+{%- if project.vpc_config is defined %}{# BEGIN if project.vpc_config is defined #}
       VpcConfig:
-{%- if project.vpc_config.security_group_ids is defined %}
+{%- if project.vpc_config.security_group_ids is defined %}{# BEGIN if project.vpc_config.security_group_ids is defined #}
         SecurityGroupIds:
 {%- for security_group_id in project.vpc_config.security_group_ids %}
           - {{ security_group_id }}
 {%- endfor %}
-{%- endif %}
-{%- if project.vpc_config.subnets is defined %}
+{%- endif %}{# END if project.vpc_config.security_group_ids is defined #}
+{%- if project.vpc_config.subnets is defined %}{# BEGIN if project.vpc_config.subnets is defined #}
         Subnets:
 {%- for subnet in project.vpc_config.subnets %}
           - {{ subnet }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if project.vpc_config.subnets is defined #}
 {%- if project.vpc_config.vpc_id is defined %}
         VpcId: {{ project.vpc_config.vpc_id }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if project.vpc_config is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -223,7 +227,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for project in sceptre_user_data.projects %}
 {%- set project_name = project.name %}
   {{ project_name }}:
@@ -233,7 +236,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ project_name }}"
-
   {{ project_name }}Arn:
     Description: The ARN for {{ project_name }}
     Value:
@@ -243,5 +245,143 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ project_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-11:
+Type: AWS::CodeBuild::Project
+Properties:
+  Artifacts:
+    ArtifactIdentifier: String
+    EncryptionDisabled: Boolean
+    Location: String
+    Name: String
+    NamespaceType: String
+    OverrideArtifactName: Boolean
+    Packaging: String
+    Path: String
+    Type: String
+  BadgeEnabled: Boolean
+  BuildBatchConfig:
+    BatchReportMode: String
+    CombineArtifacts: Boolean
+    Restrictions:
+      ComputeTypesAllowed:
+        - String
+      MaximumBuildsAllowed: Integer
+    ServiceRole: String
+    TimeoutInMins: Integer
+  Cache:
+    Location: String
+    Modes:
+      - String
+    Type: String
+  ConcurrentBuildLimit: Integer
+  Description: String
+  EncryptionKey: String
+  Environment:
+    Certificate: String
+    ComputeType: String
+    EnvironmentVariables:
+      -
+        Name: String
+        Type: String
+        Value: String
+    Fleet:
+      FleetArn: String
+    Image: String
+    ImagePullCredentialsType: String
+    PrivilegedMode: Boolean
+    RegistryCredential:
+      Credential: String
+      CredentialProvider: String
+    Type: String
+  FileSystemLocations:
+    -
+      Identifier: String
+      Location: String
+      MountOptions: String
+      MountPoint: String
+      Type: String
+  LogsConfig:
+    CloudWatchLogs:
+      GroupName: String
+      Status: String
+      StreamName: String
+    S3Logs:
+      EncryptionDisabled: Boolean
+      Location: String
+      Status: String
+  Name: String
+  QueuedTimeoutInMinutes: Integer
+  ResourceAccessRole: String
+  SecondaryArtifacts:
+    -
+      ArtifactIdentifier: String
+      EncryptionDisabled: Boolean
+      Location: String
+      Name: String
+      NamespaceType: String
+      OverrideArtifactName: Boolean
+      Packaging: String
+      Path: String
+      Type: String
+  SecondarySources:
+    -
+      Auth:
+        Resource: String
+        Type: String
+      BuildSpec: String
+      BuildStatusConfig:
+        Context: String
+        TargetUrl: String
+      GitCloneDepth: Integer
+      GitSubmodulesConfig:
+        FetchSubmodules: Boolean
+      InsecureSsl: Boolean
+      Location: String
+      ReportBuildStatus: Boolean
+      SourceIdentifier: String
+      Type: String
+  SecondarySourceVersions:
+    -
+      SourceIdentifier: String
+      SourceVersion: String
+  ServiceRole: String
+  Source:
+    Auth:
+      Resource: String
+      Type: String
+    BuildSpec: String
+    BuildStatusConfig:
+      Context: String
+      TargetUrl: String
+    GitCloneDepth: Integer
+    GitSubmodulesConfig:
+      FetchSubmodules: Boolean
+    InsecureSsl: Boolean
+    Location: String
+    ReportBuildStatus: Boolean
+    SourceIdentifier: String
+    Type: String
+  SourceVersion: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TimeoutInMinutes: Integer
+  Triggers:
+    BuildType: String
+    FilterGroups:
+      - Pattern: String
+        Type: String
+        ExcludeMatchedPattern: Boolean
+    ScopeConfiguration:
+      Name: String
+    Webhook: Boolean
+  Visibility: String
+  VpcConfig:
+    SecurityGroupIds:
+      - String
+    Subnets:
+      - String
+    VpcId: String
+#}
