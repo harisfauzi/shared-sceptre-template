@@ -1,0 +1,27 @@
+---
+template:
+  type: file
+  path: cloudformation/macro.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  macros:
+    - name: SampleMacro1
+      macro_name: "MyMacro1"
+      function_name: "!Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:MyFunction1"
+      description: "This is a sample macro for testing."
+      log_group_name: "/aws/lambda/sample-log-group1"
+      log_role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/SampleLogRole1"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+    - name: SampleMacro2
+      macro_name: "MyMacro2"
+      function_name: "!Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:MyFunction2"
+      description: "Another sample macro."
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: cloudformation-macro

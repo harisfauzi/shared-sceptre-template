@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFormation TypeActivat
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for type_activation in sceptre_user_data.type_activations %}
 {%- set type_activation_name = type_activation.name %}
   {{ type_activation_name }}:
@@ -47,11 +46,9 @@ Resources:
 {%- if type_activation.version_bump is defined %}
       VersionBump: {{ type_activation.version_bump }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for type_activation in sceptre_user_data.type_activations %}
 {%- set type_activation_name = type_activation.name %}
   {{ type_activation_name }}:
@@ -61,7 +58,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ type_activation_name }}"
-
   {{ type_activation_name }}Arn:
     Description: The ARN for {{ type_activation_name }}
     Value:
@@ -71,5 +67,20 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ type_activation_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::TypeActivation
+Properties:
+  AutoUpdate: Boolean
+  ExecutionRoleArn: String
+  LoggingConfig:
+    LogGroupName: String
+    LogRoleArn: String
+  MajorVersion: String
+  PublicTypeArn: String
+  PublisherId: String
+  Type: String
+  TypeName: String
+  TypeNameAlias: String
+  VersionBump: String
+#}

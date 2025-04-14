@@ -25,11 +25,9 @@ Resources:
         LogRoleArn: {{ resource_version.logging_config.log_role_arn }}
 {%- endif %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for resource_version in sceptre_user_data.resource_versions %}
 {%- set resource_version_name = resource_version.name %}
   {{ resource_version_name }}:
@@ -39,7 +37,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}"
-
   {{ resource_version_name }}Arn:
     Description: The ARN for {{ resource_version_name }}
     Value:
@@ -49,7 +46,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-Arn"
-
   {{ resource_version_name }}IsDefaultVersion:
     Description: Whether the resource version is set as the default version for {{ resource_version_name }}
     Value:
@@ -59,7 +55,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-IsDefaultVersion"
-
   {{ resource_version_name }}ProvisioningType:
     Description: The provisioning behavior of the resource type for {{ resource_version_name }}
     Value:
@@ -69,7 +64,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-ProvisioningType"
-
   {{ resource_version_name }}TypeArn:
     Description: The Amazon Resource Name (ARN) of the resource for {{ resource_version_name }}
     Value:
@@ -79,7 +73,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-TypeArn"
-
   {{ resource_version_name }}VersionId:
     Description: The ID of a specific version of the resource for {{ resource_version_name }}
     Value:
@@ -89,7 +82,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-VersionId"
-
   {{ resource_version_name }}Visibility:
     Description: The scope at which the resource is visible and usable in CloudFormation operations for {{ resource_version_name }}
     Value:
@@ -99,5 +91,14 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_version_name }}-Visibility"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::ResourceVersion
+Properties:
+  ExecutionRoleArn: String
+  LoggingConfig:
+    LogGroupName: String
+    LogRoleArn: String
+  SchemaHandlerPackage: String
+  TypeName: String
+#}

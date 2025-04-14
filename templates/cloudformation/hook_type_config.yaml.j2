@@ -3,13 +3,12 @@ Description: {{sceptre_user_data.description|default('CloudFormation Hook Type C
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for hook_type_config in sceptre_user_data.hook_type_configs %}
 {%- set hook_type_config_name = hook_type_config.name %}
   {{ hook_type_config_name }}:
     Type: AWS::CloudFormation::HookTypeConfig
-    DeletionPolicy: {{ role.deletion_policy | default('Delete') }}
-    UpdateReplacePolicy: {{ role.update_replace_policy | default('Delete') }}
+    DeletionPolicy: {{ hook_type_config.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ hook_type_config.update_replace_policy | default('Delete') }}
     Properties:
 {%- if hook_type_config.configuration is defined %}
       Configuration: {{ hook_type_config.configuration }}
@@ -23,11 +22,9 @@ Resources:
 {%- if hook_type_config.type_name is defined %}
       TypeName: {{ hook_type_config.type_name }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for hook_type_config in sceptre_user_data.hook_type_configs %}
 {%- set hook_type_config_name = hook_type_config.name %}
   {{ hook_type_config_name }}:
@@ -37,7 +34,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hook_type_config_name }}"
-
   {{ hook_type_config_name }}ConfigurationArn:
     Description: The ARN for {{ hook_type_config_name }}
     Value:
@@ -47,5 +43,12 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hook_type_config_name }}-ConfigurationArn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::HookTypeConfig
+Properties:
+  Configuration: String
+  ConfigurationAlias: String
+  TypeArn: String
+  TypeName: String
+#}

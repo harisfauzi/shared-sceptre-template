@@ -3,14 +3,13 @@ Description: {{sceptre_user_data.description|default('CloudFormation Macro(s) fo
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for macro in sceptre_user_data.macros %}
 {%- set macro_name = macro.name %}
   {{ macro_name }}:
     Type: AWS::CloudFormation::Macro
     DeletionPolicy: {{ macro.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ macro.update_replace_policy | default('Delete') }}
-    Properties: 
+    Properties:
       Name: {{ macro.macro_name }}
       FunctionName: {{ macro.function_name }}
 {%- if macro.description is defined %}
@@ -22,11 +21,9 @@ Resources:
 {%- if macro.log_role_arn is defined %}
       LogRoleARN: {{ macro.log_role_arn }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for macro in sceptre_user_data.macros %}
 {%- set macro_name = macro.name %}
   {{ macro_name }}:
@@ -36,5 +33,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ macro_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::Macro
+Properties:
+  Description: String
+  FunctionName: String
+  LogGroupName: String
+  LogRoleARN: String
+  Name: String
+#}

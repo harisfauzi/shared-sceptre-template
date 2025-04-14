@@ -1,0 +1,29 @@
+---
+template:
+  type: file
+  path: cloudformation/public_type_version.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  public_type_versions:
+    - name: SamplePublicTypeVersion1
+      arn: "!Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/MyResourceType1"
+      log_delivery_bucket: "sample-log-bucket-1"
+      public_version_number: "1.0.0"
+      type: "RESOURCE"
+      type_name: "My::Custom::ResourceType1"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+    - name: SamplePublicTypeVersion2
+      arn: "!Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/MyResourceType2"
+      log_delivery_bucket: "sample-log-bucket-2"
+      public_version_number: "2.0.0"
+      type: "RESOURCE"
+      type_name: "My::Custom::ResourceType2"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: cloudformation-public-type-version

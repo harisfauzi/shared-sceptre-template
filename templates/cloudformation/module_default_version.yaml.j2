@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFormation Module Defa
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for module_default_version in sceptre_user_data.module_default_versions %}
 {%- set module_default_version_name = module_default_version.name %}
   {{ module_default_version_name }}:
@@ -20,11 +19,9 @@ Resources:
 {%- if module_default_version.version_id is defined %}
       VersionId: {{ module_default_version.version_id }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for module_default_version in sceptre_user_data.module_default_versions %}
 {%- set module_default_version_name = module_default_version.name %}
   {{ module_default_version_name }}:
@@ -34,5 +31,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ module_default_version_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::ModuleDefaultVersion
+Properties:
+  Arn: String
+  ModuleName: String
+  VersionId: String
+#}
