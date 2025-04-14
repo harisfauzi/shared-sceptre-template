@@ -10,21 +10,87 @@ Resources:
     DeletionPolicy: {{ stack.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ stack.update_replace_policy | default('Delete') }}
     Properties:
-      TemplateURL: {{ stack.template_url }}
+      StackName: {{ stack.stack_name }}
+{%- if stack.capabilities is defined %}{# BEGIN if stack.capabilities is defined #}
+      Capabilities:
+{%- for item in stack.capabilities %}
+        - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if stack.capabilities is defined #}
+{%- if stack.change_set_id is defined %}
+      ChangeSetId: {{ stack.change_set_id }}
+{%- endif %}
+{%- if stack.creation_time is defined %}
+      CreationTime: {{ stack.creation_time }}
+{%- endif %}
+{%- if stack.description is defined %}
+      Description: {{ stack.description }}
+{%- endif %}
+{%- if stack.disable_rollback is defined %}
+      DisableRollback: {{ stack.disable_rollback | lower }}
+{%- endif %}
+{%- if stack.enable_termination_protection is defined %}
+      EnableTerminationProtection: {{ stack.enable_termination_protection | lower }}
+{%- endif %}
+{%- if stack.last_update_time is defined %}
+      LastUpdateTime: {{ stack.last_update_time }}
+{%- endif %}
 {%- if stack.notification_arns is defined %}
       NotificationARNs:
 {%- for item in stack.notification_arns %}
         - {{ item }}
 {%- endfor %}
 {%- endif %}
+{%- if stack.outputs is defined %}{# BEGIN if stack.outputs is defined #}
+      Outputs:
+{%- for output in stack.outputs %}{# BEGIN  for output in stack.outputs #}
+        -
+{%- if output.description is defined %}
+          Description: {{ output.description }}
+{%- endif %}
+{%- if output.export_name is defined %}
+          ExportName: {{ output.export_name }}
+{%- endif %}
+{%- if output.output_key is defined %}
+          OutputKey: {{ output.output_key }}
+{%- endif %}
+{%- if output.output_value is defined %}
+          OutputValue: {{ output.output_value }}
+{%- endif %}
+{%- endfor %}{# END for output in stack.outputs #}
+{%- endif %}{# END if stack.outputs is defined #}
 {%- if stack.parameters is defined %}
       Parameters:
 {%- for key,value in stack.parameters.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- if stack.timeout_in_minutes is defined %}
-      TimeoutInMinutes: {{ stack.timeout_in_minutes }}
+{%- if stack.parent_id is defined %}
+      ParentId: {{ stack.parent_id }}
+{%- endif %}
+{%- if stack.role_arn is defined %}
+      RoleARN: {{ stack.role_arn }}
+{%- endif %}
+{%- if stack.root_id is defined %}
+      RootId: {{ stack.root_id }}
+{%- endif %}
+{%- if stack.stack_id is defined %}
+      StackId: {{ stack.stack_id }}
+{%- endif %}
+{%- if stack.stack_policy_body_json is defined %}
+      StackPolicyBody: {{ stack.stack_policy_body_json }}
+{%- elif stack.stack_policy_body is defined %}
+      StackPolicyBody: |
+        {{ stack.stack_policy_body | indent(width=8, first=false) }}
+{%- endif %}
+{%- if stack.stack_policy_url is defined %}
+      StackPolicyURL: {{ stack.stack_policy_url }}
+{%- endif %}
+{%- if stack.stack_status is defined %}
+      StackStatus: {{ stack.stack_status }}
+{%- endif %}
+{%- if stack.stack_status_reason is defined %}
+      StackStatusReason: {{ stack.stack_status_reason }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -34,6 +100,17 @@ Resources:
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
+{%- endif %}
+{%- if stack.template_body_json is defined %}{# BEGIN if stack.template_body_json/stack.template_body/stack.template_url is defined #}
+      TemplateBody: {{ stack.template_body_json }}
+{%- elif stack.template_body is defined %}{# ELSE if stack.template_body_json/stack.template_body/stack.template_url is defined #}
+      TemplateBody: |
+        {{ stack.template_body | indent(width=8, first=false) }}
+{%- elif stack.template_url is defined %}{# ELSE if stack.template_body_json/stack.template_body/stack.template_url is defined #}
+      TemplateURL: {{ stack.template_url }}
+{%- endif %}{# END if stack.template_body_json/stack.template_body/stack.template_url is defined #}
+{%- if stack.timeout_in_minutes is defined %}
+      TimeoutInMinutes: {{ stack.timeout_in_minutes }}
 {%- endif %}
 {%- endfor %}
 
@@ -47,4 +124,42 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ stack_name }}"
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::Stack
+Properties:
+  Capabilities:
+    - String
+  ChangeSetId: String
+  CreationTime: String
+  Description: String
+  DisableRollback: Boolean
+  EnableTerminationProtection: Boolean
+  LastUpdateTime: String
+  NotificationARNs:
+    - String
+  Outputs:
+    -
+      Description: String
+      ExportName: String
+      OutputKey: String
+      OutputValue: String
+  Parameters:
+    Key: Value
+  ParentId: String
+  RoleARN: String
+  RootId: String
+  StackId: String
+  StackName: String
+  StackPolicyBody: Json
+  StackPolicyURL: String
+  StackStatus: String
+  StackStatusReason: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TemplateBody: Json
+  TemplateURL: String
+  TimeoutInMinutes: Integer
+#}

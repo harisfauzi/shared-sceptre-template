@@ -1,0 +1,148 @@
+---
+{%- macro prep_location(location) %}{# BEGIN macro prep_location(location) #}
+Uri: {{ location.uri }}
+{%- if location.version_id is defined %}
+VersionId: {{ location.version_id }}
+{%- endif %}
+{%- endmacro %}{# END macro prep_location(location) #}
+{%- macro prep_stack_filtering(stack_filter) %}{# BEGIN macro prep_stack_filtering(stack_filter) #}
+{%- if stack_filter.exclude is defined %}{# BEGIN if stack_filter.exclude is defined #}
+Exclude:
+{%- for item in stack_filter.exclude %}
+  - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if stack_filter.exclude is defined #}
+{%- if stack_filter.include is defined %}{# BEGIN if stack_filter.include is defined #}
+Include:
+{%- for item in stack_filter.include %}
+  - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if stack_filter.include is defined #}
+{%- endmacro %}{# END macro prep_stack_filtering(stack_filter) #}
+Description: {{sceptre_user_data.description|default('CloudFormation Guard Hook(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for guard_hook in sceptre_user_data.guard_hooks %}
+{%- set guard_hook_name = guard_hook.name %}
+  {{ guard_hook_name }}:
+    Type: AWS::CloudFormation::GuardHook
+    DeletionPolicy: {{ guard_hook.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ guard_hook.update_replace_policy | default('Delete') }}
+    Properties:
+      Alias: {{ guard_hook.alias }}
+      ExecutionRole: {{ guard_hook.execution_role | trim }}
+      FailureMode: {{ guard_hook.failure_mode | default('FAIL') }}
+      HookStatus: {{ guard_hook.hook_status | default('ENABLED') }}
+      RuleLocation:
+        {{ prep_location(guard_hook.rule_location) | indent(width=8, first=false) }}
+      TargetOperations:
+{%- for item in guard_hook.target_operations %}
+        - {{ item }}
+{%- endfor %}
+{%- if guard_hook.log_bucket is defined %}
+      LogBucket: {{ guard_hook.log_bucket }}
+{%- endif %}
+{%- if guard_hook.options is defined %}{# BEGIN if guard_hook.options is defined #}
+      Options:
+{%- if guard_hook.options.input_params is defined %}
+        InputParams:
+          {{ prep_location(guard_hook.options.input_params) | indent(width=10, first=false) }}
+{%- endif %}
+{%- endif %}{# END if guard_hook.options is defined #}
+{%- if guard_hook.stack_filters is defined %}{# BEGIN if guard_hook.stack_filters is defined #}
+      StackFilters:
+        FilteringCriteria: {{ guard_hook.stack_filters.filtering_criteria}}
+{%- if guard_hook.stack_filters.stack_names is defined %}{# BEGIN if guard_hook.stack_filters.stack_names is defined #}
+        StackNames:
+          {{ prep_stack_filtering(guard_hook.stack_filters.stack_names) | indent(width=10, first=false) }}
+{%- endif %}{# END if guard_hook.stack_filters.stack_names is defined #}
+{%- if guard_hook.stack_filters.stack_roles is defined %}{# BEGIN if guard_hook.stack_filters.stack_roles is defined #}
+        StackRoles:
+          {{ prep_stack_filtering(guard_hook.stack_filters.stack_roles) | indent(width=10, first=false) }}
+{%- endif %}{# END if guard_hook.stack_filters.stack_roles is defined #}
+{%- endif %}{# END if guard_hook.stack_filters is defined #}
+{%- if guard_hook.target_filters is defined %}{# BEGIN if guard_hook.target_filters is defined #}
+      TargetFilters:
+{%- if guard_hook.target_filters.target_filters_items is defined %}{# BEGIN if guard_hook.target_filters.target_filters_items is defined #}
+        TargetFiltersItems:
+{%- if guard_hook.target_filters.target_filters_items.actions is defined %}{# BEGIN if guard_hook.target_filters.target_filters_items.actions is defined #}
+          Actions:
+{%- for item in guard_hook.target_filters.target_filters_items.actions %}
+            - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if guard_hook.target_filters.target_filters_items.actions is defined #}
+{%- if guard_hook.target_filters.target_filters_items.invocation_points is defined %}{# BEGIN if guard_hook.target_filters.target_filters_items.invocation_points is defined #}
+          InvocationPoints:
+{%- for item in guard_hook.target_filters.target_filters_items.invocation_points %}
+            - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if guard_hook.target_filters.target_filters_items.invocation_points is defined #}
+{%- if guard_hook.target_filters.target_filters_items.target_names is defined %}{# BEGIN if guard_hook.target_filters.target_filters_items.target_names is defined #}
+          TargetNames:
+{%- for item in guard_hook.target_filters.target_filters_items.target_names %}
+            - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if guard_hook.target_filters.target_filters_items.target_names is defined #}
+{%- endif %}{# END if guard_hook.target_filters.target_filters_items is defined #}
+{%- endif %}{# END if guard_hook.target_filters is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for guard_hook in sceptre_user_data.guard_hooks %}
+{%- set guard_hook_name = guard_hook.name %}
+  {{ guard_hook_name }}:
+    Description: Hook ARN for {{ guard_hook_name }}
+    Value:
+      Ref: {{ guard_hook_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ guard_hook_name }}"
+  {{ guard_hook_name }}HookArn:
+    Description: Hook ARN for {{ guard_hook_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ guard_hook_name }}
+        - HookArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ guard_hook_name }}-HookArn"
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::GuardHook
+Properties:
+  Alias: String
+  ExecutionRole: String
+  FailureMode: String
+  HookStatus: String
+  LogBucket: String
+  Options:
+    InputParams:
+      Uri: String
+      VersionId: String
+  RuleLocation:
+    Uri: String
+    VersionId: String
+  StackFilters:
+    FilteringCriteria: String
+    StackNames:
+      Exclude:
+        - String
+      Include:
+        - String
+    StackRoles:
+      Exclude:
+        - String
+      Include:
+        - String
+  TargetFilters:
+    TargetFiltersItems:
+      Actions:
+        - String
+      InvocationPoints:
+        - String
+      TargetNames:
+        - String
+  TargetOperations:
+    - String
+#}

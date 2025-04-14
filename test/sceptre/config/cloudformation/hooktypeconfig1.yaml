@@ -1,0 +1,27 @@
+---
+template:
+  type: file
+  path: cloudformation/hook_type_config.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  hook_type_configs:
+    - name: SampleHookTypeConfig1
+      configuration: '{"Key1": "Value1", "Key2": "Value2"}'
+      configuration_alias: "Alias1"
+      type_arn: "!Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:type/hook/My-Custom-HookType1"
+      type_name: "My::Custom::HookType1"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+    - name: SampleHookTypeConfig2
+      configuration: '{"KeyA": "ValueA", "KeyB": "ValueB"}'
+      configuration_alias: "Alias2"
+      type_arn: "!Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:type/hook/My-Custom-HookType2"
+      type_name: "My::Custom::HookType2"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: cloudformation-hook-type-config

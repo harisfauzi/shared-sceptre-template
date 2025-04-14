@@ -1,0 +1,124 @@
+---
+{%- macro prep_stack_filtering(stack_filter) %}{# BEGIN macro prep_stack_filtering(stack_filter) #}
+{%- if stack_filter.exclude is defined %}{# BEGIN if stack_filter.exclude is defined #}
+Exclude:
+{%- for item in stack_filter.exclude %}
+  - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if stack_filter.exclude is defined #}
+{%- if stack_filter.include is defined %}{# BEGIN if stack_filter.include is defined #}
+Include:
+{%- for item in stack_filter.include %}
+  - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if stack_filter.include is defined #}
+{%- endmacro %}{# END macro prep_stack_filtering(stack_filter) #}
+Description: {{sceptre_user_data.description|default('CloudFormation Lambda Hook(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for lambda_hook in sceptre_user_data.lambda_hooks %}
+{%- set lambda_hook_name = lambda_hook.name %}
+  {{ lambda_hook_name }}:
+    Type: AWS::CloudFormation::LambdaHook
+    DeletionPolicy: {{ lambda_hook.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ lambda_hook.update_replace_policy | default('Delete') }}
+    Properties:
+      Alias: {{ lambda_hook.alias }}
+      ExecutionRole: {{ lambda_hook.execution_role}}
+      FailureMode: {{ lambda_hook.failure_mode }}
+      HookStatus: {{ lambda_hook.hook_status }}
+      LambdaFunction: {{ lambda_hook.lambda_function | trim }}
+      TargetOperations:
+{%- for item in lambda_hook.target_operations %}
+        - {{ item }}
+{%- endfor %}
+{%- if lambda_hook.stack_filters is defined %}{# BEGIN if lambda_hook.stack_filters is defined #}
+      StackFilters:
+        FilteringCriteria: {{ lambda_hook.stack_filters.filtering_criteria }}
+{%- if lambda_hook.stack_filters.stack_names is defined %}{# BEGIN if lambda_hook.stack_filters.stack_names is defined #}
+        StackNames:
+          {{ prep_stack_filtering(lambda_hook.stack_filters.stack_names) | indent(width=10, first=false) }}
+{%- endif %}{# END if lambda_hook.stack_filters.stack_names is defined #}
+{%- if lambda_hook.stack_filters.stack_roles is defined %}{# BEGIN if lambda_hook.stack_filters.stack_roles is defined #}
+        StackRoles:
+          {{ prep_stack_filtering(lambda_hook.stack_filters.stack_roles) | indent(width=10, first=false) }}
+{%- endif %}{# END if lambda_hook.stack_filters.stack_roles is defined #}
+{%- endif %}{# END if lambda_hook.stack_filters is defined #}
+{%- if lambda_hook.target_filters is defined %}{# BEGIN if lambda_hook.target_filters is defined #}
+      TargetFilters:
+{%- if lambda_hook.target_filters.target_filters_items is defined %}{# BEGIN if lambda_hook.target_filters.target_filters_items is defined #}
+        TargetFiltersItems:
+{%- if lambda_hook.target_filters.target_filters_items.actions is defined %}{# BEGIN if lambda_hook.target_filters.target_filters_items.actions is defined #}
+          Actions:
+{%- for item in lambda_hook.target_filters.target_filters_items.actions %}
+            - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if lambda_hook.target_filters.target_filters_items.actions is defined #}
+{%- if lambda_hook.target_filters.target_filters_items.invocation_points is defined %}{# BEGIN if lambda_hook.target_filters.target_filters_items.invocation_points is defined #}
+          InvocationPoints:
+{%- for item in lambda_hook.target_filters.target_filters_items.invocation_points %}
+            - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if lambda_hook.target_filters.target_filters_items.invocation_points is defined #}
+{%- if lambda_hook.target_filters.target_filters_items.target_names is defined %}{# BEGIN if lambda_hook.target_filters.target_filters_items.target_names is defined #}
+          TargetNames:
+{%- for item in lambda_hook.target_filters.target_filters_items.target_names %}
+            - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if lambda_hook.target_filters.target_filters_items.target_names is defined #}
+{%- endif %}{# END if lambda_hook.target_filters.target_filters_items is defined #}
+{%- endif %}{# END if lambda_hook.target_filters is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for lambda_hook in sceptre_user_data.lambda_hooks %}
+{%- set lambda_hook_name = lambda_hook.name %}
+  {{ lambda_hook_name }}:
+    Description: ARN for {{ lambda_hook_name }}
+    Value:
+      Ref: {{ lambda_hook_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ lambda_hook_name }}"
+  {{ lambda_hook_name }}Arn:
+    Description: The ARN for {{ lambda_hook_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ lambda_hook_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ lambda_hook_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::LambdaHook
+Properties:
+  Alias: String
+  ExecutionRole: String
+  FailureMode: String
+  HookStatus: String
+  LambdaFunction: String
+  StackFilters:
+    FilteringCriteria: String
+    StackNames:
+      Exclude:
+        - String
+      Include:
+        - String
+    StackRoles:
+      Exclude:
+        - String
+      Include:
+        - String
+  TargetFilters:
+    TargetFiltersItems:
+      Actions:
+        - String
+      InvocationPoints:
+        - String
+      TargetNames:
+        - String
+  TargetOperations:
+    - String
+#}

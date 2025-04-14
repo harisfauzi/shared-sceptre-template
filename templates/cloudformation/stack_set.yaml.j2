@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFormation StackSet(s)
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for stack_set in sceptre_user_data.stack_sets %}
 {%- set stack_set_name = stack_set.name %}
   {{ stack_set_name }}:
@@ -19,21 +18,21 @@ Resources:
 {%- if stack_set.auto_deployment is defined %}
       AutoDeployment:
 {%- if stack_set.auto_deployment.enabled is defined %}
-        Enabled: {{ stack_set.auto_deployment.enabled }}
+        Enabled: {{ stack_set.auto_deployment.enabled | lower }}
 {%- endif %}
 {%- if stack_set.auto_deployment.retain_stacks_on_account_removal is defined %}
-        RetainStacksOnAccountRemoval: {{ stack_set.auto_deployment.retain_stacks_on_account_removal }}
+        RetainStacksOnAccountRemoval: {{ stack_set.auto_deployment.retain_stacks_on_account_removal | lower }}
 {%- endif %}
 {%- endif %}
 {%- if stack_set.call_as is defined %}
       CallAs: {{ stack_set.call_as }}
 {%- endif %}
-{%- if stack_set.capabilities is defined %}
+{%- if stack_set.capabilities is defined %}{# BEGIN if stack_set.capabilities is defined #}
       Capabilities:
 {%- for capability in stack_set.capabilities %}
         - {{ capability }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if stack_set.capabilities is defined #}
 {%- if stack_set.description is defined %}
       Description: {{ stack_set.description }}
 {%- endif %}
@@ -42,10 +41,13 @@ Resources:
 {%- endif %}
 {%- if stack_set.managed_execution is defined %}
       ManagedExecution:
-        Active: {{ stack_set.managed_execution.active }}
+        Active: {{ stack_set.managed_execution.active | lower }}
 {%- endif %}
-{%- if stack_set.operation_preferences is defined %}
+{%- if stack_set.operation_preferences is defined %}{# BEGIN if stack_set.operation_preferences is defined #}
       OperationPreferences:
+{%- if stack_set.operation_preferences.concurrency_mode is defined %}
+        ConcurrencyMode: {{ stack_set.operation_preferences.concurrency_mode }}
+{%- endif %}
 {%- if stack_set.operation_preferences.failure_tolerance_count is defined %}
         FailureToleranceCount: {{ stack_set.operation_preferences.failure_tolerance_count }}
 {%- endif %}
@@ -61,55 +63,58 @@ Resources:
 {%- if stack_set.operation_preferences.region_concurrency_type is defined %}
         RegionConcurrencyType: {{ stack_set.operation_preferences.region_concurrency_type }}
 {%- endif %}
-{%- if stack_set.operation_preferences.region_order is defined %}
+{%- if stack_set.operation_preferences.region_order is defined %}{# BEGIN f stack_set.operation_preferences.region_order is defined #}
         RegionOrder:
 {%- for region in stack_set.operation_preferences.region_order %}
           - {{ region }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}
-{%- if stack_set.parameters is defined %}
+{%- endif %}{# END f stack_set.operation_preferences.region_order is defined #}
+{%- endif %}{# END if stack_set.operation_preferences is defined #}
+{%- if stack_set.parameters is defined %}{# BEGIN if stack_set.parameters is defined #}
       Parameters:
 {%- for parameter in stack_set.parameters %}
         - ParameterKey: {{ parameter.parameter_key }}
           ParameterValue: {{ parameter.parameter_value }}
 {%- endfor %}
-{%- endif %}
-{%- if stack_set.stack_instances_group is defined %}
+{%- endif %}{# END if stack_set.parameters is defined #}
+{%- if stack_set.stack_instances_group is defined %}{# BEGIN if stack_set.stack_instances_group is defined #}
       StackInstancesGroup:
-{%- for stack_instance in stack_set.stack_instances_group %}
-        -
-          DeploymentTargets:
+{%- for stack_instance in stack_set.stack_instances_group %}{# BEGIN for stack_instance in stack_set.stack_instances_group #}
+        - DeploymentTargets:
 {%- if stack_instance.deployment_targets.account_filter_type is defined %}
             AccountFilterType: {{ stack_instance.deployment_targets.account_filter_type }}
 {%- endif %}
-{%- if stack_instance.deployment_targets.accounts is defined %}
+{%- if stack_instance.deployment_targets.accounts is defined %}{# BEGIN stack_instance.deployment_targets.accounts is defined #}
             Accounts:
 {%- for account in stack_instance.deployment_targets.accounts %}
               - {{ account }}
 {%- endfor %}
+{%- endif %}{# END stack_instance.deployment_targets.accounts is defined #}
+{%- if stack_instance.deployment_targets.accounts_url is defined %}
+            AccountsUrl: {{ stack_instance.deployment_targets.accounts_url }}
 {%- endif %}
-{%- if stack_instance.deployment_targets.organizational_unit_ids is defined %}
+{%- if stack_instance.deployment_targets.organizational_unit_ids is defined %}{# BEGIN if stack_instance.deployment_targets.organizational_unit_ids is defined #}
             OrganizationalUnitIds:
 {%- for ou_id in stack_instance.deployment_targets.organizational_unit_ids %}
               - {{ ou_id }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if stack_instance.deployment_targets.organizational_unit_ids is defined #}
           Regions:
 {%- for region in stack_instance.regions %}
             - {{ region }}
 {%- endfor %}
-{%- if stack_instance.parameter_overrides is defined %}
+{%- if stack_instance.parameter_overrides is defined %}{# BEGIN if stack_instance.parameter_overrides is defined #}
           ParameterOverrides:
 {%- for parameter_override in stack_instance.parameter_overrides %}
             - ParameterKey: {{ parameter_override.parameter_key }}
               ParameterValue: {{ parameter_override.parameter_value }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endif %}{# END if stack_instance.parameter_overrides is defined #}
+{%- endfor %}{# END for stack_instance in stack_set.stack_instances_group #}
+{%- endif %}{# END if stack_set.stack_instances_group is defined #}
 {%- if stack_set.template_body is defined %}
-      TemplateBody: {{ stack_set.template_body }}
+      TemplateBody: |
+        {{ stack_set.template_body | indent(width=8, first=false) }}
 {%- endif %}
 {%- if stack_set.template_url is defined %}
       TemplateURL: {{ stack_set.template_url }}
@@ -123,11 +128,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for stack_set in sceptre_user_data.stack_sets %}
 {%- set stack_set_name = stack_set.name %}
   {{ stack_set_name }}:
@@ -137,7 +140,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ stack_set_name }}"
-
   {{ stack_set_name }}StackSetId:
     Description: The ID of the stack that you're creating for {{ stack_set_name }}.
     Value:
@@ -147,5 +149,55 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ stack_set_name }}-StackSetId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::StackSet
+Properties:
+  AdministrationRoleARN: String
+  AutoDeployment:
+    Enabled: Boolean
+    RetainStacksOnAccountRemoval: Boolean
+  CallAs: String
+  Capabilities:
+    - String
+  Description: String
+  ExecutionRoleName: String
+  ManagedExecution:
+    Active: Boolean
+  OperationPreferences:
+    ConcurrencyMode: String
+    FailureToleranceCount: Integer
+    FailureTolerancePercentage: Integer
+    MaxConcurrentCount: Integer
+    MaxConcurrentPercentage: Integer
+    RegionConcurrencyType: String
+    RegionOrder:
+      - String
+  Parameters:
+    -
+      ParameterKey: String
+      ParameterValue: String
+  PermissionModel: String
+  StackInstancesGroup:
+    -
+      DeploymentTargets:
+        AccountFilterType: String
+        Accounts:
+          - String
+        AccountsUrl: String
+        OrganizationalUnitIds:
+          - String
+      ParameterOverrides:
+        -
+          ParameterKey: String
+          ParameterValue: String
+      Regions:
+        - String
+  StackSetName: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TemplateBody: String
+  TemplateURL: String
+#}

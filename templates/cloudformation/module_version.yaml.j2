@@ -3,21 +3,18 @@ Description: {{sceptre_user_data.description|default('CloudFormation Module Vers
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for module_version in sceptre_user_data.module_versions %}
 {%- set module_version_name = module_version.name %}
   {{ module_version_name }}:
     Type: AWS::CloudFormation::ModuleVersion
     DeletionPolicy: {{ module_version.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ module_version.update_replace_policy | default('Delete') }}
-    Properties: 
+    Properties:
       ModuleName: {{ module_version.module_name }}
       ModulePackage: {{ module_version.module_package }}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for module_version in sceptre_user_data.module_versions %}
 {%- set module_version_name = module_version.name %}
   {{ module_version_name }}:
@@ -27,7 +24,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ module_version_name }}"
-
   {{ module_version_name }}Arn:
     Description: The ARN for {{ module_version_name }}
     Value:
@@ -37,7 +33,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ module_version_name }}-Arn"
-
   {{ module_version_name }}Description:
     Description: The description of the module {{ module_version_name }}.
     Value:
@@ -47,7 +42,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ module_version_name }}-Description"
-
   {{ module_version_name }}DocumentationUrl:
     Description: The URL of a page providing detailed documentation for {{ module_version_name }}
     Value:
@@ -57,7 +51,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ module_version_name }}-DocumentationUrl"
-
   {{ module_version_name }}IsDefaultVersion:
     Description: Whether the specified module version is set as the default version for {{ module_version_name }}.
     Value:
@@ -67,7 +60,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ module_version_name }}-IsDefaultVersion"
-
   {{ module_version_name }}Schema:
     Description: The schema that defines the module {{ module_version_name }}
     Value:
@@ -77,7 +69,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ module_version_name }}-Schema"
-
   {{ module_version_name }}TimeCreated:
     Description: When the specified module version was registered for {{ module_version_name }}.
     Value:
@@ -87,7 +78,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ module_version_name }}-TimeCreated"
-
   {{ module_version_name }}VersionId:
     Description: The ID of this version of the module for {{ module_version_name }}
     Value:
@@ -97,7 +87,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ module_version_name }}-VersionId"
-
   {{ module_version_name }}Visibility:
     Description: The scope at which the module is visible and usable in CloudFormation operations for {{ module_version_name }}.
     Value:
@@ -107,5 +96,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ module_version_name }}-Visibility"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::ModuleVersion
+Properties:
+  ModuleName: String
+  ModulePackage: String
+#}

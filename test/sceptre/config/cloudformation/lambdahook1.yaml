@@ -1,0 +1,52 @@
+---
+template:
+  type: file
+  path: cloudformation/lambda-hook.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  lambda_hooks:
+    - name: SampleLambdaHook1
+      alias: "SampleAlias1"
+      execution_role: "!Sub arn:aws:iam::${AWS::AccountId}:role/SampleExecutionRole1"
+      failure_mode: "FAIL"
+      hook_status: "ENABLED"
+      lambda_function: "!Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:SampleFunction1"
+      target_operations:
+        - "CREATE"
+        - "UPDATE"
+      stack_filters:
+        filtering_criteria: "INCLUDE"
+        stack_names:
+          include:
+            - "SampleStack1"
+            - "SampleStack2"
+          exclude:
+            - "ExcludedStack1"
+        stack_roles:
+          include:
+            - "!Sub arn:aws:iam::${AWS::AccountId}:role/StackRole1"
+          exclude:
+            - "!Sub arn:aws:iam::${AWS::AccountId}:role/ExcludedRole1"
+      target_filters:
+        target_filters_items:
+          actions:
+            - "CREATE"
+            - "DELETE"
+          invocation_points:
+            - "PRE_PROVISION"
+          target_names:
+            - "TargetResource1"
+
+    - name: SampleLambdaHook2
+      alias: "SampleAlias2"
+      execution_role: "!Sub arn:aws:iam::${AWS::AccountId}:role/SampleExecutionRole2"
+      failure_mode: "WARN"
+      hook_status: "DISABLED"
+      lambda_function: "!Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:SampleFunction2"
+      target_operations:
+        - "DELETE"
+
+stack_tags:
+  Test: cloudformation-lambda-hook
