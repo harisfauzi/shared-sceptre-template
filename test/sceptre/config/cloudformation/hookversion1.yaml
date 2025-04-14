@@ -1,0 +1,30 @@
+---
+template:
+  type: file
+  path: cloudformation/hook_version.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  hook_versions:
+    - name: SampleHookVersion1
+      schema_handler_package: "s3://sample-bucket/sample-handler-package1.zip"
+      type_name: "My::Custom::HookType1"
+      execution_role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/SampleExecutionRole1"
+      logging_config:
+        log_group_name: "/aws/lambda/sample-log-group1"
+        log_role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/SampleLogRole1"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+    - name: SampleHookVersion2
+      schema_handler_package: "s3://sample-bucket/sample-handler-package2.zip"
+      type_name: "My::Custom::HookType2"
+      logging_config:
+        log_group_name: "/aws/lambda/sample-log-group2"
+        log_role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/SampleLogRole2"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: cloudformation-hook-version

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFormation Hook Defaul
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for hook_default_version in sceptre_user_data.hook_default_versions %}
 {%- set hook_default_version_name = hook_default_version.name %}
   {{ hook_default_version_name }}:
@@ -20,11 +19,9 @@ Resources:
 {%- if hook_default_version.version_id is defined %}
       VersionId: {{ hook_default_version.version_id | trim }}
 {% endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for hook_default_version in sceptre_user_data.hook_default_versions %}
 {%- set hook_default_version_name = hook_default_version.name %}
   {{ hook_default_version_name }}:
@@ -34,7 +31,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hook_default_version_name }}"
-
   {{ hook_default_version_name }}Arn:
     Description: The ARN for {{ hook_default_version_name }}
     Value:
@@ -44,5 +40,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hook_default_version_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::HookDefaultVersion
+Properties:
+  TypeName: String
+  TypeVersionArn: String
+  VersionId: String
+#}

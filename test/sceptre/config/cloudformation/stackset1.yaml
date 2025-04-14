@@ -1,0 +1,70 @@
+---
+template:
+  type: file
+  path: cloudformation/stack_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  stack_sets:
+    - name: SampleStackSet1
+      stack_set_name: "MySampleStackSet1"
+      description: "This is a sample stack set for testing."
+      permission_model: "SERVICE_MANAGED"
+      capabilities:
+        - "CAPABILITY_IAM"
+        - "CAPABILITY_NAMED_IAM"
+      auto_deployment:
+        enabled: true
+        retain_stacks_on_account_removal: false
+      stack_instances_group:
+        - deployment_targets:
+            accounts:
+              - "123456789012"
+              - "987654321098"
+            organizational_unit_ids:
+              - "ou-abc123"
+              - "ou-def456"
+          regions:
+            - "us-east-1"
+            - "us-west-2"
+          parameter_overrides:
+            - parameter_key: "Param1"
+              parameter_value: "Value1"
+            - parameter_key: "Param2"
+              parameter_value: "Value2"
+      tags:
+        Environment: "Development"
+        Project: "SampleProject1"
+      template_body: |
+        {
+          "Resources": {
+            "MyBucket": {
+              "Type": "AWS::S3::Bucket"
+            }
+          }
+        }
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+    - name: SampleStackSet2
+      stack_set_name: "MySampleStackSet2"
+      description: "Another sample stack set."
+      permission_model: "SELF_MANAGED"
+      administration_role_arn: "arn:aws:iam::${AWS::AccountId}:role/AdminRole"
+      execution_role_name: "ExecutionRole"
+      stack_instances_group:
+        - deployment_targets:
+            accounts:
+              - "123456789012"
+          regions:
+            - "us-east-1"
+      tags:
+        Environment: "Production"
+        Project: "SampleProject2"
+      template_url: "https://s3.amazonaws.com/sample-bucket/sample-template.yaml"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: cloudformation-stack-set

@@ -1,0 +1,23 @@
+---
+template:
+  type: file
+  path: cloudformation/module_version.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  module_versions:
+    - name: SampleModuleVersion1
+      module_name: "MyModule1"
+      module_package: "s3://sample-bucket/sample-module-package1.zip"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+    - name: SampleModuleVersion2
+      module_name: "MyModule2"
+      module_package: "s3://sample-bucket/sample-module-package2.zip"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: cloudformation-module-version

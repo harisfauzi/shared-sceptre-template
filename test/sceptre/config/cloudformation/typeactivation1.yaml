@@ -1,0 +1,43 @@
+---
+template:
+  type: file
+  path: cloudformation/type_activation.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  type_activations:
+    - name: SampleTypeActivation1
+      type_name: "My::Custom::ResourceType1"
+      type: "RESOURCE"
+      auto_update: true
+      execution_role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/SampleExecutionRole1"
+      logging_config:
+        log_group_name: "/aws/lambda/sample-log-group1"
+        log_role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/SampleLogRole1"
+      major_version: "1"
+      public_type_arn: "!Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/My-Custom-ResourceType1"
+      publisher_id: "${AWS::AccountId}"
+      type_name_alias: "MyAliasResourceType1"
+      version_bump: "MINOR"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+    - name: SampleTypeActivation2
+      type_name: "My::Custom::ResourceType2"
+      type: "RESOURCE"
+      auto_update: false
+      execution_role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/SampleExecutionRole2"
+      logging_config:
+        log_group_name: "/aws/lambda/sample-log-group2"
+        log_role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/SampleLogRole2"
+      major_version: "2"
+      public_type_arn: "!Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:type/resource/My-Custom-ResourceType2"
+      publisher_id: "987654321098"
+      type_name_alias: "MyAliasResourceType2"
+      version_bump: "MAJOR"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: cloudformation-type-activation

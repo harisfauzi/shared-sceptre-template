@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFormation Hook Versio
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for hook_version in sceptre_user_data.hook_versions %}
 {%- set hook_version_name = hook_version.name %}
   {{ hook_version_name }}:
@@ -25,11 +24,9 @@ Resources:
         LogRoleArn: {{ hook_version.logging_config.log_role_arn | trim }}
 {%- endif %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for hook_version in sceptre_user_data.hook_versions %}
 {%- set hook_version_name = hook_version.name %}
   {{ hook_version_name }}:
@@ -39,7 +36,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hook_version_name }}"
-
   {{ hook_version_name }}Arn:
     Description: The ARN for {{ hook_version_name }}
     Value:
@@ -49,7 +45,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hook_version_name }}-Arn"
-
   {{ hook_version_name }}IsDefaultVersion:
     Description: The Role Id for {{ hook_version_name }}
     Value:
@@ -59,7 +54,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hook_version_name }}-IsDefaultVersion"
-
   {{ hook_version_name }}TypeArn:
     Description: The Amazon Resource Number (ARN) assigned to this version of the hook.
     Value:
@@ -69,7 +63,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hook_version_name }}-TypeArn"
-
   {{ hook_version_name }}VersionId:
     Description: The ID of this version of the hook.
     Value:
@@ -79,7 +72,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hook_version_name }}-VersionId"
-
   {{ hook_version_name }}Visibility:
     Description: The scope at which the resource is visible and usable in CloudFormation operations.
     Value:
@@ -89,5 +81,14 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hook_version_name }}-Visibility"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::HookVersion
+Properties:
+  ExecutionRoleArn: String
+  LoggingConfig:
+    LogGroupName: String
+    LogRoleArn: String
+  SchemaHandlerPackage: String
+  TypeName: String
+#}

@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('CloudFormation ResourceDefaultVersion(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('CloudFormation Resource Default Version(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for resource_default_version in sceptre_user_data.resource_default_versions %}
 {%- set resource_default_version_name = resource_default_version.name %}
   {{ resource_default_version_name }}:
@@ -15,16 +14,14 @@ Resources:
       TypeName: {{ resource_default_version.type_name }}
 {%- endif %}
 {%- if resource_default_version.type_version_arn is defined %}
-      TypeVersionArn: {{ resource_default_version.type_version_arn }}
+      TypeVersionArn: {{ resource_default_version.type_version_arn | trim }}
 {%- endif %}
 {%- if resource_default_version.version_id is defined %}
       VersionId: {{ resource_default_version.version_id }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for resource_default_version in sceptre_user_data.resource_default_versions %}
 {%- set resource_default_version_name = resource_default_version.name %}
   {{ resource_default_version_name }}:
@@ -34,7 +31,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_default_version_name }}"
-
   {{ resource_default_version_name }}Arn:
     Description: The ARN for {{ resource_default_version_name }}
     Value:
@@ -44,5 +40,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_default_version_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::ResourceDefaultVersion
+Properties:
+  TypeName: String
+  TypeVersionArn: String
+  VersionId: String
+#}

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFormation Publisher(s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for publisher in sceptre_user_data.publishers %}
 {%- set publisher_name = publisher.name %}
   {{ publisher_name }}:
@@ -15,11 +14,9 @@ Resources:
 {%- if publisher.connection_arn is defined %}
       ConnectionArn: {{ publisher.connection_arn }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for publisher in sceptre_user_data.publishers %}
 {%- set publisher_name = publisher.name %}
   {{ publisher_name }}:
@@ -29,7 +26,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ publisher_name }}"
-
   {{ publisher_name }}IdentityProvider:
     Description: The type of account used as the identity provider when registering this publisher with CloudFormation for {{ publisher_name }}.
     Value:
@@ -39,7 +35,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ publisher_name }}-IdentityProvider"
-
   {{ publisher_name }}PublisherId:
     Description: The ID of the extension publisher for {{ publisher_name }}
     Value:
@@ -49,7 +44,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ publisher_name }}-PublisherId"
-
   {{ publisher_name }}PublisherProfile:
     Description: The URL to the publisher's profile with the identity provider for {{ publisher_name }}
     Value:
@@ -59,7 +53,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ publisher_name }}-PublisherProfile"
-
   {{ publisher_name }}PublisherStatus:
     Description: Whether the publisher is verified for {{ publisher_name }}
     Value:
@@ -69,5 +62,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ publisher_name }}-PublisherStatus"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::Publisher
+Properties:
+  AcceptTermsAndConditions: Boolean
+  ConnectionArn: String
+#}

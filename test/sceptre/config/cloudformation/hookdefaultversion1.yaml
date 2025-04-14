@@ -1,0 +1,25 @@
+---
+template:
+  type: file
+  path: cloudformation/hook_default_version.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  hook_default_versions:
+    - name: SampleHookDefaultVersion1
+      type_name: "My::Custom::HookType1"
+      type_version_arn: "!Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:type/hook/My-Custom-HookType1/00000001"
+      version_id: "v1"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+    - name: SampleHookDefaultVersion2
+      type_name: "My::Custom::HookType2"
+      type_version_arn: "!Sub arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:type/hook/My-Custom-HookType2/00000002"
+      version_id: "v2"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: cloudformation-hook-default-version

@@ -1,0 +1,49 @@
+---
+template:
+  type: file
+  path: cloudformation/stack.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  stacks:
+    - name: SampleStack1
+      stack_name: "MySampleStack1"
+      description: "This is a sample stack for testing."
+      capabilities:
+        - "CAPABILITY_IAM"
+        - "CAPABILITY_NAMED_IAM"
+      parameters:
+        Param1: "Value1"
+        Param2: "Value2"
+      tags:
+        Environment: "Development"
+        Project: "SampleProject1"
+      template_body: |
+        {
+          "Resources": {
+            "MyBucket": {
+              "Type": "AWS::S3::Bucket"
+            }
+          }
+        }
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+    - name: SampleStack2
+      stack_name: "MySampleStack2"
+      description: "Another sample stack."
+      capabilities:
+        - "CAPABILITY_AUTO_EXPAND"
+      parameters:
+        ParamA: "ValueA"
+        ParamB: "ValueB"
+      tags:
+        Environment: "Production"
+        Project: "SampleProject2"
+      template_url: "https://s3.amazonaws.com/sample-bucket/sample-template.yaml"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: cloudformation-stack

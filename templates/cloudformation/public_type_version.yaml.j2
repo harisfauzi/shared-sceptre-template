@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFormation PublicTypeV
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for public_type_version in sceptre_user_data.public_type_versions %}
 {%- set public_type_version_name = public_type_version.name %}
   {{ public_type_version_name }}:
@@ -26,11 +25,9 @@ Resources:
 {%- if public_type_version.type_name is defined %}
       TypeName: {{ public_type_version.type_name }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for public_type_version in sceptre_user_data.public_type_versions %}
 {%- set public_type_version_name = public_type_version.name %}
   {{ public_type_version_name }}:
@@ -40,7 +37,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ public_type_version_name }}"
-
   {{ public_type_version_name }}PublicTypeArn:
     Description: The ARN assigned to the public extension upon publication for {{ public_type_version_name }}
     Value:
@@ -50,7 +46,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ public_type_version_name }}-PublicTypeArn"
-
   {{ public_type_version_name }}PublisherId:
     Description: The publisher ID of the extension publisher for {{ public_type_version_name }}
     Value:
@@ -60,7 +55,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ public_type_version_name }}-PublisherId"
-
   {{ public_type_version_name }}TypeVersionArn:
     Description: The ARN assigned to this version of the extension for {{ public_type_version_name }}
     Value:
@@ -70,5 +64,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ public_type_version_name }}-TypeVersionArn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-14
+Type: AWS::CloudFormation::PublicTypeVersion
+Properties:
+  Arn: String
+  LogDeliveryBucket: String
+  PublicVersionNumber: String
+  Type: String
+  TypeName: String
+#}
