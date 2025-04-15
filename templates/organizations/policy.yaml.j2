@@ -50,7 +50,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ policy_name }}"
-
   {{ policy_name }}Arn:
     Description: The ARN for {{ policy_name }}
     Value:
@@ -60,17 +59,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ policy_name }}-Arn"
-
-  {{ policy_name }}AwsManaged:
-    Description: Indication if it's AWS managed policy for {{ policy_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ policy_name }}
-        - AwsManaged
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ policy_name }}-AwsManaged"
-
   {{ policy_name }}Id:
     Description: The Id for {{ policy_name }}
     Value:
@@ -80,7 +68,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ policy_name }}-Id"
-
 {%- endfor %}
 {%- endif %}{#
 # Supported structure as of 2025-04-07
