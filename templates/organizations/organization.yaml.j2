@@ -26,7 +26,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ organization_name }}"
-
   {{ organization_name }}Arn:
     Description: The ARN for {{ organization_name }}
     Value:
@@ -36,7 +35,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ organization_name }}-Arn"
-
   {{ organization_name }}Id:
     Description: The Id for {{ organization_name }}
     Value:
@@ -46,7 +44,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ organization_name }}-Id"
-
   {{ organization_name }}ManagementAccountArn:
     Description: The management account ARN for {{ organization_name }}
     Value:
@@ -56,7 +53,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ organization_name }}-ManagementAccountArn"
-
   {{ organization_name }}ManagementAccountEmail:
     Description: The management account email for {{ organization_name }}
     Value:
@@ -66,7 +62,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ organization_name }}-ManagementAccountEmail"
-
   {{ organization_name }}ManagementAccountId:
     Description: The management account Id for {{ organization_name }}
     Value:
@@ -76,7 +71,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ organization_name }}-ManagementAccountId"
-
   {{ organization_name }}RootId:
     Description: The root Id for {{ organization_name }}
     Value:
@@ -86,7 +80,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ organization_name }}-RootId"
-
 {%- endfor %}
 {%- endif %}{#
 # Supported structure as of 2025-04-07
