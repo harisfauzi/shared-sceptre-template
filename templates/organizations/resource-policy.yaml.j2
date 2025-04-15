@@ -39,7 +39,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_policy_name }}"
-
   {{ resource_policy_name }}Arn:
     Description: The ARN for {{ resource_policy_name }}
     Value:
@@ -49,7 +48,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_policy_name }}-Arn"
-
   {{ resource_policy_name }}Id:
     Description: The Id for {{ resource_policy_name }}
     Value:
@@ -59,7 +57,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_policy_name }}-Id"
-
 {%- endfor %}
 {%- endif %}{#
 # Supported structure as of 2025-04-07

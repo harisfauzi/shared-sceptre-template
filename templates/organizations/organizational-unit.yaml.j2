@@ -34,7 +34,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ organizational_unit_name }}"
-
   {{ organizational_unit_name }}Arn:
     Description: The ARN for {{ organizational_unit_name }}
     Value:
@@ -44,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ organizational_unit_name }}-Arn"
-
   {{ organizational_unit_name }}Id:
     Description: The Id for {{ organizational_unit_name }}
     Value:
@@ -54,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ organizational_unit_name }}-Id"
-
 {%- endfor %}
 {%- endif %}{#
 # Supported structure as of 2025-04-07
