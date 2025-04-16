@@ -11,14 +11,14 @@ Resources:
     UpdateReplacePolicy: {{ transit_gateway_route_entry.update_replace_policy | default('Delete') }}
     Properties:
       TransitGatewayRouteTableId: {{ transit_gateway_route_entry.transit_gateway_route_table_id | trim }}
-{%- if route.blackhole is defined %}
-      Blackhole: {{ route.blackhole | lower }}
+{%- if transit_gateway_route_entry.blackhole is defined %}
+      Blackhole: {{ transit_gateway_route_entry.blackhole | lower }}
 {%- endif %}
-{%- if route.destination_cidr_block is defined %}
-      DestinationCidrBlock: {{ route.destination_cidr_block }}
+{%- if transit_gateway_route_entry.destination_cidr_block is defined %}
+      DestinationCidrBlock: {{ transit_gateway_route_entry.destination_cidr_block }}
 {%- endif %}
-{%- if route.transit_gateway_attachment_id is defined %}
-      TransitGatewayAttachmentId: {{ route.transit_gateway_attachment_id | trim }}
+{%- if transit_gateway_route_entry.transit_gateway_attachment_id is defined %}
+      TransitGatewayAttachmentId: {{ transit_gateway_route_entry.transit_gateway_attachment_id | trim }}
 {%- endif %}
 {%- endfor %}
 
