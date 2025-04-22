@@ -51,7 +51,7 @@ Resources:
 {%- for server_side_encryption_configuration in bucket.bucket_encryption.server_side_encryption_configuration %}
           -
 {%- if server_side_encryption_configuration.bucket_key_enabled is defined %}
-            BucketKeyEnabled: {{ server_side_encryption_configuration.bucket_key_enabled }}
+            BucketKeyEnabled: {{ server_side_encryption_configuration.bucket_key_enabled | lower }}
 {%- endif %}
 {%- if server_side_encryption_configuration.server_side_encryption_by_default is defined %}
             ServerSideEncryptionByDefault:
@@ -133,7 +133,7 @@ Resources:
 {%- if inventory_configuration.destination.prefix is defined %}
             Prefix: {{ inventory_configuration.destination.prefix }}
 {%- endif %}
-          Enabled: {{ inventory_configuration.enabled }}
+          Enabled: {{ inventory_configuration.enabled | lower }}
           Id: {{ inventory_configuration.id }}
           IncludedObjectVersions: {{ inventory_configuration.included_object_versions }}
           ScheduleFrequency: {{ inventory_configuration.schedule_frequency }}
@@ -148,10 +148,10 @@ Resources:
 {%- endif %}
 {%- endfor %}{# for inventory_configuration in bucket.inventory_configurations #}
 {%- endif %}{# if bucket.inventory_configurations is defined #}
-{%- if bucket.lifecycle_configuration is defined %}
+{%- if bucket.lifecycle_configuration is defined %}{# BEGIN if bucket.lifecycle_configuration is defined #}
       LifecycleConfiguration:
         Rules:
-{%- for rule in bucket.lifecycle_configuration.rules %}
+{%- for rule in bucket.lifecycle_configuration.rules %}{# BEGIN for rule in bucket.lifecycle_configuration.rules #}
           - Status: {{ rule.status }}
 {%- if rule.abort_incomplete_multipart_upload is defined %}
             AbortIncompleteMultipartUpload:
@@ -164,7 +164,7 @@ Resources:
             ExpirationInDays: {{ rule.expiration_in_days }}
 {%- endif %}
 {%- if rule.expired_object_delete_marker is defined %}
-            ExpiredObjectDeleteMarker: {{ rule.expired_object_delete_marker }}
+            ExpiredObjectDeleteMarker: {{ rule.expired_object_delete_marker | lower }}
 {%- endif %}
 {%- if rule.id is defined %}
             Id: {{ rule.id }}
@@ -233,11 +233,14 @@ Resources:
 {%- if transition.transition_in_days is defined %}
                 TransitionInDays: {{ transition.transition_in_days }}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{# END for rule in bucket.lifecycle_configuration.rules #}
 {%- endif %}{# if rule.transitions is defined #}
 {%- endfor %}
+{%- if bucket.lifecycle_configuration.transition_default_minimum_object_size is defined %}
+        TransitionDefaultMinimumObjectSize: {{ bucket.lifecycle_configuration.transition_default_minimum_object_size }}
 {%- endif %}
-{%- if bucket.logging_configuration is defined %}
+{%- endif %}{# END if bucket.lifecycle_configuration is defined #}
+{%- if bucket.logging_configuration is defined %}{# BEGIN if bucket.logging_configuration is defined #}
       LoggingConfiguration:
 {%- if bucket.logging_configuration.destination_bucket_name is defined %}
         DestinationBucketName: {{ bucket.logging_configuration.destination_bucket_name }}
@@ -245,7 +248,7 @@ Resources:
 {%- if bucket.logging_configuration.log_file_prefix is defined %}
         LogFilePrefix: {{ bucket.logging_configuration.log_file_prefix }}
 {%- endif %}
-{%- if bucket.logging_configuration.target_object_key_format is defined %}
+{%- if bucket.logging_configuration.target_object_key_format is defined %}{# BEGIN if bucket.logging_configuration.target_object_key_format is defined #}
         TargetObjectKeyFormat:
 {%- if bucket.logging_configuration.target_object_key_format.partitioned_prefix is defined %}
           PartitionedPrefix:
@@ -253,8 +256,20 @@ Resources:
 {%- elif bucket.logging_configuration.target_object_key_format.simple_prefix is defined %}
           SimplePrefix: {}
 {%- endif %}
+{%- endif %}{# END if bucket.logging_configuration.target_object_key_format is defined #}
+{%- endif %}{# END if bucket.logging_configuration is defined #}
+{%- if bucket.metadata_table_configuration is defined %}{# BEGIN if bucket.metadata_table_configuration is defined #}
+      MetadataTableConfiguration:
+        S3TablesDestination:
+          TableBucketArn: {{ bucket.metadata_table_configuration.s3_tables_destination.table_bucket_arn }}
+          TableName: {{ bucket.metadata_table_configuration.s3_tables_destination.table_name }}
+{%- if bucket.metadata_table_configuration.s3_tables_destination.table_arn is defined %}
+          TableArn: {{ bucket.metadata_table_configuration.s3_tables_destination.table_arn }}
 {%- endif %}
+{%- if bucket.metadata_table_configuration.s3_tables_destination.table_namespace is defined %}
+          TableNamespace: {{ bucket.metadata_table_configuration.s3_tables_destination.table_namespace }}
 {%- endif %}
+{%- endif %}{# END if bucket.metadata_table_configuration is defined #}
 {%- if bucket.metrics_configuration is defined %}
       MetricsConfigurations:
 {%- for metrics_configuration in bucket.metrics_configuration %}
@@ -274,13 +289,13 @@ Resources:
 {%- endif %}
 {%- endfor %}
 {%- endif %}{# if bucket.metrics_configuration is defined #}
-{%- if bucket.notification_configuration is defined %}
+{%- if bucket.notification_configuration is defined %}{# BEGIN if bucket.notification_configuration is defined #}
       NotificationConfiguration:
 {%- if bucket.notification_configuration.event_bridge_configuration is defined %}
         EventBridgeConfiguration:
-          EventBridgeEnabled: {{ bucket.notification_configuration.event_bridge_configuration.event_bridge_enabled }}
+          EventBridgeEnabled: {{ bucket.notification_configuration.event_bridge_configuration.event_bridge_enabled | lower }}
 {%- endif %}
-{%- if bucket.notification_configuration.lambda_configurations is defined %}
+{%- if bucket.notification_configuration.lambda_configurations is defined %}{# BEGIN if bucket.notification_configuration.lambda_configurations is defined #}
         LambdaConfigurations:
 {%- for lambda_configuration in bucket.notification_configuration.lambda_configurations %}
           - Event: {{ lambda_configuration.event }}
@@ -296,7 +311,7 @@ Resources:
 {%- endif %}
 {%- endfor %}
 {%- endif %}{# if bucket.notification_configuration.lambda_configurations is defined #}
-{%- if bucket.notification_configuration.queue_configurations is defined %}
+{%- if bucket.notification_configuration.queue_configurations is defined %}{# BEGIN if bucket.notification_configuration.queue_configurations is defined #}
         QueueConfigurations:
 {%- for queue_configuration in bucket.notification_configuration.queue_configurations %}
           - Event: {{ queue_configuration.event }}
@@ -311,13 +326,13 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}{# if bucket.notification_configuration.queue_configurations is defined #}
-{%- if bucket.notification_configuration.topic_configurations is defined %}
+{%- endif %}{# END if bucket.notification_configuration.queue_configurations is defined #}
+{%- if bucket.notification_configuration.topic_configurations is defined %}{# BEGIN if bucket.notification_configuration.topic_configurations is defined #}
         TopicConfigurations:
-{%- for topic_configuration in bucket.notification_configuration.topic_configurations %}
+{%- for topic_configuration in bucket.notification_configuration.topic_configurations %}{# BEGIN for topic_configuration in bucket.notification_configuration.topic_configurations #}
           - Event: {{ topic_configuration.event }}
             Topic: {{ topic_configuration.topic }}
-{%- if topic_configuration.filter is defined %}
+{%- if topic_configuration.filter is defined %}{# BEGIN if topic_configuration.filter is defined #}
             Filter:
               S3Key:
                 Rules:
@@ -325,11 +340,11 @@ Resources:
                   - Name: {{ rule.name }}
                     Value: {{ rule.value }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}
-{%- endif %}{# if bucket.notification_configuration.topic_configurations is defined #}
-{%- endif %}{# if bucket.notification_configuration is defined #}
-{%- if bucket.object_lock_configuration is defined %}
+{%- endif %}{# END if topic_configuration.filter is defined #}
+{%- endfor %}{# END for topic_configuration in bucket.notification_configuration.topic_configurations #}
+{%- endif %}{# END if bucket.notification_configuration.topic_configurations is defined #}
+{%- endif %}{# END if bucket.notification_configuration is defined #}
+{%- if bucket.object_lock_configuration is defined %}{# BEGIN if bucket.object_lock_configuration is defined #}
       ObjectLockConfiguration:
 {%- if bucket.object_lock_configuration.object_lock_enabled is defined %}
         ObjectLockEnabled: {{ bucket.object_lock_configuration.object_lock_enabled }}
@@ -347,9 +362,9 @@ Resources:
             Years: {{ bucket.object_lock_configuration.rule.default_retention.years }}
 {%- endif %}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if bucket.object_lock_configuration is defined #}
 {%- if bucket.object_lock_enabled is defined %}
-      ObjectLockEnabled: {{ bucket.object_lock_enabled }}
+      ObjectLockEnabled: {{ bucket.object_lock_enabled | lower }}
 {%- endif %}
 {%- if bucket.ownership_controls is defined %}
       OwnershipControls:
@@ -361,23 +376,23 @@ Resources:
 {%- if bucket.public_access_block_configuration is defined %}
       PublicAccessBlockConfiguration:
 {%- if bucket.public_access_block_configuration.block_public_acls is defined %}
-        BlockPublicAcls: {{ bucket.public_access_block_configuration.block_public_acls }}
+        BlockPublicAcls: {{ bucket.public_access_block_configuration.block_public_acls | lower }}
 {%- endif %}
 {%- if bucket.public_access_block_configuration.block_public_policy is defined %}
-        BlockPublicPolicy: {{ bucket.public_access_block_configuration.block_public_policy }}
+        BlockPublicPolicy: {{ bucket.public_access_block_configuration.block_public_policy | lower }}
 {%- endif %}
 {%- if bucket.public_access_block_configuration.ignore_public_acls is defined %}
-        IgnorePublicAcls: {{ bucket.public_access_block_configuration.ignore_public_acls }}
+        IgnorePublicAcls: {{ bucket.public_access_block_configuration.ignore_public_acls | lower }}
 {%- endif %}
 {%- if bucket.public_access_block_configuration.restrict_public_buckets is defined %}
-        RestrictPublicBuckets: {{ bucket.public_access_block_configuration.restrict_public_buckets }}
+        RestrictPublicBuckets: {{ bucket.public_access_block_configuration.restrict_public_buckets | lower }}
 {%- endif %}
 {%- endif %}
-{%- if bucket.replication_configuration is defined %}
+{%- if bucket.replication_configuration is defined %}{# BEGIN if bucket.replication_configuration is defined #}
       ReplicationConfiguration:
         Role: {{ bucket.replication_configuration.role }}
         Rules:
-{%- for rule in bucket.replication_configuration.rules %}
+{%- for rule in bucket.replication_configuration.rules %}{# BEGIN for rule in bucket.replication_configuration.rules #}
           - Destination:
               Bucket: {{ rule.destination.bucket }}
 {%- if rule.destination.access_control_translation is defined %}
@@ -457,8 +472,8 @@ Resources:
                 Status: {{ rule.source_selection_criteria.sse_kms_encrypted_objects.status }}
 {%- endif %}
 {%- endif %}
-{%- endfor %}
-{%- endif %}{# if bucket.replication_configuration is defined #}
+{%- endfor %}{# END for rule in bucket.replication_configuration.rules #}
+{%- endif %}{# END if bucket.replication_configuration is defined #}
 {%- if bucket.tags is defined %}
       Tags:
 {%- for key,value in bucket.tags.items() %}
@@ -516,8 +531,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endif %}{# if bucket.website_configuration is defined #}
-
-{%- if bucket.bucket_policy is defined %}
+{%- if bucket.bucket_policy is defined %}{# BEGIN if bucket.bucket_policy is defined #}
   {{ bucket_name }}Policy:
     Type: AWS::S3::BucketPolicy
     DeletionPolicy: {{ bucket.deletion_policy | default('Delete') }}
@@ -527,20 +541,18 @@ Resources:
         Ref: {{ bucket_name }}
       PolicyDocument:
 {{ bucket.bucket_policy.policy_document | indent(width=8, first=true) }}
-{%- endif %}{# if bucket.bucket_policy is defined #}
+{%- endif %}{# if END bucket.bucket_policy is defined #}
 {%- endfor %}{# END {%- for bucket in sceptre_user_data.buckets %} #}
 
 Outputs:
 {%- for bucket in sceptre_user_data.buckets %}
 {%- set bucket_name = bucket.name %}
-
   {{ bucket_name }}:
     Value:
       Ref: {{ bucket_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ bucket_name }}"
-
   {{ bucket_name }}Arn:
     Value:
       Fn::GetAtt:
@@ -549,19 +561,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-Arn"
-
   {{ bucket_name }}ArnAllObjects:
     Value:
       Fn::Join:
-        - '/'
+        - "/"
         - - Fn::GetAtt:
               - {{ bucket_name }}
               - Arn
-          - '*'
+          - "*"
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-ArnAllObjects"
-
   {{ bucket_name }}DomainName:
     Value:
       Fn::GetAtt:
@@ -570,7 +580,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-DomainName"
-
   {{ bucket_name }}DualStackDomainName:
     Value:
       Fn::GetAtt:
@@ -579,7 +588,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-DualStackDomainName"
-
   {{ bucket_name }}RegionalDomainName:
     Value:
       Fn::GetAtt:
@@ -588,5 +596,257 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-RegionalDomainName"
+{%- endfor %}{#
+# Supported structure as of 2025-04-22:
+Type: AWS::S3::Bucket
+Properties:
+  AccelerateConfiguration:
+    AccelerationStatus: String
+  AccessControl: String
+  AnalyticsConfigurations:
+    -
+      Id: String
+      Prefix: String
+      StorageClassAnalysis:
+        DataExport:
+          Destination:
+            BucketAccountId: String
+            BucketArn: String
+            Format: String
+            Prefix: String
+          OutputSchemaVersion: String
+      TagFilters:
+        -
+          Key: String
+          Value: String
+  BucketEncryption:
+    ServerSideEncryptionConfiguration:
+      -
+        BucketKeyEnabled: Boolean
+        ServerSideEncryptionByDefault:
+          KMSMasterKeyID: String
+          SSEAlgorithm: String
+  BucketName: String
+  CorsConfiguration:
+    CorsRules:
+      -
+        AllowedHeaders:
+          - String
+        AllowedMethods:
+          - String
+        AllowedOrigins:
+          - String
+        ExposedHeaders:
+          - String
+        Id: String
+        MaxAge: Integer
+  IntelligentTieringConfigurations:
+    -
+      Id: String
+      Prefix: String
+      Status: String
+      TagFilters:
+        -
+          Key: String
+          Value: String
+      Tierings:
+        -
+          AccessTier: String
+          Days: Integer
+  InventoryConfigurations:
+    -
+      Destination:
+        BucketAccountId: String
+        BucketArn: String
+        Format: String
+        Prefix: String
+      Enabled: Boolean
+      Id: String
+      IncludedObjectVersions: String
+      OptionalFields:
+        - String
+      Prefix: String
+      ScheduleFrequency: String
+  LifecycleConfiguration:
+    Rules:
+      -
+        AbortIncompleteMultipartUpload:
+          DaysAfterInitiation: Integer
+        ExpirationDate: String
+        ExpirationInDays: Integer
+        ExpiredObjectDeleteMarker: Boolean
+        Id: String
+        NoncurrentVersionExpiration:
+          NewerNoncurrentVersions: Integer
+          NoncurrentDays: Integer
+        NoncurrentVersionExpirationInDays: Integer
+        NoncurrentVersionTransition:
+          NewerNoncurrentVersions: Integer
+          StorageClass: String
+          TransitionInDays: Integer
+        NoncurrentVersionTransitions:
+          -
+            NewerNoncurrentVersions: Integer
+            StorageClass: String
+            TransitionInDays: Integer
+        ObjectSizeGreaterThan: String
+        ObjectSizeLessThan: String
+        Prefix: String
+        Status: String
+        TagFilters:
+          -
+            Key: String
+            Value: String
+        Transition:
+          StorageClass: String
+          TransitionDate: String
+          TransitionInDays: Integer
+        Transitions:
+          -
+            StorageClass: String
+            TransitionDate: String
+            TransitionInDays: Integer
+    TransitionDefaultMinimumObjectSize: String
+  LoggingConfiguration:
+    DestinationBucketName: String
+    LogFilePrefix: String
+    TargetObjectKeyFormat:
+      PartitionedPrefix:
+        PartitionDateSource: String
+      SimplePrefix: Json
+  MetadataTableConfiguration:
+    S3TablesDestination:
+      TableArn: String
+      TableBucketArn: String
+      TableName: String
+      TableNamespace: String
+  MetricsConfigurations:
+    -
+      AccessPointArn: String
+      Id: String
+      Prefix: String
+      TagFilters:
+        -
+          Key: String
+          Value: String
+  NotificationConfiguration:
+    EventBridgeConfiguration:
+      EventBridgeEnabled: Boolean
+    LambdaConfigurations:
+      -
+        Event: String
+        Filter:
+          S3Key:
+            Rules:
+              -
+                Name: String
+                Value: String
+        Function: String
+    QueueConfigurations:
+      -
+        Event: String
+        Filter:
+          S3Key:
+            Rules:
+              -
+                Name: String
+                Value: String
+        Queue: String
+    TopicConfigurations:
+      -
+        Event: String
+        Filter:
+          S3Key:
+            Rules:
+              -
+                Name: String
+                Value: String
+        Topic: String
+  ObjectLockConfiguration:
+    ObjectLockEnabled: String
+    Rule:
+      DefaultRetention:
+        Days: Integer
+        Mode: String
+        Years: Integer
+  ObjectLockEnabled: Boolean
+  OwnershipControls:
+    Rules:
+      -
+        ObjectOwnership: String
+  PublicAccessBlockConfiguration:
+    BlockPublicAcls: Boolean
+    BlockPublicPolicy: Boolean
+    IgnorePublicAcls: Boolean
+    RestrictPublicBuckets: Boolean
+  ReplicationConfiguration:
+    Role: String
+    Rules:
+      -
+        DeleteMarkerReplication:
+          Status: String
+        Destination:
+          AccessControlTranslation:
+            Owner: String
+          Account: String
+          Bucket: String
+          EncryptionConfiguration:
+            ReplicaKmsKeyID: String
+          Metrics:
+            EventThreshold:
+              Minutes: Integer
+            Status: String
+          ReplicationTime:
+            Status: String
+            Time:
+              Minutes: Integer
+          StorageClass: String
+        Filter:
+          And:
+            Prefix: String
+            TagFilters:
+              -
+                Key: String
+                Value: String
+          Prefix: String
+          TagFilter:
+            Key: String
+            Value: String
+        Id: String
+        Prefix: String
+        Priority: Integer
+        SourceSelectionCriteria:
+          ReplicaModifications:
+            Status: String
+          SseKmsEncryptedObjects:
+            Status: String
+        Status: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  VersioningConfiguration:
+    Status: String
+  WebsiteConfiguration:
+    ErrorDocument: String
+    IndexDocument: String
+    RedirectAllRequestsTo:
+      HostName: String
+      Protocol: String
+    RoutingRules:
+      -
+        RedirectRule:
+          HostName: String
+          HttpRedirectCode: String
+          Protocol: String
+          ReplaceKeyPrefixWith: String
+          ReplaceKeyWith: String
+        RoutingRuleCondition:
+          HttpErrorCodeReturnedEquals: String
+          KeyPrefixEquals: String
 
-{%- endfor %}
+Type: AWS::S3::BucketPolicy
+Properties:
+  Bucket: String
+  PolicyDocument: Json
+#}

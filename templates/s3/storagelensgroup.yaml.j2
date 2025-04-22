@@ -14,13 +14,13 @@ Resources:
       Filter:
 {%- if storage_lens_group.filter.and is defined %}
         And:
-          {{ commonfilter.prep(storage_lens_group.filter.and) | indent(width=10,first=True) }}
+          {{ commonfilter.prep(storage_lens_group.filter.and) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if storage_lens_group.filter.or is defined %}
         Or:
-          {{ commonfilter.prep(storage_lens_group.filter.or) | indent(width=10,first=True) }}
+          {{ commonfilter.prep(storage_lens_group.filter.or) | indent(width=10, first=false) }}
 {%- endif %}
-        {{ commonfilter.prep(storage_lens_group.filter) | indent(width=8,first=True) }}
+        {{ commonfilter.prep(storage_lens_group.filter) | indent(width=8, first=false) }}
       Name: {{ storage_lens_group.storage_lens_group_name }}
       Tags:
         - Key: SourceRepoURL
@@ -31,14 +31,11 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
-
 {%- endfor %}{# END {%- for storage_lens_group in sceptre_user_data.storage_lens_groups %} #}
 
 Outputs:
 {%- for storage_lens_group in sceptre_user_data.storage_lens_groups %}
 {%- set storage_lens_group_name = storage_lens_group.name %}
-
   {{ storage_lens_group_name }}:
     Description: Storage Lens Group ARN for {{ storage_lens_group_name }}
     Value:
@@ -46,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ storage_lens_group_name }}"
-
   {{ storage_lens_group_name }}StorageLensGroupArn:
     Description: The ARN for {{ storage_lens_group_name }}
     Value:
@@ -56,6 +52,58 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ storage_lens_group_name }}-StorageLensGroupArn"
+{%- endfor %}{#
+# Supported structure as of 2025-04-22:
+Type: AWS::S3::StorageLensGroup
+Properties:
+  Filter: 
+    And: 
+      MatchAnyPrefix: 
+        - String
+      MatchAnySuffix: 
+        - String
+      MatchAnyTag: 
+        -
+          Key: String
+          Value: String
+      MatchObjectAge: 
+        DaysGreaterThan: Integer
+        DaysLessThan: Integer
+      MatchObjectSize: 
+        BytesGreaterThan: Integer
+        BytesLessThan: Integer
+    MatchAnyPrefix: 
+      - String
+    MatchAnySuffix: 
+      - String
+    MatchAnyTag: 
+      -
+        Key: String
+        Value: String
+    MatchObjectAge: 
+      DaysGreaterThan: Integer
+      DaysLessThan: Integer
+    MatchObjectSize: 
+      BytesGreaterThan: Integer
+      BytesLessThan: Integer
+    Or: 
+      MatchAnyPrefix: 
+        - String
+      MatchAnySuffix: 
+        - String
+      MatchAnyTag: 
+        -
+          Key: String
+          Value: String
+      MatchObjectAge: 
+        DaysGreaterThan: Integer
+        DaysLessThan: Integer
+      MatchObjectSize: 
+        BytesGreaterThan: Integer
+        BytesLessThan: Integer
 
-
-{%- endfor %}
+  Name: String
+  Tags: 
+    - Key: String
+      Value: String
+#}
