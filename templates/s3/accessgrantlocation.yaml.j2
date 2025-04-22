@@ -25,13 +25,11 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}{# END {%- for access_grant_location in sceptre_user_data.access_grant_locations %} #}
 
 Outputs:
 {%- for access_grant_location in sceptre_user_data.access_grant_locations %}
 {%- set access_grant_location_name = access_grant_location.name %}
-
   {{ access_grant_location_name }}:
     Description: Access Grant Location Id for {{ access_grant_location_name }}
     Value:
@@ -39,7 +37,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_grant_location_name }}"
-
   {{ access_grant_location_name }}AccessGrantsLocationId:
     Description: The Access Grant Location Id for {{ access_grant_location_name }}
     Value:
@@ -49,7 +46,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_grant_location_name }}-AccessGrantsLocationId"
-
   {{ access_grant_location_name }}AccessGrantsLocationArn:
     Description: The Access Grant Location ARN for {{ access_grant_location_name }}
     Value:
@@ -59,5 +55,14 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_grant_location_name }}-AccessGrantsLocationArn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-22:
+Type: AWS::S3::AccessGrantsLocation
+Properties:
+  IamRoleArn: String
+  LocationScope: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

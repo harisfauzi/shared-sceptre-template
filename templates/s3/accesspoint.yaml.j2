@@ -26,29 +26,27 @@ Resources:
 {%- if access_point.public_access_block_configuration is defined %}
       PublicAccessBlockConfiguration:
 {%- if access_point.public_access_block_configuration.block_public_acls is defined %}
-        BlockPublicAcls: {{ access_point.public_access_block_configuration.block_public_acls }}
+        BlockPublicAcls: {{ access_point.public_access_block_configuration.block_public_acls | lower }}
 {%- endif %}
 {%- if access_point.public_access_block_configuration.block_public_policy is defined %}
-        BlockPublicPolicy: {{ access_point.public_access_block_configuration.block_public_policy }}
+        BlockPublicPolicy: {{ access_point.public_access_block_configuration.block_public_policy | lower }}
 {%- endif %}
 {%- if access_point.public_access_block_configuration.ignore_public_acls is defined %}
-        IgnorePublicAcls: {{ access_point.public_access_block_configuration.ignore_public_acls }}
+        IgnorePublicAcls: {{ access_point.public_access_block_configuration.ignore_public_acls | lower }}
 {%- endif %}
 {%- if access_point.public_access_block_configuration.restrict_public_buckets is defined %}
-        RestrictPublicBuckets: {{ access_point.public_access_block_configuration.restrict_public_buckets }}
+        RestrictPublicBuckets: {{ access_point.public_access_block_configuration.restrict_public_buckets | lower }}
 {%- endif %}
 {%- endif %}
 {%- if access_point.vpc_configuration is defined %}
       VpcConfiguration:
         VpcId: {{ access_point.vpc_configuration.vpc_id | trim }}
 {%- endif %}
-
 {%- endfor %}{# END {%- for access_point in sceptre_user_data.access_points %} #}
 
 Outputs:
 {%- for access_point in sceptre_user_data.access_points %}
 {%- set access_point_name = access_point.name %}
-
   {{ access_point_name }}:
     Description: Access Point Name for {{ access_point_name }}
     Value:
@@ -56,7 +54,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_point_name }}"
-
   {{ access_point_name }}Alias:
     Description: The alias for {{ access_point_name }}
     Value:
@@ -66,7 +63,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-Alias"
-
   {{ access_point_name }}Arn:
     Description: The ARN for {{ access_point_name }}
     Value:
@@ -76,7 +72,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-Arn"
-
   {{ access_point_name }}NetworkOrigin:
     Description: Indicates whether the access point {{ access_point_name }} allows access from the internet.
     Value:
@@ -86,5 +81,19 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-NetworkOrigin"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-22:
+Type: AWS::S3::AccessPoint
+Properties:
+  Bucket: String
+  BucketAccountId: String
+  Name: String
+  Policy: Json
+  PublicAccessBlockConfiguration:
+    BlockPublicAcls: Boolean
+    BlockPublicPolicy: Boolean
+    IgnorePublicAcls: Boolean
+    RestrictPublicBuckets: Boolean
+  VpcConfiguration:
+    VpcId: String
+#}

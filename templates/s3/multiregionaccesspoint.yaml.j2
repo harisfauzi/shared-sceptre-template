@@ -23,25 +23,23 @@ Resources:
 {%- if multi_region_access_point.public_access_block_configuration is defined %}
       PublicAccessBlockConfiguration:
 {%- if multi_region_access_point.public_access_block_configuration.block_publi_acls is defined %}
-        BlockPublicAcls: {{ multi_region_access_point.public_access_block_configuration.block_publi_acls }}
+        BlockPublicAcls: {{ multi_region_access_point.public_access_block_configuration.block_publi_acls | lower }}
 {%- endif %}
 {%- if multi_region_access_point.public_access_block_configuration.block_public_policy is defined %}
-        BlockPublicPolicy: {{ multi_region_access_point.public_access_block_configuration.block_public_policy }}
+        BlockPublicPolicy: {{ multi_region_access_point.public_access_block_configuration.block_public_policy | lower }}
 {%- endif %}
 {%- if multi_region_access_point.public_access_block_configuration.ignore_public_acls is defined %}
-        IgnorePublicAcls: {{ multi_region_access_point.public_access_block_configuration.ignore_public_acls }}
+        IgnorePublicAcls: {{ multi_region_access_point.public_access_block_configuration.ignore_public_acls | lower }}
 {%- endif %}
 {%- if multi_region_access_point.public_access_block_configuration.restrict_public_buckets is defined %}
-        RestrictPublicBuckets: {{ multi_region_access_point.public_access_block_configuration.restrict_public_buckets }}
+        RestrictPublicBuckets: {{ multi_region_access_point.public_access_block_configuration.restrict_public_buckets | lower }}
 {%- endif %}
 {%- endif %}
-
 {%- endfor %}{# END {%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %} #}
 
 Outputs:
 {%- for multi_region_access_point in sceptre_user_data.multi_region_access_points %}
 {%- set multi_region_access_point_name = multi_region_access_point.name %}
-
   {{ multi_region_access_point_name }}:
     Description: The name of Multi Region Access Point for {{ multi_region_access_point_name }}
     Value:
@@ -49,7 +47,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ multi_region_access_point_name }}"
-
   {{ multi_region_access_point_name }}Alias:
     Description: The alias for {{ multi_region_access_point_name }}
     Value:
@@ -59,7 +56,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ multi_region_access_point_name }}-Alias"
-
   {{ multi_region_access_point_name }}CreatedAt:
     Description: The timestamp of when the Multi-Region Access Point {{ multi_region_access_point_name }} is created.
     Value:
@@ -69,5 +65,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ multi_region_access_point_name }}-CreatedAt"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-22:
+Type: AWS::S3::MultiRegionAccessPoint
+Properties:
+  Name: String
+  PublicAccessBlockConfiguration:
+    BlockPublicAcls: Boolean
+    BlockPublicPolicy: Boolean
+    IgnorePublicAcls: Boolean
+    RestrictPublicBuckets: Boolean
+  Regions:
+    -
+      Bucket: String
+      BucketAccountId: String
+#}
