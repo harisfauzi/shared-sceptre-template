@@ -22,13 +22,11 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}{# END {%- for access_grant_instance in sceptre_user_data.access_grant_instances %} #}
 
 Outputs:
 {%- for access_grant_instance in sceptre_user_data.access_grant_instances %}
 {%- set access_grant_instance_name = access_grant_instance.name %}
-
   {{ access_grant_instance_name }}:
     Description: Access Grant Instance Id for {{ access_grant_instance_name }}
     Value:
@@ -36,7 +34,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_grant_instance_name }}"
-
   {{ access_grant_instance_name }}AccessGrantsInstanceId:
     Description: The Access Grant Instance Id for {{ access_grant_instance_name }}
     Value:
@@ -46,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_grant_instance_name }}-AccessGrantsInstanceId"
-
   {{ access_grant_instance_name }}AccessGrantsInstanceArn:
     Description: The Access Grant Instance ARN for {{ access_grant_instance_name }}
     Value:
@@ -56,5 +52,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_grant_instance_name }}-AccessGrantsInstanceArn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-22:
+Type: AWS::S3::AccessGrantsInstance
+Properties:
+  IdentityCenterArn: String
+  Tags: 
+    -
+      Key: String
+      Value: String
+#}

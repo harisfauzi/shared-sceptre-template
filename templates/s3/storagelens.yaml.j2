@@ -15,25 +15,25 @@ Resources:
           BucketLevel:
 {%- if storage_lens.storage_lens_configuration.account_level.bucket_level.activity_metrics is defined %}
             ActivityMetrics:
-              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.activity_metrics.is_enabled }}
+              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.activity_metrics.is_enabled | lower }}
 {%- endif %}
 {%- if storage_lens.storage_lens_configuration.account_level.bucket_level.advanced_cost_optimization_metrics is defined %}
             AdvancedCostOptimizationMetrics:
-              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.advanced_cost_optimization_metrics.is_enabled }}
+              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.advanced_cost_optimization_metrics.is_enabled | lower }}
 {%- endif %}
 {%- if storage_lens.storage_lens_configuration.account_level.bucket_level.advanced_data_protection_metrics is defined %}
             AdvancedDataProtectionMetrics:
-              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.advanced_data_protection_metrics.is_enabled }}
+              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.advanced_data_protection_metrics.is_enabled | lower }}
 {%- endif %}
 {%- if storage_lens.storage_lens_configuration.account_level.bucket_level.detailed_status_codes_metrics is defined %}
             DetailedStatusCodesMetrics:
-              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.detailed_status_codes_metrics.is_enabled }}
+              IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.detailed_status_codes_metrics.is_enabled | lower }}
 {%- endif %}
 {%- if storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level is defined %}{# {%- if storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level is defined %} #}
             PrefixLevel:
               StorageMetrics:
 {%- if storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.is_enabled is defined %}
-                IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.is_enabled }}
+                IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.is_enabled | lower }}
 {%- endif %}
 {%- if storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level.storage_metrics.selection_criteria is defined %}
                 SelectionCriteria:
@@ -50,19 +50,19 @@ Resources:
 {%- endif %}{# {%- endif storage_lens.storage_lens_configuration.account_level.bucket_level.prefix_level is defined %} #}
 {%- if storage_lens.storage_lens_configuration.account_level.activity_metrics is defined %}
           ActivityMetrics:
-            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.activity_metrics.is_enabled }}
+            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.activity_metrics.is_enabled | lower }}
 {%- endif %}
 {%- if storage_lens.storage_lens_configuration.account_level.advanced_cost_optimization_metrics is defined %}
           AdvancedCostOptimizationMetrics:
-            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.advanced_cost_optimization_metrics.is_enabled }}
+            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.advanced_cost_optimization_metrics.is_enabled | lower }}
 {%- endif %}
 {%- if storage_lens.storage_lens_configuration.account_level.advanced_data_protection_metrics is defined %}
           AdvancedDataProtectionMetrics:
-            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.advanced_data_protection_metrics.is_enabled }}
+            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.advanced_data_protection_metrics.is_enabled | lower }}
 {%- endif %}
 {%- if storage_lens.storage_lens_configuration.account_level.detailed_status_codes_metrics is defined %}
           DetailedStatusCodesMetrics:
-            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.detailed_status_codes_metrics.is_enabled }}
+            IsEnabled: {{ storage_lens.storage_lens_configuration.account_level.detailed_status_codes_metrics.is_enabled | lower }}
 {%- endif %}
 {%- if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level is defined %}{# BEGIN if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level is defined #}
           StorageLensGroupLevel:
@@ -83,7 +83,7 @@ Resources:
 {%- endif %}{# END if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level.storage_lens_group_selection_criteria is defined #}
 {%- endif %}{# END if storage_lens.storage_lens_configuration.account_level.storage_lens_group_level is defined #}
         Id: {{ storage_lens.storage_lens_configuration.id }}
-        IsEnabled: {{ storage_lens.storage_lens_configuration.is_enabled }}
+        IsEnabled: {{ storage_lens.storage_lens_configuration.is_enabled | lower }}
 {%- if storage_lens.storage_lens_configuration.aws_org is defined %}
         AwsOrg:
           Arn: {{ storage_lens.storage_lens_configuration.aws_org.arn | trim }}
@@ -92,7 +92,7 @@ Resources:
         DataExport:
 {%- if storage_lens.storage_lens_configuration.data_export.cloud_watch_metrics is defined %}
           CloudWatchMetrics:
-            IsEnabled: {{ storage_lens.storage_lens_configuration.data_export.cloud_watch_metrics.is_enabled }}
+            IsEnabled: {{ storage_lens.storage_lens_configuration.data_export.cloud_watch_metrics.is_enabled | lower }}
 {%- endif %}
 {%- if storage_lens.storage_lens_configuration.data_export.s3_bucket_destination is defined %}
           S3BucketDestination:
@@ -158,13 +158,11 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}{# END {%- for storage_lens in sceptre_user_data.storage_lenses %} #}
 
 Outputs:
 {%- for storage_lens in sceptre_user_data.storage_lenses %}
 {%- set storage_lens_name = storage_lens.name %}
-
   {{ storage_lens_name }}:
     Description: Storage Lens Configuration Id for {{ storage_lens_name }}
     Value:
@@ -172,7 +170,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ storage_lens_name }}"
-
   {{ storage_lens_name }}Arn:
     Description: The ARN for {{ storage_lens_name }}
     Value:
@@ -182,5 +179,72 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ storage_lens_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-22:
+Type: AWS::S3::StorageLens
+Properties:
+  StorageLensConfiguration:
+    AccountLevel:
+      ActivityMetrics:
+        IsEnabled: Boolean
+      AdvancedCostOptimizationMetrics:
+        IsEnabled: Boolean
+      AdvancedDataProtectionMetrics:
+        IsEnabled: Boolean
+      BucketLevel:
+        ActivityMetrics:
+          IsEnabled: Boolean
+        AdvancedCostOptimizationMetrics:
+          IsEnabled: Boolean
+        AdvancedDataProtectionMetrics:
+          IsEnabled: Boolean
+        DetailedStatusCodesMetrics:
+          IsEnabled: Boolean
+        PrefixLevel:
+          StorageMetrics:
+            IsEnabled: Boolean
+            SelectionCriteria:
+              Delimiter: String
+              MaxDepth: Integer
+              MinStorageBytesPercentage: Number
+      DetailedStatusCodesMetrics:
+        IsEnabled: Boolean
+      StorageLensGroupLevel:
+        StorageLensGroupSelectionCriteria:
+          Exclude:
+            - String
+          Include:
+            - String
+    AwsOrg:
+      Arn: String
+    DataExport:
+      CloudWatchMetrics:
+        IsEnabled: Boolean
+      S3BucketDestination:
+        AccountId: String
+        Arn: String
+        Encryption:
+          SSEKMS:
+            KeyId: String
+          SSES3: Json
+        Format: String
+        OutputSchemaVersion: String
+        Prefix: String
+    Exclude:
+      Buckets:
+        - String
+      Regions:
+        - String
+    Id: String
+    Include:
+      Buckets:
+        - String
+      Regions:
+        - String
+    IsEnabled: Boolean
+    StorageLensArn: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

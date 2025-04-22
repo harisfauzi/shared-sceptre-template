@@ -15,15 +15,13 @@ Resources:
       Policy: '{{ multi_region_access_point_policy.policy_json }}'
 {%- else %}
       Policy:
-{{ multi_region_access_point_policy.policy | indent(width=8, first=True) }}
+        {{ multi_region_access_point_policy.policy | indent(width=8, first=false) }}
 {%- endif %}
-
 {%- endfor %}{# END {%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policies %} #}
 
 Outputs:
 {%- for multi_region_access_point_policy in sceptre_user_data.multi_region_access_point_policies %}
 {%- set multi_region_access_point_policy_name = multi_region_access_point_policy.name %}
-
   {{ multi_region_access_point_policy_name }}:
     Description: The name of Multi Region Access Point for {{ multi_region_access_point_policy_name }}
     Value:
@@ -31,5 +29,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ multi_region_access_point_policy_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-22:
+Type: AWS::S3::MultiRegionAccessPointPolicy
+Properties:
+  MrapName: String
+  Policy: Json
+#}

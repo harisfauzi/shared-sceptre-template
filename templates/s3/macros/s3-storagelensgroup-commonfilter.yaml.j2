@@ -14,8 +14,7 @@ MatchAnySuffix:
 {%- if filterobject.match_any_tag is defined %}
 MatchAnyTag:
 {%- for key,value in filterobject.match_any_tag.items() %}
-  -
-    Key: {{ key }}
+  - Key: {{ key }}
     Value: {{ value }}
 {%- endfor %}
 {%- endif %}
@@ -37,4 +36,20 @@ MatchObjectSize:
   BytesLessThan: {{ filterobject.match_object_size.bytes_less_than }}
 {%- endif %}
 {%- endif %}
-{%- endmacro %}
+{%- endmacro %}{#
+# Supported structure as of 2025-04-22:
+MatchAnyPrefix: 
+  - String
+MatchAnySuffix: 
+  - String
+MatchAnyTag: 
+  -
+    Key: String
+    Value: String
+MatchObjectAge: 
+  DaysGreaterThan: Integer
+  DaysLessThan: Integer
+MatchObjectSize: 
+  BytesGreaterThan: Integer
+  BytesLessThan: Integer
+#}

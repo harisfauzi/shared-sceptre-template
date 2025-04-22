@@ -34,13 +34,11 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}{# END {%- for access_grant in sceptre_user_data.access_grants %} #}
 
 Outputs:
 {%- for access_grant in sceptre_user_data.access_grants %}
 {%- set access_grant_name = access_grant.name %}
-
   {{ access_grant_name }}:
     Description: Access Grant Id for {{ access_grant_name }}
     Value:
@@ -48,7 +46,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_grant_name }}"
-
   {{ access_grant_name }}AccessGrantId:
     Description: The Access Grant Id for {{ access_grant_name }}
     Value:
@@ -58,7 +55,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_grant_name }}-AccessGrantId"
-
   {{ access_grant_name }}AccessGrantArn:
     Description: The Access Grant ARN for {{ access_grant_name }}
     Value:
@@ -68,7 +64,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_grant_name }}-AccessGrantArn"
-
   {{ access_grant_name }}GrantScope:
     Description: The S3 path of the data to which you are granting access for {{ access_grant_name }}.
     Value:
@@ -78,5 +73,20 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_grant_name }}-GrantScope"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-22:
+Type: AWS::S3::AccessGrant
+Properties:
+  AccessGrantsLocationConfiguration:
+    S3SubPrefix: String
+  AccessGrantsLocationId: String
+  ApplicationArn: String
+  Grantee:
+    GranteeIdentifier: String
+    GranteeType: String
+  Permission: String
+  S3PrefixType: String
+  Tags:
+    - Key: String
+      Value: String
+#}
