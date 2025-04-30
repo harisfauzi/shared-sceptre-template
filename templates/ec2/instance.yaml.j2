@@ -73,13 +73,13 @@ Resources:
 {%- if instance.elastic_gpu_specifications is defined %}{# BEGIN if instance.elastic_gpu_specifications is defined #}
       ElasticGpuSpecifications:
 {%- for specification in instance.elastic_gpu_specifications %}
-        - Type: {{ specification.Type }}
+        - Type: {{ specification.type }}
 {%- endfor %}
 {%- endif %}{# END if instance.elastic_gpu_specifications is defined #}
 {%- if instance.elastic_inference_accelerators is defined %}{# BEGIN if instance.elastic_inference_accelerators is defined #}
       ElasticInferenceAccelerators:
 {%- for accelerator in instance.elastic_inference_accelerators %}{# BEGIN for accelerator in instance.elastic_inference_accelerators #}
-        - Type: {{ accelerator.Type }}
+        - Type: {{ accelerator.type }}
 {%- if accelerator.count is defined %}
           Count: {{ accelerator.count }}
 {%- endif %}
@@ -121,7 +121,7 @@ Resources:
 {%- if instance.ipv6_addresses is defined %}
       Ipv6Addresses:
 {%- for address in instance.ipv6_addresses %}
-        - Ipv6Address: {{ address.Ipv6Address }}
+        - Ipv6Address: {{ address.ipv6_address }}
 {%- endfor %}
 {%- endif %}
 {%- if instance.kernel_id is defined %}
