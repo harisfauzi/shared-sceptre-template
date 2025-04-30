@@ -179,7 +179,7 @@ Resources:
 {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.input_format_configuration.deserializer.openx_json_ser_de.column_to_json_key_mappings is defined %}
                 ColumnToJsonKeyMappings:
 {%- for key, value in delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.input_format_configuration.deserializer.openx_json_ser_de.column_to_json_key_mappings.items() %}
-                  "{{ key }}" : "{{ value }}"
+                  {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if delivery_stream.extended_s3_destination_configuration.data_format_conversion_configuration.input_format_configuration.deserializer.openx_json_ser_de.convert_dots_in_json_keys_to_underscore is defined %}

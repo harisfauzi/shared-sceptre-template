@@ -16,13 +16,13 @@ Resources:
 {%- if gateway_response.response_parameters is defined %}
       ResponseParameters:
 {%- for key, value in gateway_response.response_parameters.items() %}
-        "{{ key }}" : "{{ value }}"
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if gateway_response.response_templates is defined %}
       ResponseTemplates:
 {%- for key, value in gateway_response.response_templates.items() %}
-        "{{ key }}" : "{{ value }}"
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if gateway_response.status_code is defined %}

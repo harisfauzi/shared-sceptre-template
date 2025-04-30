@@ -65,13 +65,13 @@ Resources:
 {%- if response.response_parameters is defined %}
             ResponseParameters:
 {%- for key, value in response.response_parameters.items() %}
-              "{{ key }}" : "{{ value }}"
+              {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if response.response_templates is defined %}
             ResponseTemplates:
 {%- for key, value in response.response_templates.items() %}
-              "{{ key }}" : "{{ value }}"
+              {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if response.selection_pattern is defined %}
@@ -85,13 +85,13 @@ Resources:
 {%- if method.integration.request_parameters is defined %}
         RequestParameters:
 {%- for key, value in method.integration.request_parameters.items() %}
-          "{{ key }}" : "{{ value }}"
+          {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if method.integration.request_templates is defined %}
         RequestTemplates:
 {%- for key, value in method.integration.request_templates.items() %}
-          "{{ key }}" : "{{ value }}"
+          {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if method.integration.timeout_in_millis is defined %}
@@ -111,13 +111,13 @@ Resources:
 {%- if response.response_models is defined %}
           ResponseModels:
 {%- for key, value in response.response_models.items() %}
-            "{{ key }}" : "{{ value }}"
+            {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if response.response_parameters is defined %}
           ResponseParameters:
 {%- for key, value in response.response_parameters.items() %}
-            "{{ key }}" : "{{ value }}"
+            {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
@@ -128,13 +128,13 @@ Resources:
 {%- if method.request_models is defined %}
       RequestModels:
 {%- for key, value in method.request_models.items() %}
-        "{{ key }}" : "{{ value }}"
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if method.request_parameters is defined %}
       RequestParameters:
 {%- for key, value in method.request_parameters.items() %}
-        "{{ key }}" : "{{ value }}"
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if method.request_validator_id is defined %}

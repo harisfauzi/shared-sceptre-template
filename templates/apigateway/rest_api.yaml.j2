@@ -80,7 +80,7 @@ Resources:
 {%- if rest_api.parameters is defined %}
       Parameters:
 {%- for key, value in rest_api.parameters.items() %}
-        "{{ key }}" : "{{ value }}"
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if rest_api.policy_json is defined %}
