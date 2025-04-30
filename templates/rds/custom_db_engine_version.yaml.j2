@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('RDS Custom DB Engine Versi
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for custom_db_engine_version in sceptre_user_data.custom_db_engine_versions %}
 {%- set custom_db_engine_version_name = custom_db_engine_version.name %}
   {{ custom_db_engine_version_name }}:
@@ -49,11 +48,9 @@ Resources:
 {%- if custom_db_engine_version.use_aws_provided_latest_image is defined %}
       UseAwsProvidedLatestImage: {{ custom_db_engine_version.use_aws_provided_latest_image }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for custom_db_engine_version in sceptre_user_data.custom_db_engine_versions %}
 {%- set custom_db_engine_version_name = custom_db_engine_version.name %}
   {{ custom_db_engine_version_name }}:
@@ -63,7 +60,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ custom_db_engine_version_name }}"
-
   {{ custom_db_engine_version_name }}DBEngineVersionArn:
     Description: The ARN of the custom engine version {{ custom_db_engine_version_name }}
     Value:
@@ -73,5 +69,22 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ custom_db_engine_version_name }}-DBEngineVersionArn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-04-30:
+Type: AWS::RDS::CustomDBEngineVersion
+Properties:
+  DatabaseInstallationFilesS3BucketName: String
+  DatabaseInstallationFilesS3Prefix: String
+  Description: String
+  Engine: String
+  EngineVersion: String
+  ImageId: String
+  KMSKeyId: String
+  Manifest: String
+  SourceCustomDbEngineVersionIdentifier: String
+  Status: String
+  Tags:
+    - Key: String
+      Value: String
+  UseAwsProvidedLatestImage: Boolean
+#}

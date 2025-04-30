@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('RDS DB Parameter Group(s) 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for db_parameter_group in sceptre_user_data.db_parameter_groups %}
 {%- set db_parameter_group_name = db_parameter_group.name %}
   {{ db_parameter_group_name }}:
@@ -13,12 +12,15 @@ Resources:
     Properties:
       Description: {{ db_parameter_group.description }}
       Family: {{ db_parameter_group.family }}
-{%- if db_parameter_group.parameters is defined %}
+{%- if db_parameter_group.parameters is defined %}{# BEGIN if db_parameter_group.parameters is defined #}
       Parameters:
 {%- for key, value in db_parameter_group.parameters.items() %}
-        {{ key }} : {{ value}}
+        {{ key }}: {{ value}}
 {%- endfor %}
-{%- endif %}
+{%- elif db_parameter_group.parameters_json is defined %}
+      Parameters:
+        {{ db_parameter_group.parameters_json | indent(width=8, first=false) }}
+{%- endif %}{# END if db_parameter_group.parameters is defined #}
 {%- if db_parameter_group.db_parameter_group_name is defined %}
       DBParameterGroupName: {{ db_parameter_group.db_parameter_group_name }}
 {%- endif %}
@@ -31,11 +33,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for db_parameter_group in sceptre_user_data.db_parameter_groups %}
 {%- set db_parameter_group_name = db_parameter_group.name %}
   {{ db_parameter_group_name }}:
@@ -45,5 +45,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_parameter_group_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025/04/30:
+Type: AWS::RDS::DBParameterGroup
+Properties:
+  DBParameterGroupName: String
+  Description: String
+  Family: String
+  Parameters: Json
+  Tags:
+    - Key: String
+      Value: String
+#}
