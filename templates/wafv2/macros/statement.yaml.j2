@@ -81,14 +81,14 @@ ManagedRuleGroupStatement:
 {%- endif %}
 {%- if managed_rule_group_config.password_field is defined %}
       PasswordField:
-        Identifier: {{ managed_rule_group_config.password_field.Identifier }}
+        Identifier: {{ managed_rule_group_config.password_field.identifier }}
 {%- endif %}
 {%- if managed_rule_group_config.payload_type is defined %}
       PayloadType: {{ managed_rule_group_config.payload_type }}
 {%- endif %}
 {%- if managed_rule_group_config.username_field is defined %}
       UsernameField:
-        Identifier: {{ managed_rule_group_config.username_field.Identifier }}
+        Identifier: {{ managed_rule_group_config.username_field.identifier }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}
