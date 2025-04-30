@@ -24,7 +24,7 @@ Resources:
 {%- if api_stage.throttle is defined %}
           Throttle:
 {%- for key, value in api_stage.throttle.items() %}
-            "{{ key }}" : "{{ value }}"
+            {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- endfor %}

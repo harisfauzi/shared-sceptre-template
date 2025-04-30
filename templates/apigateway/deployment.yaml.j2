@@ -21,7 +21,7 @@ Resources:
 {%- if deployment.deployment_canary_settings.stage_variable_overrides is defined %}
         StageVariableOverrides:
 {%- for key, value in deployment.deployment_canary_settings.stage_variable_overrides.items() %}
-          "{{ key }}" : "{{ value }}"
+          {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if deployment.deployment_canary_settings.use_stage_cache is defined %}
@@ -65,7 +65,7 @@ Resources:
 {%- if deployment.stage_description.canary_setting.stage_variable_overrides is defined %}
           StageVariableOverrides:
 {%- for key, value in deployment.stage_description.canary_setting.stage_variable_overrides.items() %}
-            "{{ key }}" : "{{ value }}"
+            {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if deployment.stage_description.canary_setting.use_stage_cache is defined %}
@@ -112,7 +112,7 @@ Resources:
 {%- if deployment.stage_description.variables is defined %}
         Variables:
 {%- for key, value in deployment.stage_description.variables.items() %}
-          "{{ key }}" : "{{ value }}"
+          {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 

@@ -39,7 +39,7 @@ Resources:
 {%- if stage.canary_setting.stage_variable_overrides is defined %}
         StageVariableOverrides:
 {%- for key, value in stage.canary_setting.stage_variable_overrides.items() %}
-          "{{ key }}" : "{{ value }}"
+          {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if stage.canary_setting.use_stage_cache is defined %}
@@ -70,7 +70,7 @@ Resources:
 {%- if stage.variables is defined %}
       Variables:
 {%- for key, value in stage.variables.items() %}
-        "{{ key }}" : "{{ value }}"
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
       Tags:

@@ -58,7 +58,7 @@ Resources:
 {%- if canary.run_config.environment_variables is defined %}
         EnvironmentVariables:
 {%- for key, value in canary.run_config.environment_variables %}
-          "{{ key }}" : "{{ value }}"
+          {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if canary.run_config.memory_in_mb is defined %}
