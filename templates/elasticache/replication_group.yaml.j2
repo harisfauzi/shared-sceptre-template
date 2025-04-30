@@ -11,7 +11,7 @@ Resources:
     UpdateReplacePolicy: {{ replication_group.update_replace_policy | default('Delete') }}
 {%- if replication_group.update_policy is defined %}
     UpdatePolicy:
-      UseOnlineResharding : {{ replication_group.update_policy.use_online_resharding }}
+      UseOnlineResharding: {{ replication_group.update_policy.use_online_resharding }}
 {%- endif %}
     Properties:
       ReplicationGroupDescription: {{replication_group.replication_group_description}}

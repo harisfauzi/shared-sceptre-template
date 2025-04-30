@@ -21,7 +21,7 @@ Resources:
 {%- if backup_vault.backup_vault_tags is defined %}
       BackupVaultTags:
 {%- for key, value in backup_vault.backup_vault_tags %}
-        "{{ key }}" : {{ value }}
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
 {%- if backup_vault.encryption_key_arn is defined %}

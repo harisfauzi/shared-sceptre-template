@@ -19,7 +19,7 @@ Resources:
 {%- if data_catalog.parameters is defined %}
       Parameters:
 {%- for key, value indata_catalog.parameters.items() %}
-        "{{ key }}" : "{{ value }}"
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
       Tags:
