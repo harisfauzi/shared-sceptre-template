@@ -126,7 +126,7 @@ Resources:
 {%- if container_definition.health_check.command is defined %}
             Command:
 {%- for command in container_definition.health_check.command %}
-              - {{ command }}}
+              - {{ command }}
 {%- endfor %}
 {%- endif %}
 {%- if container_definition.health_check.interval is defined %}
