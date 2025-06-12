@@ -14,7 +14,7 @@ Resources:
 {%- if vpc_endpoint_service_permissions.allowed_principals is defined %}
       AllowedPrincipals:
 {%- for principal in vpc_endpoint_service_permissions.allowed_principals %}
-        - {{ principal }}}
+        - {{ principal }}
 {%- endfor %}
 {%- endif %}
 {%- endfor %}

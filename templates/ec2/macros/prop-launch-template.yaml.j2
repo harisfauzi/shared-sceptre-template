@@ -178,7 +178,7 @@ NetworkInterfaces:
             CapacityReservationId: {{ launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_id | trim }}
 {%- endif %}{# END if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_id is defined #}
 {%- if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_resource_group_arn is defined %}{# BEGIN if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_resource_group_arn is defined #}
-            CapacityReservationResourceGroupArn: {{ launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_resource_group_arn | trim }}}
+            CapacityReservationResourceGroupArn: {{ launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_resource_group_arn | trim }}
 {%- endif %}{# END if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target.capacity_reservation_resource_group_arn is defined #}
 {%- endif %}{# END if launch_template.launch_template_data.capacity_reservation_specification.capacity_reservation_target is defined #}
 {%- endif %}{# END if launch_template.launch_template_data.capacity_reservation_specification is defined #}
