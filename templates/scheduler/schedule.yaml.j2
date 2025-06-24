@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Scheduler Schedule(s) for 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for schedule in sceptre_user_data.schedules %}
 {%- set schedule_name = schedule.name %}
   {{ schedule_name }}:
@@ -178,7 +177,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for schedule in sceptre_user_data.schedules %}
 {%- set schedule_name = schedule.name %}
   {{ schedule_name }}:
@@ -188,7 +186,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ schedule_name }}"
-
   {{ schedule_name }}Arn:
     Description: The ARN for {{ schedule_name }}
     Value:
@@ -198,5 +195,74 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ schedule_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25:
+Type: AWS::Scheduler::Schedule
+Properties:
+  Description: String
+  EndDate: String
+  FlexibleTimeWindow:
+    MaximumWindowInMinutes: Number
+    Mode: String
+  GroupName: String
+  KmsKeyArn: String
+  Name: String
+  ScheduleExpression: String
+  ScheduleExpressionTimezone: String
+  StartDate: String
+  State: String
+  Target:
+    Arn: String
+    DeadLetterConfig:
+      Arn: String
+    EcsParameters:
+      CapacityProviderStrategy:
+        -
+          Base: Number
+          CapacityProvider: String
+          Weight: Number
+      EnableECSManagedTags: Boolean
+      EnableExecuteCommand: Boolean
+      Group: String
+      LaunchType: String
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: String
+          SecurityGroups:
+            - String
+          Subnets:
+            - String
+      PlacementConstraints:
+        -
+          Expression: String
+          Type: String
+      PlacementStrategy:
+        -
+          Field: String
+          Type: String
+      PlatformVersion: String
+      PropagateTags: String
+      ReferenceId: String
+      Tags:
+        -
+          Key: Value
+      TaskCount: Number
+      TaskDefinitionArn: String
+    EventBridgeParameters:
+      DetailType: String
+      Source: String
+    Input: String
+    KinesisParameters:
+      PartitionKey: String
+    RetryPolicy:
+      MaximumEventAgeInSeconds: Number
+      MaximumRetryAttempts: Number
+    RoleArn: String
+    SageMakerPipelineParameters:
+      PipelineParameterList:
+        -
+          Name: String
+          Value: String
+    SqsParameters:
+      MessageGroupId: String
+#}
