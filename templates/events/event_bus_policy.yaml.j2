@@ -3,7 +3,7 @@ Description: {{sceptre_user_data.description|default('Events Event Bus Policy(s)
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-{%- for event_bus_policy in sceptre_user_data.event_bus_policys %}
+{%- for event_bus_policy in sceptre_user_data.event_bus_policies %}
 {%- set event_bus_policy_name = event_bus_policy.name %}
   {{ event_bus_policy_name }}:
     Type: AWS::Events::EventBusPolicy
@@ -41,7 +41,7 @@ Resources:
 {%- endfor %}
 
 Outputs:
-{%- for event_bus_policy in sceptre_user_data.event_bus_policys %}
+{%- for event_bus_policy in sceptre_user_data.event_bus_policies %}
 {%- set event_bus_policy_name = event_bus_policy.name %}
   {{ event_bus_policy_name }}:
     Description: Event bus policy ID for event bus policy {{ event_bus_policy_name }}

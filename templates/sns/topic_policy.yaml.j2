@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for topic_policy in sceptre_user_data.topic_policys %}
+{%- for topic_policy in sceptre_user_data.topic_policies %}
 {%- set topic_policy_name = topic_policy.name %}
   {{ topic_policy_name }}:
     Type: AWS::SNS::TopicPolicy

@@ -1,0 +1,77 @@
+---
+template:
+  type: file
+  path: iam/role_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample IAM Role Policies for {{stack_group_config.project_code}}"
+  role_policies:
+    # Basic role policy using YAML document
+    - name: S3ReadOnlyRolePolicy
+      policy_name: S3ReadOnlyAccess
+      role_name: "{{stack_group_config.project_code}}-lambda-role"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:Get*
+              - s3:List*
+            Resource: "*"
+
+    # Role policy using JSON document with CloudFormation pseudo parameters
+    - name: DynamoDBReadWriteRolePolicy
+      policy_name: DynamoDBReadWriteAccess
+      role_name: "{{stack_group_config.project_code}}-app-role"
+      policy_document_json: "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:Query\",\"dynamodb:PutItem\",\"dynamodb:UpdateItem\"],\"Resource\":[\"arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Application\",\"arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/Application/index/*\"]}]}"
+
+    # Complex role policy with multiple statements
+    - name: EC2AndS3FullAccessRolePolicy
+      policy_name: EC2S3FullAccess
+      role_name: "{{stack_group_config.project_code}}-operations-role"
+      policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EC2FullAccess
+            Effect: Allow
+            Action: "ec2:*"
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:RequestedRegion: "${AWS::Region}"
+          - Sid: S3FullAccess
+            Effect: Allow
+            Action: "s3:*"
+            Resource: 
+              - "arn:aws:s3:::application-bucket-{{stack_group_config.project_code}}"
+              - "arn:aws:s3:::application-bucket-{{stack_group_config.project_code}}/*"
+      roles:
+        - ApplicationRole
+
+    # Policy attached to multiple users with complex permissions
+    - name: EC2AndS3FullAccessPolicy
+      policy_name: EC2S3FullAccess
+      role_name: "{{stack_group_config.project_code}}-EC2AndS3FullAccessPolicy"
+      policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EC2FullAccess
+            Effect: Allow
+            Action: "ec2:*"
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:RequestedRegion: "${AWS::Region}"
+          - Sid: S3FullAccess
+            Effect: Allow
+            Action: "s3:*"
+            Resource: 
+              - "arn:aws:s3:::application-bucket-{{stack_group_config.project_code}}"
+              - "arn:aws:s3:::application-bucket-{{stack_group_config.project_code}}/*"
+      users:
+        - operations-admin
+        - devops-engineer

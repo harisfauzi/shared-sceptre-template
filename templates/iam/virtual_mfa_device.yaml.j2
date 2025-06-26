@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM Virtual MFA Device(s) 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for virtual_mfa_device in sceptre_user_data.virtual_mfa_devices %}
 {%- set virtual_mfa_device_name = virtual_mfa_device.name %}
   {{ virtual_mfa_device_name }}:
@@ -33,7 +32,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for virtual_mfa_device in sceptre_user_data.virtual_mfa_devices %}
 {%- set virtual_mfa_device_name = virtual_mfa_device.name %}
   {{ virtual_mfa_device_name }}:
@@ -43,5 +41,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ virtual_mfa_device_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25
+Type: AWS::IAM::VirtualMFADevice
+Properties:
+  Path: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  Users:
+    - String
+  VirtualMfaDeviceName: String
+#}

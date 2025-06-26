@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: iam/server_certificate.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Test Server Certificates for {{stack_group_config.project_code}}"
+  server_certificates:
+    - name: TestCert1
+      certificate_body: |
+        -----BEGIN CERTIFICATE-----
+        MIIDXTCCAkWgAwIBAgIJAL5QmOcYw42AMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
+        BAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYDVQQDExpMZXQncyBF
+        bmNyeXB0IEF1dGhvcml0eSBYMTAeFw0yMzA2MjYxNzE2MjRaFw0yNDA2MjYxNzE2
+        MjRaMEUxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYD
+        VQQDExpMZXQncyBFbmNyeXB0IEF1dGhvcml0eSBYMTCCASIwDQYJKoZIhvcNAQEB
+        BQADggEPADCCAQoCggEBAM957Kw81X7p7f6v7Jyv9e1jQ62q6D00134567890abcdef
+        -----END CERTIFICATE-----
+      private_key: |
+        -----BEGIN PRIVATE KEY-----
+        MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDn41q234567890abcdef
+        1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+        -----END PRIVATE KEY-----
+      path: "/test/"
+      server_certificate_name: "test-cert1"
+      tags:
+        Environment: "test"
+        Team: "devops"
+    - name: TestCert2
+      certificate_body: |
+        -----BEGIN CERTIFICATE-----
+        MIIDXTCCAkWgAwIBAgIJAL5QmOcYw42AMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
+        BAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYDVQQDExpMZXQncyBF
+        bmNyeXB0IEF1dGhvcml0eSBYMjAeFw0yMzA2MjYxNzE2MjRaFw0yNDA2MjYxNzE2
+        MjRaMEUxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MSMwIQYD
+        VQQDExpMZXQncyBFbmNyeXB0IEF1dGhvcml0eSBYMjCCASIwDQYJKoZIhvcNAQEB
+        BQADggEPADCCAQoCggEBAM957Kw81X7p7f6v7Jyv9e1jQ62q6D00134567890abcdef
+        -----END CERTIFICATE-----
+      private_key: |
+        -----BEGIN PRIVATE KEY-----
+        MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDn41q234567890abcdef
+        1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef
+        -----END PRIVATE KEY-----
+      path: "/test/"
+      server_certificate_name: "test-cert2"
+      tags:
+        Environment: "test"
+        Team: "devops"

@@ -1,0 +1,22 @@
+---
+template:
+  type: file
+  path: iam/service_linked_role.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Test Service Linked Roles for {{stack_group_config.project_code}}"
+  service_linked_roles:
+    - name: TestS3Role
+      aws_service_name: s3.amazonaws.com
+      custom_suffix: test-s3
+      description: Service linked role for S3
+    - name: TestCloudTrailRole
+      aws_service_name: cloudtrail.amazonaws.com
+      custom_suffix: test-cloudtrail
+      description: Service linked role for CloudTrail
+    - name: TestVpcRole
+      aws_service_name: vpc.amazonaws.com
+      custom_suffix: test-vpc
+      description: Service linked role for VPC Flow Logs

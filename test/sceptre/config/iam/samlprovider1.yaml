@@ -1,0 +1,60 @@
+---
+template:
+  type: file
+  path: iam/saml_provider.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "SAML Identity Provider for {{stack_group_config.project_code}} applications"
+  saml_providers:
+    # Basic SAML Provider with minimal configuration
+    - name: OktaSamlProvider
+      saml_provider_name: "{{stack_group_config.project_code}}-okta-idp"
+      saml_metadata_document: >
+        <EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://www.okta.com/exk8cr4ifb8FHZsYr5d7">
+          <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+            <KeyDescriptor use="signing">
+              <KeyInfo xmlns="http://www.w3.org/2000/10/xmlenc#">
+                <X509Data>
+                  <X509Certificate>MIIDpDCCAoygAwIBAgIGAVG3M+uM</X509Certificate>
+                </X509Data>
+              </KeyInfo>
+            </KeyDescriptor>
+            <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress</NameIDFormat>
+            <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://dev-123456.okta.com/app/example/12345/sso/saml"/>
+            <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://dev-123456.okta.com/app/example/12345/sso/saml"/>
+          </IDPSSODescriptor>
+        </EntityDescriptor>
+      tags:
+        Environment: Production
+        Department: Security
+        ManagedBy: Sceptre
+
+    # Advanced SAML Provider with encryption and private keys
+    - name: ADFSAdvancedSamlProvider
+      saml_provider_name: "{{stack_group_config.project_code}}-adfs-idp"
+      saml_metadata_document: >
+        <EntityDescriptor xmlns="urn:oasis:names:tc:SAML:2.0:metadata" entityID="http://adfs.example.com/adfs/services/trust">
+          <IDPSSODescriptor protocolSupportEnumeration="urn:oasis:names:tc:SAML:2.0:protocol">
+            <KeyDescriptor use="signing">
+              <KeyInfo xmlns="http://www.w3.org/2000/10/xmlenc#">
+                <X509Data>
+                  <X509Certificate>MIIDpDCCAoygAwIBAgIGAVG3M+uM</X509Certificate>
+                </X509Data>
+              </KeyInfo>
+            </KeyDescriptor>
+            <NameIDFormat>urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified</NameIDFormat>
+            <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST" Location="https://adfs.example.com/adfs/ls/"/>
+            <SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect" Location="https://adfs.example.com/adfs/ls/"/>
+          </IDPSSODescriptor>
+        </EntityDescriptor>
+      assertion_encryption_mode: "SAML"
+      private_key_list:
+        - key_id: "key-1"
+          timestamp: "2025-06-26T12:00:00Z"
+      tags:
+        Environment: Production
+        Department: Security
+        ManagedBy: Sceptre
+        Classification: Internal

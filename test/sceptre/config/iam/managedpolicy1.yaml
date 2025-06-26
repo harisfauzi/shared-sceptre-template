@@ -1,0 +1,81 @@
+---
+template:
+  type: file
+  path: iam/managed_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample IAM Managed Policies for {{stack_group_config.project_code}}"
+  managed_policies:
+    # Basic managed policy with YAML document
+    - name: S3ReadOnlyManagedPolicy
+      description: "Provides read-only access to all S3 buckets"
+      managed_policy_name: S3ReadOnlyAccess
+      path: /service-role/
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:Get*
+              - s3:List*
+            Resource: "*"
+      roles:
+        - EC2InstanceRole
+
+    # Managed policy with JSON document and attached to groups
+    - name: DynamoDBReadWritePolicy
+      description: "Provides read-write access to specific DynamoDB tables"
+      managed_policy_name: DynamoDBReadWriteAccess
+      path: /application/
+      policy_document: |
+        Fn::Sub: |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:GetItem",
+                  "dynamodb:Query",
+                  "dynamodb:PutItem",
+                  "dynamodb:UpdateItem"
+                ],
+                "Resource": [
+                  "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ApplicationTable",
+                  "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ApplicationTable/index/*"
+                ]
+              }
+            ]
+          }
+      groups:
+        - Developers
+        - DataTeam
+
+    # Complex managed policy with multiple statements and attached to users
+    - name: EC2AndS3FullAccessPolicy
+      description: "Combined EC2 and S3 full access for operations team"
+      managed_policy_name: EC2S3FullAccess
+      path: /team/operations/
+      policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EC2FullAccess
+            Effect: Allow
+            Action: "ec2:*"
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:RequestedRegion: "${AWS::Region}"
+          - Sid: S3FullAccess
+            Effect: Allow
+            Action: "s3:*"
+            Resource: 
+              - "arn:aws:s3:::application-bucket-{{stack_group_config.project_code}}"
+              - "arn:aws:s3:::application-bucket-{{stack_group_config.project_code}}/*"
+      users:
+        - operations-admin
+        - devops-engineer
