@@ -1,0 +1,46 @@
+---
+template:
+  type: file
+  path: iam/user_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: '{{stack_group_config.project_code}}'
+  source_repo_url: '{{git_repo}}'
+  description: 'Test User Policies for {{stack_group_config.project_code}}'
+  user_policies:
+    - name: TestUserS3AccessPolicy
+      policy_name: S3Access
+      user_name: !stack_output iam/user1.yaml::user1
+      policy_document: |
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:ListBucket
+              - s3:GetObject
+              - s3:PutObject
+            Resource:
+              - arn:aws:s3:::example-bucket-${AWS::AccountId}
+              - arn:aws:s3:::example-bucket-${AWS::AccountId}/*
+
+    - name: TestUserEC2ReadOnlyPolicy
+      policy_name: EC2ReadOnlyAccess
+      user_name: !stack_output iam/user1.yaml::user2
+      policy_document: |
+        {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["ec2:Describe*","ec2:Get*"],"Resource":"*"}]}
+
+    - name: TestUserDynamoDBPolicy
+      policy_name: DynamoDBAccess
+      user_name: TestUser3
+      policy_document: |
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:UpdateItem
+              - dynamodb:DeleteItem
+            Resource: arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/TestTable-${AWS::AccountId}

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM Group(s) for '+sceptre
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for group in sceptre_user_data.groups %}
 {%- set group_name = group.name %}
   {{ group_name }}:
@@ -31,12 +30,12 @@ Resources:
           PolicyDocument: {{ policy.policy_document_json }}
 {%- else %}
           PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
+            {{ policy.policy_document | indent(width=12, first=false) }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}
-
-{%- if group.users is defined %}{# BEGIN {%- if group.users is defined %} #}{# Do not use this if you map the user to the group in AWS::IAM::User#}
+{#- Do not use this if you map the user to the group in AWS::IAM::User #}
+{%- if group.users is defined %}{# BEGIN if group.users is defined #}
   {{ group_name }}UsersAddition:
     DeletionPolicy: {{ group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ group.update_replace_policy | default('Delete') }}
@@ -48,11 +47,10 @@ Resources:
 {%- for user in group.users %}
         - {{ user }}
 {%- endfor %}
-{%- endif %}{# END {%- if group.users is defined %} #}
+{%- endif %}{# END if group.users is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for group in sceptre_user_data.groups %}
 {%- set group_name = group.name %}
   {{ group_name }}:
@@ -62,7 +60,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ group_name }}"
-
   {{ group_name }}Arn:
     Description: The ARN for {{ group_name }}
     Value:
@@ -72,7 +69,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ group_name }}-Arn"
-
 {%- if group.users is defined %}
   {{ group_name }}UsersAddition:
     Description: Users addition resource name for {{ group_name }}
@@ -82,5 +78,22 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ group_name }}-UsersAddition"
 {%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25
+Type: AWS::IAM::Group
+Properties:
+  GroupName: String
+  ManagedPolicyArns:
+    - String
+  Path: String
+  Policies:
+    -
+      PolicyDocument: Json
+      PolicyName: String
 
-{%- endfor %}
+Type: AWS::IAM::UserToGroupAddition
+Properties:
+  GroupName: String
+  Users:
+    - String
+#}

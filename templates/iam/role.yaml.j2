@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM Role(s) for '+sceptre_
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for role in sceptre_user_data.roles %}
 {%- set role_name = role.name %}
   {{ role_name }}:
@@ -39,7 +38,7 @@ Resources:
           PolicyDocument: {{ policy.policy_document_json }}
 {%- else %}
           PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
+            {{ policy.policy_document | indent(width=12, first=false) }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}
@@ -55,11 +54,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for role in sceptre_user_data.roles %}
 {%- set role_name = role.name %}
   {{ role_name }}:
@@ -69,7 +66,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ role_name }}"
-
   {{ role_name }}Arn:
     Description: The ARN for {{ role_name }}
     Value:
@@ -79,7 +75,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ role_name }}-Arn"
-
   {{ role_name }}RoleId:
     Description: The Role Id for {{ role_name }}
     Value:
@@ -89,5 +84,24 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ role_name }}-RoleId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25
+Type: AWS::IAM::Role
+Properties:
+  AssumeRolePolicyDocument: Json
+  Description: String
+  ManagedPolicyArns:
+    - String
+  MaxSessionDuration: Integer
+  Path: String
+  PermissionsBoundary: String
+  Policies:
+    -
+      PolicyDocument: Json
+      PolicyName: String
+  RoleName: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

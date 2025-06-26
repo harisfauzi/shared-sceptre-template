@@ -11,7 +11,6 @@ Parameters:
     Type: String
     Description: Password for {{ user_name }}
     NoEcho: true
-
 {%- endif %}
 {%- endfor %}
 {%- endif %}
@@ -54,8 +53,12 @@ Resources:
       Policies:
 {%- for policy in user.policies %}
         - PolicyName: {{ policy.policy_name }}
+{%- if policy.policy_document_json is defined %}
+          PolicyDocument: {{ policy.policy_document_json }}
+{%- else %}
           PolicyDocument:
-{{ policy.policy_document | indent(width=12, first=true) }}
+            {{ policy.policy_document | indent(width=12, first=false) }}
+{%- endif %}
 {%- endfor %}
 {%- endif %}
       Tags:
@@ -177,7 +180,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for user in sceptre_user_data.users %}
 {%- set user_name = user.name %}
   {{ user_name }}:
@@ -187,7 +189,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}"
-
   {{ user_name }}Arn:
     Description: The ARN for {{ user_name }}
     Value:
@@ -197,7 +198,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-Arn"
-
 {%- if user.access_key_1 is defined %}{# BEGIN {%- if user.access_key_1 is defined %} #}
   {{ user_name }}accesskey1AccessKeyId:
     Description: Access Key Id for {{ user_name }}accesskey1
@@ -206,7 +206,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-accesskey1-AccessKeyId"
-
 {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %}{# BEGIN {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %} #}
   {{ user_name }}accesskey1SecretAccessKey:
     Description: The Secret Access Key for {{ user_name }} accesskey1
@@ -219,7 +218,6 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-accesskey1-SecretAccessKey"
 {%- endif %}{# END {%- if user.access_key_1.show_secret_access_key is defined and user.access_key_1.show_secret_access_key %} #}
 {%- endif %}{# END {%- if user.access_key_1 is defined %} #}
-
 {%- if user.access_key_2 is defined %}{# BEGIN {%- if user.access_key_2 is defined %} #}
   {{ user_name }}accesskey2AccessKeyId:
     Description: Access Key Id for {{ user_name }}accesskey2
@@ -228,7 +226,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-accessaccesskey2key1-AccessKeyId"
-
 {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %}{# BEGIN {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %} #}
   {{ user_name }}accesskey1SecretAccessKey:
     Description: The Secret Access Key for {{ user_name }} accesskey2
@@ -241,5 +238,32 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-accesskey1-SecretAccessKey"
 {%- endif %}{# END {%- if user.access_key_2.show_secret_access_key is defined and user.access_key_2.show_secret_access_key %} #}
 {%- endif %}{# END {%- if user.access_key_2 is defined %} #}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25
+Type: AWS::IAM::User
+Properties:
+  Groups:
+    - String
+  LoginProfile:
+    Password: String
+    PasswordResetRequired: Boolean
+  ManagedPolicyArns:
+    - String
+  Path: String
+  PermissionsBoundary: String
+  Policies:
+    -
+      PolicyDocument: Json
+      PolicyName: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  UserName: String
 
-{%- endfor %}
+Type: AWS::IAM::AccessKey
+Properties:
+  Serial: Integer
+  Status: String
+  UserName: String
+#}
