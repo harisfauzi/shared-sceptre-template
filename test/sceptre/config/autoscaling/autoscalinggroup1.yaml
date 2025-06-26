@@ -1,0 +1,99 @@
+---
+template:
+  type: file
+  path: autoscaling/auto_scaling_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  description: "Sample AutoScaling Groups for testing Jinja2 template."
+  source_repo_url: "{{ git_repo }}"
+  auto_scaling_groups:
+    - name: AutoScalingGroup1
+      auto_scaling_group_name: "MyAutoScalingGroup1"
+      min_size: 1
+      max_size: 5
+      desired_capacity: 2
+      vpc_zone_identifier:
+        - "subnet-0123456789abcdef0"
+        - "subnet-0fedcba9876543210"
+      launch_configuration_name: "MyLaunchConfig1"
+      health_check_type: "EC2"
+      health_check_grace_period: 300
+      new_instances_protected_from_scale_in: true
+      tags:
+        - key: "Environment"
+          _value: "Development"
+          propagate_at_launch: true
+        - key: "Project"
+          _value: "SampleProject1"
+          propagate_at_launch: true
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+    - name: AutoScalingGroup2
+      auto_scaling_group_name: "MyAutoScalingGroup2"
+      min_size: 2
+      max_size: 10
+      desired_capacity: 4
+      vpc_zone_identifier:
+        - "subnet-0a1b2c3d4e5f6g7h8"
+      launch_configuration_name: "MyLaunchConfig2"
+      health_check_type: "ELB"
+      health_check_grace_period: 180
+      new_instances_protected_from_scale_in: false
+      tags:
+        - key: "Environment"
+          _value: "Production"
+          propagate_at_launch: true
+        - key: "Project"
+          _value: "SampleProject2"
+          propagate_at_launch: true
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+      launch_template_spec:
+        launch_template_data:
+          iam_instance_profile:
+            arn: "arn:aws:iam::123456789012:instance-profile/DummyInstanceProfile"
+          image_id: "ami-0abcdef1234567890"
+          # IMDSv2 requirement
+          metadata_options:
+            http_endpoint: enabled
+            http_tokens: required
+            instance_metadata_tags: enabled
+          monitoring:
+            enabled: "true"
+          block_device_mappings:
+            - device_name: "/dev/xvda"
+              ebs:
+                volume_size: 20
+                volume_type: "gp3"
+                delete_on_termination: true
+          network_interfaces:
+            - associate_public_ip_address: false
+              delete_on_termination: true
+              description: eth0 device
+              device_index: 0
+              groups:
+                - "sg-0123456789abcdef0"
+          user_data: |
+            Fn::Base64:
+              Fn::Sub: |
+                #!/usr/bin/env bash
+                # Initialize the system using instructions from metadata
+                /opt/aws/bin/cfn-init \
+                  --stack ${AWS::StackName} \
+                  --resource AutoScalingGroup2LaunchTemplate \
+                  --region ${AWS::Region} \
+                  --verbose
+        metadata: |
+          AWS::CloudFormation::Init:
+            default:
+              files:
+                /tmp/check-init.txt:
+                  content: |
+                    Check init
+                  mode: "000644"
+                  owner: root
+                  group: root
+                  encoding: plain
+stack_tags:
+  Test: autoscaling-auto-scaling-group

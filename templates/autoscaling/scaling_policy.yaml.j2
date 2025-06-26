@@ -1,10 +1,10 @@
 ---
+{%- import 'macros/prop-scaling-policy.yaml.j2' as prop_scaling_policy %}
 Description: {{sceptre_user_data.description|default('AutoScaling Scaling Policy(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
-{%- for scaling_policy in sceptre_user_data.scaling_policys %}{# BEGIN {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
+{%- for scaling_policy in sceptre_user_data.scaling_policies %}{# BEGIN for scaling_policy in sceptre_user_data.scaling_policies #}
 {%- set scaling_policy_name = scaling_policy.name %}
   {{ scaling_policy_name }}:
     Type: AWS::AutoScaling::ScalingPolicy
@@ -30,11 +30,23 @@ Resources:
 {%- if scaling_policy.policy_type is defined %}
       PolicyType: {{ scaling_policy.policy_type }}
 {%- endif %}
-{%- if scaling_policy.predictive_scaling_configuration is defined %}{# BEGIN {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
+{%- if scaling_policy.predictive_scaling_configuration is defined %}{# BEGIN if scaling_policy.predictive_scaling_configuration is defined #}
       PredictiveScalingConfiguration:
         MetricSpecifications:
 {%- for metric_specification in scaling_policy.predictive_scaling_configuration.metric_specifications %}
           - TargetValue: {{ metric_specification.target_value }}
+{%- if metric_specification.customized_capacity_metric_specification is defined %}
+            CustomizedCapacityMetricSpecification:
+              {{ prop_scaling_policy.prep_metric_data_queries(metric_specification.customized_capacity_metric_specification.metric_data_queries) | indent(width=14, first=false) }}
+{%- endif %}
+{%- if metric_specification.customized_load_metric_specification is defined %}
+            CustomizedLoadMetricSpecification:
+              {{ prop_scaling_policy.prep_metric_data_queries(metric_specification.customized_load_metric_specification.metric_data_queries) | indent(width=14, first=false) }}
+{%- endif %}
+{%- if metric_specification.customized_scaling_metric_specification is defined %}
+            CustomizedScalingMetricSpecification:
+              {{ prop_scaling_policy.prep_metric_data_queries(metric_specification.customized_scaling_metric_specification.metric_data_queries) | indent(width=14, first=false) }}
+{%- endif %}
 {%- if metric_specification.predefined_load_metrics_specification is defined %}
             PredefinedLoadMetricSpecification:
               PredefinedMetricType: {{ metric_specification.predefined_load_metrics_specification.predefined_metric_type }}
@@ -69,7 +81,7 @@ Resources:
 {%- if scaling_policy.predictive_scaling_configuration.scheduling_buffer_time is defined %}
         SchedulingBufferTime: {{ scaling_policy.predictive_scaling_configuration.scheduling_buffer_time }}
 {%- endif %}
-{%- endif %}{# END {%- if scaling_policy.predictive_scaling_configuration is defined %} #}
+{%- endif %}{# END if scaling_policy.predictive_scaling_configuration is defined #}
 {%- if scaling_policy.scaling_adjustment is defined %}
       ScalingAdjustment: {{ scaling_policy.scaling_adjustment }}
 {%- endif %}
@@ -88,20 +100,34 @@ Resources:
 {%- if scaling_policy.target_tracking_configuration is defined %}
       TargetTrackingConfiguration:
         TargetValue: {{ scaling_policy.target_tracking_configuration.target_value }}
-{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification is defined %}
+{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification is defined %}{# BEGIN if scaling_policy.target_tracking_configuration.customized_metrics_specification is defined #}
         CustomizedMetricSpecification:
-          MetricName: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.metric_name }}
-          Namespace: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.namespace }}
-          Statistic: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.statistic }}
+{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification.dimensions is defined %}
           Dimensions:
 {%- for dimension in scaling_policy.target_tracking_configuration.customized_metrics_specification.dimensions %}
             - Name: {{ dimension.name }}
               Value: {{ dimension.value }}
 {%- endfor %}
+{%- endif %}
+{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification.metric_name is defined %}
+          MetricName: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.metric_name }}
+{%- endif %}
+{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification.metrics is defined %}
+          {{ prop_scaling_policy.prep_target_tracking_metrics(scaling_policy.target_tracking_configuration.customized_metrics_specification.metrics) | indent(width=10, first=false) }}
+{%- endif %}
+{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification.namespace is defined %}
+          Namespace: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.namespace }}
+{%- endif %}
+{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification.period is defined %}
+          Period: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.period }}
+{%- endif %}
+{%- if scaling_policy.target_tracking_configuration.customized_metrics_specification.statistic is defined %}
+          Statistic: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.statistic }}
+{%- endif %}
 {%- if scaling_policy.target_tracking_configuration.customized_metrics_specification.unit is defined %}
           Unit: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.unit }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if scaling_policy.target_tracking_configuration.customized_metrics_specification is defined #}
 {%- if scaling_policy.target_tracking_configuration.disable_scale_in is defined %}
         DisableScaleIn: {{ scaling_policy.target_tracking_configuration.disable_scale_in }}
 {%- endif %}
@@ -113,10 +139,10 @@ Resources:
 {%- endif %}
 {%- endif %}
 {%- endif %}
-{%- endfor %}{# END {%- for scaling_policy in sceptre_user_data.scaling_policys %} #}
+{%- endfor %}{# END for scaling_policy in sceptre_user_data.scaling_policies #}
 
 Outputs:
-{%- for scaling_policy in sceptre_user_data.scaling_policys %}
+{%- for scaling_policy in sceptre_user_data.scaling_policies %}
 {%- set scaling_policy_name = scaling_policy.name %}
   {{ scaling_policy_name }}:
     Description: The ARN of {{ scaling_policy_name }}
@@ -125,4 +151,140 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ scaling_policy_name }}"
-{%- endfor %}
+  {{ scaling_policy_name }}Arn:
+    Description: The ARN of {{ scaling_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ scaling_policy_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scaling_policy_name }}-Arn"
+  {{ scaling_policy_name }}PolicyName:
+    Description: The policy name of {{ scaling_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ scaling_policy_name }}
+        - PolicyName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scaling_policy_name }}-PolicyName"
+{%- endfor %}{# Supported structure as of 2025-06-25
+Type: AWS::AutoScaling::ScalingPolicy
+Properties:
+  AdjustmentType: String
+  AutoScalingGroupName: String
+  Cooldown: String
+  EstimatedInstanceWarmup: Integer
+  MetricAggregationType: String
+  MinAdjustmentMagnitude: Integer
+  PolicyType: String
+  PredictiveScalingConfiguration:
+    MaxCapacityBreachBehavior: String
+    MaxCapacityBuffer: Integer
+    MetricSpecifications:
+      -
+        CustomizedCapacityMetricSpecification:
+          MetricDataQueries:
+            -
+              Expression: String
+              Id: String
+              Label: String
+              MetricStat:
+                Metric:
+                  Dimensions:
+                    -
+                      Name: String
+                      Value: String
+                  MetricName: String
+                  Namespace: String
+                Stat: String
+                Unit: String
+              ReturnData: Boolean
+        CustomizedLoadMetricSpecification:
+          MetricDataQueries:
+            -
+              Expression: String
+              Id: String
+              Label: String
+              MetricStat:
+                Metric:
+                  Dimensions:
+                    -
+                      Name: String
+                      Value: String
+                  MetricName: String
+                  Namespace: String
+                Stat: String
+                Unit: String
+              ReturnData: Boolean
+        CustomizedScalingMetricSpecification:
+          MetricDataQueries:
+            -
+              Expression: String
+              Id: String
+              Label: String
+              MetricStat:
+                Metric:
+                  Dimensions:
+                    -
+                      Name: String
+                      Value: String
+                  MetricName: String
+                  Namespace: String
+                Stat: String
+                Unit: String
+              ReturnData: Boolean
+        PredefinedLoadMetricSpecification:
+          PredefinedMetricType: String
+          ResourceLabel: String
+        PredefinedMetricPairSpecification:
+          PredefinedMetricType: String
+          ResourceLabel: String
+        PredefinedScalingMetricSpecification:
+          PredefinedMetricType: String
+          ResourceLabel: String
+        TargetValue: Number
+    Mode: String
+    SchedulingBufferTime: Integer
+  ScalingAdjustment: Integer
+  StepAdjustments:
+    -
+      MetricIntervalLowerBound: Number
+      MetricIntervalUpperBound: Number
+      ScalingAdjustment: Integer
+  TargetTrackingConfiguration:
+    CustomizedMetricSpecification:
+      Dimensions:
+        -
+          Name: String
+          Value: String
+      MetricName: String
+      Metrics:
+        -
+          Expression: String
+          Id: String
+          Label: String
+          MetricStat:
+            Metric:
+              Dimensions:
+                -
+                  Name: String
+                  Value: String
+              MetricName: String
+              Namespace: String
+            Period: Integer
+            Stat: String
+            Unit: String
+          Period: Integer
+          ReturnData: Boolean
+      Namespace: String
+      Period: Integer
+      Statistic: String
+      Unit: String
+    DisableScaleIn: Boolean
+    PredefinedMetricSpecification:
+      PredefinedMetricType: String
+      ResourceLabel: String
+    TargetValue: Number
+#}

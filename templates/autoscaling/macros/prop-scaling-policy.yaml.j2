@@ -1,0 +1,91 @@
+{######### BEGIN MACRO prep_metric_stat #########}
+{%- macro prep_metric_stat(metric_stat) %}
+MetricStat:
+  Metric:
+    MetricName: {{ metric_stat.metric.metric_name }}
+    Namespace: {{ metric_stat.metric.namespace }}
+{%- if metric_stat.metric.dimensions is defined %}
+    Dimensions:
+{%- for dimension in metric_stat.metric.dimensions %}
+      -
+        Name: {{ dimension.name }}
+        Value: {{ dimension.value }}
+{%- endfor %}
+{%- endif %}
+  Stat: {{ metric_stat.stat }}
+{%- if metric_stat.unit is defined %}
+  Unit: {{ metric_stat.unit }}
+{%- endif %}
+{%- endmacro %}
+{######### END MACRO prep_metric_stat #########}
+
+{######### BEGIN MACRO prep_metric_data_queries #########}
+{%- macro prep_metric_data_queries(metric_data_queries) %}
+MetricDataQueries:
+{%- for query in metric_data_queries %}{# BEGIN for query in metric_data_queries #}
+  -
+    Id: {{ query.id }}
+{%- if query.expression is defined %}
+    Expression: {{ query.expression }}
+{%- endif %}
+{%- if query.label is defined %}
+    Label: {{ query.label }}
+{%- endif %}
+{%- if query.metric_stat is defined %}
+    {{ prep_metric_stat(query.metric_stat) | indent(width=4, first=false) }}
+{%- endif %}
+{%- if query.return_data is defined %}
+    ReturnData: {{ query.return_data | lower }}
+{%- endif %}
+{%- endfor %}{# END for query in metric_data_queries #}
+{%- endmacro %}
+{######### END MACRO prep_metric_data_queries #########}
+
+{######### BEGIN MACRO prep_target_tracking_metric_stat #########}
+{%- macro prep_target_tracking_metric_stat(target_tracking_metric_stat) %}
+MetricStat:
+  Metric:
+    MetricName: {{ target_tracking_metric_stat.metric.metric_name }}
+    Namespace: {{ target_tracking_metric_stat.metric.namespace }}
+{%- if target_tracking_metric_stat.metric.dimensions is defined %}
+    Dimensions:
+{%- for dimension in target_tracking_metric_stat.metric.dimensions %}
+      -
+        Name: {{ dimension.name }}
+        Value: {{ dimension.value }}
+{%- endfor %}
+{%- endif %}
+  Stat: {{ target_tracking_metric_stat.stat }}
+{%- if target_tracking_metric_stat.period is defined %}
+  Period: {{ target_tracking_metric_stat.period }}
+{%- endif %}
+{%- if target_tracking_metric_stat.unit is defined %}
+  Unit: {{ target_tracking_metric_stat.unit }}
+{%- endif %}
+{%- endmacro %}
+{######### END MACRO prep_target_tracking_metric_stat #########}
+
+{######### BEGIN MACRO prep_target_tracking_metrics #########}
+{%- macro prep_target_tracking_metrics(metric_data_query) %}
+Metrics:
+{%- for query in metric_data_query %}{# BEGIN for query in metric_data_query #}
+  -
+    Id: {{ query.id }}
+{%- if query.expression is defined %}
+    Expression: {{ query.expression }}
+{%- endif %}
+{%- if query.label is defined %}
+    Label: {{ query.label }}
+{%- endif %}
+{%- if query.metric_stat is defined %}
+    {{ prep_target_tracking_metric_stat(query.metric_stat) | indent(width=4, first=false) }}
+{%- endif %}
+{%- if query.period is defined %}
+    Period: {{ query.period }}
+{%- endif %}
+{%- if query.return_data is defined %}
+    ReturnData: {{ query.return_data | lower }}
+{%- endif %}
+{%- endfor %}{# END for query in metric_data_query #}
+{%- endmacro %}
+{######### END MACRO prep_target_tracking_metrics #########}

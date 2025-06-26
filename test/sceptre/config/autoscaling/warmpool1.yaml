@@ -1,0 +1,31 @@
+---
+template:
+  type: file
+  path: autoscaling/warm_pool.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  warm_pools:
+    - name: WarmPool1
+      auto_scaling_group_name: "MyAutoScalingGroup1"
+      instance_reuse_policy:
+        reuse_on_scale_in: true
+      max_group_prepared_capacity: 10
+      min_size: 2
+      pool_state: "Stopped"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+    - name: WarmPool2
+      auto_scaling_group_name: "MyAutoScalingGroup2"
+      instance_reuse_policy:
+        reuse_on_scale_in: false
+      max_group_prepared_capacity: 5
+      min_size: 1
+      pool_state: "Running"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: autoscaling-warm-pool
