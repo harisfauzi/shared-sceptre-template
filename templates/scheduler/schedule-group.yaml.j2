@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('Scheduler Group(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Scheduler Schedule Group(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for schedule_group in sceptre_user_data.schedule_groups %}
 {%- set schedule_group_name = schedule_group.name %}
   {{ schedule_group_name }}:
@@ -23,11 +22,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for schedule_group in sceptre_user_data.schedule_groups %}
 {%- set schedule_group_name = schedule_group.name %}
   {{ schedule_group_name }}:
@@ -37,7 +34,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ schedule_group_name }}"
-
   {{ schedule_group_name }}Arn:
     Description: The ARN for {{ schedule_group_name }}
     Value:
@@ -47,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ schedule_group_name }}-Arn"
-
   {{ schedule_group_name }}CreationDate:
     Description: The Creation Date for {{ schedule_group_name }}
     Value:
@@ -57,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ schedule_group_name }}-CreationDate"
-
   {{ schedule_group_name }}LastModificationDate:
     Description: The Last Modification Date for {{ schedule_group_name }}
     Value:
@@ -67,5 +61,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ schedule_group_name }}-LastModificationDate"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25:
+Type: AWS::Scheduler::ScheduleGroup
+Properties:
+  Name: String
+  Tags: 
+    -
+      Key: String
+      Value: String
+#}

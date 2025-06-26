@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('AutoScaling Lifecycle Hook
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %}{# BEGIN {%- for lifecycle_hook in sceptre_user_data.lifecycle_hooks %} #}
 {%- set lifecycle_hook_name = lifecycle_hook.name %}
   {{ lifecycle_hook_name }}:
@@ -43,4 +42,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ lifecycle_hook_name }}"
-{%- endfor %}
+{%- endfor %}{# Supported structure as of 2025-06-25
+Type: AWS::AutoScaling::LifecycleHook
+Properties:
+  AutoScalingGroupName: String
+  DefaultResult: String
+  HeartbeatTimeout: Integer
+  LifecycleHookName: String
+  LifecycleTransition: String
+  NotificationMetadata: String
+  NotificationTargetARN: String
+  RoleARN: String
+#}

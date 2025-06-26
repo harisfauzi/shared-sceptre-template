@@ -3,8 +3,7 @@ Description: {{sceptre_user_data.description|default('AutoScaling Scheduled Acti
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
-{%- for scheduled_action in sceptre_user_data.scheduled_actions %}{# BEGIN {%- for scheduled_action in sceptre_user_data.scheduled_actions %} #}
+{%- for scheduled_action in sceptre_user_data.scheduled_actions %}{# BEGIN for scheduled_action in sceptre_user_data.scheduled_actions #}
 {%- set scheduled_action_name = scheduled_action.name %}
   {{ scheduled_action_name }}:
     Type: AWS::AutoScaling::ScheduledAction
@@ -33,7 +32,7 @@ Resources:
 {%- if scheduled_action.time_zone is defined %}
       TimeZone: {{ scheduled_action.time_zone }}
 {%- endif %}
-{%- endfor %}{# END {%- for scheduled_action in sceptre_user_data.scheduled_actions %} #}
+{%- endfor %}{# END for scheduled_action in sceptre_user_data.scheduled_actions #}
 
 Outputs:
 {%- for scheduled_action in sceptre_user_data.scheduled_actions %}
@@ -45,4 +44,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ scheduled_action_name }}"
-{%- endfor %}
+{%- endfor %}{# Supported structure as of 2025-06-25
+Type: AWS::AutoScaling::ScheduledAction
+Properties:
+  AutoScalingGroupName: String
+  DesiredCapacity: Integer
+  EndTime: String
+  MaxSize: Integer
+  MinSize: Integer
+  Recurrence: String
+  StartTime: String
+  TimeZone: String
+#}
