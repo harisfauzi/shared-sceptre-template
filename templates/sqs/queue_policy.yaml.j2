@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for queue_policy in sceptre_user_data.queue_policys %}
+{%- for queue_policy in sceptre_user_data.queue_policies %}
 {%- set queue_policy_name = queue_policy.name %}
   {{ queue_policy_name }}:
     Type: AWS::SQS::QueuePolicy

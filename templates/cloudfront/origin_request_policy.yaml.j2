@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for origin_request_policy in sceptre_user_data.origin_request_policys %}
+{%- for origin_request_policy in sceptre_user_data.origin_request_policies %}
 {%- set origin_request_policy_name = origin_request_policy.name %}
   {{ origin_request_policy_name }}:
     Type: AWS::CloudFront::OriginRequestPolicy
@@ -46,7 +46,7 @@ Resources:
 
 Outputs:
 
-{%- for origin_request_policy in sceptre_user_data.origin_request_policys %}
+{%- for origin_request_policy in sceptre_user_data.origin_request_policies %}
 {%- set origin_request_policy_name = origin_request_policy.name %}
   {{ origin_request_policy_name }}:
     Description: The origin request policy ID for {{ origin_request_policy_name }}
