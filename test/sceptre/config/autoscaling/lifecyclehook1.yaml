@@ -1,0 +1,35 @@
+---
+template:
+  type: file
+  path: autoscaling/lifecycle_hook.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  description: "Sample AutoScaling Lifecycle Hooks for testing Jinja2 template."
+  source_repo_url: "{{ git_repo }}"
+  lifecycle_hooks:
+    - name: LifecycleHook1
+      auto_scaling_group_name: "MyAutoScalingGroup1"
+      lifecycle_transition: "autoscaling:EC2_INSTANCE_LAUNCHING"
+      default_result: "CONTINUE"
+      heartbeat_timeout: 300
+      lifecycle_hook_name: "MyLifecycleHook1"
+      notification_metadata: "Sample metadata 1"
+      notification_target_arn: "arn:aws:sns:us-east-1:123456789012:MyTopic1"
+      role_arn: "arn:aws:iam::123456789012:role/SampleRole1"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+    - name: LifecycleHook2
+      auto_scaling_group_name: "MyAutoScalingGroup2"
+      lifecycle_transition: "autoscaling:EC2_INSTANCE_TERMINATING"
+      default_result: "ABANDON"
+      heartbeat_timeout: 600
+      lifecycle_hook_name: "MyLifecycleHook2"
+      notification_metadata: "Sample metadata 2"
+      notification_target_arn: "arn:aws:sns:us-east-1:123456789012:MyTopic2"
+      role_arn: "arn:aws:iam::123456789012:role/SampleRole2"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: autoscaling-lifecycle-hook

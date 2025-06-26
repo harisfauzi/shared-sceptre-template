@@ -3,8 +3,7 @@ Description: {{sceptre_user_data.description|default('AutoScaling Warm Pool(s) f
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
-{%- for warm_pool in sceptre_user_data.warm_pools %}{# BEGIN {%- for warm_pool in sceptre_user_data.warm_pools %} #}
+{%- for warm_pool in sceptre_user_data.warm_pools %}{# BEGIN for warm_pool in sceptre_user_data.warm_pools #}
 {%- set warm_pool_name = warm_pool.name %}
   {{ warm_pool_name }}:
     Type: AWS::AutoScaling::WarmPool
@@ -12,6 +11,12 @@ Resources:
     UpdateReplacePolicy: {{ warm_pool.update_replace_policy | default('Delete') }}
     Properties:
       AutoScalingGroupName: {{ warm_pool.auto_scaling_group_name }}
+{%- if warm_pool.instance_reuse_policy is defined %}
+      InstanceReusePolicy:
+{%- if warm_pool.instance_reuse_policy.reuse_on_scale_in is defined %}
+        ReuseOnScaleIn: {{ warm_pool.instance_reuse_policy.reuse_on_scale_in | lower}}
+{%- endif %}
+{%- endif %}
 {%- if warm_pool.max_group_prepared_capacity is defined %}
       MaxGroupPreparedCapacity: {{ warm_pool.max_group_prepared_capacity }}
 {%- endif %}
@@ -21,4 +26,13 @@ Resources:
 {%- if warm_pool.pool_state is defined %}
       PoolState: {{ warm_pool.pool_state }}
 {%- endif %}
-{%- endfor %}{# END {%- for warm_pool in sceptre_user_data.warm_pools %} #}
+{%- endfor %}{# END for warm_pool in sceptre_user_data.warm_pools #}{# Supported structure as of 2025-06-25
+Type: AWS::AutoScaling::WarmPool
+Properties:
+  AutoScalingGroupName: String
+  InstanceReusePolicy:
+    ReuseOnScaleIn: Boolean
+  MaxGroupPreparedCapacity: Integer
+  MinSize: Integer
+  PoolState: String
+#}

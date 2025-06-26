@@ -1,0 +1,86 @@
+---
+template:
+  type: file
+  path: autoscaling/launch_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  description: "Sample AutoScaling Launch Configurations for testing Jinja2 template."
+  source_repo_url: "{{ git_repo }}"
+  launch_configurations:
+    - name: LaunchConfig1
+      associate_public_ip_address: true
+      block_device_mappings:
+        - device_name: "/dev/xvda"
+          ebs:
+            delete_on_termination: true
+            encrypted: false
+            iops: 100
+            snapshot_id: "snap-0123456789abcdef0"
+            throughput: 125
+            volume_size: 20
+            volume_type: "gp3"
+      ebs_optimized: true
+      iam_instance_profile: "MyInstanceProfile"
+      image_id: "ami-0123456789abcdef0"
+      instance_monitoring: true
+      instance_type: "t3.medium"
+      key_name: "my-keypair"
+      launch_configuration_name: "MyLaunchConfig1"
+      metadata_options:
+        http_endpoint: "enabled"
+        http_put_response_hop_limit: 2
+        http_tokens: "required"
+      placement_tenancy: "default"
+      security_groups:
+        - "sg-0123456789abcdef0"
+        - "sg-0fedcba9876543210"
+      spot_price: "0.05"
+      user_data: |
+        Fn::Base64: |
+          #!/bin/bash
+          echo "Hello World" > /tmp/helloworld.txt
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+    - name: LaunchConfig2
+      associate_public_ip_address: false
+      block_device_mappings:
+        - device_name: "/dev/xvdb"
+          ebs:
+            delete_on_termination: false
+            encrypted: true
+            iops: 200
+            snapshot_id: "snap-0fedcba9876543210"
+            throughput: 250
+            volume_size: 50
+            volume_type: "io1"
+      ebs_optimized: false
+      iam_instance_profile: "AnotherInstanceProfile"
+      image_id: "ami-0fedcba9876543210"
+      instance_monitoring: false
+      instance_type: "m5.large"
+      key_name: "another-keypair"
+      launch_configuration_name: "MyLaunchConfig2"
+      placement_tenancy: "dedicated"
+      security_groups:
+        - "sg-0a1b2c3d4e5f6g7h8"
+      spot_price: "0.10"
+      user_data: |
+        Fn::Base64: |
+          #!/bin/bash
+          echo "AutoScaling Test" > /var/tmp/test.txt
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+      metadata: |
+        AWS::CloudFormation::Init:
+          default:
+            files:
+              /tmp/metadata-check.txt:
+                content: |
+                  metadata-check
+                mode: "000644"
+                owner: root
+                group: root
+                encoding: plain
+stack_tags:
+  Test: autoscaling-launch-configuration

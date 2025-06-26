@@ -1,0 +1,40 @@
+---
+template:
+  type: file
+  path: autoscaling/scaling_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  description: "Sample AutoScaling Scaling Policies for testing Jinja2 template."
+  source_repo_url: "{{ git_repo }}"
+  scaling_policies:
+    - name: ScalingPolicy1
+      auto_scaling_group_name: "MyAutoScalingGroup1"
+      adjustment_type: "ChangeInCapacity"
+      cooldown: "300"
+      estimated_instance_warmup: 120
+      metric_aggregation_type: "Average"
+      min_adjustment_magnitude: 1
+      policy_type: "SimpleScaling"
+      scaling_adjustment: 2
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+    - name: ScalingPolicy2
+      auto_scaling_group_name: "MyAutoScalingGroup2"
+      adjustment_type: "PercentChangeInCapacity"
+      cooldown: "180"
+      estimated_instance_warmup: 60
+      metric_aggregation_type: "Maximum"
+      min_adjustment_magnitude: 2
+      policy_type: "StepScaling"
+      step_adjustments:
+        - scaling_adjustment: 3
+          metric_interval_lower_bound: 0
+          metric_interval_upper_bound: 10
+        - scaling_adjustment: 5
+          metric_interval_lower_bound: 10
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+stack_tags:
+  Test: autoscaling-scaling-policy
