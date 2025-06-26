@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for response_headers_policy in sceptre_user_data.response_headers_policys %}
+{%- for response_headers_policy in sceptre_user_data.response_headers_policies %}
 {%- set response_headers_policy_name = response_headers_policy.name %}
   {{ response_headers_policy_name }}:
     Type: AWS::CloudFront::ResponseHeadersPolicy
@@ -104,7 +104,7 @@ Resources:
 
 Outputs:
 
-{%- for response_headers_policy in sceptre_user_data.response_headers_policys %}
+{%- for response_headers_policy in sceptre_user_data.response_headers_policies %}
 {%- set response_headers_policy_name = response_headers_policy.name %}
   {{ response_headers_policy_name }}:
     Description: The response headers policy ID for {{ response_headers_policy_name }}

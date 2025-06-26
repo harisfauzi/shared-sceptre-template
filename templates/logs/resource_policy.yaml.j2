@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for resource_policy in sceptre_user_data.resource_policys %}
+{%- for resource_policy in sceptre_user_data.resource_policies %}
 {%- set resource_policy_name = resource_policy.name %}
   {{ resource_policy_name }}:
     Type: AWS::Logs::ResourcePolicy
@@ -22,7 +22,7 @@ Resources:
 
 Outputs:
 
-{%- for resource_policy in sceptre_user_data.resource_policys %}
+{%- for resource_policy in sceptre_user_data.resource_policies %}
 {%- set resource_policy_name = resource_policy.name %}
   {{ resource_policy_name }}:
     Description: Policy Name for {{ resource_policy_name }}
