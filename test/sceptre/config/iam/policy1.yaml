@@ -27,7 +27,7 @@ sceptre_user_data:
     # Policy attached to a role using JSON document
     - name: DynamoDBReadWritePolicy
       policy_name: DynamoDBReadWriteAccess
-      policy_document_json: "{\"Fn::Sub\":{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:Query\",\"dynamodb:PutItem\",\"dynamodb:UpdateItem\"],\"Resource\":[\"arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ApplicationTable\",\"arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ApplicationTable/index/*\"]}]}}"
+      policy_document_json: '!Sub "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:Query\",\"dynamodb:PutItem\",\"dynamodb:UpdateItem\"],\"Resource\":[\"arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ApplicationTable\",\"arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ApplicationTable/index/*\"]}]}"'
       roles:
         - ApplicationRole
 
