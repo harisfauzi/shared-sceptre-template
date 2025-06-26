@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM SAML Provider(s) for '
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for saml_provider in sceptre_user_data.saml_providers %}
 {%- set saml_provider_name = saml_provider.name %}
   {{ saml_provider_name }}:
@@ -14,7 +13,25 @@ Resources:
 {%- if saml_provider.saml_provider_name is defined %}
       Name: {{ saml_provider.saml_provider_name }}
 {%- endif %}
-      SamlMetadataDocument: {{ saml_provider.saml_metadata_document }}
+      SamlMetadataDocument: |
+        {{ saml_provider.saml_metadata_document | indent(width=8, first=false) }}
+{%- if saml_provider.add_private_key is defined %}
+      AddPrivateKey: |-
+        {{ saml_provider.add_private_key }}
+{%- endif %}
+{%- if saml_provider.assertion_encryption_mode is defined %}
+      AssertionEncryptionMode: {{ saml_provider.assertion_encryption_mode }}
+{%- endif %}
+{%- if saml_provider.private_key_list is defined %}
+      PrivateKeyList:
+{%- for key in saml_provider.private_key_list %}
+        - KeyId: {{ key.key_id }}
+          Timestamp: {{ key.timestamp }}
+{%- endfor %}
+{%- endif %}
+{%- if saml_provider.remove_private_key is defined %}
+      RemovePrivateKey: {{ saml_provider.remove_private_key }}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -27,7 +44,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for saml_provider in sceptre_user_data.saml_providers %}
 {%- set saml_provider_name = saml_provider.name %}
   {{ saml_provider_name }}:
@@ -37,5 +53,21 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ saml_provider_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25
+Type: AWS::IAM::SAMLProvider
+Properties:
+  AddPrivateKey: String
+  AssertionEncryptionMode: String
+  Name: String
+  PrivateKeyList:
+    -
+      KeyId: String
+      Timestamp: String
+  RemovePrivateKey: String
+  SamlMetadataDocument: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

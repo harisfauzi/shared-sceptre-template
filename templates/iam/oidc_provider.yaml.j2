@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM OIDC Provider(s) for '
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for oidc_provider in sceptre_user_data.oidc_providers %}
 {%- set oidc_provider_name = oidc_provider.name %}
   {{ oidc_provider_name }}:
@@ -38,7 +37,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for oidc_provider in sceptre_user_data.oidc_providers %}
 {%- set oidc_provider_name = oidc_provider.name %}
   {{ oidc_provider_name }}:
@@ -48,5 +46,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ oidc_provider_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25
+Type: AWS::IAM::OIDCProvider
+Properties:
+  ClientIdList:
+    - String
+  Tags:
+    - Tag
+  ThumbprintList:
+    - String
+  Url: String
+#}

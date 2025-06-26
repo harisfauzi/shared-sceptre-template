@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM Service Linked Role(s)
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for service_linked_role in sceptre_user_data.service_linked_roles %}
 {%- set service_linked_role_name = service_linked_role.name %}
   {{ service_linked_role_name }}:
@@ -20,4 +19,11 @@ Resources:
 {%- if service_linked_role.description is defined %}
       Description: {{ service_linked_role.description }}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25
+Type: AWS::IAM::ServiceLinkedRole
+Properties:
+  AWSServiceName: String
+  CustomSuffix: String
+  Description: String
+#}

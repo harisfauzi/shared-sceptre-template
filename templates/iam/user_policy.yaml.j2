@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM User Policy(s) for '+s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for user_policy in sceptre_user_data.user_policies %}
 {%- set user_policy_name = user_policy.name %}
   {{ user_policy_name }}:
@@ -17,12 +16,11 @@ Resources:
       PolicyDocument: {{ user_policy.policy_document_json }}
 {%- else %}
       PolicyDocument:
-{{ user_policy.policy_document | indent(width=8, first=true) }}
+        {{ user_policy.policy_document | indent(width=8, first=false) }}
 {%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for user_policy in sceptre_user_data.user_policies %}
 {%- set user_policy_name = user_policy.name %}
   {{ user_policy_name }}:
@@ -32,5 +30,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_policy_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25
+Type: AWS::IAM::UserPolicy
+Properties:
+  PolicyDocument: Json
+  PolicyName: String
+  UserName: String
+#}

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM Server Certificate(s) 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for server_certificate in sceptre_user_data.server_certificates %}
 {%- set server_certificate_name = server_certificate.name %}
   {{ server_certificate_name }}:
@@ -13,18 +12,18 @@ Resources:
     Properties:
 {%- if server_certificate.certificate_body is defined %}
       CertificateBody: |
-{{ server_certificate.certificate_body | indent(width=8, first=true) }}
+        {{ server_certificate.certificate_body | indent(width=8, first=false) }}
 {%- endif %}
 {%- if server_certificate.certificate_chain is defined %}
       CertificateChain: |
-{{ server_certificate.certificate_chain | indent(width=8, first=true) }}
+        {{ server_certificate.certificate_chain | indent(width=8, first=false) }}
 {%- endif %}
 {%- if server_certificate.path is defined %}
       Path: {{ server_certificate.path }}
 {%- endif %}
 {%- if server_certificate.private_key is defined %}
       PrivateKey: |
-{{ server_certificate.private_key | indent(width=8, first=true) }}
+        {{ server_certificate.private_key | indent(width=8, first=false) }}
 {%- endif %}
 {%- if server_certificate.server_certificate_name is defined %}
       ServerCertificateName: {{ server_certificate.server_certificate_name }}
@@ -41,7 +40,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for server_certificate in sceptre_user_data.server_certificates %}
 {%- set server_certificate_name = server_certificate.name %}
   {{ server_certificate_name }}:
@@ -51,7 +49,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ server_certificate_name }}"
-
   {{ server_certificate_name }}Arn:
     Description: The ARN for {{ server_certificate_name }}
     Value:
@@ -61,5 +58,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ server_certificate_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25
+Type: AWS::IAM::ServerCertificate
+Properties:
+  CertificateBody: String
+  CertificateChain: String
+  Path: String
+  PrivateKey: String
+  ServerCertificateName: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

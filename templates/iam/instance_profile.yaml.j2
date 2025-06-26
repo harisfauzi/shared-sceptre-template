@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM Instance Profile(s) fo
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for instance_profile in sceptre_user_data.instance_profiles %}
 {%- set instance_profile_name = instance_profile.name %}
   {{ instance_profile_name }}:
@@ -22,7 +21,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for instance_profile in sceptre_user_data.instance_profiles %}
 {%- set instance_profile_name = instance_profile.name %}
   {{ instance_profile_name }}:
@@ -32,7 +30,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_profile_name }}"
-
   {{ instance_profile_name }}Arn:
     Description: The ARN for {{ instance_profile_name }}
     Value:
@@ -42,5 +39,12 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_profile_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25
+Type: AWS::IAM::InstanceProfile
+Properties:
+  InstanceProfileName: String
+  Path: String
+  Roles:
+    - String
+#}

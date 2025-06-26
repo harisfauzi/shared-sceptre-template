@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM Managed Policy(s) for 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for managed_policy in sceptre_user_data.managed_policies %}
 {%- set managed_policy_name = managed_policy.name %}
   {{ managed_policy_name }}:
@@ -15,7 +14,7 @@ Resources:
       PolicyDocument: {{ managed_policy.policy_document_json }}
 {%- else %}
       PolicyDocument:
-{{ managed_policy.policy_document | indent(width=8, first=true) }}
+        {{ managed_policy.policy_document | indent(width=8, first=false) }}
 {%- endif %}
 {%- if managed_policy.description is defined %}
       Description: {{ managed_policy.description }}
@@ -47,7 +46,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for managed_policy in sceptre_user_data.managed_policies %}
 {%- set managed_policy_name = managed_policy.name %}
   {{ managed_policy_name }}:
@@ -57,5 +55,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ managed_policy_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-06-25
+Type: AWS::IAM::ManagedPolicy
+Properties:
+  Description: String
+  Groups:
+    - String
+  ManagedPolicyName: String
+  Path: String
+  PolicyDocument: Json
+  Roles:
+    - String
+  Users:
+    - String
+#}

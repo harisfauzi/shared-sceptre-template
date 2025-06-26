@@ -1,0 +1,55 @@
+---
+template:
+  type: file
+  path: iam/policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample IAM Policies for {{stack_group_config.project_code}}"
+  policies:
+    # Basic policy attached to a group using YAML document
+    - name: S3ReadOnlyPolicy
+      policy_name: S3ReadOnlyAccess
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:Get*
+              - s3:List*
+            Resource: "*"
+      groups:
+        - Developers
+
+    # Policy attached to a role using JSON document
+    - name: DynamoDBReadWritePolicy
+      policy_name: DynamoDBReadWriteAccess
+      policy_document_json: "{\"Fn::Sub\":{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"dynamodb:GetItem\",\"dynamodb:Query\",\"dynamodb:PutItem\",\"dynamodb:UpdateItem\"],\"Resource\":[\"arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ApplicationTable\",\"arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/ApplicationTable/index/*\"]}]}}"
+      roles:
+        - ApplicationRole
+
+    # Policy attached to multiple users with complex permissions
+    - name: EC2AndS3FullAccessPolicy
+      policy_name: EC2S3FullAccess
+      policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EC2FullAccess
+            Effect: Allow
+            Action: "ec2:*"
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:RequestedRegion: "${AWS::Region}"
+          - Sid: S3FullAccess
+            Effect: Allow
+            Action: "s3:*"
+            Resource: 
+              - "arn:aws:s3:::application-bucket-{{stack_group_config.project_code}}"
+              - "arn:aws:s3:::application-bucket-{{stack_group_config.project_code}}/*"
+      users:
+        - operations-admin
+        - devops-engineer

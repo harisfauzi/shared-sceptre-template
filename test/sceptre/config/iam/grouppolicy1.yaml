@@ -1,0 +1,56 @@
+---
+template:
+  type: file
+  path: iam/group_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample IAM Group Policies for Demo Project"
+  group_policies:
+    # Policy using inline YAML document
+    - name: SampleS3ReadOnlyPolicy
+      group_name: Developers
+      policy_name: S3ReadOnlyAccess
+      policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:Get*
+              - s3:List*
+            Resource: "*"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+    # Policy using JSON document
+    - name: SampleDynamoDBPolicy
+      group_name: Developers
+      policy_name: DynamoDBAccess
+      policy_document_json: |
+        {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["dynamodb:GetItem","dynamodb:Query"],"Resource":"arn:aws:dynamodb:us-east-1:123456789012:table/MyTable"}]}
+
+    # Another policy with more complex permissions
+    - name: SampleEC2AndS3Policy
+      group_name: Operations
+      policy_name: EC2AndS3Access
+      policy_document: |
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EC2ReadOnly
+            Effect: Allow
+            Action:
+              - ec2:Describe*
+              - ec2:Get*
+              - ec2:List*
+            Resource: "*"
+          - Sid: S3SpecificBucketAccess
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+            Resource: "arn:aws:s3:::my-application-bucket/*"
+            Condition:
+              StringEquals:
+                aws:RequestedRegion: us-east-1
