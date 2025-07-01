@@ -1,0 +1,54 @@
+---
+template:
+  type: file
+  path: ssm/resource_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SSM Resource Policy for testing"
+  resource_policies:
+    - name: TestResourcePolicy1
+      resource_arn: "!Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:opsitemgroup/default"
+      policy_json: >
+        '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":"arn:aws:iam::123456789012:role/TestRole"},"Action":["ssm:GetParameter","ssm:GetParameters"],"Resource":"arn:aws:ssm:us-west-2:123456789012:parameter/TestParameter1"}]}'
+      
+    - name: TestResourcePolicy2
+      resource_arn: "!Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:opsitemgroup/default"
+      policy: |
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: "arn:aws:iam::123456789012:role/TestRole2"
+            Action:
+              - "ssm:GetParameter"
+              - "ssm:GetParametersByPath"
+            Resource: "arn:aws:ssm:us-west-2:123456789012:parameter/TestParameter2/*"
+            Condition:
+              StringEquals:
+                "ssm:ResourceTag/Environment": ["Dev", "Test"]
+      
+    - name: TestResourcePolicy3
+      resource_arn: "!Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/TestParameter3"
+      policy_json: >
+        '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"ec2.amazonaws.com"},"Action":["ssm:GetParameter"],"Resource":"arn:aws:ssm:us-west-2:123456789012:parameter/TestParameter3","Condition":{"StringEquals":{"aws:SourceInstanceARN":"arn:aws:ec2:us-west-2:123456789012:instance/*"}}}]}'
+      
+      # Example of using the deletion_policy and update_replace_policy overrides
+    - name: TestResourcePolicy4
+      resource_arn: "!Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter/TestParameter4"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      policy: |
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Deny
+            Principal: "*"
+            Action:
+              - "ssm:DeleteParameter"
+              - "ssm:DeleteParameters"
+            Resource: "arn:aws:ssm:us-west-2:123456789012:parameter/TestParameter4"
+stack_tags:
+  Test: ssm-resource-policy
+  Environment: Test
+  ManagedBy: Sceptre

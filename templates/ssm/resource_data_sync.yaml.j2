@@ -52,7 +52,7 @@ Resources:
           OrganizationalUnits:
 {%- for organization_unit in resource_data_sync.sync_source.aws_organization_source.organizational_units %}
             - {{ organization_unit }}
-{%- endif %}
+{%- endfor %}
 {%- endif %}
 {%- endif %}
 {%- if resource_data_sync.sync_source.include_future_regions is defined %}
@@ -74,5 +74,30 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_data_sync_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-01
+Type: AWS::SSM::ResourceDataSync
+Properties:
+  BucketName: String
+  BucketPrefix: String
+  BucketRegion: String
+  KMSKeyArn: String
+  S3Destination:
+    BucketName: String
+    BucketPrefix: String
+    BucketRegion: String
+    KMSKeyArn: String
+    SyncFormat: String
+  SyncFormat: String
+  SyncName: String
+  SyncSource:
+    AwsOrganizationsSource:
+      OrganizationalUnits:
+        - String
+      OrganizationSourceType: String
+    IncludeFutureRegions: Boolean
+    SourceRegions:
+      - String
+    SourceType: String
+  SyncType: String
+#}

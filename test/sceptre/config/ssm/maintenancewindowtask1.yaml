@@ -1,0 +1,147 @@
+---
+template:
+  type: file
+  path: ssm/maintenance_window_task.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  maintenance_window_tasks:
+    - name: Task1
+      priority: 90
+      task_arn: "AWS-RunShellScript"
+      task_type: "RUN_COMMAND"
+      window_id: "mw-01234567890abcdef"
+      description: "Test maintenance window task with type RUN_COMMAND"
+      max_concurrency: "100%"
+      max_errors: "0%"
+      maintenance_window_task_name: "test-task-1"
+      service_role_arn: "arn:aws:iam::123456789012:role/ssm-service-role"
+      targets:
+        - key: "InstanceIds"
+          _values:
+            - "i-01234567890abcdef"
+      task_invocation_parameters:
+        maintenance_window_run_command_parameters:
+          cloudwatch_output_config:
+            cloudwatch_log_group_name: "/aws/ssm/maintenance-window/test-task-1"
+            cloudwatch_output_enabled: true
+          comment: "Running test task"
+          document_version: "$LATEST"
+          notification_config:
+            notification_arn: "arn:aws:sns:us-east-1:123456789012:ssm-task-notifications"
+            notification_events:
+              - "Success"
+              - "Failed"
+              - "TimedOut"
+              - "Cancelled"
+            notification_type: "Invocation"
+          output_s3_bucket_name: "ssm-maintenance-window-logs"
+          output_s3_key_prefix: "test-task-1/"
+          parameters: |
+            commands:
+              - "echo 'Hello World'"
+            workingDirectory: "/tmp"
+            executionTimeout: "3600"
+          service_role_arn: "arn:aws:iam::123456789012:role/ssm-task-role"
+          timeout_seconds: 3600
+      task_parameters: |
+        commands:
+          type: StringList
+          default: ["echo 'Hello World'"]
+          description: "Commands to execute"
+        workingDirectory:
+          type: String
+          default: "/tmp"
+          description: "Working directory for commands"
+        executionTimeout:
+          type: String
+          default: "3600"
+          description: "Execution timeout in seconds"
+      tags:
+        Name: task-run-command
+
+    - name: Task2
+      priority: 100
+      task_arn: "AWS-UpdateCloudFormationStack"
+      task_type: "AUTOMATION"
+      window_id: "mw-01234567890abcdef"
+      description: "Test maintenance window task with type AUTOMATION"
+      allow_unassociated_targets: 'true'
+      cutoff: 1
+      duration: 1
+      maintenance_window_name: test1
+      schedule: 'cron(0 4 ? * SUN *)'
+      end_date: '2022-11-30'
+      schedule_offset: 3
+      schedule_timezone: 'Australia/Brisbane'
+      start_date: '2022-11-01'
+      task_invocation_parameters:
+        maintenance_window_automation_parameters:
+          document_version: "$LATEST"
+          parameters: |
+            StackName:
+              type: String
+              default: "test-stack"
+              description: "Stack name"
+            TemplateBody:
+              type: String
+              default: ""
+              description: "Stack template body"
+            Parameters:
+              type: StringList
+              default: []
+              description: "Stack parameters"
+      tags:
+        Name: task-automation
+
+    - name: Task3
+      priority: 100
+      task_arn: "arn:aws:states:us-east-1:123456789012:stateMachine:test-state-machine"
+      task_type: "STEP_FUNCTIONS"
+      window_id: "mw-01234567890abcdef"
+      description: "Test maintenance window task with type STEP_FUNCTIONS"
+      allow_unassociated_targets: 'true'
+      cutoff: 1
+      duration: 1
+      maintenance_window_name: test1
+      schedule: 'cron(0 4 ? * SUN *)'
+      end_date: '2022-11-30'
+      schedule_offset: 3
+      schedule_timezone: 'Australia/Brisbane'
+      start_date: '2022-11-01'
+      task_invocation_parameters:
+        maintenance_window_step_functions_parameters:
+          input: >
+            '{% raw %}{"instanceId":"{{TARGET_ID}}", "wait_time": 20}{% endraw %}'
+          name: >
+            '{% raw %}{{INVOCATION_ID}}{% endraw %}'
+      tags:
+        Name: task-step-functions
+
+    - name: Task4
+      priority: 100
+      task_arn: "arn:aws:lambda:us-east-1:123456789012:function:test-maintenance-function"
+      task_type: "LAMBDA"
+      window_id: "mw-01234567890abcdef"
+      description: "Test maintenance window task with type LAMBDA"
+      allow_unassociated_targets: 'true'
+      cutoff: 1
+      duration: 1
+      maintenance_window_name: test1
+      schedule: 'cron(0 4 ? * SUN *)'
+      end_date: '2022-11-30'
+      schedule_offset: 3
+      schedule_timezone: 'Australia/Brisbane'
+      start_date: '2022-11-01'
+      task_invocation_parameters:
+        maintenace_window_lambda_parameters:
+          client_context: eyJ0ZXN0Q29udGV4dCI6Ik5vdGhp==trucated==EXAMPLE
+          payload: |
+            !Base64 '{"Param1": "Value1","Param2": "Value2"}'
+          qualifier: $LATEST
+      tags:
+        Name: task-automation
+
+stack_tags:
+  Test: ssm-maintenancewindowtask

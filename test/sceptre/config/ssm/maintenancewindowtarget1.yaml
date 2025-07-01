@@ -1,0 +1,39 @@
+---
+template:
+  type: file
+  path: ssm/maintenance_window_target.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SSM Maintenance Window Target for testing"
+  maintenance_window_targets:
+    - name: TestMaintenanceWindowTarget1
+      resource_type: "INSTANCE"
+      window_id: "mw-01234567890abcdef"
+      description: "Test target for EC2 instances"
+      maintenance_window_target_name: "test-target-1"
+      targets:
+        - key: "InstanceIds"
+          _values:
+            - "i-01234567890abcdef"
+            - "i-1234567890abcdef0"
+          
+    - name: TestMaintenanceWindowTarget2
+      resource_type: "RESOURCE_GROUP"
+      window_id: "mw-abcdef1234567890"
+      description: "Test target for resource groups"
+      maintenance_window_target_name: "test-target-2"
+      owner_information: "Test resource group target"
+      targets:
+        - key: "resource-groups:Name"
+          _values:
+            - "test-resource-group"
+        - key: "resource-groups:ResourceTypeFilters"
+          _values:
+            - "AWS::EC2::Instance"
+            - "AWS::RDS::DBInstance"
+
+
+stack_tags:
+  Test: ssm-maintenancewindow

@@ -1,0 +1,66 @@
+---
+template:
+  type: file
+  path: ssm/resource_data_sync.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SSM Resource Data Sync for testing"
+  resource_data_syncs:
+    - name: TestResourceDataSync1
+      sync_name: "test-sync-1"
+      bucket_name: "test-sync-bucket"
+      bucket_prefix: "ssm-data/"
+      bucket_region: "us-west-2"
+      kms_key_arn: "arn:aws:kms:us-west-2:123456789012:key/abcd1234-abcd-1234-abcd-1234567890ab"
+      sync_type: "SyncToS3"
+      sync_format: "JsonSerDe"
+      sync_source:
+        source_type: "Organization"
+        source_regions:
+          - "us-west-2"
+          - "us-east-1"
+        aws_organization_source:
+          organization_source_type: "OrganizationalUnits"
+          organizational_units:
+            - "ou-1234-567890ab"
+            - "ou-5678-90ab12cd"
+        include_future_regions: true
+        patch_rules:
+          - patch_filter_group:
+              patch_filters:
+                - key: "PRODUCT"
+                  _values: ["AmazonLinux2018.03", "AmazonLinux2"]
+                - key: "CLASSIFICATION"
+                  _values: ["Security"]
+                - key: "SEVERITY"
+                  _values: ["Critical", "Important"]
+            approve_after_days: 7
+            compliance_level: "CRITICAL"
+            enable_non_security: false
+          - patch_filter_group:
+              patch_filters:
+                - key: "PRODUCT"
+                  _values: ["AmazonLinux2018.03", "AmazonLinux2"]
+                - key: "CLASSIFICATION"
+                  _values: ["Bugfix", "Enhancement"]
+            approve_after_days: 14
+            compliance_level: "HIGH"
+      sources:
+        - name: "Custom-Linux-Repo"
+          products: ["AmazonLinux2018.03", "AmazonLinux2"]
+          configuration: |
+            [main]
+            name=Custom Linux Repository
+            baseurl=https://custom-repo.example.com/amazonlinux/2/repo/2.0/x86_64/
+            gpgcheck=1
+            gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-custom-repo
+            enabled=1
+      tags:
+        Environment: "Test"
+        ManagedBy: "Sceptre"
+
+stack_tags:
+  Test: ssm-patch-baseline
+  Environment: Test
