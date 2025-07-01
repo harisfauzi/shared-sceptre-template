@@ -13,7 +13,7 @@ Resources:
     Properties:
       ResourceType: {{ maintenance_window_target.resource_type }}
       Targets:
-{{ targets_macro.prep(maintenance_window_target.targets) | indent(width=8, first=true) }}
+        {{ targets_macro.prep(maintenance_window_target.targets) | indent(width=8, first=false) }}
       WindowId: {{ maintenance_window_target.window_id | trim }}
 {%- if maintenance_window_target.description is defined %}
       Description: {{ maintenance_window_target.description }}
@@ -36,5 +36,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ maintenance_window_target_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-01
+Type: AWS::SSM::MaintenanceWindowTarget
+Properties:
+  Description: String
+  Name: String
+  OwnerInformation: String
+  ResourceType: String
+  Targets:
+    -
+      Key: String
+      Values:
+        - String
+  WindowId: String
+#}

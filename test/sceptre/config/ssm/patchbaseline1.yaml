@@ -1,0 +1,74 @@
+---
+template:
+  type: file
+  path: ssm/patch_baseline.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SSM Patch Baseline for testing"
+  patch_baselines:
+    - name: TestLinuxPatchBaseline
+      patch_baseline_name: "test-linux-baseline"
+      description: "Test Linux patch baseline with various rules"
+      operating_system: "AMAZON_LINUX"
+      approved_patches_enable_non_security: true
+      approved_patches_compliances_level: "CRITICAL"
+      approved_patches:
+        - "kernel-4.14.203-156.332.amzn2"
+        - "glibc-2.26-58.amzn2"
+      rejected_patches:
+        - "test-package-1.0-1"
+        - "unwanted-package-*"
+      rejected_patches_action: "BLOCK"
+      patch_groups:
+        - "test-linux-servers"
+        - "production-linux"
+      global_filters:
+        patch_filters:
+          - key: "CLASSIFICATION"
+            _values:
+              - "Security"
+              - "Bugfix"
+          - key: "SEVERITY"
+            _values:
+              - "Critical"
+              - "Important"
+      approval_rules:
+        patch_rules:
+          - patch_filter_group:
+              patch_filters:
+                - key: "PRODUCT"
+                  _values: ["AmazonLinux2018.03", "AmazonLinux2"]
+                - key: "CLASSIFICATION"
+                  _values: ["Security"]
+                - key: "SEVERITY"
+                  _values: ["Critical", "Important"]
+            approve_after_days: 7
+            compliance_level: "CRITICAL"
+            enable_non_security: false
+          - patch_filter_group:
+              patch_filters:
+                - key: "PRODUCT"
+                  _values: ["AmazonLinux2018.03", "AmazonLinux2"]
+                - key: "CLASSIFICATION"
+                  _values: ["Bugfix", "Enhancement"]
+            approve_after_days: 14
+            compliance_level: "HIGH"
+      sources:
+        - name: "Custom-Linux-Repo"
+          products: ["AmazonLinux2018.03", "AmazonLinux2"]
+          configuration: |
+            [main]
+            name=Custom Linux Repository
+            baseurl=https://custom-repo.example.com/amazonlinux/2/repo/2.0/x86_64/
+            gpgcheck=1
+            gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-custom-repo
+            enabled=1
+      tags:
+        Environment: "Test"
+        ManagedBy: "Sceptre"
+
+stack_tags:
+  Test: ssm-patch-baseline
+  Environment: Test

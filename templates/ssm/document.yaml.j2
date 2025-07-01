@@ -14,7 +14,7 @@ Resources:
       Content: {{ document.content_json }}
 {%- else %}
       Content: |
-{{ document.content | indent(width=8, first=true) }}
+        {{ document.content | indent(width=8, first=false) }}
 {%- endif %}
 {%- if document.attachments is defined %}{# BEGIN {%- if document.attachments is defined %} #}
       Attachments:
@@ -67,6 +67,9 @@ Resources:
 {%- if document.target_type is defined %}
       TargetType: {{ document.target_type }}
 {%- endif %}
+{%- if document.update_method is defined %}
+      UpdateMethod: {{ document.update_method }}
+{%- endif %}
 {%- if document.version_name is defined %}
       VersionName: {{ document.version_name }}
 {%- endif %}
@@ -83,4 +86,29 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ document_name }}"
 
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-01
+Type: AWS::SSM::Document
+Properties:
+  Attachments:
+    -
+      Key: String
+      Name: String
+      Values:
+        - String
+  Content: Json
+  DocumentFormat: String
+  DocumentType: String
+  Name: String
+  Requires:
+    -
+      Name: String
+      Version: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TargetType: String
+  UpdateMethod: String
+  VersionName: String
+#}
