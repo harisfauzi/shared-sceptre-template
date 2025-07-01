@@ -12,9 +12,12 @@ Resources:
     UpdateReplacePolicy: {{ maintenance_window_task.update_replace_policy | default('Delete') }}
     Properties:
       Priority: {{ maintenance_window_task.priority }}
-      TaskArn: {{ maintenance_window_task.task_arn }}
+      TaskArn: {{ maintenance_window_task.task_arn | trim }}
       TaskType: {{ maintenance_window_task.task_type }}
       WindowId: {{ maintenance_window_task.window_id | trim }}
+{%- if maintenance_window_task.cutoff_behavior is defined %}
+      CutoffBehavior: {{ maintenance_window_task.cutoff_behavior }}
+{%- endif %}
 {%- if maintenance_window_task.description is defined %}
       Description: {{ maintenance_window_task.description }}
 {%- endif %}
@@ -36,11 +39,11 @@ Resources:
       Name: {{ maintenance_window_task.maintenance_window_task_name }}
 {%- endif %}
 {%- if maintenance_window_task.service_role_arn is defined %}
-      ServiceRoleArn: {{ maintenance_window_task.service_role_arn }}
+      ServiceRoleArn: {{ maintenance_window_task.service_role_arn | trim }}
 {%- endif %}
 {%- if maintenance_window_task.targets is defined %}
       Targets:
-{{ targets_macro.prep(maintenance_window_task.targets) | indent(width=8, first=true) }}
+        {{ targets_macro.prep(maintenance_window_task.targets) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if maintenance_window_task.task_invocation_parameters is defined %}{# BEGIN {%- if maintenance_window_task.task_invocation_parameters is defined %} #}
       TaskInvocationParameters:
@@ -51,7 +54,7 @@ Resources:
 {%- endif %}
 {%- if maintenance_window_task.task_invocation_parameters.maintenance_window_automation_parameters.parameters is defined %}
           Parameters:
-{{ maintenance_window_task.task_invocation_parameters.maintenance_window_automation_parameters.parameters | indent(width=12, first=true) }}
+            {{ maintenance_window_task.task_invocation_parameters.maintenance_window_automation_parameters.parameters | indent(width=12, first=false) }}
 {%- endif %}
 {%- endif %}
 {%- if maintenance_window_task.task_invocation_parameters.maintenace_window_lambda_parameters is defined %}
@@ -66,62 +69,74 @@ Resources:
           Qualifier: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_lambda_parameters.qualifier }}
 {%- endif %}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters is defined %}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters is defined %}{# BEGIN if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters is defined #}
         MaintenanceWindowRunCommandParameters:
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.comment is defined %}
-          Comment: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.comment }}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.cloudwatch_output_config is defined %}{# BEGIN if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.cloudwatch_output_config is defined #}
+          CloudWatchOutputConfig:
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.cloudwatch_output_config.cloudwatch_log_group_name is defined %}
+            CloudWatchLogGroupName: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.cloudwatch_output_config.cloudwatch_log_group_name }}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.document_hash is defined %}
-          DocumentHash: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.document_hash }}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.cloudwatch_output_config.cloudwatch_output_enabled is defined %}
+            CloudWatchOutputEnabled: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.cloudwatch_output_config.cloudwatch_output_enabled | lower }}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.document_hash_type is defined %}
-          DocumentHashType: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.document_hash_type }}
+{%- endif %}{# END if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.cloudwatch_output_config is defined #}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.comment is defined %}
+          Comment: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.comment }}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.notification_config is defined %}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.document_hash is defined %}
+          DocumentHash: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.document_hash }}
+{%- endif %}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.document_hash_type is defined %}
+          DocumentHashType: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.document_hash_type }}
+{%- endif %}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.document_version is defined %}
+          DocumentVersion: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.document_version }}
+{%- endif %}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.notification_config is defined %}
           NotificationConfig:
-            NotificationArn: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.notification_config.notification_arn }}{# required #}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.notification_config.notification_events is defined %}
+            NotificationArn: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.notification_config.notification_arn }}{# required #}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.notification_config.notification_events is defined %}
             NotificationEvents:
-{%- for notification_event in maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.notification_config.notification_events %}
+{%- for notification_event in maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.notification_config.notification_events %}
               - {{ notification_event }}
 {%- endfor %}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.notification_config.notification_type is defined %}
-            NotificationType: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.notification_config.notification_type }}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.notification_config.notification_type is defined %}
+            NotificationType: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.notification_config.notification_type }}
 {%- endif %}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.output_s3_bucket_name is defined %}
-          OutputS3BucketName: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.output_s3_bucket_name }}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.output_s3_bucket_name is defined %}
+          OutputS3BucketName: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.output_s3_bucket_name }}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.output_s3_key_prefix is defined %}
-          OutputS3KeyPrefix: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.output_s3_key_prefix }}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.output_s3_key_prefix is defined %}
+          OutputS3KeyPrefix: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.output_s3_key_prefix }}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.parameters is defined %}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.parameters is defined %}
           Parameters:
-{{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.parameters | indent(width=12, first=true) }}
+            {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.parameters | indent(width=12, first=false) }}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.service_role_arn is defined %}
-          ServiceRoleArn: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.service_role_arn }}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.service_role_arn is defined %}
+          ServiceRoleArn: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.service_role_arn | trim }}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.timeout_seconds is defined %}
-          TimeoutSeconds: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_run_command_parameters.timeout_seconds }}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.timeout_seconds is defined %}
+          TimeoutSeconds: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters.timeout_seconds }}
 {%- endif %}
-{%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_step_functions_parameters is defined %}
+{%- endif %}{# END if maintenance_window_task.task_invocation_parameters.maintenance_window_run_command_parameters is defined #}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_step_functions_parameters is defined %}{# BEGIN if maintenance_window_task.task_invocation_parameters.maintenance_window_step_functions_parameters is defined #}
         MaintenanceWindowStepFunctionsParameters:
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_step_functions_parameters.input is defined %}
-          Input: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_step_functions_parameters.input }}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_step_functions_parameters.input is defined %}
+          Input: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_step_functions_parameters.input }}
 {%- endif %}
-{%- if maintenance_window_task.task_invocation_parameters.maintenace_window_step_functions_parameters.name is defined %}
-          Name: {{ maintenance_window_task.task_invocation_parameters.maintenace_window_step_functions_parameters.name }}
+{%- if maintenance_window_task.task_invocation_parameters.maintenance_window_step_functions_parameters.name is defined %}
+          Name: {{ maintenance_window_task.task_invocation_parameters.maintenance_window_step_functions_parameters.name }}
 {%- endif %}
-{%- endif %}
-{%- endif %}{# END {%- if maintenance_window_task.task_invocation_parameters is defined %} #}
+{%- endif %}{# END if maintenance_window_task.task_invocation_parameters.maintenance_window_step_functions_parameters is defined #}
+{%- endif %}{# END if maintenance_window_task.task_invocation_parameters is defined #}
 {%- if maintenance_window_task.task_parameters_json is defined %}
       TaskParameters: {{ maintenance_window_task.task_parameters_json }}
 {%- elif maintenance_window_task.task_parameters is defined %}
       TaskParameters:
-{{ maintenance_window_task.task_parameters | indent(width=8, first=true) }}
+        {{ maintenance_window_task.task_parameters | indent(width=8, first=false) }}
 {%- endif %}
 {%- endfor %}
 
@@ -135,5 +150,57 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ maintenance_window_task_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-01
+Type: AWS::SSM::MaintenanceWindowTask
+Properties:
+  CutoffBehavior: String
+  Description: String
+  LoggingInfo:
+    Region: String
+    S3Bucket: String
+    S3Prefix: String
+  MaxConcurrency: String
+  MaxErrors: String
+  Name: String
+  Priority: Integer
+  ServiceRoleArn: String
+  Targets:
+    -
+      Key: String
+      Values:
+        - String
+  TaskArn: String
+  TaskInvocationParameters:
+    MaintenanceWindowAutomationParameters:
+      DocumentVersion: String
+      Parameters: Json
+    MaintenanceWindowLambdaParameters:
+      ClientContext: String
+      Payload: String
+      Qualifier: String
+    MaintenanceWindowRunCommandParameters:
+      CloudWatchOutputConfig:
+        CloudWatchLogGroupName: String
+        CloudWatchOutputEnabled: Boolean
+      Comment: String
+      DocumentHash: String
+      DocumentHashType: String
+      DocumentVersion: String
+      NotificationConfig:
+        NotificationArn: String
+        NotificationEvents:
+          - String
+        NotificationType: String
+      OutputS3BucketName: String
+      OutputS3KeyPrefix: String
+      Parameters: Json
+      ServiceRoleArn: String
+      TimeoutSeconds: Integer
+    MaintenanceWindowStepFunctionsParameters:
+      Input: String
+      Name: String
+  TaskParameters: Json
+  TaskType: String
+  WindowId: String
+#}

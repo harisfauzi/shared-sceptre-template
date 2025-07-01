@@ -51,5 +51,21 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ maintenance_window_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-01
+Type: AWS::SSM::MaintenanceWindow
+Properties:
+  AllowUnassociatedTargets: Boolean
+  Cutoff: Integer
+  Description: String
+  Duration: Integer
+  EndDate: String
+  Name: String
+  Schedule: String
+  ScheduleOffset: Integer
+  ScheduleTimezone: String
+  StartDate: String
+  Tags:
+    - Key: String
+      Value: String
+#}

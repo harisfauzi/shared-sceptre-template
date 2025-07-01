@@ -5,31 +5,31 @@ AWSTemplateFormatVersion: "2010-09-09"
 Resources:
 {%- for parameter in sceptre_user_data.parameters %}
 {%- set parameter_name = parameter.name %}
-{%- if parameter.type != 'SecureString' %}
   {{ parameter_name }}:
     Type: AWS::SSM::Parameter
     DeletionPolicy: {{ parameter.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ parameter.update_replace_policy | default('Delete') }}
     Properties:
-      Type: '{{ parameter.type | trim }}'
-      Value: '{{ parameter.value | trim }}'
+      Type: {{ parameter.type | trim }}
+      Value: {{ parameter.value | trim }}
 {%- if parameter.parameter_name is defined %}
-      Name: '{{ parameter.parameter_name | trim }}'
+      Name: {{ parameter.parameter_name | trim }}
 {%- endif %}
 {%- if parameter.allowed_pattern is defined %}
-      AllowedPattern: '{{ parameter.allowed_pattern }}'
+      AllowedPattern: {{ parameter.allowed_pattern }}
 {%- endif %}
 {%- if parameter.data_type is defined %}
-      DataType: '{{ parameter.data_type }}'
+      DataType: {{ parameter.data_type }}
 {%- endif %}
 {%- if parameter.description is defined %}
-      Description: '{{ parameter.description }}'
+      Description: {{ parameter.description }}
 {%- endif %}
 {%- if parameter.policies is defined %}
-      Policies: '{{ parameter.policies }}'
+      Policies: |
+        {{ parameter.policies | indent(width=8, first=false)}}
 {%- endif %}
 {%- if parameter.tier is defined %}
-      Tier: '{{ parameter.tier }}'
+      Tier: {{ parameter.tier }}
 {%- endif %}
       Tags:
         SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -38,13 +38,11 @@ Resources:
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}
 {%- endfor %}
 
 Outputs:
 {%- for parameter in sceptre_user_data.parameters %}
 {%- set parameter_name = parameter.name %}
-{%- if parameter.type != 'SecureString' %}
   {{ parameter_name }}:
 {%- if parameter.description is defined %}
     Description: {{ parameter.description }}
@@ -56,7 +54,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ parameter_name }}"
-
   {{ parameter_name }}Type:
     Description: The parameter type of {{ parameter_name }}
     Value:
@@ -66,8 +63,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ parameter_name }}-Type"
-
-{%- if parameter.value | length < 1000 %}
+{%- if parameter.value | length < 1000 %}{# BEGIN if parameter.value | length < 1000 #}
   {{ parameter_name }}Value:
     Description: The parameter value of {{ parameter_name }}
     Value:
@@ -77,6 +73,19 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ parameter_name }}-Value"
-{%- endif %}
-{%- endif %}
-{%- endfor %}
+{%- endif %}{# END if parameter.value | length < 1000 #}
+{%- endfor %}{#
+# Supported structure as of 2025-07-01
+Type: AWS::SSM::Parameter
+Properties:
+  AllowedPattern: String
+  DataType: String
+  Description: String
+  Name: String
+  Policies: String
+  Tags:
+    Key: Value
+  Tier: String
+  Type: String
+  Value: String
+#}

@@ -67,6 +67,9 @@ Resources:
 {%- if association.schedule_expression is defined %}
       ScheduleExpression: {{ association.schedule_expression }}
 {%- endif %}
+{%- if association.schedule_offset is defined %}
+      ScheduleOffset: {{ association.schedule_offset }}
+{%- endif %}
 {%- if association.sync_compliance is defined %}
       SyncCompliance: {{ association.sync_compliance }}
 {%- endif %}
@@ -78,3 +81,48 @@ Resources:
       WaitForSuccessTimeoutSeconds: {{ association.wait_for_success_timeout_seconds }}
 {%- endif %}
 {%- endfor %}
+
+Outputs:
+{%- for association in sceptre_user_data.associations %}
+{%- set association_name = association.name %}
+  {{ association_name }}AssociationId:
+    Description: The association ID of {{ association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - AssociationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-AssociationId"
+{%- endfor %}{#
+# Supported structure as of 2025-07-01
+Type: AWS::SSM::Association
+Properties:
+  ApplyOnlyAtCronInterval: Boolean
+  AssociationName: String
+  AutomationTargetParameterName: String
+  CalendarNames:
+    - String
+  ComplianceSeverity: String
+  DocumentVersion: String
+  InstanceId: String
+  MaxConcurrency: String
+  MaxErrors: String
+  Name: String
+  OutputLocation:
+    S3Location:
+      OutputS3BucketName: String
+      OutputS3KeyPrefix: String
+      OutputS3Region: String
+  Parameters:
+    - String
+  ScheduleExpression: String
+  ScheduleOffset: Integer
+  SyncCompliance: String
+  Targets:
+    -
+      Key: String
+      Values:
+        - String
+  WaitForSuccessTimeoutSeconds: Integer
+#}
