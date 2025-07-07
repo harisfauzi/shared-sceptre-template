@@ -1,0 +1,63 @@
+---
+template:
+  type: file
+  path: glue/database.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Database for test-project"
+  databases:
+    - name: TestDatabase
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      catalog_id: "!Sub ${AWS::AccountId}"
+      database_input:
+        name: "test_database"
+        description: "Test database with various configurations"
+        location_uri: "s3://test-bucket/data/"
+        
+        # Example of create table default permissions
+        create_table_default_permissions:
+          - permissions:
+              - "SELECT"
+              - "ALTER"
+              - "DROP"
+            principal:
+              data_lake_principal_identifier: "IAM_ALLOWED_PRINCIPALS"
+          - permissions:
+              - "SELECT"
+            principal:
+              data_lake_principal_identifier: "arn:aws:iam::123456789012:role/analytics-team"
+        
+        # Example of parameters
+        parameters_json: |
+          {
+            "classification": "json",
+            "type": "document",
+            "storage.location.template": "s3://test-bucket/data/${table}/"
+          }
+        
+        # Example of target database (for cross-account)
+        target_database:
+          catalog_id: "123456789012"
+          database_name: "source_database"
+    
+    # Second database example with different configuration
+    - name: AnotherTestDatabase
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      catalog_id: "!Sub ${AWS::AccountId}"
+      database_input:
+        name: "another_test_db"
+        description: "Another test database with minimal configuration"
+        
+        # Example of federated database
+        federated_database:
+          connection_name: "jdbc-connection"
+          identifier: "external_db.schema"
+        
+        # Example of parameters as YAML dictionary
+        parameters: |
+          classification: "parquet"
+          has_encrypted_data: "true"

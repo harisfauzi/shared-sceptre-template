@@ -12,25 +12,34 @@ Resources:
     Properties:
       CatalogId: {{ database.catalog_id | trim }}
       DatabaseInput:
-{%- if database.database_input.create_table_default_permissions is defined %}
+{%- if database.database_input.create_table_default_permissions is defined %}{# BEGIN if database.database_input.create_table_default_permissions is defined #}
         CreateTableDefaultPermissions:
-{%- for create_table_default_permission in database.database_input.create_table_default_permissions %}
+{%- for create_table_default_permission in database.database_input.create_table_default_permissions %}{# BEGIN for create_table_default_permission in database.database_input.create_table_default_permissions #}
           -
-{%- if create_table_default_permission.permissions is defined %}
+{%- if create_table_default_permission.permissions is defined %}{# BEGIN if create_table_default_permission.permissions is defined #}
             Permissions:
 {%- for permission in create_table_default_permission.permissions %}
               - {{ permission }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if create_table_default_permission.permissions is defined #}
 {%- if create_table_default_permission.principal is defined %}
             Principal:
               DataLakePrincipalIdentifier: {{ create_table_default_permission.principal.data_lake_principal_identifier | trim }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for create_table_default_permission in database.database_input.create_table_default_permissions #}
+{%- endif %}{# END if database.database_input.create_table_default_permissions is defined #}
 {%- if database.database_input.description is defined %}
         Description: {{ database.database_input.description }}
 {%- endif %}
+{%- if database.database_input.federated_database is defined %}{# BEGIN if database.database_input.federated_database is defined #}
+        FederatedDatabase:
+{%- if database.database_input.federated_database.connection_name is defined %}
+          ConnectionName: {{ database.database_input.federated_database.connection_name }}
+{%- endif %}
+{%- if database.database_input.federated_database.identifier is defined %}
+          Identifier: {{ database.database_input.federated_database.identifier }}
+{%- endif %}
+{%- endif %}{# END if database.database_input.federated_database is defined #}
 {%- if database.database_input.location_url is defined %}
         LocationUri: {{ database.database_input.location_url }}
 {%- endif %}
@@ -38,10 +47,11 @@ Resources:
         Name: {{ database.database_input.name }}
 {%- endif %}
 {%- if database.database_input.parameters_json is defined %}
-        Parameters: '{{ database.database_input.parameters_json }}'
+        Parameters: |
+          {{ database.database_input.parameters_json | indent(width=10, first=false) }}
 {%- elif database.database_input.parameters is defined %}
         Parameters:
-{{ database.database_input.parameters | indent(width=10, first=true) }}
+          {{ database.database_input.parameters | indent(width=10, first=false) }}
 {%- endif %}
 {%- if database.database_input.target_database is defined %}
         TargetDatabase:
@@ -52,11 +62,12 @@ Resources:
           DatabaseName: {{ database.database_input.target_database.database_name }}
 {%- endif %}
 {%- endif %}
-
+{%- if database.database_name is defined %}
+      DatabaseName: {{ database.database_name }}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for database in sceptre_user_data.databases %}
 {%- set database_name = database.name %}
   {{ database_name }}:
@@ -66,5 +77,28 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ database_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-02:
+Type: AWS::Glue::Database
+Properties:
+  CatalogId: String
+  DatabaseInput:
+    CreateTableDefaultPermissions:
+      -
+        Permissions:
+          - String
+        Principal:
+          DataLakePrincipalIdentifier: String
+    Description: String
+    FederatedDatabase:
+      ConnectionName: String
+      Identifier: String
+    LocationUri: String
+    Name: String
+    Parameters: Json
+    TargetDatabase:
+      CatalogId: String
+      DatabaseName: String
+      Region: String
+  DatabaseName: String
+#}

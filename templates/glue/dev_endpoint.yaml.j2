@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('Glue DevEndpoint(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Glue Dev Endpoint(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -12,10 +12,11 @@ Resources:
     Properties:
       RoleArn: {{ dev_endpoint.role_arn | trim }}
 {%- if dev_endpoint.arguments_json is defined %}
-      Arguments: '{{ dev_endpoint.arguments_json }}'
+      Arguments: |
+        {{ dev_endpoint.arguments_json | indent(width=8, first=false) }}
 {%- elif dev_endpoint.arguments is defined %}
       Arguments:
-{{ dev_endpoint.arguments_json | indent(width=8, first=true) }}
+        {{ dev_endpoint.arguments | indent(width=8, first=false) }}
 {%- endif %}
 {%- if dev_endpoint.endpoint_name is defined %}
       EndpointName: {{ dev_endpoint.endpoint_name }}
@@ -49,7 +50,7 @@ Resources:
 {%- endif %}
 {%- if dev_endpoint.security_group_ids is defined %}
       SecurityGroupIds:
-{%- for security_group_id dev_endpoint.security_group_ids %}
+{%- for security_group_id in dev_endpoint.security_group_ids %}
         - {{ security_group_id | trim }}
 {%- endfor %}
 {%- endif %}
@@ -68,11 +69,9 @@ Resources:
 {%- if dev_endpoint.worker_type is defined %}
       WorkerType: {{ dev_endpoint.worker_type }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for dev_endpoint in sceptre_user_data.dev_endpoints %}
 {%- set dev_endpoint_name = dev_endpoint.name %}
   {{ dev_endpoint_name }}:
@@ -82,5 +81,27 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ dev_endpoint_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-02:
+Type: AWS::Glue::DevEndpoint
+Properties:
+  Arguments: Json
+  EndpointName: String
+  ExtraJarsS3Path: String
+  ExtraPythonLibsS3Path: String
+  GlueVersion: String
+  NumberOfNodes: Integer
+  NumberOfWorkers: Integer
+  PublicKey: String
+  PublicKeys:
+    - String
+  RoleArn: String
+  SecurityConfiguration: String
+  SecurityGroupIds:
+    - String
+  SubnetId: String
+  Tags:
+    - Key: String
+      Value: String
+  WorkerType: String
+#}

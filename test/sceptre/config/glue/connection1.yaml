@@ -1,0 +1,61 @@
+---
+template:
+  type: file
+  path: glue/connection.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Connection for testing"
+  connections:
+    - name: TestJdbcConnection
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      catalog_id: "!Sub ${AWS::AccountId}"
+      connection_input:
+        connection_type: JDBC
+        connection_properties: |
+          JDBC_CONNECTION_URL: "jdbc:mysql://example.com:3306/database"
+          PASSWORD: "{% raw %}{{resolve:secretsmanager:jdbc1secret:SecretString:password}}{% endraw %}"
+          USERNAME: "{% raw %}{{resolve:secretsmanager:jdbc1secret:SecretString:username}}{% endraw %}"
+        name: "test-jdbc-connection"
+        physical_connection_requirements:
+          availability_zone: "us-east-1a"
+          security_group_id_list:
+            - "sg-12345678"
+          subnet_id: "subnet-12345678"
+        validate_credentials: true
+
+    - name: TestS3Connection
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      catalog_id: "!Sub ${AWS::AccountId}"
+      connection_input:
+        connection_type: S3
+        connection_properties: |
+          S3_BUCKET_NAME: "my-bucket"
+          S3_CONNECTION_URL: "s3://my-bucket"
+        name: "test-s3-connection"
+        validate_credentials: true
+
+    - name: TestNetworkConnection
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      catalog_id: "!Sub ${AWS::AccountId}"
+      connection_input:
+        connection_type: NETWORK
+        connection_properties: |
+          HOST: "example.com"
+          PORT: "443"
+        name: "test-network-connection"
+        physical_connection_requirements:
+          availability_zone: "us-east-1a"
+          security_group_id_list:
+            - "sg-12345678"
+          subnet_id: "subnet-12345678"
+        validate_credentials: true
+
+stack_tags:
+  Test: glue-connection
+  Environment: Test
+  ManagedBy: Sceptre

@@ -1,0 +1,89 @@
+---
+template:
+  type: file
+  path: glue/job.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "AWS Glue Jobs for data processing"
+  
+  # List of Glue jobs to create
+  jobs:
+    # Basic Glue ETL job configuration
+    - name: BasicETLJob
+      job_name: "basic-etl-job-${AWS::StackName}"
+      description: "Basic ETL job for data processing"
+      role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole"  # Using a dummy ARN for testing
+      
+      # Command configuration
+      command:
+        name: "glueetl"
+        python_version: "3"
+        script_location: "!Sub s3://dummy-s3-bucket-${AWS::AccountId}/scripts/etl_script.py"
+        runtime: "python3.9"
+      
+      # Resource configuration
+      allocated_capacity: 2
+      max_retries: 3
+      timeout: 60
+      worker_type: "Standard"
+      number_of_workers: 2
+      max_capacity: 10
+      
+      # Execution properties
+      execution_property:
+        max_concurrent_runs: 2
+      
+      # Connections
+      connections:
+        connections:
+          - "dummy-connection-1"
+          - "dummy-connection-2"
+      
+      # Default arguments (as YAML)
+      default_arguments: |
+        "--job-language": python
+        "--job-bookmark-option": job-bookmark-enable
+        "--enable-metrics": ""
+        "--enable-continuous-cloudwatch-log": "true"
+        "--enable-spark-ui": "true"
+        "--spark-event-logs-path": !Sub s3://dummy-s3-bucket-${AWS::AccountId}/spark-logs/
+      
+      # Non-overridable arguments (as JSON)
+      non_overridable_arguments_json: |
+        Fn::Sub: |
+          {
+            "--enable-metrics": "",
+            "--enable-continuous-cloudwatch-log": "true",
+            "--TempDir": "s3://dummy-s3-bucket-${AWS::AccountId}/temp/"
+          }
+      
+      # Additional settings
+      glue_version: "3.0"
+      security_configuration: "glue-security-configuration"
+      execution_class: "STANDARD"
+      job_mode: "GENERAL"
+      job_run_queuing_enabled: true
+      maintenance_window: "cron(0 0 * * ? *)"
+      
+      # Notification
+      notification_property:
+        notify_delay_after: 30
+      
+      # Tags
+      tags:
+        Environment: "Development"
+        Department: "DataEngineering"
+        ManagedBy: "Sceptre"
+    
+    # Minimal Glue job configuration
+    - name: MinimalJob
+      job_name: "minimal-job-${AWS::StackName}"
+      role: "arn:aws:iam::123456789012:role/service-role/AWSGlueServiceRole"  # Using a dummy ARN for testing
+      command:
+        name: "glueetl"
+        script_location: "!Sub s3://dummy-s3-bucket-${AWS::AccountId}/scripts/minimal_script.py"
+      max_retries: 1
+      worker_type: "G.1X"
+      number_of_workers: 5

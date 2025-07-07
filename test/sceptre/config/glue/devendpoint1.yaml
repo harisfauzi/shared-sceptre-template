@@ -1,0 +1,90 @@
+---
+template:
+  type: file
+  path: glue/dev_endpoint.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue DevEndpoint for development and testing"
+  
+  # List of dev endpoints to create
+  dev_endpoints:
+    # Basic development endpoint configuration
+    - name: DevelopmentEndpoint
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      role_arn: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/service-role/AWSGlueServiceRole"
+      endpoint_name: "dev-endpoint-${AWS::StackName}"
+      
+      # Basic configuration
+      glue_version: "3.0"
+      number_of_nodes: 2
+      worker_type: "Standard"
+      
+      # Network configuration
+      subnet_id: "subnet-0123456789abcdef0"  # Dummy subnet ID for testing
+      security_group_ids:
+        - "sg-0123456789abcdef0"  # Dummy security group ID for testing
+      
+      # SSH access
+      public_key: "ssh-rsa AAAAB3NzaC1yc2E... user@example.com"
+      public_keys:
+        - "ssh-rsa AAAAB3NzaC1yc2E... user1@example.com"
+        - "ssh-rsa AAAAB3NzaC1yc2E... user2@example.com"
+      
+      # Additional libraries and dependencies
+      extra_jars_s3_path: "s3://dummy-s3-bucket-abcdefghi123456/glue/jars/"
+      extra_python_libs_s3_path: "s3://dummy-s3-bucket-abcdefghi123456/glue/python-libs/"
+      
+      # Custom arguments
+      arguments: |
+        "--enable-glue-datacatalog": "true"
+        "--spark-event-logs-path": "s3://dummy-s3-bucket-abcdefghi123456/glue/spark-events/"
+      
+      # Tags for resource management
+      tags:
+        Environment: "Development"
+        Department: "DataEngineering"
+        ManagedBy: "Sceptre"
+    
+    # Minimal production endpoint configuration
+    - name: ProductionEndpoint
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      role_arn: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/service-role/AWSGlueServiceRole"
+      endpoint_name: "prod-endpoint-${AWS::StackName}"
+      
+      # Production configuration with more resources
+      glue_version: "4.0"
+      number_of_workers: 10
+      worker_type: "G.1X"
+      
+      # Network configuration
+      subnet_id: "subnet-0123456789abcdef0"
+      security_group_ids:
+        - "sg-0123456789abcdef0"
+      
+      # Security configuration
+      security_configuration: "glue-security-configuration"
+      
+      # SSH access (restricted)
+      public_keys:
+        - "ssh-rsa AAAAB3NzaC1yc2E... admin@example.com"
+      
+      # Custom arguments as JSON
+      arguments_json: |
+        {
+          "--enable-metrics": "true",
+          "--enable-continuous-cloudwatch-log": "true",
+          "--enable-spark-ui": "true",
+          "--spark-event-logs-path": "s3://dummy-s3-bucket-abcdefghi123456/glue/prod/spark-events/"
+        }
+      
+      # Additional production tags
+      tags:
+        Environment: "Production"
+        Department: "DataPlatform"
+        CostCenter: "12345"
+        ManagedBy: "Sceptre"
+        Compliance: "PCI"

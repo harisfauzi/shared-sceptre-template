@@ -1,0 +1,58 @@
+---
+Description: {{sceptre_user_data.description|default('Glue Data Quality Ruleset(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for ruleset in sceptre_user_data.data_quality_rulesets %}
+{%- set ruleset_name = ruleset.name %}
+  {{ ruleset_name }}:
+    Type: AWS::Glue::DataQualityRuleset
+    DeletionPolicy: {{ ruleset.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ ruleset.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if ruleset.client_token is defined %}
+      ClientToken: {{ ruleset.client_token }}
+{%- endif %}
+{%- if ruleset.description is defined %}
+      Description: {{ ruleset.description }}
+{%- endif %}
+{%- if ruleset.ruleset_name is defined %}
+      Name: {{ ruleset.ruleset_name }}
+{%- endif %}
+{%- if ruleset.ruleset is defined %}
+      Ruleset: |
+        {{ ruleset.ruleset | indent(width=8, first=false) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if ruleset.tags is defined %}
+{%- for key,value in ruleset.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if ruleset.target_table is defined %}{# BEGIN if ruleset.target_table is defined #}
+      TargetTable:
+{%- if ruleset.target_table.  database_name is defined %}
+        DatabaseName: {{ ruleset.target_table.database_name }}
+{%- endif %}
+{%- if ruleset.target_table.table_name is defined %}
+        TableName: {{ ruleset.target_table.table_name }}
+{%- endif %}
+{%- endif %}{# END if ruleset.target_table is defined #}
+{%- endfor %}{#
+# Supported structure as of 2025-07-03:
+Type: AWS::Glue::DataQualityRuleset
+Properties:
+  ClientToken: String
+  Description: String
+  Name: String
+  Ruleset: String
+  Tags:
+    - Key: String
+      Value: String
+  TargetTable:
+    DatabaseName: String
+    TableName: String
+#}

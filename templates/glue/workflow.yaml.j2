@@ -1,0 +1,61 @@
+---
+Description: {{sceptre_user_data.description|default('Glue Workflow(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for workflow in sceptre_user_data.workflows %}
+{%- set workflow_name = workflow.name %}
+  {{ workflow_name }}:
+    Type: AWS::Glue::Workflow
+    DeletionPolicy: {{ workflow.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ workflow.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if workflow.default_run_properties_json is defined %}
+      DefaultRunProperties: |
+        {{ workflow.default_run_properties_json | indent(width=8, first=false) }}
+{%- elif workflow.default_run_properties is defined %}
+      DefaultRunProperties:
+        {{ workflow.default_run_properties | indent(width=8, first=false) }}
+{%- endif %}
+{%- if workflow.description is defined %}
+      Description: {{ workflow.description }}
+{%- endif %}
+{%- if workflow.max_concurrent_runs is defined %}
+      MaxConcurrentRuns: {{ workflow.max_concurrent_runs }}
+{%- endif %}
+{%- if workflow.workflow_name is defined %}
+      Name: {{ workflow.workflow_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if workflow.tags is defined %}
+{%- for key,value in workflow.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for workflow in sceptre_user_data.workflows %}
+{%- set workflow_name = workflow.name %}
+  {{ workflow_name }}:
+    Description: Workflow Name for {{ workflow_name }}
+    Value:
+      Ref: {{ workflow_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ workflow_name }}"
+{%- endfor %}{#
+# Supported structure as of 2025-07-07:
+Type: AWS::Glue::Workflow
+Properties:
+  DefaultRunProperties: Json
+  Description: String
+  MaxConcurrentRuns: Integer
+  Name: String
+  Tags:
+    - Key: String
+      Value: String
+#}

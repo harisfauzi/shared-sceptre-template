@@ -1,0 +1,25 @@
+---
+template:
+  type: file
+  path: glue/security_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Security Configuration for development and testing"
+  security_configurations:
+    - name: DevelopmentSecurityConfig
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      security_configuration_name: "DevelopmentSecurityConfig"
+      encryption_configuration:
+        cloudwatch_encryption:
+          cloudwatch_encryption_mode: "SSE-KMS"
+          kms_key_arn: "!Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/development-key"
+        job_bookmarks_encryption:
+          job_bookmarks_encryption_mode: "SSE-KMS"
+          kms_key_arn: "!Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/development-key"
+        s3_encryptions:
+          - s3_encryption_mode: "SSE-KMS"
+            kms_key_arn: "!Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/development-key"
+          - s3_encryption_mode: "SSE-S3"

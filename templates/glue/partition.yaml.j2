@@ -1,0 +1,202 @@
+---
+Description: {{sceptre_user_data.description|default('Glue Partition(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for partition in sceptre_user_data.partitions %}
+{%- set partition_name = partition.name %}
+  {{ partition_name }}:
+    Type: AWS::Glue::Partition
+    DeletionPolicy: {{ partition.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ partition.update_replace_policy | default('Delete') }}
+    Properties:
+      CatalogId: {{ partition.catalog_id }}
+      DatabaseName: {{ partition.database_name }}
+      PartitionInput:
+        Values:
+{%- for value in partition.partition_input._values %}
+          - {{ value }}
+{%- endfor %}
+{%- if partition.partition_input.parameters_json is defined %}
+        Parameters: |
+          {{ partition.partition_input.parameters_json | indent(width=10, first=false) }}
+{%- elif partition.partition_input.parameters is defined %}
+        Parameters:
+          {{ partition.partition_input.parameters | indent(width=10, first=false) }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor is defined %}{# BEGIN if partition.partition_input.storage_descriptor is defined #}
+        StorageDescriptor:
+{%- if partition.partition_input.storage_descriptor.bucket_columns is defined %}{# BEGIN if partition.partition_input.storage_descriptor.bucket_columns is defined #}
+          BucketColumns:
+{%- for bucket_column in partition.partition_input.storage_descriptor.bucket_columns %}
+            - {{ bucket_column }}
+{%- endfor %}
+{%- endif %}{# END if partition.partition_input.storage_descriptor.bucket_columns is defined #}
+{%- if partition.partition_input.storage_descriptor.columns is defined %}{# BEGIN if partition.partition_input.storage_descriptor.columns is defined #}
+          Columns:
+{%- for column in partition.partition_input.storage_descriptor.columns %}{# BEGIN for column in partition.partition_input.storage_descriptor.columns #}
+            - Name: {{ column.name }}
+{%- if column.comment is defined %}
+              Comment: {{ column.comment }}
+{%- endif %}
+{%- if column.type is defined %}
+              Type: {{ column.type }}
+{%- endif %}
+{%- endfor %}{# END for column in partition.partition_input.storage_descriptor.columns #}
+{%- endif %}{# END if partition.partition_input.storage_descriptor.columns is defined #}
+{%- if partition.partition_input.storage_descriptor.compressed is defined %}
+          Compressed: {{ partition.partition_input.storage_descriptor.compressed | lower }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.input_format is defined %}
+          InputFormat: {{ partition.partition_input.storage_descriptor.input_format }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.location is defined %}
+          Location: {{ partition.partition_input.storage_descriptor.location }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.number_of_buckets is defined %}
+          NumberOfBuckets: {{ partition.partition_input.storage_descriptor.number_of_buckets }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.output_format is defined %}
+          OutputFormat: {{ partition.partition_input.storage_descriptor.output_format }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.parameters_json is defined %}
+          Parameters: |
+            {{ partition.partition_input.storage_descriptor.parameters_json | indent(width=12, first=false) }}
+{%- elif partition.partition_input.storage_descriptor.parameters is defined %}
+          Parameters:
+            {{ partition.partition_input.storage_descriptor.parameters | indent(width=12, first=false) }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.schema_reference is defined %}{# BEGIN if partition.partition_input.storage_descriptor.schema_reference is defined #}
+          SchemaReference:
+{%- if partition.partition_input.storage_descriptor.schema_reference.schema_id is defined %}{# BEGIN if partition.partition_input.storage_descriptor.schema_reference.schema_id is defined #}
+            SchemaId:
+{%- if partition.partition_input.storage_descriptor.schema_reference.schema_id.registry_name is defined %}
+              RegistryName: {{ partition.partition_input.storage_descriptor.schema_reference.schema_id.registry_name }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.schema_reference.schema_id.schema_arn is defined %}
+              SchemaArn: {{ partition.partition_input.storage_descriptor.schema_reference.schema_id.schema_arn }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.schema_reference.schema_id.schema_name is defined %}
+              SchemaName: {{ partition.partition_input.storage_descriptor.schema_reference.schema_id.schema_name }}
+{%- endif %}
+{%- endif %}{# END if partition.partition_input.storage_descriptor.schema_reference.schema_id is defined #}
+{%- if partition.partition_input.storage_descriptor.schema_reference.schema_version_id is defined %}
+            SchemaVersionId: {{ partition.partition_input.storage_descriptor.schema_reference.schema_version_id }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.schema_reference.schema_version_number is defined %}
+            SchemaVersionNumber: {{ partition.partition_input.storage_descriptor.schema_reference.schema_version_number }}
+{%- endif %}
+{%- endif %}{# END if partition.partition_input.storage_descriptor.schema_reference is defined #}
+{%- if partition.partition_input.storage_descriptor.serde_info is defined %}{# BEGIN if partition.partition_input.storage_descriptor.serde_info is defined #}
+          SerdeInfo:
+{%- if partition.partition_input.storage_descriptor.serde_info.name is defined %}
+            Name: {{ partition.partition_input.storage_descriptor.serde_info.name }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.serde_info.parameters_json is defined %}
+            Parameters: |
+              {{ partition.partition_input.storage_descriptor.serde_info.parameters_json | indent(width=14, first=false) }}
+{%- elif partition.partition_input.storage_descriptor.serde_info.parameters is defined %}
+            Parameters:
+              {{ partition.partition_input.storage_descriptor.serde_info.parameters | indent(width=14, first=false) }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.serde_info.serialization_library is defined %}
+            SerializationLibrary: {{ partition.partition_input.storage_descriptor.serde_info.serialization_library }}
+{%- endif %}
+{%- endif %}{# END if partition.partition_input.storage_descriptor.serde_info is defined #}
+{%- if partition.partition_input.storage_descriptor.skewed_info is defined %}{# BEGIN if partition.partition_input.storage_descriptor.skewed_info is defined #}
+          SkewedInfo:
+{%- if partition.partition_input.storage_descriptor.skewed_info.skewed_column_names is defined %}{# BEGIN if partition.partition_input.storage_descriptor.skewed_info.skewed_column_names is defined #}
+            SkewedColumnNames:
+{%- for skewed_column_name in partition.partition_input.storage_descriptor.skewed_info.skewed_column_names %}
+              - {{ skewed_column_name }}
+{%- endfor %}
+{%- endif %}{# END if partition.partition_input.storage_descriptor.skewed_info.skewed_column_names is defined #}
+{%- if partition.partition_input.storage_descriptor.skewed_info.skewed_column_value_location_maps_json is defined %}
+            SkewedColumnValueLocationMaps: |
+              {{ partition.partition_input.storage_descriptor.skewed_info.skewed_column_value_location_maps_json | indent(width=14, first=false) }}
+{%- elif partition.partition_input.storage_descriptor.skewed_info.skewed_column_value_location_maps is defined %}
+            SkewedColumnValueLocationMaps:
+              {{ partition.partition_input.storage_descriptor.skewed_info.skewed_column_value_location_maps | indent(width=14, first=false) }}
+{%- endif %}
+{%- if partition.partition_input.storage_descriptor.skewed_info.skewed_column_values is defined %}{# BEGIN if partition.partition_input.storage_descriptor.skewed_info.skewed_column_values is defined #}
+            SkewedColumnValues:
+{%- for skewed_column_value in partition.partition_input.storage_descriptor.skewed_info.skewed_column_values %}
+              - {{ skewed_column_value }}
+{%- endfor %}
+{%- endif %}{# END if partition.partition_input.storage_descriptor.skewed_info.skewed_column_values is defined #}
+{%- endif %}{# END if partition.partition_input.storage_descriptor.skewed_info is defined #}
+{%- if partition.partition_input.storage_descriptor.sort_columns is defined %}{# BEGIN if partition.partition_input.storage_descriptor.sort_columns is defined #}
+          SortColumns:
+{%- for sort_column in partition.partition_input.storage_descriptor.sort_columns %}{# BEGIN for sort_column in partition.partition_input.storage_descriptor.sort_columns #}
+            -
+              Column: {{ sort_column.column }}
+{%- if sort_column.sort_order is defined %}
+              SortOrder: {{ sort_column.sort_order }}
+{%- endif %}
+{%- endfor %}{# END for sort_column in partition.partition_input.storage_descriptor.sort_columns #}
+{%- endif %}{# END if partition.partition_input.storage_descriptor.sort_columns is defined #}
+{%- if partition.partition_input.storage_descriptor.stored_as_sub_directories is defined %}
+          StoredAsSubDirectories: {{ partition.partition_input.storage_descriptor.stored_as_sub_directories }}
+{%- endif %}{# END if partition.partition_input.storage_descriptor.stored_as_sub_directories is defined #}
+{%- endif %}{# END if partition.partition_input.storage_descriptor is defined #}
+      TableName: {{ partition.table_name }}
+{%- endfor %}
+
+Outputs:
+{%- for partition in sceptre_user_data.partitions %}
+{%- set partition_name = partition.name %}
+  {{ partition_name }}:
+    Description: Partition name for {{ partition_name }}
+    Value:
+      Ref: {{ partition_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ partition_name }}"
+{%- endfor %}{#
+# Supported structure as of 2025-07-03:
+Type: AWS::Glue::Partition
+Properties:
+  CatalogId: String
+  DatabaseName: String
+  PartitionInput:
+    Values:
+      - String
+    Parameters: Json
+    StorageDescriptor:
+      BucketColumns:
+        - String
+      Columns:
+        -
+          Comment: String
+          Name: String
+          Type: String
+      Compressed: Boolean
+      InputFormat: String
+      Location: String
+      NumberOfBuckets: Integer
+      OutputFormat: String
+      Parameters: Json
+      SchemaReference:
+        SchemaId:
+          RegistryName: String
+          SchemaArn: String
+          SchemaName: String
+        SchemaVersionId: String
+        SchemaVersionNumber: Integer
+      SerdeInfo:
+        Name: String
+        Parameters: Json
+        SerializationLibrary: String
+      SkewedInfo:
+        SkewedColumnNames:
+          - String
+        SkewedColumnValueLocationMaps: Json
+        SkewedColumnValues:
+          - String
+      SortColumns:
+        -
+          Column: String
+          SortOrder: Integer
+      StoredAsSubDirectories: Boolean
+  TableName: String
+#}

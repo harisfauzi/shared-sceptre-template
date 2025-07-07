@@ -1,0 +1,23 @@
+---
+Description: {{sceptre_user_data.description|default('Glue Schema Version Metadata(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for schema_version_metadata in sceptre_user_data.schema_version_metadatas %}
+{%- set schema_version_metadata_name = schema_version_metadata.name %}
+  {{ schema_version_metadata_name }}:
+    Type: AWS::Glue::SchemaVersionMetadata
+    DeletionPolicy: {{ schema_version_metadata.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ schema_version_metadata.update_replace_policy | default('Delete') }}
+    Properties:
+      Key: {{ schema_version_metadata.key }}
+      SchemaVersionId: {{ schema_version_metadata.schema_version_id }}
+      Value: {{ schema_version_metadata.value }}
+{%- endfor %}{#
+# Supported structure as of 2025-07-07:
+Type: AWS::Glue::SchemaVersionMetadata
+Properties:
+  Key: String
+  SchemaVersionId: String
+  Value: String
+#}

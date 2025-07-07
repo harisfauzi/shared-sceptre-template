@@ -1,0 +1,42 @@
+---
+template:
+  type: file
+  path: glue/table_optimizer.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Table Optimizer Configuration"
+  table_optimizers:
+    - name: "SampleTableOptimizerCompaction"
+      catalog_id: "!Ref AWS::AccountId"
+      database_name: "sample_database"
+      table_name: "sample_table"
+      table_optimizer_configuration:
+        enabled: true
+        role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/GlueTableOptimizerRole"
+      type: compaction
+    - name: "SampleTableOptimizerRetention"
+      catalog_id: "!Ref AWS::AccountId"
+      database_name: "sample_database"
+      table_name: "sample_table"
+      table_optimizer_configuration:
+        enabled: true
+        role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/GlueTableOptimizerRole"
+        retention_configuration:
+          iceberg_configuration:
+            location: "!Sub s3://sample-bucket-${AWS::AccountId}/sample-data/"
+            orphan_file_retention_period_in_days: 30
+      type: retention
+    - name: "SampleTableOptimizerOrphanFileDeletion"
+      catalog_id: "!Ref AWS::AccountId"
+      database_name: "sample_database"
+      table_name: "sample_table"
+      table_optimizer_configuration:
+        enabled: true
+        role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/GlueTableOptimizerRole"
+        orphan_file_deletion_configuration:
+          iceberg_configuration:
+            location: "!Sub s3://sample-bucket-${AWS::AccountId}/sample-data/"
+            orphan_file_retention_period_in_days: 7
+      type: orphan_file_deletion

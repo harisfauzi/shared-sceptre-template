@@ -1,0 +1,43 @@
+---
+template:
+  type: file
+  path: glue/schema_version.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Schema Versions for development and testing"
+  schema_versions:
+    - name: CustomerDataSchemaVersion1
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      schema:
+        registry_name: "customer_data_registry"
+        schema_name: "CustomerDataSchema"
+      schema_definition: |
+        {
+          "type": "record",
+          "name": "Customer",
+          "fields": [
+            { "name": "id", "type": "string" },
+            { "name": "name", "type": "string" },
+            { "name": "email", "type": "string" },
+            { "name": "phone", "type": "string" }
+          ]
+        }
+    - name: OrderDataSchemaVersion1
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      schema:
+        schema_arn: "!Sub arn:aws:glue:${AWS::Region}:${AWS::AccountId}:schema/customer_data_registry/OrderDataSchema"
+      schema_definition: |
+        {
+          "type": "record",
+          "name": "Order",
+          "fields": [
+            { "name": "order_id", "type": "string" },
+            { "name": "customer_id", "type": "string" },
+            { "name": "order_date", "type": "string" },
+            { "name": "total_amount", "type": "double" }
+          ]
+        }

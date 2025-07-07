@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('Glue DataCatalogEncryptionSettings(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Glue Data Catalog Encryption Settings(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -18,7 +18,7 @@ Resources:
           KmsKeyId: {{ data_catalog_encryption_setting.data_catalog_encryption_settings.connection_password_encryption.kms_key_id | trim }}
 {%- endif %}
 {%- if data_catalog_encryption_setting.data_catalog_encryption_settings.connection_password_encryption.return_connection_password_encrypted is defined %}
-          ReturnConnectionPasswordEncrypted: {{ data_catalog_encryption_setting.data_catalog_encryption_settings.connection_password_encryption.return_connection_password_encrypted }}
+          ReturnConnectionPasswordEncrypted: {{ data_catalog_encryption_setting.data_catalog_encryption_settings.connection_password_encryption.return_connection_password_encrypted | lower }}
 {%- endif %}
 {%- endif %}
 {%- if data_catalog_encryption_setting.data_catalog_encryption_settings.encryption_at_rest is defined %}
@@ -26,9 +26,24 @@ Resources:
 {%- if data_catalog_encryption_setting.data_catalog_encryption_settings.encryption_at_rest.catalog_encryption_mode is defined %}
           CatalogEncryptionMode: {{ data_catalog_encryption_setting.data_catalog_encryption_settings.encryption_at_rest.catalog_encryption_mode }}
 {%- endif %}
+{%- if data_catalog_encryption_setting.data_catalog_encryption_settings.encryption_at_rest.catalog_encryption_service_role is defined %}
+          CatalogEncryptionServiceRole: {{ data_catalog_encryption_setting.data_catalog_encryption_settings.encryption_at_rest.catalog_encryption_service_role }}
+{%- endif %}
 {%- if data_catalog_encryption_setting.data_catalog_encryption_settings.encryption_at_rest.sse_aws_kms_key_id is defined %}
           SseAwsKmsKeyId: {{ data_catalog_encryption_setting.data_catalog_encryption_settings.encryption_at_rest.sse_aws_kms_key_id | trim }}
 {%- endif %}
 {%- endif %}
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-02:
+Type: AWS::Glue::DataCatalogEncryptionSettings
+Properties:
+  CatalogId: String
+  DataCatalogEncryptionSettings:
+    ConnectionPasswordEncryption:
+      KmsKeyId: String
+      ReturnConnectionPasswordEncrypted: Boolean
+    EncryptionAtRest:
+      CatalogEncryptionMode: String
+      CatalogEncryptionServiceRole: String
+      SseAwsKmsKeyId: String
+#}

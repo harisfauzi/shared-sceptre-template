@@ -1,0 +1,36 @@
+---
+template:
+  type: file
+  path: glue/ml_transform.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  description: "Sample Glue ML Transform Configuration"
+  source_repo_url: "{{ git_repo }}"
+  ml_transforms:
+    - name: CustomerMatchTransform
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      role: "arn:aws:iam::${AWS::AccountId}:role/service-role/GlueServiceRole"
+      transform_parameters:
+        find_matches_parameters:
+          primary_key_column_name: "customer_id"
+          accuracy_cost_tradeoff: 0.8
+          precision_recall_tradeoff: 0.7
+          enforce_provided_labels: true
+      input_record_tables:
+        glue_tables:
+          - database_name: "customer_db"
+            table_name: "customer_table"
+            catalog_id: "${AWS::AccountId}"
+            connection_name: "customer-connection"
+      tags:
+        Environment: "dev"
+        Project: "customer-matching"
+      transform_encryption:
+        ml_user_data_encryption:
+          ml_user_data_encryption_mode: "SSE-KMS"
+          kms_key_id: "${AWS::AccountId}:key/customer-matching-key"
+      worker_type: G.1X
+      number_of_workers: 2
+      timeout: 2880

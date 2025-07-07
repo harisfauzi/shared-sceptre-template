@@ -1,0 +1,145 @@
+---
+Description: {{sceptre_user_data.description|default('Glue Trigger(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for trigger in sceptre_user_data.triggers %}
+{%- set trigger_name = trigger.name %}
+  {{ trigger_name }}:
+    Type: AWS::Glue::Trigger
+    Properties:
+      Actions:
+{%- for action in trigger.actions %}{# BEGIN for action in trigger.actions #}
+        -
+{%- if action.arguments_json is defined %}
+          Arguments: |
+            {{ action.arguments_json | indent(width=12, first=false) }}
+{%- elif action.arguments is defined %}
+          Arguments:
+            {{ action.arguments | indent(width=12, first=false) }}
+{%- endif %}
+{%- if action.crawler_name is defined %}
+          CrawlerName: {{ action.crawler_name }}
+{%- endif %}
+{%- if action.job_name is defined %}
+          JobName: {{ action.job_name }}
+{%- endif %}
+{%- if action.notification_property is defined %}{# BEGIN if action.notification_property is defined #}
+          NotificationProperty:
+{%- if action.notification_property.notify_delay_after is defined %}
+            NotifyDelayAfter: {{ action.notification_property.notify_delay_after }}
+{%- endif %}
+{%- endif %}{# END if action.notification_property is defined #}
+{%- if action.security_configuration is defined %}
+          SecurityConfiguration: {{ action.security_configuration }}
+{%- endif %}
+{%- if action.timeout is defined %}
+          Timeout: {{ action.timeout }}
+{%- endif %}
+{%- endfor %}{# END for action in trigger.actions #}
+      Type: {{ trigger.type }}
+{%- if trigger.description is defined %}
+      Description: {{ trigger.description }}
+{%- endif %}
+{%- if trigger.event_batching_condition is defined %}{# BEGIN if trigger.event_batching_condition is defined #}
+      EventBatchingCondition:
+        BatchSize: {{ trigger.event_batching_condition.batch_size }}
+{%- if trigger.event_batching_condition.batch_window is defined %}
+        BatchWindow: {{ trigger.event_batching_condition.batch_window }}
+{%- endif %}
+{%- endif %}{# END if trigger.event_batching_condition is defined #}
+{%- if trigger.trigger_name is defined %}
+      Name: {{ trigger.trigger_name }}
+{%- endif %}
+{%- if trigger.predicate is defined %}{# BEGIN if trigger.predicate is defined #}
+      Predicate:
+{%- if trigger.predicate.conditions is defined %}{# BEGIN if trigger.predicate.conditions is defined #}
+        Conditions:
+{%- for condition in trigger.predicate.conditions %}{# BEGIN for condition in trigger.predicate.conditions #}
+          -
+{%- if condition.crawler_name is defined %}
+            CrawlerName: {{ condition.crawler_name }}
+{%- endif %}
+{%- if condition.crawl_state is defined %}
+            CrawlState: {{ condition.crawl_state }}
+{%- endif %}
+{%- if condition.job_name is defined %}
+            JobName: {{ condition.job_name }}
+{%- endif %}
+{%- if condition.logical_operator is defined %}
+            LogicalOperator: {{ condition.logical_operator }}
+{%- endif %}
+{%- if condition.state is defined %}
+            State: {{ condition.state }}
+{%- endif %}
+{%- endfor %}{# END for condition in trigger.predicate.conditions #}
+{%- endif %}{# END if trigger.predicate.conditions is defined #}
+{%- if trigger.predicate.logical is defined %}
+        Logical: {{ trigger.predicate.logical }}
+{%- endif %}
+{%- endif %}{# END if trigger.predicate is defined #}
+{%- if trigger.schedule is defined %}
+      Schedule: {{ trigger.schedule }}
+{%- endif %}
+{%- if trigger.start_on_creation is defined %}
+      StartOnCreation: {{ trigger.start_on_creation | lower }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if trigger.tags is defined %}
+{%- for key,value in trigger.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if trigger.workflow_name is defined %}
+      WorkflowName: {{ trigger.workflow_name }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for trigger in sceptre_user_data.triggers %}
+{%- set trigger_name = trigger.name %}
+  {{ trigger_name }}:
+    Description: Trigger name for {{ trigger_name }}
+    Value:
+      Ref: {{ trigger_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ trigger_name }}"
+{%- endfor %}{#
+# Supported structure as of 2025-07-07:
+Type: AWS::Glue::Trigger
+Properties:
+  Actions:
+    -
+      Arguments: Json
+      CrawlerName: String
+      JobName: String
+      NotificationProperty:
+        NotifyDelayAfter: Integer
+      SecurityConfiguration: String
+      Timeout: Integer
+  Description: String
+  EventBatchingCondition:
+    BatchSize: Integer
+    BatchWindow: Integer
+  Name: String
+  Predicate:
+    Conditions:
+      -
+        CrawlerName: String
+        CrawlState: String
+        JobName: String
+        LogicalOperator: String
+        State: String
+    Logical: String
+  Schedule: String
+  StartOnCreation: Boolean
+  Tags:
+    - Key: String
+      Value: String
+  Type: String
+  WorkflowName: String
+#}

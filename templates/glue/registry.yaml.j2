@@ -1,0 +1,57 @@
+---
+Description: {{sceptre_user_data.description|default('Glue Registry(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for registry in sceptre_user_data.registries %}
+{%- set registry_name = registry.name %}
+  {{ registry_name }}:
+    Type: AWS::Glue::Registry
+    DeletionPolicy: {{ registry.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ registry.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ registry.registry_name }}
+{%- if registry.description is defined %}
+      Description: {{ registry.description }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if registry.tags is defined %}
+{%- for key,value in registry.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for registry in sceptre_user_data.registries %}
+{%- set registry_name = registry.name %}
+  {{ registry_name }}:
+    Description: Combination of "VersionId|Key|Value Name for {{ registry_name }}
+    Value:
+      Ref: {{ registry_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ registry_name }}"
+  {{ registry_name }}Arn:
+    Description: The Arn for {{ registry_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ registry_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ registry_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2025-07-03:
+Type: AWS::Glue::Registry
+Properties:
+  Description: String
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

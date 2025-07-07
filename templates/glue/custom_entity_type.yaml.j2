@@ -1,0 +1,47 @@
+---
+Description: {{sceptre_user_data.description|default('Glue Custom Entity Type(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for custom_entity_type in sceptre_user_data.custom_entity_types %}
+{%- set custom_entity_type_name = custom_entity_type.name %}
+  {{ custom_entity_type_name }}:
+    Type: AWS::Glue::CustomEntityType
+    DeletionPolicy: {{ custom_entity_type.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ custom_entity_type.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if custom_entity_type.context_words is defined %}
+      ContextWords:
+{%- for context_word in custom_entity_type.context_words %}
+        - {{ context_word }}
+{%- endfor %}
+{%- endif %}
+{%- if custom_entity_type.custom_entity_type_name is defined %}
+      Name: {{ custom_entity_type.custom_entity_type_name }}
+{%- endif %}
+{%- if custom_entity_type.regex_string is defined %}
+      RegexString:
+        {{ custom_entity_type.regex_string | indent(width=8, first=false) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if custom_entity_type.tags is defined %}
+{%- for key,value in custom_entity_type.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-03:
+Type: AWS::Glue::CustomEntityType
+Properties:
+  ContextWords:
+    - String
+  Name: String
+  RegexString:
+    String
+  Tags:
+    - Key: String
+      Value: String
+#}

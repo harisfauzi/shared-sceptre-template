@@ -12,48 +12,132 @@ Resources:
     Properties:
       Role: {{ crawler.role }}
       Targets:
-{%- if crawler.targets.catalog_targets is defined %}
+{%- if crawler.targets.catalog_targets is defined %}{# BEGIN if crawler.targets.catalog_targets is defined #}
         CatalogTargets:
-{%- for catalog_target in crawler.targets.catalog_targets %}
+{%- for catalog_target in crawler.targets.catalog_targets %}{# BEGIN for catalog_target in crawler.targets.catalog_targets #}
           -
+{%- if catalog_target.connection_name is defined %}
+            ConnectionName: {{ catalog_target.connection_name }}
+{%- endif %}
 {%- if catalog_target.database_name is defined %}
             DatabaseName: {{ catalog_target.database_name }}
 {%- endif %}
-{%- if catalog_target.tables is defined %}
+{%- if catalog_target.dlq_event_queue_arn is defined %}
+            DlqEventQueueArn: {{ catalog_target.dlq_event_queue_arn }}
+{%- endif %}
+{%- if catalog_target.event_queue_arn is defined %}
+            EventQueueArn: {{ catalog_target.event_queue_arn }}
+{%- endif %}
+{%- if catalog_target.tables is defined %}{# BEGIN if catalog_target.tables is defined #}
             Tables:
 {%- for table in catalog_target.tables %}
               - {{ table }}
 {%- endfor %}
+{%- endif %}{# END if catalog_target.tables is defined #}
+{%- endfor %}{# END for catalog_target in crawler.targets.catalog_targets #}
+{%- endif %}{# END if crawler.targets.catalog_targets is defined #}
+{%- if crawler.targets.delta_targets is defined %}{# BEGIN if crawler.targets.delta_targets is defined #}
+        DeltaTargets:
+{%- for delta_target in crawler.targets.delta_targets %}{# BEGIN for delta_target in crawler.targets.delta_targets #}
+          -
+{%- if delta_target.connection_name is defined %}
+            ConnectionName: {{ delta_target.connection_name }}
 {%- endif %}
+{%- if delta_target.create_native_delta_table is defined %}
+            CreateNativeDeltaTable: {{ delta_target.create_native_delta_table }}
+{%- endif %}
+{%- if delta_target.delta_tables is defined %}{# BEGIN if delta_target.delta_tables is defined #}
+            DeltaTables:
+{%- for delta_table in delta_target.delta_tables %}
+              - {{ delta_table }}
 {%- endfor %}
+{%- endif %}{# END if delta_target.delta_tables is defined #}
+{%- if delta_target.write_manifest is defined %}
+            WriteManifest: {{ delta_target.write_manifest | lower }}
 {%- endif %}
-{%- if crawler.targets.dynamo_db_targets is defined %}
+{%- endfor %}{# END for delta_target in crawler.targets.delta_targets #}
+{%- endif %}{# END if crawler.targets.delta_targets is defined #}
+{%- if crawler.targets.dynamo_db_targets is defined %}{# BEGIN if crawler.targets.dynamo_db_targets is defined #}
         DynamoDBTargets:
-{%- for dynamo_db_target in crawler.targets.dynamo_db_targets %}
-          - Path: {{ dynamo_db_target }}
-{%- endfor %}
+{%- for dynamo_db_target in crawler.targets.dynamo_db_targets %}{# BEGIN for dynamo_db_target in crawler.targets.dynamo_db_targets #}
+          - Path: {{ dynamo_db_target.path }}
+{%- endfor %}{# END for dynamo_db_target in crawler.targets.dynamo_db_targets #}
+{%- endif %}{# END if crawler.targets.dynamo_db_targets is defined #}
+{%- if crawler.targets.hudi_targets is defined %}{# BEGIN if crawler.targets.hudi_targets is defined #}
+        HudiTargets:
+{%- for hudi_target in crawler.targets.hudi_targets %}{# BEGIN for hudi_target in crawler.targets.hudi_targets #}
+          -
+{%- if hudi_target.connection_name is defined %}
+            ConnectionName: {{ hudi_target.connection_name }}
 {%- endif %}
-{%- if crawler.targets.jdbc_targets is defined %}
+{%- if hudi_target.exclusions is defined %}{# BEGIN if hudi_target.exclusions is defined #}
+            Exclusions:
+{%- for exclusion in hudi_target.exclusions %}
+              - {{ exclusion }}
+{%- endfor %}
+{%- endif %}{# END if hudi_target.exclusions is defined #}
+{%- if hudi_target.maximum_traversal_depth is defined %}
+            MaximumTraversalDepth: {{ hudi_target.maximum_traversal_depth }}
+{%- endif %}
+{%- if hudi_target.paths is defined %}{# BEGIN if hudi_target.paths is defined #}
+            Paths:
+{%- for path in hudi_target.paths %}
+              - {{ path }}
+{%- endfor %}
+{%- endif %}{# END if hudi_target.paths is defined #}
+{%- endfor %}{# END for hudi_target in crawler.targets.hudi_targets #}
+{%- endif %}{# END if crawler.targets.hudi_targets is defined #}
+{%- if crawler.targets.iceberg_targets is defined %}{# BEGIN if crawler.targets.iceberg_targets is defined #}
+        IcebergTargets:
+{%- for iceberg_target in crawler.targets.iceberg_targets %}{# BEGIN for iceberg_target in crawler.targets.iceberg_targets #}
+          -
+{%- if iceberg_target.connection_name is defined %}
+            ConnectionName: {{ iceberg_target.connection_name }}
+{%- endif %}
+{%- if iceberg_target.exclusions is defined %}{# BEGIN if iceberg_target.exclusions is defined #}
+            Exclusions:
+{%- for exclusion in iceberg_target.exclusions %}
+              - {{ exclusion }}
+{%- endfor %}
+{%- endif %}{# END if iceberg_target.exclusions is defined #}
+{%- if iceberg_target.maximum_traversal_depth is defined %}
+            MaximumTraversalDepth: {{ iceberg_target.maximum_traversal_depth }}
+{%- endif %}
+{%- if iceberg_target.paths is defined %}{# BEGIN if iceberg_target.paths is defined #}
+            Paths:
+{%- for path in iceberg_target.paths %}
+              - {{ path }}
+{%- endfor %}
+{%- endif %}{# END if iceberg_target.paths is defined #}
+{%- endfor %}{# END for iceberg_target in crawler.targets.iceberg_targets #}
+{%- endif %}{# END if crawler.targets.iceberg_targets is defined #}
+{%- if crawler.targets.jdbc_targets is defined %}{# BEGIN if crawler.targets.jdbc_targets is defined #}
         JdbcTargets:
-{%- for jdbc_target in crawler.targets.jdbc_targets %}
+{%- for jdbc_target in crawler.targets.jdbc_targets %}{# BEGIN for jdbc_target in crawler.targets.jdbc_targets #}
           -
 {%- if jdbc_target.connection_name is defined %}
             ConnectionName: {{ jdbc_target.connection_name }}
 {%- endif %}
-{%- if jdbc_target.exclusions is defined %}
+{%- if jdbc_target.enable_additional_metadata is defined %}{# BEGIN if jdbc_target.enable_additional_metadata is defined #}
+            EnableAdditionalMetadata:
+{%- for enable_additional_metadata in jdbc_target.enable_additional_metadata %}
+              - {{ enable_additional_metadata }}
+{%- endfor %}
+{%- endif %}{# END if jdbc_target.enable_additional_metadata is defined #}
+{%- if jdbc_target.exclusions is defined %}{# BEGIN if jdbc_target.exclusions is defined #}
             Exclusions:
 {%- for exclusion in jdbc_target.exclusions %}
               - {{ exclusion }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if jdbc_target.exclusions is defined #}
 {%- if jdbc_target.path is defined %}
             Path: {{ jdbc_target.path }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if crawler.targets.mongo_db_targets is defined %}
+{%- endfor %}{# END for jdbc_target in crawler.targets.jdbc_targets #}
+{%- endif %}{# END if crawler.targets.jdbc_targets is defined #}
+{%- if crawler.targets.mongo_db_targets is defined %}{# BEGIN if crawler.targets.mongo_db_targets is defined #}
         MongoDBTargets:
-{%- for mongo_db_target in crawler.targets.mongo_db_targets %}
+{%- for mongo_db_target in crawler.targets.mongo_db_targets %}{# BEGIN for mongo_db_target in crawler.targets.mongo_db_targets #}
           -
 {%- if mongo_db_target.connection_name is defined %}
             ConnectionName: {{ mongo_db_target.connection_name }}
@@ -61,9 +145,9 @@ Resources:
 {%- if mongo_db_target.path is defined %}
             Path: {{ mongo_db_target.path }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if crawler.targets.s3_targets is defined %}
+{%- endfor %}{# END for mongo_db_target in crawler.targets.mongo_db_targets #}
+{%- endif %}{# END if crawler.targets.mongo_db_targets is defined #}
+{%- if crawler.targets.s3_targets is defined %}{# BEGIN if crawler.targets.s3_targets is defined #}
         S3Targets:
 {%- for s3_target in crawler.targets.s3_targets %}
           -
@@ -89,13 +173,13 @@ Resources:
             SampleSize: {{ s3_target.sample_size }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}
-{%- if crawler.classifiers is defined %}
+{%- endif %}{# END if crawler.targets.s3_targets is defined #}
+{%- if crawler.classifiers is defined %}{# BEGIN if crawler.classifiers is defined #}
       Classifiers:
 {%- for classifier in crawler.classifiers %}
         - {{ classifier }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if crawler.classifiers is defined #}
 {%- if crawler.configuration is defined %}
       Configuration: {{ crawler.configuration }}
 {%- endif %}
@@ -108,26 +192,35 @@ Resources:
 {%- if crawler.description is defined %}
       Description: {{ crawler.description }}
 {%- endif %}
-{%- if crawler.name is defined %}
-      Name: {{ crawler.name }}
+{%- if crawler.lake_formation_configuration is defined %}{# BEGIN if crawler.lake_formation_configuration is defined #}
+      LakeFormationConfiguration:
+{%- if crawler.lake_formation_configuration.account_id is defined %}
+        AccountId: {{ crawler.lake_formation_configuration.account_id }}
 {%- endif %}
-{%- if crawler.recrawl_policy is defined %}
+{%- if crawler.lake_formation_configuration.use_lake_formation_credentials is defined %}
+        UseLakeFormationCredentials: {{ crawler.lake_formation_configuration.use_lake_formation_credentials | lower }}
+{%- endif %}
+{%- endif %}{# END if crawler.lake_formation_configuration is defined #}
+{%- if crawler.crawler_name is defined %}
+      Name: {{ crawler.crawler_name }}
+{%- endif %}
+{%- if crawler.recrawl_policy is defined and crawler.recrawl_policy.recrawl_behavior is defined %}{# BEGIN if crawler.recrawl_policy is defined and crawler.recrawl_policy.recrawl_behavior is defined #}
       RecrawlPolicy:
         RecrawlBehavior: {{ crawler.recrawl_policy.recrawl_behavior }}
-{%- endif %}
-{%- if crawler.schedule is defined %}
+{%- endif %}{# END if crawler.recrawl_policy is defined and crawler.recrawl_policy.recrawl_behavior is defined #}
+{%- if crawler.schedule is defined and crawler.schedule.schedule_expression is defined %}{# BEGIN if crawler.schedule is defined and crawler.schedule.schedule_expression is defined #}
       Schedule:
         ScheduleExpression: {{ crawler.schedule.schedule_expression }}
-{%- endif %}
-{%- if crawler.schema_change_policy is defined %}
+{%- endif %}{# END if crawler.schedule is defined and crawler.schedule.schedule_expression is defined #}
+{%- if crawler.schema_change_policy is defined %}{# BEGIN if crawler.schema_change_policy is defined #}
       SchemaChangePolicy:
-{%- if crawler.schema_change_policy.delete_behaviour is defined %}
-        DeleteBehavior: {{ crawler.schema_change_policy.delete_behaviour }}
+{%- if crawler.schema_change_policy.delete_behavior is defined %}
+        DeleteBehavior: {{ crawler.schema_change_policy.delete_behavior }}
 {%- endif %}
 {%- if crawler.schema_change_policy.update_behavior is defined %}
         UpdateBehavior: {{ crawler.schema_change_policy.update_behavior }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if crawler.schema_change_policy is defined #}
 {%- if crawler.table_prefix is defined %}
       TablePrefix: {{ crawler.table_prefix }}
 {%- endif %}
@@ -140,11 +233,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for crawler in sceptre_user_data.crawlers %}
 {%- set crawler_name = crawler.name %}
   {{ crawler_name }}:
@@ -154,5 +245,85 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ crawler_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-02:
+Type: AWS::Glue::Crawler
+Properties:
+  Classifiers:
+    - String
+  Configuration: String
+  CrawlerSecurityConfiguration: String
+  DatabaseName: String
+  Description: String
+  LakeFormationConfiguration:
+    AccountId: String
+    UseLakeFormationCredentials: Boolean
+  Name: String
+  RecrawlPolicy:
+    RecrawlBehavior: String
+  Role: String
+  Schedule:
+    ScheduleExpression: String
+  SchemaChangePolicy:
+    DeleteBehavior: String
+    UpdateBehavior: String
+  TablePrefix: String
+  Tags:
+    - Key: String
+      Value: String
+  Targets:
+    CatalogTargets:
+      -
+        ConnectionName: String
+        DatabaseName: String
+        DlqEventQueueArn: String
+        EventQueueArn: String
+        Tables:
+          - String
+    DeltaTargets:
+      -
+        ConnectionName: String
+        CreateNativeDeltaTable: Boolean
+        DeltaTables:
+          - String
+        WriteManifest: Boolean
+    DynamoDBTargets:
+      - Path: String
+    HudiTargets:
+      -
+        ConnectionName: String
+        Exclusions:
+          - String
+        MaximumTraversalDepth: Integer
+        Paths:
+          - String
+    IcebergTargets:
+      -
+        ConnectionName: String
+        Exclusions:
+          - String
+        MaximumTraversalDepth: Integer
+        Paths:
+          - String
+    JdbcTargets:
+      -
+        ConnectionName: String
+        EnableAdditionalMetadata:
+          - String
+        Exclusions:
+          - String
+        Path: String
+    MongoDBTargets:
+      -
+        ConnectionName: String
+        Path: String
+    S3Targets:
+      -
+        ConnectionName: String
+        DlqEventQueueArn: String
+        EventQueueArn: String
+        Exclusions:
+          - String
+        Path: String
+        SampleSize: Integer
+#}
