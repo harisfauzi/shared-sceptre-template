@@ -1,0 +1,29 @@
+---
+template:
+  type: file
+  path: stepfunctions/state_machine_version.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  description: "StepFunctions State Machine Versions for testing purposes"
+  source_repo_url: "{{ git_repo }}"
+  state_machine_versions:
+    - name: "StepFunction1Version"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      state_machine_arn: "!Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:{{ stack_group_config.project_code }}-data-processing-sfn"
+      description: "Version 1.0 of the data processing state machine"
+      state_machine_revision_id: "1"
+
+    - name: "StepFunction2Version"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      state_machine_arn: "!Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:{{ stack_group_config.project_code }}-backup-sfn"
+      description: "Version 2.0 of the backup state machine"
+      # Omitting state_machine_revision_id to demonstrate it's optional
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Owner: "{{ stack_group_config.owner | default('DevOps') }}"
+  Test: stepfunctions-state-machine-version

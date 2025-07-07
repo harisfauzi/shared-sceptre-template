@@ -1,0 +1,48 @@
+---
+Description: {{sceptre_user_data.description|default('StepFunctions State Machine Version(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for state_machine_version in sceptre_user_data.state_machine_versions %}
+{%- set state_machine_version_name = state_machine_version.name %}
+  {{ state_machine_version_name }}:
+    Type: AWS::StepFunctions::StateMachineVersion
+    DeletionPolicy: {{ state_machine_version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ state_machine_version.update_replace_policy | default('Delete') }}
+    Properties:
+      StateMachineArn: {{ state_machine_version.state_machine_arn | trim }}
+{%- if state_machine_version.description is defined %}
+      Description: {{ state_machine_version.description }}
+{%- endif %}
+{%- if state_machine_version.state_machine_revision_id is defined %}
+      StateMachineRevisionId: {{ state_machine_version.state_machine_revision_id | trim }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for state_machine_version in sceptre_user_data.state_machine_versions %}
+{%- set state_machine_version_name = state_machine_version.name %}
+  {{ state_machine_version_name }}:
+    Description: The ARN for {{ state_machine_version_name }}
+    Value:
+      Ref: {{ state_machine_version_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ state_machine_version_name }}"
+  {{ state_machine_version_name }}Arn:
+    Description: The ARN for {{ state_machine_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ state_machine_version_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ state_machine_version_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2025-07-07
+Type: AWS::StepFunctions::StateMachineVersion
+Properties:
+  Description: String
+  StateMachineArn: String
+  StateMachineRevisionId: String
+#}
