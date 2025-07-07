@@ -1,0 +1,61 @@
+---
+template:
+  type: file
+  path: stepfunctions/state_machine.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  description: "StepFunctions State Machines for testing purposes"
+  source_repo_url: "{{ git_repo }}"
+  state_machines:
+    - name: StepFunction1
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/stepfunctions-role"
+      definition_json: |
+        {
+          "Comment": "A simple data processing state machine",
+          "StartAt": "ProcessData",
+          "States": {
+            "ProcessData": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::activity:{{ project_code }}-process-data-activity",
+              "End": true
+            }
+          }
+        }
+      encryption_configuration:
+        type: KMS
+        kms_key_id: "alias/aws/sfn"
+        kms_data_key_reuse_period_seconds: 900
+      logging_configuration:
+        level: ALL
+        include_execution_data: true
+        destinations:
+          - cloudwatch_logs_loggroup:
+              loggroup_arn: "!Sub arn:aws:logs::${AWS::AccountId}:log-group:/aws/step-functions/{{ project_code }}-data-processing-sfn:*"
+      tracing_configuration:
+        enabled: true
+      tags:
+        Environment: Test
+        Owner: "{{ stack_group_config.owner | default('DevOps') }}"
+        Purpose: DataProcessing
+
+    - name: StepFunction2
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/stepfunctions-role"
+      definition_s3_location:
+        bucket: "{{ stack_group_config.project_code }}-sfn-definitions"
+        key: "backup-state-machine.json"
+      state_machine_type: STANDARD
+      tags:
+        Environment: Test
+        Owner: "{{ stack_group_config.owner | default('DevOps') }}"
+        Purpose: Backup
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Owner: "{{ stack_group_config.owner | default('DevOps') }}"
+  Test: stepfunctions-state-machine

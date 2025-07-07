@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('StepFunctions StateMachine(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('StepFunctions State Machine(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for state_machine in sceptre_user_data.state_machines %}
 {%- set state_machine_name = state_machine.name %}
   {{ state_machine_name }}:
@@ -12,9 +11,12 @@ Resources:
     UpdateReplacePolicy: {{ state_machine.update_replace_policy | default('Delete') }}
     Properties:
       RoleArn: {{ state_machine.role_arn }}
-{%- if state_machine.definition is defined %}
+{%- if state_machine.definition_json is defined %}
+      Definition: |
+        {{ state_machine.definition_json | indent(width=8, first=false) }}
+{%- elif state_machine.definition is defined %}
       Definition:
-{{ state_machine.definition | indent(width=8, first=true) }}
+        {{ state_machine.definition | indent(width=8, first=false) }}
 {%- endif %}
 {%- if state_machine.definition_s3_location is defined %}
       DefinitionS3Location:
@@ -25,31 +27,41 @@ Resources:
 {%- endif %}
 {%- endif %}
 {%- if state_machine.definition_string is defined %}
-      DefinitionString:
-{{ state_machine.definition_string | indent(width=8, first=true) }}
+      DefinitionString: |-
+        {{ state_machine.definition_string | indent(width=8, first=false) }}
 {%- endif %}
 {%- if state_machine.definition_substitutions is defined %}
       DefinitionSubstitutions:
-{%- for key, value in state_machine.definition_substitutions %}
+{%- for key, value in state_machine.definition_substitutions.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- if state_machine.logging_configuration is defined %}
+{%- if state_machine.encryption_configuration is defined %}{# BEGIN if state_machine.encryption_configuration is defined #}
+      EncryptionConfiguration:
+        Type: {{ state_machine.encryption_configuration.type }}
+{%- if state_machine.encryption_configuration.kms_data_key_reuse_period_seconds is defined %}
+        KmsDataKeyReusePeriodSeconds: {{ state_machine.encryption_configuration.kms_data_key_reuse_period_seconds }}
+{%- endif %}
+{%- if state_machine.encryption_configuration.kms_key_id is defined %}
+        KmsKeyId: {{ state_machine.encryption_configuration.kms_key_id }}
+{%- endif %}
+{%- endif %}{# END if state_machine.encryption_configuration is defined #}
+{%- if state_machine.logging_configuration is defined %}{# BEGIN if state_machine.logging_configuration is defined #}
       LoggingConfiguration:
-{%- if state_machine.logging_configuration.destinations is defined %}
+{%- if state_machine.logging_configuration.destinations is defined %}{# BEGIN if state_machine.logging_configuration.destinations is defined #}
         Destinations:
 {%- for destination in state_machine.logging_configuration.destinations %}
           - CloudWatchLogsLogGroup:
               LogGroupArn: {{ destination.cloudwatch_logs_loggroup.loggroup_arn }}{# must end with :* #}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if state_machine.logging_configuration.destinations is defined #}
 {%- if state_machine.logging_configuration.include_execution_data is defined %}
         IncludeExecutionData: {{ state_machine.logging_configuration.include_execution_data }}
 {%- endif %}
 {%- if state_machine.logging_configuration.level is defined %}
         Level: {{ state_machine.logging_configuration.level }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if state_machine.logging_configuration is defined #}
 {%- if state_machine.state_machine_name is defined %}
       StateMachineName: {{ state_machine.state_machine_name }}
 {%- endif %}
@@ -58,7 +70,7 @@ Resources:
 {%- endif %}
 {%- if state_machine.tracing_configuration is defined %}
       TracingConfiguration:
-        Enabled: {{ state_machine.tracing_configuration.enabled }}
+        Enabled: {{ state_machine.tracing_configuration.enabled | lower }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -72,7 +84,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for state_machine in sceptre_user_data.state_machines %}
 {%- set state_machine_name = state_machine.name %}
   {{ state_machine_name }}:
@@ -82,7 +93,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ state_machine_name }}"
-
   {{ state_machine_name }}Name:
     Description: The Name for {{ state_machine_name }}
     Value:
@@ -92,5 +102,46 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ state_machine_name }}-Name"
-
-{%- endfor %}
+  {{ state_machine_name }}StateMachineRevisionId:
+    Description: Identifier for a state machine revision for {{ state_machine_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ state_machine_name }}
+        - StateMachineRevisionId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ state_machine_name }}-StateMachineRevisionId"
+{%- endfor %}{#
+# Supported structure as of 2025-07-07
+Type: AWS::StepFunctions::StateMachine
+Properties:
+  Definition: Json
+  DefinitionS3Location:
+    Bucket: String
+    Key: String
+    Version: String
+  DefinitionString:
+    String
+  DefinitionSubstitutions:
+    Key: Value
+  EncryptionConfiguration:
+    KmsDataKeyReusePeriodSeconds: Integer
+    KmsKeyId: String
+    Type: String
+  LoggingConfiguration:
+    Destinations:
+      -
+        CloudWatchLogsLogGroup:
+          LogGroupArn: String
+    IncludeExecutionData: Boolean
+    Level: String
+  RoleArn: String
+  StateMachineName: String
+  StateMachineType: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TracingConfiguration:
+    Enabled: Boolean
+#}

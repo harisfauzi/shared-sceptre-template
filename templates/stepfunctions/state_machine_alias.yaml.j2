@@ -1,0 +1,82 @@
+---
+Description: {{sceptre_user_data.description|default('StepFunctions State Machine Alias(es) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for state_machine_alias in sceptre_user_data.state_machine_aliases %}
+{%- set state_machine_alias_name = state_machine_alias.name %}
+  {{ state_machine_alias_name }}:
+    Type: AWS::StepFunctions::StateMachineAlias
+    DeletionPolicy: {{ state_machine_alias.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ state_machine_alias.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if state_machine_alias.deployment_preference is defined %}{# BEGIN if state_machine_alias.deployment_preference is defined #}
+      DeploymentPreference:
+        StateMachineVersionArn: {{ state_machine_alias.deployment_preference.state_machine_version_arn | trim }}
+        Type: {{ state_machine_alias.deployment_preference.type }}
+{%- if state_machine_alias.deployment_preference.alarms is defined %}{# BEGIN if state_machine_alias.deployment_preference.alarms is defined #}
+        Alarms:
+{%- for alarm in state_machine_alias.deployment_preference.alarms %}
+          - {{ alarm }}
+{%- endfor %}
+{%- endif %}{# END if state_machine_alias.deployment_preference.alarms is defined #}
+{%- if state_machine_alias.deployment_preference.interval is defined %}
+        Interval: {{ state_machine_alias.deployment_preference.interval }}
+{%- endif %}
+{%- if state_machine_alias.deployment_preference.percentage is defined %}
+        Percentage: {{ state_machine_alias.deployment_preference.percentage }}
+{%- endif %}
+{%- endif %}{# END if state_machine_alias.deployment_preference is defined #}
+{%- if state_machine_alias.description is defined %}
+      Description: {{ state_machine_alias.description }}
+{%- endif %}
+{%- if state_machine_alias.state_machine_alias_name is defined %}
+      Name: {{ state_machine_alias.state_machine_alias_name }}
+{%- endif %}
+{%- if state_machine_alias.routing_configuration is defined %}{# BEGIN if state_machine_alias.routing_configuration is defined #}
+      RoutingConfiguration:
+{%- for routing_configuration in state_machine_alias.routing_configuration %}
+        -
+          StateMachineVersionArn: {{ routing_configuration.state_machine_version_arn | trim }}
+          Weight: {{ routing_configuration.weight }}
+{%- endfor %}
+{%- endif %}{# END if state_machine_alias.routing_configuration is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for state_machine_alias in sceptre_user_data.state_machine_aliases %}
+{%- set state_machine_alias_name = state_machine_alias.name %}
+  {{ state_machine_alias_name }}:
+    Description: The ARN for {{ state_machine_alias_name }}
+    Value:
+      Ref: {{ state_machine_alias_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ state_machine_alias_name }}"
+  {{ state_machine_alias_name }}Arn:
+    Description: The ARN for {{ state_machine_alias_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ state_machine_alias_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ state_machine_alias_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2025-07-07
+Type: AWS::StepFunctions::StateMachineAlias
+Properties:
+  DeploymentPreference:
+    Alarms:
+      - String
+    Interval: Integer
+    Percentage: Integer
+    StateMachineVersionArn: String
+    Type: String
+  Description: String
+  Name: String
+  RoutingConfiguration:
+    -
+      StateMachineVersionArn: String
+      Weight: Integer
+#}
