@@ -1,0 +1,19 @@
+---
+template:
+  type: file
+  path: glue/registry.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Registries for development and testing"
+  data_quality_registries:
+    - name: CustomerDataRegistry
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      registry_name: "customer_data_registry"
+      description: "Registry for customer data schemas"
+      tags:
+        Environment: Development
+        CreatedBy: Sceptre
+        DataDomain: Customer

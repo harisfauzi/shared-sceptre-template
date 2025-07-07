@@ -1,0 +1,57 @@
+---
+template:
+  type: file
+  path: glue/trigger.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Trigger Configuration"
+  triggers:
+    - name: "SampleJobTrigger"
+      type: "ON_DEMAND"
+      description: "Trigger for sample ETL job"
+      actions:
+        - job_name: "sample-etl-job"
+          arguments: |
+            --job-bookmark-option: "job-bookmark-disable"
+            --TempDir: "s3://sample-bucket-${AWS::AccountId}/temp/"
+          timeout: 2880
+          notification_property:
+            notify_delay_after: 600
+      tags:
+        Environment: "dev"
+        Owner: "team-data"
+    - name: "SampleCrawlerTrigger"
+      type: "ON_DEMAND"
+      description: "Trigger for sample crawler"
+      actions:
+        - crawler_name: "sample-crawler"
+      tags:
+        Environment: "dev"
+        Owner: "team-data"
+    - name: "ScheduledJobTrigger"
+      type: "SCHEDULED"
+      schedule: "cron(0 12 * * ? *)"  # Every day at 12:00 UTC
+      start_on_creation: true
+      actions:
+        - job_name: "scheduled-etl-job"
+          timeout: 2880
+      tags:
+        Environment: "prod"
+        Owner: "team-data"
+    - name: "ConditionalTrigger"
+      type: "CONDITIONAL"
+      predicate:
+        logical: "AND"
+        conditions:
+          - job_name: "dependency-job"
+            state: "SUCCEEDED"
+          - crawler_name: "dependency-crawler"
+            crawl_state: "SUCCEEDED"
+      actions:
+        - job_name: "dependent-job"
+          timeout: 2880
+      tags:
+        Environment: "prod"
+        Owner: "team-data"

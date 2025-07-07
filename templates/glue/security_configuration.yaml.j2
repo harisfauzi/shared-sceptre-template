@@ -1,0 +1,61 @@
+---
+Description: {{sceptre_user_data.description|default('Glue Security Configuration(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for security_configuration in sceptre_user_data.security_configurations %}
+{%- set security_configuration_name = security_configuration.name %}
+  {{ security_configuration_name }}:
+    Type: AWS::Glue::SecurityConfiguration
+    DeletionPolicy: {{ security_configuration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ security_configuration.update_replace_policy | default('Delete') }}
+    Properties:
+      EncryptionConfiguration:
+{%- if security_configuration.encryption_configuration.cloudwatch_encryption is defined %}{# BEGIN if security_configuration.encryption_configuration.cloudwatch_encryption is defined #}
+        CloudWatchEncryption:
+{%- if security_configuration.encryption_configuration.cloudwatch_encryption.cloudwatch_encryption_mode is defined %}
+          CloudWatchEncryptionMode: {{ security_configuration.encryption_configuration.cloudwatch_encryption.cloudwatch_encryption_mode }}
+{%- endif %}
+{%- if security_configuration.encryption_configuration.cloudwatch_encryption.kms_key_arn is defined %}
+          KmsKeyArn: {{ security_configuration.encryption_configuration.cloudwatch_encryption.kms_key_arn }}
+{%- endif %}
+{%- endif %}{# END if security_configuration.encryption_configuration.cloudwatch_encryption is defined #}
+{%- if security_configuration.encryption_configuration.job_bookmarks_encryption is defined %}{# BEGIN if security_configuration.encryption_configuration.job_bookmarks_encryption is defined #}
+        JobBookmarksEncryption:
+{%- if security_configuration.encryption_configuration.job_bookmarks_encryption.job_bookmarks_encryption_mode is defined %}
+          JobBookmarksEncryptionMode: {{ security_configuration.encryption_configuration.job_bookmarks_encryption.job_bookmarks_encryption_mode }}
+{%- endif %}
+{%- if security_configuration.encryption_configuration.job_bookmarks_encryption.kms_key_arn is defined %}
+          KmsKeyArn: {{ security_configuration.encryption_configuration.job_bookmarks_encryption.kms_key_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if security_configuration.encryption_configuration.job_bookmarks_encryption is defined #}
+{%- if security_configuration.encryption_configuration.s3_encryptions is defined %}{# BEGIN if security_configuration.encryption_configuration.s3_encryptions is defined #}
+        S3Encryptions:
+{%- for s3_encryption in security_configuration.encryption_configuration.s3_encryptions %}
+          -
+{%- if s3_encryption.kms_key_arn is defined %}
+            KmsKeyArn: {{ s3_encryption.kms_key_arn | trim }}
+{%- endif %}
+{%- if s3_encryption.s3_encryption_mode is defined %}
+            S3EncryptionMode: {{ s3_encryption.s3_encryption_mode }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if security_configuration.encryption_configuration.s3_encryptions is defined #}
+      Name: {{ security_configuration.security_configuration_name }}
+{%- endfor %}{#
+# Supported structure as of 2025-07-07:
+Type: AWS::Glue::SecurityConfiguration
+Properties:
+  EncryptionConfiguration:
+    CloudWatchEncryption:
+      CloudWatchEncryptionMode: String
+      KmsKeyArn: String
+    JobBookmarksEncryption:
+      JobBookmarksEncryptionMode: String
+      KmsKeyArn: String
+    S3Encryptions:
+      -
+        KmsKeyArn: String
+        S3EncryptionMode: String
+  Name: String
+#}

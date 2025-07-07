@@ -1,0 +1,47 @@
+---
+template:
+  type: file
+  path: glue/data_catalog_encryption_settings.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Data Catalog Encryption Settings for development and testing"
+  
+  # List of data catalog encryption settings
+  data_catalog_encryption_settings:
+    # Development environment encryption settings
+    - name: DevelopmentEncryptionSettings
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      catalog_id: default-catalog
+      
+      # Connection password encryption configuration
+      data_catalog_encryption_settings:
+        connection_password_encryption:
+          kms_key_id: "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/dev-encryption-key"
+          return_connection_password_encrypted: true
+        
+        # Encryption at rest configuration
+        encryption_at_rest:
+          catalog_encryption_mode: "SSE-KMS"
+          catalog_encryption_service_role: "arn:aws:iam::${AWS::AccountId}:role/service-role/AWSGlueServiceRole"
+          sse_aws_kms_key_id: "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/dev-encryption-key"
+    
+    # Production environment encryption settings
+    - name: ProductionEncryptionSettings
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      catalog_id: dummy-catalog
+      
+      # Production encryption settings with enhanced security
+      data_catalog_encryption_settings:
+        connection_password_encryption:
+          kms_key_id: "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/prod-encryption-key"
+          return_connection_password_encrypted: true
+        
+        # Enhanced encryption at rest configuration
+        encryption_at_rest:
+          catalog_encryption_mode: "SSE-KMS"
+          catalog_encryption_service_role: "arn:aws:iam::${AWS::AccountId}:role/service-role/AWSGlueServiceRole"
+          sse_aws_kms_key_id: "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/prod-encryption-key"

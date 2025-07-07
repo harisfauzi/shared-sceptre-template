@@ -1,0 +1,135 @@
+---
+Description: {{sceptre_user_data.description|default('Glue ML Transform(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for transform in sceptre_user_data.ml_transforms %}
+{%- set transform_name = transform.name %}
+  {{ transform_name }}:
+    Type: AWS::Glue::MLTransform
+    DeletionPolicy: {{ transform.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transform.update_replace_policy | default('Delete') }}
+    Properties:
+      InputRecordTables:
+{%- if transform.input_record_tables.glue_tables is defined %}{# BEGIN if transform.input_record_tables.glue_tables is defined #}
+        GlueTables:
+{%- for glue_table in transform.input_record_tables.glue_tables %}{# BEGIN for glue_table in transform.input_record_tables.glue_tables #}
+          -
+            DatabaseName: {{ glue_table.database_name }}
+            TableName: {{ glue_table.table_name }}
+{%- if glue_table.catalog_id is defined %}
+            CatalogId: {{ glue_table.catalog_id }}
+{%- endif %}
+{%- if glue_table.connection_name is defined %}
+            ConnectionName: {{ glue_table.connection_name }}
+{%- endif %}
+{%- endfor %}{# END for glue_table in transform.input_record_tables.glue_tables #}
+{%- endif %}{# END if transform.input_record_tables.glue_tables is defined #}
+      Role: {{ transform.role | trim }}
+      TransformParameters:
+        TransformType: FIND_MATCHES
+        FindMatchesParameters:
+          PrimaryKeyColumnName: {{ transform.transform_parameters.find_matches_parameters.primary_key_column_name }}
+{%- if transform.transform_parameters.find_matches_parameters.accuracy_cost_tradeoff is defined %}
+          AccuracyCostTradeoff: {{ transform.transform_parameters.find_matches_parameters.accuracy_cost_tradeoff }}
+{%- endif %}
+{%- if transform.transform_parameters.find_matches_parameters.enforce_provided_labels is defined %}
+          EnforceProvidedLabels: {{ transform.transform_parameters.find_matches_parameters.enforce_provided_labels }}
+{%- endif %}
+{%- if transform.transform_parameters.find_matches_parameters.precision_recall_tradeoff is defined %}
+          PrecisionRecallTradeoff: {{ transform.transform_parameters.find_matches_parameters.precision_recall_tradeoff }}
+{%- endif %}
+{%- if transform.description is defined %}
+      Description: {{ transform.description }}
+{%- endif %}
+{%- if transform.glue_version is defined %}
+      GlueVersion: {{ transform.glue_version }}
+{%- endif %}
+{%- if transform.max_capacity is defined %}
+      MaxCapacity: {{ transform.max_capacity }}
+{%- endif %}
+{%- if transform.max_retries is defined %}
+      MaxRetries: {{ transform.max_retries }}
+{%- endif %}
+{%- if transform.ml_transform_name is defined %}
+      Name: {{ transform.ml_transform_name }}
+{%- endif %}
+{%- if transform.number_of_workers is defined %}
+      NumberOfWorkers: {{ transform.number_of_workers }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if transform.tags is defined %}
+{%- for key,value in transform.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if transform.timeout is defined %}
+      Timeout: {{ transform.timeout }}
+{%- endif %}
+{%- if transform.transform_encryption is defined %}{# BEGIN if transform.transform_encryption is defined #}
+      TransformEncryption:
+{%- if transform.transform_encryption.ml_user_data_encryption is defined %}{# BEGIN if transform.transform_encryption.ml_user_data_encryption is defined #}
+        MLUserDataEncryption:
+          MLUserDataEncryptionMode: {{ transform.transform_encryption.ml_user_data_encryption.ml_user_data_encryption_mode }}
+{%- if transform.transform_encryption.ml_user_data_encryption.kms_key_id is defined %}
+          KmsKeyId: {{ transform.transform_encryption.ml_user_data_encryption.kms_key_id | trim }}
+{%- endif %}
+{%- endif %}{# END if transform.transform_encryption.ml_user_data_encryption is defined #}
+{%- if transform.transform_encryption.task_run_security_configuration_name is defined %}
+        TaskRunSecurityConfigurationName: {{ transform.transform_encryption.task_run_security_configuration_name }}
+{%- endif %}
+{%- endif %}{# END if transform.transform_encryption is defined #}
+{%- if transform.worker_type is defined %}
+      WorkerType: {{ transform.worker_type }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for transform in sceptre_user_data.ml_transforms %}
+{%- set transform_name = transform.name %}
+  {{ transform_name }}:
+    Description: Transform for {{ transform_name }}
+    Value:
+      Ref: {{ transform_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transform_name }}"
+{%- endfor %}{#
+# Supported structure as of 2025-07-03:
+Type: AWS::Glue::MLTransform
+Properties:
+  Description: String
+  GlueVersion: String
+  InputRecordTables:
+    GlueTables:
+      -
+        CatalogId: String
+        ConnectionName: String
+        DatabaseName: String
+        TableName: String
+  MaxCapacity: Number
+  MaxRetries: Integer
+  Name: String
+  NumberOfWorkers: Integer
+  Role: String
+  Tags:
+    - Key: String
+      Value: String
+  Timeout: Integer
+  TransformEncryption:
+    MLUserDataEncryption:
+      KmsKeyId: String
+      MLUserDataEncryptionMode: String
+    TaskRunSecurityConfigurationName: String
+  TransformParameters:
+    FindMatchesParameters:
+      AccuracyCostTradeoff: Number
+      EnforceProvidedLabels: Boolean
+      PrecisionRecallTradeoff: Number
+      PrimaryKeyColumnName: String
+    TransformType: String
+  WorkerType: String
+#}

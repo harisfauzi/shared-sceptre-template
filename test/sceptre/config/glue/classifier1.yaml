@@ -1,0 +1,48 @@
+---
+template:
+  type: file
+  path: glue/classifier.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Classifiers for testing"
+  classifiers:
+    # CSV Classifier Example
+    - name: TestCsvClassifier
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      csv_classifier:
+        allow_single_column: false
+        contains_header: 'PRESENT'
+        delimiter: "','"
+        disable_value_trimming: false
+        header: ["id", "name", "value"]
+        name: "test-csv-classifier"
+        quote_symbol: '""'
+
+    # Grok Classifier Example
+    - name: TestGrokClassifier
+      grok_classifier:
+        classification: "apache-access"
+        grok_pattern: "'%{COMMONAPACHELOG}'"
+        custom_patterns: |
+          CUSTOM_PATTERN %{WORD:word} %{NUMBER:num}
+        name: "test-grok-classifier"
+
+    # JSON Classifier Example
+    - name: TestJsonClassifier
+      json_classifier:
+        json_path: '$.store.book[*].author'
+        name: "test-json-classifier"
+
+    # XML Classifier Example
+    - name: TestXmlClassifier
+      xml_classifier:
+        classification: "test-xml"
+        row_tag: "book"
+        name: "test-xml-classifier"
+stack_tags:
+  Test: glue-classifier
+  Environment: Test
+  ManagedBy: Sceptre

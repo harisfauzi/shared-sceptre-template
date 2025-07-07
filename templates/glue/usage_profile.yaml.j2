@@ -1,0 +1,90 @@
+---
+{%- macro prep_configuration_object(config) %}
+{%- if config.allowed_values is defined %}
+AllowedValues:
+{%- for value in config.allowed_values %}
+  - {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if config.default_value is defined %}
+DefaultValue: {{ config.default_value }}
+{%- endif %}
+{%- if config.max_value is defined %}
+MaxValue: {{ config.max_value }}
+{%- endif %}
+{%- if config.min_value is defined %}
+MinValue: {{ config.min_value }}
+{%- endif %}
+{% endmacro %}
+Description: {{sceptre_user_data.description|default('Glue Usage Profile(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for usage_profile in sceptre_user_data.usage_profiles %}{# BEGIN for usage_profile in sceptre_user_data.usage_profiles #}
+{%- set usage_profile_name = usage_profile.name %}
+  {{ usage_profile_name }}:
+    Type: AWS::Glue::UsageProfile
+    DeletionPolicy: {{ usage_profile.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ usage_profile.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ usage_profile.usage_profile_name }}
+{%- if usage_profile.configuration is defined %}{# BEGIN if usage_profile.configuration is defined #}
+      Configuration:
+{%- if usage_profile.configuration.job_configuration is defined %}{# BEGIN if usage_profile.configuration.job_configuration is defined #}
+        JobConfiguration:
+          {{ prep_configuration_object(usage_profile.configuration.job_configuration) | indent(width=10, first=false) }}
+{%- endif %}{# END if usage_profile.configuration.job_configuration is defined #}
+{%- if usage_profile.configuration.session_configuration is defined %}{# BEGIN if usage_profile.configuration.session_configuration is defined #}
+        SessionConfiguration:
+          {{ prep_configuration_object(usage_profile.configuration.session_configuration) | indent(width=10, first=false) }}
+{%- endif %}{# END if usage_profile.configuration.session_configuration is defined #}
+{%- endif %}{# END if usage_profile.configuration is defined #}
+{%- if usage_profile.description is defined %}
+      Description: {{ usage_profile.description }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if usage_profile.tags is defined %}
+{%- for key,value in usage_profile.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}{# END for usage_profile in sceptre_user_data.usage_profiles #}
+
+Outputs:
+{%- for usage_profile in sceptre_user_data.usage_profiles %}
+{%- set usage_profile_name = usage_profile.name %}
+  {{ usage_profile_name }}CreatedOn:
+    Description: The date and time when the usage profile {{ usage_profile_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ usage_profile_name }}
+        - CreatedOn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ usage_profile_name }}-CreatedOn"
+{%- endfor %}{#
+# Supported structure as of 2025-07-07:
+Type: AWS::Glue::UsageProfile
+Properties:
+  Configuration:
+    JobConfiguration:
+      AllowedValues:
+        - String
+      DefaultValue: String
+      MaxValue: String
+      MinValue: String
+    SessionConfiguration:
+      AllowedValues:
+        - String
+      DefaultValue: String
+      MaxValue: String
+      MinValue: String
+  Description: String
+  Name: String
+  Tags:
+    - Key: String
+      Value: String
+#}

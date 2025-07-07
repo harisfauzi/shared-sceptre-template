@@ -63,11 +63,9 @@ Resources:
         Name: {{ classifier.xml_classifier.name }}
 {%- endif %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for classifier in sceptre_user_data.classifiers %}
 {%- set classifier_name = classifier.name %}
   {{ classifier_name }}:
@@ -77,5 +75,32 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ classifier_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-01:
+Type: AWS::Glue::Classifier
+Properties:
+  CsvClassifier:
+    AllowSingleColumn: Boolean
+    ContainsCustomDatatype:
+      - String
+    ContainsHeader: String
+    CustomDatatypeConfigured: Boolean
+    Delimiter: String
+    DisableValueTrimming: Boolean
+    Header:
+      - String
+    Name: String
+    QuoteSymbol: String
+  GrokClassifier:
+    Classification: String
+    CustomPatterns: String
+    GrokPattern: String
+    Name: String
+  JsonClassifier:
+    JsonPath: String
+    Name: String
+  XMLClassifier:
+    Classification: String
+    RowTag: String
+    Name: String
+#}

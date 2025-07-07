@@ -1,0 +1,35 @@
+---
+template:
+  type: file
+  path: glue/custom_entity_type.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Custom Entity Types for development and testing"
+  custom_entity_types:
+    - name: EmailPattern
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      custom_entity_type_name: "EmailPattern"
+      regex_string: |
+        "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}"
+      context_words:
+        - "email"
+        - "contact"
+        - "address"
+      tags:
+        Environment: Development
+        CreatedBy: Sceptre
+    - name: PhoneNumberPattern
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      custom_entity_type_name: "PhoneNumberPattern"
+      regex_string: "\\\\+?[1-9]\\\\d{1,14}"
+      context_words:
+        - "phone"
+        - "mobile"
+        - "contact"
+      tags:
+        Environment: Development
+        CreatedBy: Sceptre

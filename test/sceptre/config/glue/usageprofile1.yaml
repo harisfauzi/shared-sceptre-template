@@ -1,0 +1,47 @@
+---
+template:
+  type: file
+  path: glue/usage_profile.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Usage Profiles Configuration"
+  usage_profiles:
+    - name: "DefaultUsageProfile"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+      usage_profile_name: "default-usage-profile"
+      description: "Default configuration for Glue jobs and sessions"
+      configuration:
+        job_configuration:
+          allowed_values: ["G.1X", "G.2X", "G.4X"]
+          default_value: "G.1X"
+          max_value: "G.4X"
+          min_value: "G.1X"
+        session_configuration:
+          allowed_values: ["G.1X", "G.2X", "G.4X"]
+          default_value: "G.1X"
+      tags:
+        Environment: "dev"
+        Owner: "data-engineering"
+        ManagedBy: "sceptre"
+
+    - name: "MemoryOptimizedProfile"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+      usage_profile_name: "memory-optimized-profile"
+      description: "Memory-optimized configuration for ETL jobs"
+      configuration:
+        job_configuration:
+          allowed_values: ["G.2X", "G.4X", "G.8X"]
+          default_value: "G.4X"
+          max_value: "G.8X"
+          min_value: "G.2X"
+        session_configuration:
+          allowed_values: ["G.2X", "G.4X"]
+          default_value: "G.2X"
+      tags:
+        Environment: "prod"
+        WorkloadType: "etl"
+        ManagedBy: "sceptre"
