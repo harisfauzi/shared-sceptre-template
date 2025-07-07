@@ -1,0 +1,66 @@
+---
+template:
+  type: file
+  path: glue/table.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Sample Glue Table Configuration"
+  tables:
+    - name: SampleTable
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      catalog_id: "${AWS::AccountId}"
+      database_name: "sample_database"
+      table_input:
+        description: "Sample table for testing"
+        name: "sample_table"
+        owner: "owner"
+        parameters: |
+          EXTERNAL: "TRUE"
+          classification: "parquet"
+        partition_keys:
+          - name: "year"
+            type: "string"
+            comment: "Year partition"
+          - name: "month"
+            type: "string"
+            comment: "Month partition"
+        storage_descriptor:
+          columns:
+            - name: "id"
+              type: "string"
+              comment: "Unique identifier"
+            - name: "name"
+              type: "string"
+              comment: "Name field"
+          compressed: false
+          input_format: "org.apache.hadoop.mapred.TextInputFormat"
+          location: "s3://sample-bucket/data/sample_table"
+          output_format: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+          parameters: |
+            CrawlerSchemaDeserializerVersion: "1.0"
+            CrawlerSchemaSerializerVersion: "1.0"
+            classification: "parquet"
+            compressionType: "none"
+            typeOfData: "file"
+            recordCount: "0"
+          number_of_buckets: 0
+          schema_reference:
+            schema_id:
+              schema_arn: "arn:aws:glue:${AWS::Region}:${AWS::AccountId}:schema/sample-database/sample-schema"
+        mongo_db_targets:
+          - connection_name: "mongo-connection"
+            path: "database.collection"
+        
+        # S3 targets
+        s3_targets:
+          - connection_name: "s3-connection"
+            dlq_event_queue_arn: "!Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:s3-dlq-queue"
+            event_queue_arn: "!Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:s3-event-queue"
+            exclusions:
+              - "'**/exclude/**'"
+              - "'**/_temporary/**'"
+            path: "s3://test-bucket/path/"
+            sample_size: 100

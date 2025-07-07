@@ -1,0 +1,84 @@
+---
+Description: {{sceptre_user_data.description|default('Glue Schema(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for schema in sceptre_user_data.schemas %}
+{%- set schema_name = schema.name %}
+  {{ schema_name }}:
+    Type: AWS::Glue::Schema
+    DeletionPolicy: {{ schema.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ schema.update_replace_policy | default('Delete') }}
+    Properties:
+      Compatibility: {{ schema.compatibility }}
+      DataFormat: {{ schema.data_format }}
+{%- if schema.checkpoint_version is defined %}
+      CheckpointVersion:
+{%- if schema.checkpoint_version.is_latest is defined %}
+        IsLatest: {{ schema.checkpoint_version.is_latest | lower }}
+{%- endif %}
+{%- if schema.checkpoint_version.version_number is defined %}
+        VersionNumber: {{ schema.checkpoint_version.version_number }}
+{%- endif %}
+{%- endif %}
+{%- if schema.description is defined %}
+      Description: {{ schema.description }}
+{%- endif %}
+{%- if schema.schema_name is defined %}
+      Name: {{ schema.schema_name }}
+{%- endif %}
+{%- if schema.registry is defined %}
+      Registry:
+{%- if schema.registry.arn is defined %}
+        Arn: {{ schema.registry.arn }}
+{%- endif %}
+{%- if schema.registry.name is defined %}
+        Name: {{ schema.registry.name }}
+{%- endif %}
+{%- endif %}
+{%- if schema.schema_definition is defined %}
+      SchemaDefinition: |
+        {{ schema.schema_definition | indent(width=8, first=false) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if schema.tags is defined %}
+{%- for key,value in schema.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for schema in sceptre_user_data.schemas %}
+{%- set schema_name = schema.name %}
+  {{ schema_name }}VersionId:
+    Description: Version Id for {{ schema_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ schema_name }}
+        - VersionId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ schema_name }}-VersionId"
+{%- endfor %}{#
+# Supported structure as of 2025-07-07:
+Type: AWS::Glue::Schema
+Properties:
+  CheckpointVersion:
+    IsLatest: Boolean
+    VersionNumber: Integer
+  Compatibility: String
+  DataFormat: String
+  Description: String
+  Name: String
+  Registry:
+    Arn: String
+    Name: String
+  SchemaDefinition: String
+  Tags:
+    - Key: String
+      Value: String
+#}

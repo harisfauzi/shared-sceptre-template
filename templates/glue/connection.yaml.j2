@@ -13,11 +13,87 @@ Resources:
       CatalogId: {{ connection.catalog_id | trim }}
       ConnectionInput:
         ConnectionType: {{ connection.connection_input.connection_type }}
+{%- if connection.connection_input.athena_properties_json is defined %}
+        AthenaProperties: '{{ connection.connection_input.athena_properties_json }}'
+{%- elif connection.connection_input.athena_properties is defined %}
+        AthenaProperties:
+          {{ connection.connection_input.athena_properties | indent(width=10, first=false) }}
+{%- endif %}
+{%- if connection.connection_input.authentication_configuration is defined %}{# BEGIN if connection.connection_input.authentication_configuration is defined #}
+        AuthenticationConfiguration:
+          AuthenticationType: {{ connection.connection_input.authentication_configuration.authentication_type }}
+{%- if connection.connection_input.authentication_configuration.basic_authentication_credentials is defined %}{# BEGIN if connection.connection_input.authentication_configuration.basic_authentication_credentials is defined #}
+          BasicAuthenticationCredentials:
+{%- if connection.connection_input.authentication_configuration.basic_authentication_credentials.password is defined %}
+            Password: {{ connection.connection_input.authentication_configuration.basic_authentication_credentials.password }}
+{%- endif %}
+{%- if connection.connection_input.authentication_configuration.basic_authentication_credentials.username is defined %}
+            Username: {{ connection.connection_input.authentication_configuration.basic_authentication_credentials.username }}
+{%- endif %}
+{%- endif %}{# END if connection.connection_input.authentication_configuration.basic_authentication_credentials is defined #}
+{%- if connection.connection_input.authentication_configuration.custom_authentication_credentials_json is defined %}{# BEGIN if connection.connection_input.authentication_configuration.custom_authentication_credentials_json is defined #}
+          CustomAuthenticationCredentials: {{ connection.connection_input.authentication_configuration.custom_authentication_credentials_json }}
+{%- elif connection.connection_input.authentication_configuration.custom_authentication_credentials is defined %}{# ELSE if connection.connection_input.authentication_configuration.custom_authentication_credentials is defined #}
+          CustomAuthenticationCredentials:
+            {{ connection.connection_input.authentication_configuration.custom_authentication_credentials | indent(width=12, first=false) }}
+{%- endif %}{# END if connection.connection_input.authentication_configuration.custom_authentication_credentials is defined #}
+{%- if connection.connection_input.authentication_configuration.kms_key_arn is defined %}
+          KmsKeyArn: {{ connection.connection_input.authentication_configuration.kms_key_arn | trim }}
+{%- endif %}
+{%- if connection.connection_input.authentication_configuration.oauth2_properties is defined %}{# BEGIN if connection.connection_input.authentication_configuration.oauth2_properties is defined #}
+          OAuth2Properties:
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.authorization_code_properties is defined %}{# BEGIN if connection.connection_input.authentication_configuration.oauth2_properties.authorization_code_properties is defined #}
+            AuthorizationCodeProperties:
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.authorization_code_properties.authorization_code is defined %}
+              AuthorizationCode: {{ connection.connection_input.authentication_configuration.oauth2_properties.authorization_code_properties.authorization_code }}
+{%- endif %}
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.authorization_code_properties.redirect_uri is defined %}
+              RedirectUri: {{ connection.connection_input.authentication_configuration.oauth2_properties.authorization_code_properties.redirect_uri }}
+{%- endif %}
+{%- endif %}{# END if connection.connection_input.authentication_configuration.oauth2_properties.authorization_code_properties is defined #}
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_client_application is defined %}{# BEGIN if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_client_application is defined #}
+            OAuth2ClientApplication:
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_client_application.aws_managed_client_application_reference is defined %}
+              AWSManagedClientApplicationReference: {{ connection.connection_input.authentication_configuration.oauth2_properties.oauth2_client_application.aws_managed_client_application_reference }}
+{%- endif %}
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_client_application.user_managed_client_application_client_id is defined %}
+              UserManagedClientApplicationClientId: {{ connection.connection_input.authentication_configuration.oauth2_properties.oauth2_client_application.user_managed_client_application_client_id }}
+{%- endif %}
+{%- endif %}{# END if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_client_application is defined #}
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_credentials is defined %}{# BEGIN if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_credentials is defined #}
+            OAuth2Credentials:
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_credentials.access_token is defined %}
+              AccessToken: {{ connection.connection_input.authentication_configuration.oauth2_properties.oauth2_credentials.access_token }}
+{%- endif %}
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_credentials.jwt_token is defined %}
+              JwtToken: {{ connection.connection_input.authentication_configuration.oauth2_properties.oauth2_credentials.jwt_token }}
+{%- endif %}
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_credentials.refresh_token is defined %}
+              RefreshToken: {{ connection.connection_input.authentication_configuration.oauth2_properties.oauth2_credentials.refresh_token }}
+{%- endif %}
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_credentials.user_managed_client_application_client_secret is defined %}
+              UserManagedClientApplicationClientSecret: {{ connection.connection_input.authentication_configuration.oauth2_properties.oauth2_credentials.user_managed_client_application_client_secret }}
+{%- endif %}
+{%- endif %}{# END if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_credentials is defined #}
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.oauth2_grant_type is defined %}
+            OAuth2GrantType: {{ connection.connection_input.authentication_configuration.oauth2_properties.oauth2_grant_type }}
+{%- endif %}
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.token_url is defined %}
+            TokenUrl: {{ connection.connection_input.authentication_configuration.oauth2_properties.token_url }}
+{%- endif %}
+{%- if connection.connection_input.authentication_configuration.oauth2_properties.token_url_parameters_map is defined %}
+            TokenUrlParametersMap: {{ connection.connection_input.authentication_configuration.oauth2_properties.token_url_parameters_map | to_json }}
+{%- endif %}
+{%- endif %}{# END if connection.connection_input.authentication_configuration.oauth2_properties is defined #}
+{%- if connection.connection_input.authentication_configuration.secret_arn is defined %}
+          SecretArn: {{ connection.connection_input.authentication_configuration.secret_arn }}
+{%- endif %}
+{%- endif %}{# END if connection.connection_input.authentication_configuration is defined #}
 {%- if connection.connection_input.connection_properties_json is defined %}
-        ConnectionProperties: '{{ connection.connection_input.connection_properties_json }}'
+        ConnectionProperties: {{ connection.connection_input.connection_properties_json }}
 {%- elif connection.connection_input.connection_properties is defined %}
         ConnectionProperties:
-{{ connection.connection_input.connection_properties | indent(width=10, first=true) }}
+          {{ connection.connection_input.connection_properties | indent(width=10, first=false) }}
 {%- endif %}
 {%- if connection.connection_input.description is defined %}
         Description: {{ connection.connection_input.description }}
@@ -46,11 +122,30 @@ Resources:
           SubnetId: {{ connection.connection_input.physical_connection_requirements.subnet_id | trim }}
 {%- endif %}
 {%- endif %}
-
+{%- if connection.connection_input.python_properties_json is defined %}
+        PythonProperties: {{ connection.connection_input.python_properties_json }}
+{%- elif connection.connection_input.python_properties is defined %}
+        PythonProperties:
+          {{ connection.connection_input.python_properties | indent(width=10, first=false) }}
+{%- endif %}
+{%- if connection.connection_input.spark_properties_json is defined %}
+        SparkProperties: {{ connection.connection_input.spark_properties_json }}
+{%- elif connection.connection_input.spark_properties is defined %}
+        SparkProperties:
+          {{ connection.connection_input.spark_properties | indent(width=10, first=false) }}
+{%- endif %}
+{%- if connection.connection_input.validate_credentials is defined %}
+        ValidateCredentials: {{ connection.connection_input.validate_credentials | lower }}
+{%- endif %}
+{%- if connection.connection_input.validate_for_compute_environments is defined %}
+        ValidateForComputeEnvironments:
+{%- for env in connection.connection_input.validate_for_compute_environments %}
+          - {{ env }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for connection in sceptre_user_data.connections %}
 {%- set connection_name = connection.name %}
   {{ connection_name }}:
@@ -60,5 +155,50 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ connection_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-01:
+Type: AWS::Glue::Connection
+Properties:
+  CatalogId: String
+  ConnectionInput:
+    AthenaProperties: Json
+    AuthenticationConfiguration:
+      AuthenticationType: String
+      BasicAuthenticationCredentials:
+        Password: String
+        Username: String
+      CustomAuthenticationCredentials: Json
+      KmsKeyArn: String
+      OAuth2Properties:
+        AuthorizationCodeProperties:
+          AuthorizationCode: String
+          RedirectUri: String
+        OAuth2ClientApplication:
+          AWSManagedClientApplicationReference: String
+          UserManagedClientApplicationClientId: String
+        OAuth2Credentials:
+          AccessToken: String
+          JwtToken: String
+          RefreshToken: String
+          UserManagedClientApplicationClientSecret: String
+        OAuth2GrantType: String
+        TokenUrl: String
+        TokenUrlParametersMap: Json
+      SecretArn: String
+    ConnectionProperties: Json
+    ConnectionType: String
+    Description: String
+    MatchCriteria:
+      - String
+    Name: String
+    PhysicalConnectionRequirements:
+      AvailabilityZone: String
+      SecurityGroupIdList:
+        - String
+      SubnetId: String
+    PythonProperties: Json
+    SparkProperties: Json
+    ValidateCredentials: Boolean
+    ValidateForComputeEnvironments:
+      - String
+#}

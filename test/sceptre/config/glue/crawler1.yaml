@@ -1,0 +1,120 @@
+---
+template:
+  type: file
+  path: glue/crawler.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  crawlers:
+    - name: TestCrawler
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      role: "!Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:role/GlueServiceRole"
+      
+      # Basic crawler properties
+      classifiers: 
+        - "example-classifier-1"
+        - "example-classifier-2"
+      configuration: >
+        '{"Version":1.0,"CrawlerOutput":{"Partitions":{"AddOrUpdateBehavior":"InheritFromTable"}}}'
+      crawler_security_configuration: "example-security-config"
+      database_name: "test_database"
+      description: "Test crawler with all features"
+      
+      # Lake Formation configuration
+      lake_formation_configuration:
+        account_id: "!Sub ${AWS::AccountId}"
+        use_lake_formation_credentials: true
+      
+      # Recrawl policy
+      recrawl_policy:
+        recrawl_behavior: "CRAWL_EVERYTHING"
+      
+      # Schedule
+      schedule:
+        schedule_expression: "cron(0 12 * * ? *)"
+      
+      # Schema change policy
+      schema_change_policy:
+        delete_behavior: "LOG"
+        update_behavior: "UPDATE_IN_DATABASE"
+      
+      # Table prefix
+      table_prefix: "test_prefix_"
+      
+      # Tags
+      tags:
+        Environment: "Test"
+        Department: "Engineering"
+      
+      # Targets - testing all target types
+      targets:
+        # Catalog targets
+        catalog_targets:
+          - connection_name: "test-connection"
+            database_name: "source_db"
+            dlq_event_queue_arn: "!Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:dlq-queue"
+            event_queue_arn: "!Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:event-queue"
+            tables:
+              - "table1"
+              - "table2"
+        
+        # Delta targets
+        delta_targets:
+          - connection_name: "delta-connection"
+            create_native_delta_table: true
+            delta_tables:
+              - "s3://delta-lake/table1"
+              - "s3://delta-lake/table2"
+            write_manifest: true
+        
+        # DynamoDB targets
+        dynamo_db_targets:
+          - path: "test-table"
+        
+        # Hudi targets
+        hudi_targets:
+          - connection_name: "hudi-connection"
+            exclusions:
+              - "'**/exclude/**'"
+            maximum_traversal_depth: 10
+            paths:
+              - "s3://hudi-bucket/table1"
+              - "s3://hudi-bucket/table2"
+        
+        # Iceberg targets
+        iceberg_targets:
+          - connection_name: "iceberg-connection"
+            exclusions:
+              - "'**/_temporary/**'"
+              - "'**/exclude/**'"
+            maximum_traversal_depth: 5
+            paths:
+              - "s3://iceberg-bucket/table1"
+        
+        # JDBC targets
+        jdbc_targets:
+          - connection_name: "jdbc-connection"
+            enable_additional_metadata:
+              - "COMMENTS"
+              - "RAWTYPES"
+            exclusions:
+              - "excluded_schema.excluded_table"
+            path: "database/table1"
+        
+        # MongoDB targets
+        mongo_db_targets:
+          - connection_name: "mongo-connection"
+            path: "database.collection"
+        
+        # S3 targets
+        s3_targets:
+          - connection_name: "s3-connection"
+            dlq_event_queue_arn: "!Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:s3-dlq-queue"
+            event_queue_arn: "!Sub arn:${AWS::Partition}:sqs:${AWS::Region}:${AWS::AccountId}:s3-event-queue"
+            exclusions:
+              - "'**/exclude/**'"
+              - "'**/_temporary/**'"
+            path: "s3://test-bucket/path/"
+            sample_size: 100

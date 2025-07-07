@@ -1,0 +1,67 @@
+---
+Description: {{sceptre_user_data.description|default('Glue Table Optimizer(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for table_optimizer in sceptre_user_data.table_optimizers %}
+{%- set table_optimizer_name = table_optimizer.name %}
+  {{ table_optimizer_name }}:
+    Type: AWS::Glue::TableOptimizer
+    Properties:
+      CatalogId: {{ table_optimizer.catalog_id }}
+      DatabaseName: {{ table_optimizer.database_name }}
+      TableName: {{ table_optimizer.table_name }}
+      TableOptimizerConfiguration:
+        Enabled: {{ table_optimizer.table_optimizer_configuration.enabled }}
+        RoleArn: {{ table_optimizer.table_optimizer_configuration.role_arn | trim }}
+{%- if table_optimizer.table_optimizer_configuration.orphan_file_deletion_configuration is defined %}{# BEGIN if table_optimizer.table_optimizer_configuration.orphan_file_deletion_configuration is defined #}
+        OrphanFileDeletionConfiguration:
+{%- if table_optimizer.table_optimizer_configuration.orphan_file_deletion_configuration.iceberg_configuration is defined %}{# BEGIN if table_optimizer.table_optimizer_configuration.orphan_file_deletion_configuration.iceberg_configuration is defined #}
+          IcebergConfiguration:
+{%- if table_optimizer.table_optimizer_configuration.orphan_file_deletion_configuration.iceberg_configuration.location is defined %}
+            Location: {{ table_optimizer.table_optimizer_configuration.orphan_file_deletion_configuration.iceberg_configuration.location }}
+{%- endif %}
+{%- if table_optimizer.table_optimizer_configuration.orphan_file_deletion_configuration.iceberg_configuration.orphan_file_retention_period_in_days  is defined %}
+            OrphanFileRetentionPeriodInDays: {{ table_optimizer.table_optimizer_configuration.orphan_file_deletion_configuration.iceberg_configuration.orphan_file_retention_period_in_days }}
+{%- endif %}
+{%- endif %}{# END if table_optimizer.table_optimizer_configuration.orphan_file_deletion_configuration.iceberg_configuration is defined #}
+{%- endif %}{# END if table_optimizer.table_optimizer_configuration.orphan_file_deletion_configuration is defined #}
+{%- if table_optimizer.table_optimizer_configuration.retention_configuration is defined %}{# BEGIN if table_optimizer.table_optimizer_configuration.retention_configuration is defined #}
+        RetentionConfiguration:
+{%- if table_optimizer.table_optimizer_configuration.retention_configuration.iceberg_configuration is defined %}{# BEGIN if table_optimizer.table_optimizer_configuration.retention_configuration.iceberg_configuration is defined #}
+          IcebergConfiguration:
+{%- if table_optimizer.table_optimizer_configuration.retention_configuration.iceberg_configuration.location is defined %}
+            Location: {{ table_optimizer.table_optimizer_configuration.retention_configuration.iceberg_configuration.location }}
+{%- endif %}
+{%- if table_optimizer.table_optimizer_configuration.retention_configuration.iceberg_configuration.orphan_file_retention_period_in_days  is defined %}
+            OrphanFileRetentionPeriodInDays: {{ table_optimizer.table_optimizer_configuration.retention_configuration.iceberg_configuration.orphan_file_retention_period_in_days }}
+{%- endif %}
+{%- endif %}{# END if table_optimizer.table_optimizer_configuration.retention_configuration.iceberg_configuration is defined #}
+{%- endif %}{# END if table_optimizer.table_optimizer_configuration.retention_configuration is defined #}
+{%- if table_optimizer.table_optimizer_configuration.vpc_configuration is defined %}{# BEGIN if table_optimizer.table_optimizer_configuration.vpc_configuration is defined #}
+        VpcConfiguration:
+          GlueConnectionName: {{ table_optimizer.table_optimizer_configuration.vpc_configuration.glue_connection_name }}
+{%- endif %}{# END if table_optimizer.table_optimizer_configuration.vpc_configuration is defined #}
+      Type: {{ table_optimizer.type }}
+{%- endfor %}{#
+# Supported structure as of 2025-07-07:
+Type: AWS::Glue::TableOptimizer
+Properties:
+  CatalogId: String
+  DatabaseName: String
+  TableName: String
+  TableOptimizerConfiguration:
+    Enabled: Boolean
+    OrphanFileDeletionConfiguration:
+      IcebergConfiguration:
+        Location: String
+        OrphanFileRetentionPeriodInDays: Integer
+    RetentionConfiguration:
+      IcebergConfiguration:
+        Location: String
+        OrphanFileRetentionPeriodInDays: Integer
+    RoleArn: String
+    VpcConfiguration:
+      GlueConnectionName: String
+  Type: String
+#}

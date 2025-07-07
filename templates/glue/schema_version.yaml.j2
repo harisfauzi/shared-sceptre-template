@@ -1,0 +1,48 @@
+---
+Description: {{sceptre_user_data.description|default('Glue Schema Version(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for schema_version in sceptre_user_data.schema_versions %}
+{%- set schema_version_name = schema_version.name %}
+  {{ schema_version_name }}:
+    Type: AWS::Glue::SchemaVersion
+    DeletionPolicy: {{ schema_version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ schema_version.update_replace_policy | default('Delete') }}
+    Properties:
+      Schema:
+{%- if schema_version.schema.registry_name is defined %}
+        RegistryName: {{ schema_version.schema.registry_name }}
+{%- endif %}
+{%- if schema_version.schema.schema_arn is defined %}
+        SchemaArn: {{ schema_version.schema.schema_arn }}
+{%- endif %}
+{%- if schema_version.schema.schema_name is defined %}
+        SchemaName: {{ schema_version.schema.schema_name }}
+{%- endif %}
+      SchemaDefinition: |
+        {{ schema_version.schema_definition | indent(width=8, first=false) }}
+{%- endfor %}
+
+Outputs:
+{%- for schema_version in sceptre_user_data.schema_versions %}
+{%- set schema_version_name = schema_version.name %}
+  {{ schema_version_name }}VersionId:
+    Description: Version Id for {{ schema_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ schema_version_name }}
+        - VersionId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ schema_version_name }}-VersionId"
+{%- endfor %}{#
+# Supported structure as of 2025-07-07:
+Type: AWS::Glue::SchemaVersion
+Properties:
+  Schema:
+    RegistryName: String
+    SchemaArn: String
+    SchemaName: String
+  SchemaDefinition: String
+#}

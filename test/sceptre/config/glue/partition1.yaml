@@ -1,0 +1,108 @@
+---
+template:
+  type: file
+  path: glue/partition.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Glue Partitions for development and testing"
+  partitions:
+    - name: CustomerPartition
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      catalog_id: "!Sub ${AWS::AccountId}"
+      database_name: "customer_db"
+      table_name: "customers"
+      partition_input:
+        _values:
+          - "2024"
+          - "01"
+          - "01"
+        parameters: |
+          EXTERNAL: "TRUE"
+          numFiles: "1"
+          rawDataSize: "0"
+        storage_descriptor:
+          columns:
+            - name: customer_id
+              type: string
+              comment: Customer identifier
+            - name: name
+              type: string
+              comment: Customer name
+            - name: email
+              type: string
+              comment: Customer email
+            - name: phone
+              type: string
+              comment: Customer phone number
+          compressed: false
+          input_format: "org.apache.hadoop.mapred.TextInputFormat"
+          location: "s3://my-bucket/customer_data/2024/01/01/"
+          output_format: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+          parameters: |
+            classification: "csv"
+            typeOfData: "file"
+            skip.header.line.count: "1"
+          serde_info:
+            name: "csv_serde"
+            parameters: |
+              separatorChar: ","
+              quoteChar: "\""
+              escapeChar: "\\"
+            serialization_library: "org.apache.hadoop.hive.serde2.OpenCSVSerde"
+          stored_as_sub_directories: false
+      tags:
+        Environment: Development
+        CreatedBy: Sceptre
+        DataDomain: Customer
+    - name: OrderPartition
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      catalog_id: "!Sub ${AWS::AccountId}"
+      database_name: "order_db"
+      table_name: "orders"
+      partition_input:
+        _values:
+          - "2024"
+          - "01"
+          - "01"
+        parameters: |
+          EXTERNAL: "TRUE"
+          numFiles: "1"
+          rawDataSize: "0"
+        storage_descriptor:
+          columns:
+            - name: order_id
+              type: string
+              comment: Order identifier
+            - name: customer_id
+              type: string
+              comment: Customer identifier
+            - name: order_date
+              type: date
+              comment: Order date
+            - name: total_amount
+              type: decimal(10,2)
+              comment: Total order amount
+          compressed: false
+          input_format: "org.apache.hadoop.mapred.TextInputFormat"
+          location: "s3://my-bucket/order_data/2024/01/01/"
+          output_format: "org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat"
+          parameters: |
+            classification: "csv"
+            typeOfData: "file"
+            skip.header.line.count: "1"
+          serde_info:
+            name: "csv_serde"
+            parameters: |
+              separatorChar: ","
+              quoteChar: "\""
+              escapeChar: "\\"
+            serialization_library: "org.apache.hadoop.hive.serde2.OpenCSVSerde"
+          stored_as_sub_directories: false
+      tags:
+        Environment: Development
+        CreatedBy: Sceptre
+        DataDomain: Order

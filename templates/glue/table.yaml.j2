@@ -12,6 +12,16 @@ Resources:
     Properties:
       CatalogId: {{ table.catalog_id | trim }}
       DatabaseName: {{ table.database_name }}
+{%- if table.open_table_format_input is defined %}
+      OpenTableFormatInput:
+        IcebergInput:
+{%- if table.open_table_format_input.iceberg_input.metadata_operation is defined %}
+          MetadataOperation: {{ table.open_table_format_input.iceberg_input.metadata_operation }}
+{%- endif %}
+{%- if table.open_table_format_input.iceberg_input.version is defined %}
+          Version: {{ table.open_table_format_input.iceberg_input.version }}
+{%- endif %}
+{%- endif %}
       TableInput:
 {%- if table.table_input.description is defined %}
         Description: {{ table.table_input.description }}
@@ -23,10 +33,11 @@ Resources:
         Owner: {{ table.table_input.owner }}
 {%- endif %}
 {%- if table.table_input.parameters_json is defined %}
-        Parameters: '{{ table.table_input.parameters_json }}'
+        Parameters: |
+          {{ table.table_input.parameters_json | indent(width=10, first=false) }}
 {%- elif table.table_input.parameters is defined %}
         Parameters:
-{{ table.table_input.parameters | indent(width=10, first=true) }}
+          {{ table.table_input.parameters | indent(width=10, first=false) }}
 {%- endif %}
 {%- if table.table_input.partition_keys is defined %}
         PartitionKeys:
@@ -64,7 +75,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if table.table_input.storage_descriptor.compressed is defined %}
-          Compressed: {{ table.table_input.storage_descriptor.compressed }}
+          Compressed: {{ table.table_input.storage_descriptor.compressed | lower }}
 {%- endif %}
 {%- if table.table_input.storage_descriptor.input_format is defined %}
           InputFormat: {{ table.table_input.storage_descriptor.input_format }}
@@ -79,10 +90,11 @@ Resources:
           OutputFormat: {{ table.table_input.storage_descriptor.output_format }}
 {%- endif %}
 {%- if table.table_input.storage_descriptor.parameters_json is defined %}
-          Parameters: '{{ table.table_input.storage_descriptor.parameters_json }}'
+          Parameters: |
+            {{ table.table_input.storage_descriptor.parameters_json | indent(width=12, first=false) }}
 {%- elif table.table_input.storage_descriptor.parameters is defined %}
           Parameters:
-{{ table.table_input.storage_descriptor.parameters | indent(width=12, first=true) }}
+            {{ table.table_input.storage_descriptor.parameters | indent(width=12, first=false) }}
 {%- endif %}
 {%- if table.table_input.storage_descriptor.schema_reference is defined %}{# BEGIN {%- if table.table_input.storage_descriptor.schema_reference is defined %} #}
           SchemaReference:
@@ -111,10 +123,11 @@ Resources:
             Name: {{ table.table_input.storage_descriptor.serde_info.name }}
 {%- endif %}
 {%- if table.table_input.storage_descriptor.serde_info.parameters_json is defined %}
-            Parameters: '{{ table.table_input.storage_descriptor.serde_info.parameters_json }}'
+            Parameters: |
+              {{ table.table_input.storage_descriptor.serde_info.parameters_json | indent(width=14, first=false) }}
 {%- elif table.table_input.storage_descriptor.serde_info.parameters is defined %}
             Parameters:
-{{ table.table_input.storage_descriptor.serde_info.parameters | indent(width=14, first=true) }}
+              {{ table.table_input.storage_descriptor.serde_info.parameters | indent(width=14, first=false) }}
 {%- endif %}
 {%- if table.table_input.storage_descriptor.serde_info.serialization_library is defined %}
             SerializationLibrary: {{ table.table_input.storage_descriptor.serde_info.serialization_library }}
@@ -129,10 +142,11 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if table.table_input.storage_descriptor.skewed_info.skewed_column_value_location_maps_json is defined %}
-            SkewedColumnValueLocationMaps: '{{ table.table_input.storage_descriptor.skewed_info.skewed_column_value_location_maps_json }}'
-{%- elif table.table_input.storage_descriptor.skewed_info.skewed_column_value_location_maps is defined %}
             SkewedColumnValueLocationMaps: |
-{{ table.table_input.storage_descriptor.skewed_info.skewed_column_value_location_maps | indent(width=14, first=true) }}
+              {{ table.table_input.storage_descriptor.skewed_info.skewed_column_value_location_maps_json | indent(width=14, first=false) }}
+{%- elif table.table_input.storage_descriptor.skewed_info.skewed_column_value_location_maps is defined %}
+            SkewedColumnValueLocationMaps:
+              {{ table.table_input.storage_descriptor.skewed_info.skewed_column_value_location_maps | indent(width=14, first=false) }}
 {%- endif %}
 {%- if table.table_input.storage_descriptor.skewed_info.skewed_column_values is defined %}
             SkewedColumnValues:
@@ -149,7 +163,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if table.table_input.storage_descriptor.stored_as_sub_directories is defined %}
-          StoredAsSubDirectories: {{ table.table_input.storage_descriptor.stored_as_sub_directories }}
+          StoredAsSubDirectories: {{ table.table_input.storage_descriptor.stored_as_sub_directories | lower }}
 {%- endif %}
 {%- endif %}{# END {%- if table.table_input.storage_descriptor is defined %} #}
 {%- if table.table_input.table_type is defined %}
@@ -166,6 +180,9 @@ Resources:
 {%- if table.table_input.target_table.name is defined %}
           Name: {{ table.table_input.target_table.name }}
 {%- endif %}
+{%- if table.table_input.target_table.region is defined %}
+          Region: {{ table.table_input.target_table.region }}
+{%- endif %}
 {%- endif %}{# END {%- if table.table_input.target_table is defined %} #}
 {%- if table.table_input.view_expanded_text is defined %}
         ViewExpandedText: {{ table.table_input.view_expanded_text }}
@@ -173,11 +190,9 @@ Resources:
 {%- if table.table_input.view_original_text is defined %}
         ViewOriginalText: {{ table.table_input.view_original_text }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for table in sceptre_user_data.tables %}
 {%- set table_name = table.name %}
   {{ table_name }}:
@@ -187,5 +202,69 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ table_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-02:
+Type: AWS::Glue::Table
+Properties:
+  CatalogId: String
+  DatabaseName: String
+  OpenTableFormatInput:
+    IcebergInput:
+      MetadataOperation: String
+      Version: String
+  TableInput:
+    Description: String
+    Name: String
+    Owner: String
+    Parameters: Json
+    PartitionKeys:
+      -
+        Comment: String
+        Name: String
+        Type: String
+    Retention: Integer
+    StorageDescriptor:
+      BucketColumns:
+        - String
+      Columns:
+        -
+          Comment: String
+          Name: String
+          Type: String
+      Compressed: Boolean
+      InputFormat: String
+      Location: String
+      NumberOfBuckets: Integer
+      OutputFormat: String
+      Parameters: Json
+      SchemaReference:
+        SchemaId:
+          RegistryName: String
+          SchemaArn: String
+          SchemaName: String
+        SchemaVersionId: String
+        SchemaVersionNumber: Integer
+      SerdeInfo:
+        Name: String
+        Parameters: Json
+        SerializationLibrary: String
+      SkewedInfo:
+        SkewedColumnNames:
+          - String
+        SkewedColumnValueLocationMaps: Json
+        SkewedColumnValues:
+          - String
+      SortColumns:
+        -
+          Column: String
+          SortOrder: Integer
+      StoredAsSubDirectories: Boolean
+    TableType: String
+    TargetTable:
+      CatalogId: String
+      DatabaseName: String
+      Name: String
+      Region: String
+    ViewExpandedText: String
+    ViewOriginalText: String
+#}

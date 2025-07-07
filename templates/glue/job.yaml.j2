@@ -20,6 +20,9 @@ Resources:
 {%- if job.command.script_location is defined %}
         ScriptLocation: {{ job.command.script_location }}
 {%- endif %}
+{%- if job.command.runtime is defined %}
+        Runtime: {{ job.command.runtime }}
+{%- endif %}
       Role: {{ job.role | trim }}
 {%- if job.allocated_capacity is defined %}
       AllocatedCapacity: {{ job.allocated_capacity }}
@@ -32,10 +35,11 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if job.default_arguments_json is defined %}
-      DefaultArguments: '{{ job.arguments_json }}'
+      DefaultArguments: |
+        {{ job.arguments_json | indent(width=8, first=false) }}
 {%- elif job.default_arguments is defined %}
       DefaultArguments:
-{{ job.default_arguments_json | indent(width=8, first=true) }}
+        {{ job.default_arguments | indent(width=8, first=false) }}
 {%- endif %}
 {%- if job.description is defined %}
       Description: {{ job.description }}
@@ -43,6 +47,25 @@ Resources:
 {%- if job.execution_property is defined %}
       ExecutionProperty:
         MaxConcurrentRuns: {{ job.execution_property.max_concurrent_runs }}
+{%- endif %}
+{%- if job.execution_class is defined %}
+      ExecutionClass: {{ job.execution_class }}
+{%- endif %}
+{%- if job.job_mode is defined %}
+      JobMode: {{ job.job_mode }}
+{%- endif %}
+{%- if job.job_run_queuing_enabled is defined %}
+      JobRunQueuingEnabled: {{ job.job_run_queuing_enabled }}
+{%- endif %}
+{%- if job.maintenance_window is defined %}
+      MaintenanceWindow: {{ job.maintenance_window }}
+{%- endif %}
+{%- if job.non_overridable_arguments_json is defined %}
+      NonOverridableArguments: |
+        {{ job.non_overridable_arguments_json | indent(width=8, first=false) }}
+{%- elif job.non_overridable_arguments is defined %}
+      NonOverridableArguments:
+        {{ job.non_overridable_arguments | indent(width=8, first=false) }}
 {%- endif %}
 {%- if job.glue_version is defined %}
       GlueVersion: {{ job.glue_version }}
@@ -56,10 +79,10 @@ Resources:
 {%- if job.max_retries is defined %}
       MaxRetries: {{ job.max_retries }}
 {%- endif %}
-{%- if job.name is defined %}
-      Name: {{ job.name }}
+{%- if job.job_name is defined %}
+      Name: {{ job.job_name }}
 {%- endif %}
-{%- if job.notification_property is defined %}
+{%- if job.notification_property is defined and job.notification_property.notify_delay_after is defined %}
       NotificationProperty:
         NotifyDelayAfter: {{ job.notification_property.notify_delay_after }}
 {%- endif %}
@@ -84,11 +107,9 @@ Resources:
 {%- if job.worker_type is defined %}
       WorkerType: {{ job.worker_type }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for job in sceptre_user_data.jobs %}
 {%- set job_name = job.name %}
   {{ job_name }}:
@@ -98,5 +119,41 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ job_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-02:
+Type: AWS::Glue::Job
+Properties:
+  AllocatedCapacity: Number
+  Command:
+    Name: String
+    PythonVersion: String
+    Runtime: String
+    ScriptLocation: String
+  Connections:
+    Connections:
+      - String
+  DefaultArguments: Json
+  Description: String
+  ExecutionClass: String
+  ExecutionProperty:
+    MaxConcurrentRuns: Number
+  GlueVersion: String
+  JobMode: String
+  JobRunQueuingEnabled: Boolean
+  LogUri: String
+  MaintenanceWindow: String
+  MaxCapacity: Number
+  MaxRetries: Number
+  Name: String
+  NonOverridableArguments: Json
+  NotificationProperty:
+    NotifyDelayAfter: Integer
+  NumberOfWorkers: Integer
+  Role: String
+  SecurityConfiguration: String
+  Tags:
+    - Key: String
+      Value: String
+  Timeout: Integer
+  WorkerType: String
+#}
