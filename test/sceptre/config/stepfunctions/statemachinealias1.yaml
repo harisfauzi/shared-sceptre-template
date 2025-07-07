@@ -1,0 +1,43 @@
+---
+template:
+  type: file
+  path: stepfunctions/state_machine_alias.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  description: "StepFunctions State Machine Aliases for testing purposes"
+  source_repo_url: "{{ git_repo }}"
+  state_machine_aliases:
+    - name: Alias1
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      description: "Production alias for the state machine"
+      state_machine_alias_name: "prod"
+      deployment_preference:
+        state_machine_version_arn: "!Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:{{stack_group_config.project_code}}-data-processing-sfn:1"
+        type: "LINEAR"
+        interval: 60
+        percentage: 50
+        alarms:
+          - "CloudWatchAlarmHighErrorRate"
+          - "CloudWatchAlarmHighThrottleRate"
+      routing_configuration:
+        - state_machine_version_arn: "!Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:{{stack_group_config.project_code}}-data-processing-sfn:1"
+          weight: 90
+        - state_machine_version_arn: "!Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:{{stack_group_config.project_code}}-data-processing-sfn:2"
+          weight: 10
+
+    - name: Alias2
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      description: "Test alias for the state machine"
+      state_machine_alias_name: "test"
+      routing_configuration:
+        - state_machine_version_arn: "!Sub arn:aws:states:${AWS::Region}:${AWS::AccountId}:stateMachine:{{stack_group_config.project_code}}-data-processing-sfn:2"
+          weight: 100
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Owner: "{{ stack_group_config.owner | default('DevOps') }}"
+  Test: stepfunctions-state-machine-alias

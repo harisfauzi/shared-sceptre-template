@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('StepFunctions Activity(es)
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for activity in sceptre_user_data.activities %}
 {%- set activity_name = activity.name %}
   {{ activity_name }}:
@@ -12,6 +11,16 @@ Resources:
     UpdateReplacePolicy: {{ activity.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ activity.name }}
+{%- if activity.encryption_configuration is defined %}
+      EncryptionConfiguration:
+        Type: {{ activity.encryption_configuration.type }}
+{%- if activity.encryption_configuration.kms_data_key_reuse_period_seconds is defined %}
+        KmsDataKeyReusePeriodSeconds: {{ activity.encryption_configuration.kms_data_key_reuse_period_seconds }}
+{%- endif %}
+{%- if activity.encryption_configuration.kms_key_id is defined %}
+        KmsKeyId: {{ activity.encryption_configuration.kms_key_id | trim }}
+{%- endif %}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -33,7 +42,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ activity_name }}"
-
   {{ activity_name }}Name:
     Description: The Name for {{ activity_name }}
     Value:
@@ -43,5 +51,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ activity_name }}-Name"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-07
+Type: AWS::StepFunctions::Activity
+Properties:
+  EncryptionConfiguration:
+    KmsDataKeyReusePeriodSeconds: Integer
+    KmsKeyId: String
+    Type: String
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
