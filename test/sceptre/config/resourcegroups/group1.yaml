@@ -1,0 +1,60 @@
+---
+template:
+  type: file
+  path: resourcegroups/group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Test Resource Groups for {{stack_group_config.project_code}}"
+  groups:
+    # Basic resource group with minimal configuration
+    - name: BasicResourceGroup
+      group_name: "{{stack_group_config.project_code}}-basic-group"
+      description: "Basic resource group for testing"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      resources:
+        - "arn:aws:ec2:us-east-1:123456789012:instance/i-0123456789abcdef0"
+        - "arn:aws:ec2:us-east-1:123456789012:volume/vol-0123456789abcdef0"
+      tags:
+        Environment: Test
+        ManagedBy: Sceptre
+
+    # Resource group with configuration
+    - name: ConfiguredResourceGroup
+      group_name: "{{stack_group_config.project_code}}-configured-group"
+      description: "Resource group with configuration settings"
+      configuration:
+        - type: "AWS::ResourceGroups::Generic"
+          parameters:
+            - name: "allowed-resource-types"
+              _values:
+                - "AWS::EC2::Instance"
+                - "AWS::EC2::Volume"
+        - type: "AWS::ResourceGroups::Generic"
+          parameters:
+            - name: "deletion-protection"
+              _values:
+                - "UNLESS_EMPTY"
+      tags:
+        Environment: Test
+        Department: DevOps
+
+    # Resource group with resource query
+    - name: QueryBasedResourceGroup
+      group_name: "{{stack_group_config.project_code}}-query-group"
+      description: "Resource group using resource query"
+      resource_query:
+        type: "TAG_FILTERS_1_0"
+        query:
+          resource_type_filters:
+            - "AWS::AllSupported"
+          tag_filters:
+            - key: "Environment"
+              _values: ["Production"]
+            - key: "Project"
+              _values: ["{{stack_group_config.project_code}}"]
+      tags:
+        Environment: Test
+        Purpose: TestingResourceQuery

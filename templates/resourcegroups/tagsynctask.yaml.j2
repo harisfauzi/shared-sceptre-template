@@ -1,0 +1,73 @@
+---
+Description: {{sceptre_user_data.description|default('ResourceGroups TagSyncTask(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for tag_sync_task in sceptre_user_data.tag_sync_tasks %}
+{%- set tag_sync_task_name = tag_sync_task.name %}
+  {{ tag_sync_task_name }}:
+    Type: AWS::ResourceGroups::TagSyncTask
+    DeletionPolicy: {{ tag_sync_task.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ tag_sync_task.update_replace_policy | default('Delete') }}
+    Properties:
+      Group: {{tag_sync_task.group}}
+      RoleArn: {{tag_sync_task.role_arn}}
+      TagKey: {{tag_sync_task.tag_key}}
+      TagValue: {{tag_sync_task.tag_value}}
+{%- endfor %}
+
+Outputs:
+{%- for tag_sync_task in sceptre_user_data.tag_sync_tasks %}
+{%- set tag_sync_task_name = tag_sync_task.name %}
+  {{ tag_sync_task_name }}:
+    Description: Task ARN for {{ tag_sync_task_name }}
+    Value:
+      Ref: {{ tag_sync_task_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ tag_sync_task_name }}"
+  {{ tag_sync_task_name }}AGroupArnrn:
+    Description: The Amazon resource name (ARN) of the application group for {{ tag_sync_task_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ tag_sync_task_name }}
+        - GroupArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ tag_sync_task_name }}-GroupArn"
+  {{ tag_sync_task_name }}GroupName:
+    Description: The name of the application group for {{ tag_sync_task_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ tag_sync_task_name }}
+        - GroupName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ tag_sync_task_name }}-GroupName"
+  {{ tag_sync_task_name }}Status:
+    Description: The status of the tag sync task for {{ tag_sync_task_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ tag_sync_task_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ tag_sync_task_name }}-Status"
+  {{ tag_sync_task_name }}TaskArn:
+    Description: The Amazon resource name (ARN) of the tag-sync task for {{ tag_sync_task_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ tag_sync_task_name }}
+        - TaskArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ tag_sync_task_name }}-TaskArn"
+{%- endfor %}{#
+# Supported structure as of 2025-07-26
+Type: AWS::ResourceGroups::TagSyncTask
+Properties:
+  Group: String
+  RoleArn: String
+  TagKey: String
+  TagValue: String
+#}

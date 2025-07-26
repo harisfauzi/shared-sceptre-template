@@ -1,0 +1,36 @@
+---
+template:
+  type: file
+  path: resourcegroups/tagsynctask.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Test Tag Sync Tasks for {{stack_group_config.project_code}}"
+  tag_sync_tasks:
+    # Basic tag sync task
+    - name: ProductionTagSync
+      group: "{{stack_group_config.project_code}}-production-group"
+      role_arn: "arn:aws:iam::123456789012:role/{{stack_group_config.project_code}}-tag-sync-role"
+      tag_key: "Environment"
+      tag_value: "Production"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+    # Tag sync task for development resources
+    - name: DevelopmentTagSync
+      group: "{{stack_group_config.project_code}}-development-group"
+      role_arn: "arn:aws:iam::123456789012:role/{{stack_group_config.project_code}}-tag-sync-role"
+      tag_key: "Environment"
+      tag_value: "Development"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+    # Tag sync task for cost allocation
+    - name: CostCenterTagSync
+      group: "{{stack_group_config.project_code}}-cost-center-group"
+      role_arn: "arn:aws:iam::123456789012:role/{{stack_group_config.project_code}}-tag-sync-role"
+      tag_key: "CostCenter"
+      tag_value: "{{stack_group_config.project_code}}"
+      deletion_policy: Retain
+      update_replace_policy: Retain
