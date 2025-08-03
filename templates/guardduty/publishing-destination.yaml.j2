@@ -1,0 +1,83 @@
+---
+Description: {{sceptre_user_data.description|default('GuardDuty Publishing Destination(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for publishing_destination in sceptre_user_data.publishing_destinations %}
+{%- set publishing_destination_name = publishing_destination.name %}
+  {{ publishing_destination_name }}:
+    Type: AWS::GuardDuty::PublishingDestination
+    DeletionPolicy: {{ publishing_destination.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ publishing_destination.update_replace_policy | default('Delete') }}
+    Properties:
+      DestinationProperties:
+{%- if publishing_destination.destination_arn is defined %}
+        DestinationArn: {{ publishing_destination.destination_arn | trim }}
+{%- endif %}
+{%- if publishing_destination.kms_key_arn is defined %}
+        KmsKeyArn: {{ publishing_destination.kms_key_arn | trim }}
+{%- endif %}
+      DestinationType: {{ publishing_destination.destination_type }}
+      DetectorId: {{ publishing_destination.detector_id | trim }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if publishing_destination.tags is defined %}
+{%- for key,value in publishing_destination.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for publishing_destination in sceptre_user_data.publishing_destinations %}
+{%- set publishing_destination_name = publishing_destination.name %}
+  {{ publishing_destination_name }}:
+    Description: The resource publishing destination ID for {{ publishing_destination_name }}
+    Value:
+      Ref: {{ publishing_destination_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ publishing_destination_name }}"
+  {{ publishing_destination_name }}Id:
+    Description: The ID of the publishing destination for {{ publishing_destination_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ publishing_destination_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ publishing_destination_name }}-Id"
+  {{ publishing_destination_name }}PublishingFailureStartTimestamp:
+    Description: The time, in epoch millisecond format, at which GuardDuty was first unable to publish findings to the destination for {{ publishing_destination_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ publishing_destination_name }}
+        - PublishingFailureStartTimestamp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ publishing_destination_name }}-PublishingFailureStartTimestamp"
+  {{ publishing_destination_name }}Status:
+    Description: The status of the publishing destination {{ publishing_destination_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ publishing_destination_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ publishing_destination_name }}-Status"
+{%- endfor %}{#
+# Supported structure as of 2025-07-26
+Type: AWS::GuardDuty::PublishingDestination
+Properties:
+  DestinationProperties:
+    DestinationArn: String
+    KmsKeyArn: String
+  DestinationType: String
+  DetectorId: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

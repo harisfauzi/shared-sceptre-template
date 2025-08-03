@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('GuardDuty Detector(s) for 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for detector in sceptre_user_data.detectors %}
 {%- set detector_name = detector.name %}
   {{ detector_name }}:
@@ -12,26 +11,58 @@ Resources:
     UpdateReplacePolicy: {{ detector.update_replace_policy | default('Delete') }}
     Properties:
       Enable: {{ detector.enable }}
-{%- if detector.data_sources is defined %}
+{%- if detector.data_sources is defined %}{# BEGIN if detector.data_sources is defined #}
       DataSources:
-{%- if detector.data_sources.kubernetes is defined %}
+{%- if detector.data_sources.kubernetes is defined %}{# BEGIN if detector.data_sources.kubernetes is defined #}
         Kubernetes:
           AuditLogs:
-            Enable: {{ detector.data_sources.kubernetes.audit_logs.enable }}
-{%- endif %}
-{%- if detector.data_sources.s3_logs is defined %}
+            Enable: {{ detector.data_sources.kubernetes.audit_logs.enable | lower }}
+{%- endif %}{# END if detector.data_sources.kubernetes is defined #}
+{%- if detector.data_sources.malware_protection is defined %}{# BEGIN if detector.data_sources.malware_protection is defined #}
+        MalwareProtection:
+          ScanEc2InstanceWithFindings:
+            EbsVolumes: {{ detector.data_sources.malware_protection.scan_ec2_instance_with_findings.ebs_volumes | lower }}
+{%- endif %}{# END if detector.data_sources.malware_protection is defined #}
+{%- if detector.data_sources.s3_logs is defined %}{# BEGIN if detector.data_sources.s3_logs is defined #}
         S3Logs:
-          Enable: {{ detector.data_sources.s3_logs.enable }}
+          Enable: {{ detector.data_sources.s3_logs.enable | lower }}
+{%- endif %}{# END if detector.data_sources.s3_logs is defined #}
+{%- endif %}{# END if detector.data_sources is defined #}
+{%- if detector.features is defined %}{# BEGIN if detector.features is defined #}
+      Features:
+{%- for feature in detector.features %}{# BEGIN for feature in detector.features #}
+        -
+          Name: {{ feature.name }}
+          Status: {{ feature.status }}
+{%- if feature.additional_configuration is defined %}{# BEGIN if feature.additional_configuration is defined #}
+          AdditionalConfiguration:
+{%- for config in feature.additional_configuration %}{# BEGIN for config in feature.additional_configuration #}
+            -
+{%- if config.name is defined %}
+              Name: {{ config.name }}
 {%- endif %}
+{%- if config.status is defined %}
+              Status: {{ config.status }}
 {%- endif %}
+{%- endfor %}{# END for config in feature.additional_configuration #}
+{%- endif %}{# END if feature.additional_configuration is defined #}
+{%- endfor %}{# END for feature in detector.features #}
+{%- endif %}{# END if detector.features is defined #}
 {%- if detector.finding_publishing_frequency is defined %}
       FindingPublishingFrequency: {{ detector.finding_publishing_frequency }}
 {%- endif %}
-
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if detector.tags is defined %}
+{%- for key,value in detector.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for detector in sceptre_user_data.detectors %}
 {%- set detector_name = detector.name %}
   {{ detector_name }}:
@@ -41,5 +72,31 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ detector_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-26
+Type: AWS::GuardDuty::Detector
+Properties:
+  DataSources:
+    Kubernetes:
+      AuditLogs:
+        Enable: Boolean
+    MalwareProtection:
+      ScanEc2InstanceWithFindings:
+        EbsVolumes: Boolean
+    S3Logs:
+      Enable: Boolean
+  Enable: Boolean
+  Features:
+    -
+      AdditionalConfiguration:
+        -
+          Name: String
+          Status: String
+      Name: String
+      Status: String
+  FindingPublishingFrequency: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

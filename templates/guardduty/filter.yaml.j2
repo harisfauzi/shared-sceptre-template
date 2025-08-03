@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('GuardDuty Filter(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for filter in sceptre_user_data.filters %}
 {%- set filter_name = filter.name %}
   {{ filter_name }}:
@@ -11,15 +10,15 @@ Resources:
     DeletionPolicy: {{ filter.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ filter.update_replace_policy | default('Delete') }}
     Properties:
-      Action: {{ filter.action }}
-      Description: {{ filter.description }}
+      Name: {{ filter.filter_name }}
       DetectorId: {{ filter.detector_id | trim }}
       FindingCriteria:
 {%- if filter.criterion_json is defined %}
-        Criterion: {{ filter.criterion_json }}
-{%- elseif filter.criterion is defined %}
+        Criterion: |
+          {{ filter.criterion_json | indent(width=10,first=false) }}
+{%- elif filter.criterion is defined %}
         Criterion:
-{{ filter.criterion | indent(width=10,first=true) }}
+          {{ filter.criterion | indent(width=10,first=false) }}
 {%- endif %}
 {%- if filter.item_type is defined %}
         ItemType:
@@ -72,13 +71,27 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endif %}
-      Name: {{ filter.filter_name }}
+{%- if filter.action is defined %}
+      Action: {{ filter.action }}
+{%- endif %}
+{%- if filter.description is defined %}
+      Description: {{ filter.description }}
+{%- endif %}
+{%- if filter.rank is defined %}
       Rank: {{ filter.rank }}
-
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if filter.tags is defined %}
+{%- for key,value in filter.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for filter in sceptre_user_data.filters %}
 {%- set filter_name = filter.name %}
   {{ filter_name }}:
@@ -88,5 +101,20 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ filter_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-26
+Type: AWS::GuardDuty::Filter
+Properties:
+  Action: String
+  Description: String
+  DetectorId: String
+  FindingCriteria: 
+    Criterion: 
+      Key: Value
+  Name: String
+  Rank: Integer
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

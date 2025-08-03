@@ -1,0 +1,39 @@
+---
+template:
+  type: file
+  path: guardduty/ip_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "GuardDuty IP Set Configuration for {{stack_group_config.project_code}}"
+  ip_sets:
+    # Basic IP Set configuration
+    - name: TrustedIPs
+      format: TXT
+      location: "s3://{{stack_group_config.project_code}}-trusted-ips/trusted-ips.txt"
+      detector_id: "{{stack_group_config.project_code}}-guardduty-detector"
+      activate: true
+      ip_set_name: "{{stack_group_config.project_code}}-TrustedIPs"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        Purpose: Security
+        ManagedBy: Sceptre
+
+    # IP Set with bucket owner
+    - name: KnownMaliciousIPs
+      format: STIX
+      location: "s3://{{stack_group_config.project_code}}-malicious-ips/malicious-ips.stix"
+      detector_id: "{{stack_group_config.project_code}}-guardduty-detector"
+      expected_bucket_owner: "123456789012"
+      activate: true
+      ip_set_name: "{{stack_group_config.project_code}}-KnownMaliciousIPs"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Purpose: Security
+        ManagedBy: Sceptre
+        ThreatType: Malicious

@@ -1,0 +1,40 @@
+---
+template:
+  type: file
+  path: guardduty/threat_intel_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "https://github.com/example/guardduty-config"
+  description: "GuardDuty Threat Intel Sets Configuration"
+  threat_intel_sets:
+    # Production threat intel set with all fields specified
+    - name: ProductionThreatIntelSet
+      format: "TXT"  # Can be TXT, STIX, OTX_CSV, ALIEN_VAULT, PROOF_POINT, FIRE_EYE, or JSON
+      location: "https://example.com/threat-intel/known-bad-ips.txt"
+      activate: true
+      detector_id: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p"
+      expected_bucket_owner: "123456789012"
+      threat_intel_set_name: "Known-Bad-IPs"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: "Production"
+        ManagedBy: "Sceptre"
+
+    # Staging threat intel set with minimal required fields
+    - name: StagingThreatIntelSet
+      format: "STIX"
+      location: "https://example.com/threat-intel/malware-indicators.stix"
+      # Using default values for other fields
+
+    # JSON format threat intel set with custom tags
+    - name: JsonThreatIntelSet
+      format: "JSON"
+      location: "s3://threat-intel-bucket/indicators/compromised-hosts.json"
+      activate: true
+      threat_intel_set_name: "Compromised-Hosts"
+      tags:
+        Environment: "All"
+        DataSource: "Internal"
+        RefreshRate: "daily"
