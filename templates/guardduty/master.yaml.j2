@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('GuardDuty Master(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for master in sceptre_user_data.masters %}
 {%- set master_name = master.name %}
   {{ master_name }}:
@@ -16,11 +15,9 @@ Resources:
 {%- if master.invitation_id  is defined %}
       InvitationId: {{ master.invitation_id }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for master in sceptre_user_data.masters %}
 {%- set master_name = master.name %}
   {{ master_name }}:
@@ -30,5 +27,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ master_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-26
+Type: AWS::GuardDuty::Master
+Properties:
+  DetectorId: String
+  InvitationId: String
+  MasterId: String
+#}

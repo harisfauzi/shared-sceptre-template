@@ -1,0 +1,36 @@
+---
+template:
+  type: file
+  path: guardduty/member.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  description: "GuardDuty Member Configuration for Workload Accounts"
+  members:
+    # Production account member with all fields specified
+    - name: ProductionAccountMember
+      email: security+guardduty@example.com
+      detector_id: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p"
+      member_id: "123456789012"  # AWS account ID of the member account
+      disable_email_notification: false
+      message: "Please accept the GuardDuty invitation for the production account."
+      status: "Invited"  # Can be 'Invited' or 'Enabled'
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+    # Staging account member with minimal required fields
+    - name: StagingAccountMember
+      email: devops+guardduty@example.com
+      detector_id: "b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q"
+      member_id: "210987654321"
+      # Using default values for other fields
+
+    # Development account member with email notifications disabled
+    - name: DevelopmentAccountMember
+      email: dev+guardduty@example.com
+      detector_id: "c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r"
+      member_id: "321654987012"
+      disable_email_notification: true
+      message: "Development account - automated onboarding"
+      status: "Enabled"
+

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('GuardDuty ThreatIntelSet(s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for threat_intel_set in sceptre_user_data.threat_intel_sets %}
 {%- set threat_intel_set_name = threat_intel_set.name %}
   {{ threat_intel_set_name }}:
@@ -11,18 +10,32 @@ Resources:
     DeletionPolicy: {{ threat_intel_set.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ threat_intel_set.update_replace_policy | default('Delete') }}
     Properties:
-      Activate: {{ threat_intel_set.activate }}
-      DetectorId: {{ threat_intel_set.detector_id | trim }}
       Format: {{ threat_intel_set.format }}
       Location: {{ threat_intel_set.location }}
+{%- if threat_intel_set.activate is defined %}
+      Activate: {{ threat_intel_set.activate }}
+{%- endif %}
+{%- if threat_intel_set.detector_id is defined %}
+      DetectorId: {{ threat_intel_set.detector_id | trim }}
+{%- endif %}
+{%- if threat_intel_set.expected_bucket_owner is defined %}
+      ExpectedBucketOwner: {{ threat_intel_set.expected_bucket_owner }}
+{%- endif %}
 {%- if threat_intel_set.threat_intel_set_name is defined %}
       Name: {{ threat_intel_set.threat_intel_set_name }}
 {%- endif %}
-
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if threat_intel_set.tags is defined %}
+{%- for key,value in threat_intel_set.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for threat_intel_set in sceptre_user_data.threat_intel_sets %}
 {%- set threat_intel_set_name = threat_intel_set.name %}
   {{ threat_intel_set_name }}:
@@ -32,5 +45,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ threat_intel_set_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-26
+Type: AWS::GuardDuty::ThreatIntelSet
+Properties:
+  Activate: Boolean
+  DetectorId: String
+  ExpectedBucketOwner: String
+  Format: String
+  Location: String
+  Name: String
+  Tags:
+    - TagItem
+#}
