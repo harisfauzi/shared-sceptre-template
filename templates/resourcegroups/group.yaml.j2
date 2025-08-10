@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ResourceGroups Group(s) fo
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for group in sceptre_user_data.groups %}
 {%- set group_name = group.name %}
   {{ group_name }}:
@@ -87,11 +86,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for group in sceptre_user_data.groups %}
 {%- set group_name = group.name %}
   {{ group_name }}:
@@ -101,7 +98,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ group_name }}"
-
   {{ group_name }}Arn:
     Description: The ARN for {{ group_name }}
     Value:
@@ -111,5 +107,35 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ group_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2025-07-26
+Type: AWS::ResourceGroups::Group
+Properties:
+  Configuration:
+    -
+      Parameters:
+        -
+          Name: String
+          Values:
+            - String
+      Type: String
+  Description: String
+  Name: String
+  ResourceQuery:
+    Query:
+      ResourceTypeFilters:
+        - String
+      StackIdentifier: String
+      TagFilters:
+        -
+          Key: String
+          Values:
+            - String
+    Type: String
+  Resources:
+    - String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

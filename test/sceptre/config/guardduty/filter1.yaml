@@ -1,0 +1,135 @@
+---
+template:
+  type: file
+  path: guardduty/filter.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "GuardDuty Filter Configuration for {{stack_group_config.project_code}}"
+  filters:
+    # Basic filter configuration
+    - name: CriticalFindingsFilter
+      filter_name: "{{stack_group_config.project_code}}-CriticalFindings"
+      detector_id: "{{stack_group_config.project_code}}-guardduty-detector"
+      action: ARCHIVE
+      description: "Filter to archive critical findings"
+      rank: 1
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      criterion: |
+        severity:
+          gte: 7.0
+        type:
+          equals:
+            - "Recon:EC2/PortProbeUnprotectedPort"
+            - "Recon:EC2/Portscan"
+            - "UnauthorizedAccess:EC2/SSHBruteForce"
+      tags:
+        Environment: Production
+        Severity: Critical
+        ManagedBy: Sceptre
+
+    # Filter with JSON criterion
+    - name: HighSeverityFilter
+      filter_name: "{{stack_group_config.project_code}}-HighSeverity"
+      detector_id: "{{stack_group_config.project_code}}-guardduty-detector"
+      action: ARCHIVE
+      description: "Filter to archive high severity findings"
+      rank: 2
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      criterion_json: |
+        {
+          "severity": {
+            "gte": 4.0
+          },
+          "type": {
+            "equals": [
+              "Recon:EC2/PortProbeUnprotectedPort",
+              "Recon:EC2/Portscan",
+              "UnauthorizedAccess:EC2/SSHBruteForce"
+            ]
+          }
+        }
+      tags:
+        Environment: Development
+        Severity: High
+        ManagedBy: Sceptre
+
+    # Filter with multiple criteria
+    - name: ReconnaissanceFilter
+      filter_name: "{{stack_group_config.project_code}}-Reconnaissance"
+      detector_id: "{{stack_group_config.project_code}}-guardduty-detector"
+      action: ARCHIVE
+      description: "Filter to archive reconnaissance findings"
+      rank: 3
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      criterion: |
+        type:
+          equals:
+            - "Recon:EC2/PortProbeUnprotectedPort"
+            - "Recon:EC2/Portscan"
+            - "Recon:EC2/PortProbeScannedByBlacklistedIP"
+      tags:
+        Environment: Production
+        ThreatType: Reconnaissance
+        ManagedBy: Sceptre
+
+    # Filter with multiple criteria
+    - name: UnauthorizedAccessFilter
+      filter_name: "{{stack_group_config.project_code}}-UnauthorizedAccess"
+      detector_id: "{{stack_group_config.project_code}}-guardduty-detector"
+      action: ARCHIVE
+      description: "Filter to archive unauthorized access findings"
+      rank: 4
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      criterion: |
+        type:
+          equals:
+            - "UnauthorizedAccess:EC2/SSHBruteForce"
+            - "UnauthorizedAccess:EC2/MaliciousIPCaller"
+      tags:
+        Environment: Production
+        ThreatType: UnauthorizedAccess
+        ManagedBy: Sceptre
+
+    # Filter with multiple criteria
+    - name: IAMUserFilter
+      filter_name: "{{stack_group_config.project_code}}-IAMUser"
+      detector_id: "{{stack_group_config.project_code}}-guardduty-detector"
+      action: ARCHIVE
+      description: "Filter to archive IAM user findings"
+      rank: 5
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      criterion: |
+        type:
+          equals:
+            - "IAMUser/ConsoleLogin"
+            - "IAMUser/PasswordPolicy"
+      tags:
+        Environment: Production
+        ThreatType: IAMUser
+        ManagedBy: Sceptre
+
+    # Filter with multiple criteria
+    - name: NetworkFilter
+      filter_name: "{{stack_group_config.project_code}}-Network"
+      detector_id: "{{stack_group_config.project_code}}-guardduty-detector"
+      action: ARCHIVE
+      description: "Filter to archive network findings"
+      rank: 6
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      criterion: |
+        type:
+          equals:
+            - "Network:EC2/Portscan"
+            - "Network:EC2/PortProbeUnprotectedPort"
+      tags:
+        Environment: Production
+        ThreatType: Network
+        ManagedBy: Sceptre

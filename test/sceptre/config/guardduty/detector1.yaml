@@ -1,0 +1,51 @@
+---
+template:
+  type: file
+  path: guardduty/detector.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "GuardDuty Detector Configuration for {{stack_group_config.project_code}}"
+  detectors:
+    # Basic detector configuration
+    - name: DefaultDetector
+      enable: true
+      finding_publishing_frequency: SIX_HOURS
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        ManagedBy: Sceptre
+
+    # Detector with all data sources enabled
+    - name: FullFeatureDetector
+      enable: true
+      finding_publishing_frequency: FIFTEEN_MINUTES
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      data_sources:
+        kubernetes:
+          audit_logs:
+            enable: true
+        s3_logs:
+          enable: true
+        malware_protection:
+          scan_ec2_instance_with_findings:
+            ebs_volumes: true
+      features:
+        - name: S3_DATA_EVENTS
+          status: ENABLED
+          additional_configuration:
+            - name: S3_DATA_EVENTS
+              status: ENABLED
+        - name: EKS_AUDIT_LOGS
+          status: ENABLED
+          additional_configuration:
+            - name: EKS_AUDIT_LOGS
+              status: ENABLED
+      tags:
+        Environment: Development
+        Purpose: Testing
+        ManagedBy: Sceptre
+        FeatureSet: Full
