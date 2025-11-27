@@ -1,0 +1,162 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 API(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for api in sceptre_user_data.apis %}
+{%- set api_name = api.name %}
+  {{ api_name }}:
+    Type: AWS::ApiGatewayV2::Api
+    DeletionPolicy: {{ api.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ api.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if api.api_key_selection_expression is defined %}
+      ApiKeySelectionExpression: {{ api.api_key_selection_expression }}
+{%- endif %}
+{%- if api.base_path is defined %}
+      BasePath: {{ api.base_path }}
+{%- endif %}
+{%- if api.body is defined %}
+      Body: |
+        {{ api.body | indent(width=8, first=False) }}
+{%- elif api.body_json is defined %}
+      Body:
+        {{ api.body_json | indent(width=8, first=False) }}
+{%- endif %}
+{%- if api.body_s3_location is defined %}{# BEGIN if api.body_s3_location is defined #}
+      BodyS3Location:
+        {{ api.body_s3_location | indent(width=8, first=False) }}
+{%- if api.body_s3_location.bucket is defined %}
+        Bucket: {{ api.body_s3_location.bucket }}
+{%- endif %}
+{%- if api.body_s3_location.etag is defined %}
+        Etag: {{ api.body_s3_location.etag }}
+{%- endif %}
+{%- if api.body_s3_location.key is defined %}
+        Key: {{ api.body_s3_location.key }}
+{%- endif %}
+{%- if api.body_s3_location.version is defined %}
+        Version: {{ api.body_s3_location.version }}
+{%- endif %}
+{%- endif %}{# END if api.body_s3_location is defined #}
+{%- if api.cors_configuration is defined %}{# BEGIN if api.cors_configuration is defined #}
+      CorsConfiguration:
+{%- if api.cors_configuration.allow_credentials is defined %}
+        AllowCredentials: {{ api.cors_configuration.allow_credentials }}
+{%- endif %}
+{%- if api.cors_configuration.allow_headers is defined %}{# BEGIN if api.cors_configuration.allow_headers is defined #}
+        AllowHeaders:
+{%- for header in api.cors_configuration.allow_headers %}
+          - {{ header }}
+{%- endfor %}
+{%- endif %}{# END if api.cors_configuration.allow_headers is defined #}
+{%- if api.cors_configuration.allow_methods is defined %}{# BEGIN if api.cors_configuration.allow_methods is defined #}
+        AllowMethods:
+{%- for method in api.cors_configuration.allow_methods %}
+          - {{ method }}
+{%- endfor %}
+{%- endif %}{# END if api.cors_configuration.allow_methods is defined #}
+{%- if api.cors_configuration.allow_origins is defined %}{# BEGIN if api.cors_configuration.allow_origins is defined #}
+        AllowOrigins:
+{%- for origin in api.cors_configuration.allow_origins %}
+          - {{ origin }}
+{%- endfor %}
+{%- endif %}{# END if api.cors_configuration.allow_origins is defined #}
+{%- if api.cors_configuration.expose_headers is defined %}{# BEGIN if api.cors_configuration.expose_headers is defined #}
+        ExposeHeaders:
+{%- for header in api.cors_configuration.expose_headers %}
+          - {{ header }}
+{%- endfor %}
+{%- endif %}{# END if api.cors_configuration.expose_headers is defined #}
+{%- if api.cors_configuration.max_age is defined %}{# BEGIN if api.cors_configuration.max_age is defined #}
+        MaxAge: {{ api.cors_configuration.max_age }}
+{%- endif %}{# END if api.cors_configuration.max_age is defined #}
+{%- endif %}{# END if api.cors_configuration is defined #}
+{%- if api.credentials_arn is defined %}
+      CredentialsArn: {{ api.credentials_arn }}
+{%- endif %}
+{%- if api.description is defined %}
+      Description: {{ api.description }}
+{%- endif %}
+{%- if api.disable_execute_api_endpoint is defined %}
+      DisableExecuteApiEndpoint: {{ api.disable_execute_api_endpoint }}
+{%- endif %}
+{%- if api.disable_schema_validation is defined %}
+      DisableSchemaValidation: {{ api.disable_schema_validation }}
+{%- endif %}
+{%- if api.fail_on_warnings is defined %}
+      FailOnWarnings: {{ api.fail_on_warnings }}
+{%- endif %}
+{%- if api.ip_address_type is defined %}
+      IpAddressType: {{ api.ip_address_type }}
+{%- endif %}
+{%- if api.api_name is defined %}
+      Name: {{ api.api_name }}
+{%- endif %}
+{%- if api.protocol_type is defined %}
+      ProtocolType: {{ api.protocol_type }}
+{%- endif %}
+{%- if api.route_key is defined %}
+      RouteKey: {{ api.route_key }}
+{%- endif %}
+{%- if api.route_selection_expression is defined %}
+      RouteSelectionExpression: {{ api.route_selection_expression }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- for key,value in api.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- if api.target is defined %}
+      Target: {{ api.target }}
+{%- endif %}
+{%- if api.version is defined %}
+      Version: {{ api.version }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for api in sceptre_user_data.apis %}
+{%- set api_name = api.name %}
+  {{ api_name }}:
+    Description: The API ID of {{ api_name }}
+    Value:
+      Ref: {{ api_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ api_name }}"
+  {{ api_name }}ApiEndpoint:
+    Description: The default endpoint for API {{ api_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ api_name }}
+        - ApiEndpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ api_name }}-ApiEndpoint"
+{%- endfor %}{#
+# Supported structure as of 2025-11-27:
+Type: AWS::ApiGatewayV2::Api
+Properties:
+  ApiKeySelectionExpression: String
+  BasePath: String
+  Body: Json
+  BodyS3Location:
+    BodyS3Location
+  CorsConfiguration:
+    Cors
+  CredentialsArn: String
+  Description: String
+  DisableExecuteApiEndpoint: Boolean
+  DisableSchemaValidation: Boolean
+  FailOnWarnings: Boolean
+  IpAddressType: String
+  Name: String
+  ProtocolType: String
+  RouteKey: String
+  RouteSelectionExpression: String
+  Tags:
+    Key: Value
+  Target: String
+  Version: String
+#}

@@ -1,0 +1,44 @@
+---
+template:
+  type: file
+  path: apigatewayv2/api.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  apis:
+    - name: myapi
+      protocol_type: HTTP
+      cors_configuration:
+        allow_origins:
+          - "'*'"
+        allow_methods:
+          - GET
+          - POST
+      tags:
+        Environment: test
+    - name: myapi2
+      protocol_type: HTTP
+      body: |
+        openapi: 3.0.1
+        info:
+          title: myapi2
+          version: '1.0'
+        paths:
+          /test:
+            get:
+              responses:
+                '200':
+                  description: OK
+      tags:
+        Environment: test
+    - name: myapi3
+      api_name: myapi3
+      protocol_type: WEBSOCKET
+      route_selection_expression: "$request.body.action"
+      api_key_selection_expression: "$request.header.x-api-key"
+      tags:
+        Environment: test
+
+stack_tags:
+  Test: apigatewayv2-api
