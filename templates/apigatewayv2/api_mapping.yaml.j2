@@ -1,0 +1,48 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 APIMapping(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for api_mapping in sceptre_user_data.api_mappings %}
+{%- set api_mapping_name = api_mapping.name %}
+  {{ api_mapping_name }}:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    DeletionPolicy: {{ api_mapping.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ api_mapping.update_replace_policy | default('Delete') }}
+    Properties:
+      ApiId: {{ api_mapping.api_id }}
+      DomainName: {{ api_mapping.domain_name }}
+      Stage: {{ api_mapping.stage }}
+{%- if api_mapping.api_mapping_key is defined %}
+      ApiMappingKey: {{ api_mapping.api_mapping_key }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for api_mapping in sceptre_user_data.api_mappings %}
+{%- set api_mapping_name = api_mapping.name %}
+  {{ api_mapping_name }}:
+    Description: The API mapping resource ID of {{ api_mapping_name }}
+    Value:
+      Ref: {{ api_mapping_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ api_mapping_name }}"
+  {{ api_mapping_name }}ApiMappingId:
+    Description: The API mapping resource ID for {{ api_mapping_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ api_mapping_name }}
+        - ApiMappingId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ api_mapping_name }}-ApiMappingId"
+{%- endfor %}{#
+# Supported structure as of 2025-12-01:
+Type: AWS::ApiGatewayV2::ApiMapping
+Properties:
+  ApiId: String
+  ApiMappingKey: String
+  DomainName: String
+  Stage: String
+#}

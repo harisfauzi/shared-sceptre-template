@@ -1,0 +1,48 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 Deployment(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for deployment in sceptre_user_data.deployments %}
+{%- set deployment_name = deployment.name %}
+  {{ deployment_name }}:
+    Type: AWS::ApiGatewayV2::Deployment
+    DeletionPolicy: {{ deployment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ deployment.update_replace_policy | default('Delete') }}
+    Properties:
+      ApiId: {{deployment.api_id}}
+{%- if deployment.description is defined %}
+      Description: {{deployment.description}}
+{%- endif %}
+{%- if deployment.stage_name is defined %}
+      StageName: {{deployment.stage_name}}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for deployment in sceptre_user_data.deployments %}
+{%- set deployment_name = deployment.name %}
+  {{ deployment_name }}:
+    Description: The Deployment ID of {{ deployment_name }}
+    Value:
+      Ref: {{ deployment_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ deployment_name }}"
+  {{ deployment_name }}DeploymentId:
+    Description: The Deployment ID of {{ deployment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ deployment_name }}
+        - DeploymentId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ deployment_name }}-DeploymentId"
+{%- endfor %}{#
+# Supported structure as of 2025-12-15:
+Type: AWS::ApiGatewayV2::Deployment
+Properties:
+  ApiId: String
+  Description: String
+  StageName: String
+#}

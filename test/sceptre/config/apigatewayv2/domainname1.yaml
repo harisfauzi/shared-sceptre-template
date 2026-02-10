@@ -1,0 +1,83 @@
+---
+template:
+  type: file
+  path: apigatewayv2/domain_name.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "ApiGatewayV2 DomainName(s) for test environment"
+  domain_names:
+    # Example 1: Domain name with full configuration (multiple configurations, mTLS, routing mode)
+    - name: DomainProd
+      domain_name: api.example.com
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      domain_name_configurations:
+        - certificate_arn: "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+          endpoint_type: REGIONAL
+          security_policy: TLS_1_2
+      mutual_tls_authentication:
+        truststore_uri: "s3://my-bucket/truststore.pem"
+        truststore_version: "v1"
+      routing_mode: KEEP_EXISTING_CUSTOM_DOMAIN_NAMES
+      tags:
+        Environment: Production
+        Owner: Platform-Team
+
+    # Example 2: Domain name with minimal configuration (only required properties)
+    - name: DomainStaging
+      domain_name: staging-api.example.com
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Staging
+
+    # Example 3: Domain name with certificate configurations and endpoint type
+    - name: DomainDev
+      domain_name: dev-api.example.com
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      domain_name_configurations:
+        - certificate_arn: "arn:aws:acm:us-east-1:123456789012:certificate/87654321-4321-4321-4321-210987654321"
+          endpoint_type: EDGE
+          security_policy: TLS_1_2
+          ip_address_type: IPV4
+      tags:
+        Environment: Development
+        Owner: Dev-Team
+
+    # Example 4: Domain name with IPv6 and ownership verification certificate
+    - name: DomainTest
+      domain_name: test-api.example.com
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      domain_name_configurations:
+        - certificate_arn: "arn:aws:acm:us-east-1:123456789012:certificate/99999999-9999-9999-9999-999999999999"
+          endpoint_type: REGIONAL
+          ip_address_type: IPV6
+          ownership_verification_certificate_arn: "arn:aws:acm:us-east-1:123456789012:certificate/88888888-8888-8888-8888-888888888888"
+          security_policy: TLS_1_2
+      tags:
+        Environment: Test
+        Owner: QA-Team
+
+    # Example 5: Domain name with certificate name and multiple configurations
+    - name: DomainMultiRegion
+      domain_name: multi.example.com
+      deletion_policy: Retain
+      update_replace_policy: Delete
+      domain_name_configurations:
+        - certificate_name: prod-cert
+          endpoint_type: REGIONAL
+          security_policy: TLS_1_2
+        - certificate_arn: "arn:aws:acm:us-east-1:123456789012:certificate/11111111-1111-1111-1111-111111111111"
+          endpoint_type: REGIONAL
+          security_policy: TLS_1_3
+      routing_mode: OVERWRITE_EXISTING_CUSTOM_DOMAIN_NAMES
+      tags:
+        Environment: Production
+        MultiRegion: 'true'
+
+stack_tags:
+  Test: apigatewayv2-domainname

@@ -1,0 +1,57 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 Model(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for model in sceptre_user_data.models %}{# BEGIN for model in sceptre_user_data.models #}
+{%- set model_name = model.name %}
+  {{ model_name }}:
+    Type: AWS::ApiGatewayV2::Model
+    DeletionPolicy: {{ model.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ model.update_replace_policy | default('Delete') }}
+    Properties:
+      ApiId: {{ model.api_id | trim }}
+      Name: {{ model.model_name }}
+{%- if model.schema is defined%}
+      Schema: {{ model.schema }}
+{%- elif model.schema_json is defined %}
+      Schema:
+        {{ model.schema_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if model.content_type is defined %}
+      ContentType: {{ model.content_type }}
+{%- endif %}
+{%- if model.description is defined %}
+      Description: {{ model.description }}
+{%- endif %}
+{%- endfor %}{# END for model in sceptre_user_data.models #}
+
+Outputs:
+{%- for model in sceptre_user_data.models %}
+{%- set model_name = model.name %}
+  {{ model_name }}:
+    Description: The model ID of {{ model_name }}
+    Value:
+      Ref: {{ model_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ model_name }}"
+  {{ model_name }}ModelId:
+    Description: The model ID for {{ model_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ model_name }}
+        - ModelId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ model_name }}-ModelId"
+{%- endfor %}{#
+# Supported structure as of 2026-01-29:
+Type: AWS::ApiGatewayV2::Model
+Properties:
+  ApiId: String
+  ContentType: String
+  Description: String
+  Name: String
+  Schema: Json
+#}

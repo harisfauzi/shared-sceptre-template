@@ -1,0 +1,52 @@
+---
+template:
+  type: file
+  path: apigatewayv2/stage.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  description: Example API Gateway V2 Stages
+  source_repo_url: "{{git_repo}}"
+  stages:
+    - name: FullStage
+      api_id: abcdef123
+      stage_name: prod
+      access_log_settings:
+        destination: arn:aws:logs:us-east-1:123456789012:log-group:my-log-group
+        format: "{ \"requestId\": \"$context.requestId\" }"
+      access_policy_id: policy123
+      auto_deploy: true
+      client_certificate_id: cert123
+      default_route_settings:
+        data_trace_enabled: true
+        detailed_metrics_enabled: true
+        logging_level: INFO
+        throttling_burst_limit: 100
+        throttling_rate_limit: 50.0
+      deployment_id: deploy123
+      description: Full stage configuration
+      route_settings:
+        "GET /items":
+          throttling_burst_limit: 200
+          throttling_rate_limit: 100.0
+      stage_variables:
+        var1: value1
+        var2: value2
+      tags:
+        Environment: Production
+        Team: DevOps
+
+    - name: MinimalStage
+      api_id: xyz789
+      stage_name: dev
+
+    - name: JsonStage
+      api_id: jsonapi123
+      stage_name: test
+      route_settings_json: |
+        "POST /items":
+          throttling_burst_limit: 50
+          throttling_rate_limit: 25.0
+      stage_variables_json: |
+        var1: value1
+        var2: value2

@@ -1,0 +1,60 @@
+---
+template:
+  type: file
+  path: apigatewayv2/api_gateway_managed_overrides.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  api_gateway_managed_overrides:
+    - name: BasicOverride
+      api_id: api-id-1
+      deletion_policy: Retain
+      update_replace_policy: Retain
+    - name: IntegrationOverride
+      api_id: api-id-2
+      integration:
+        description: Integration override description
+        integration_method: POST
+        payload_format_version: "2.0"
+        timeout_in_millis: 5000
+    - name: RouteOverride
+      api_id: api-id-3
+      route:
+        authorization_scopes:
+          - scope1
+          - scope2
+        authorization_type: JWT
+        authorizer_id: auth-id-1
+        operation_name: operation-1
+        target: integrations/int-id-1
+    - name: StageOverride
+      api_id: api-id-4
+      stage:
+        access_log_settings:
+          destination_arn: arn:aws:logs:us-east-1:123456789012:log-group:my-log-group
+          format: $context.requestId
+        auto_deploy: true
+        default_route_settings:
+          data_trace_enabled: true
+          detailed_metrics_enabled: true
+          logging_level: INFO
+          throttling_burst_limit: 100
+          throttling_rate_limit: 50.5
+        description: Stage override description
+        route_settings: |
+          "GET /path":
+            LoggingLevel: INFO
+        stage_variables: |
+          Var1: Value1
+    - name: JsonOverride
+      api_id: api-id-5
+      stage:
+        route_settings_json: |
+          POST /path:
+            LoggingLevel: ERROR
+        stage_variables_json: |
+          Var2: Value2
+
+stack_tags:
+  Test: apigatewayv2-managed-overrides

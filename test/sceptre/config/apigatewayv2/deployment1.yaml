@@ -1,0 +1,40 @@
+---
+template:
+  type: file
+  path: apigatewayv2/deployment.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  description: "ApiGatewayV2 Deployment(s) for test environment"
+  source_repo_url: "{{git_repo}}"
+  deployments:
+    # Example 1: Deployment with full configuration (with description and stage name)
+    - name: DeploymentProd
+      api_id: a1b2c3d4
+      description: "Production deployment for API"
+      stage_name: prod
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    
+    # Example 2: Deployment with minimal configuration (only required properties)
+    - name: DeploymentStaging
+      api_id: a1b2c3d4
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    
+    # Example 3: Deployment with description only
+    - name: DeploymentDev
+      api_id: a1b2c3d4
+      description: "Development deployment for testing"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    
+    # Example 4: Deployment with stage name only (no description)
+    - name: DeploymentTest
+      api_id: a1b2c3d4
+      stage_name: test
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+stack_tags:
+  Test: apigatewayv2-deployment

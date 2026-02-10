@@ -1,0 +1,145 @@
+---
+Description: {{ sceptre_user_data.description | default('ApiGatewayV2 ApiGatewayManagedOverrides(s) for ' + sceptre_user_data.project_code) }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for override in sceptre_user_data.api_gateway_managed_overrides %}
+{%- set override_name = override.name %}
+  {{ override_name }}:
+    Type: AWS::ApiGatewayV2::ApiGatewayManagedOverrides
+    DeletionPolicy: {{ override.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ override.update_replace_policy | default('Delete') }}
+    Properties:
+      ApiId: {{ override.api_id }}
+{%- if override.integration is defined %}{# BEGIN if override.integration is defined #}
+      Integration:
+{%- if override.integration.description is defined %}
+        Description: {{ override.integration.description }}
+{%- endif %}
+{%- if override.integration.integration_method is defined %}
+        IntegrationMethod: {{ override.integration.integration_method }}
+{%- endif %}
+{%- if override.integration.payload_format_version is defined %}
+        PayloadFormatVersion: {{ override.integration.payload_format_version }}
+{%- endif %}
+{%- if override.integration.timeout_in_millis is defined %}
+        TimeoutInMillis: {{ override.integration.timeout_in_millis }}
+{%- endif %}
+{%- endif %}{# END if override.integration is defined #}
+{%- if override.route is defined %}{# BEGIN if override.route is defined #}
+      Route:
+{%- if override.route.authorization_scopes is defined %}{# BEGIN if override.route.authorization_scopes is defined #}
+        AuthorizationScopes:
+{%- for scope in override.route.authorization_scopes %}
+          - {{ scope }}
+{%- endfor %}
+{%- endif %}{# END if override.route.authorization_scopes is defined #}
+{%- if override.route.authorization_type is defined %}
+        AuthorizationType: {{ override.route.authorization_type }}
+{%- endif %}
+{%- if override.route.authorizer_id is defined %}
+        AuthorizerId: {{ override.route.authorizer_id }}
+{%- endif %}
+{%- if override.route.operation_name is defined %}
+        OperationName: {{ override.route.operation_name }}
+{%- endif %}
+{%- if override.route.target is defined %}
+        Target: {{ override.route.target }}
+{%- endif %}
+{%- endif %}{# END if override.route is defined #}
+{%- if override.stage is defined %}{# BEGIN if override.stage is defined #}
+      Stage:
+{%- if override.stage.access_log_settings is defined %}{# BEGIN if override.stage.access_log_settings is defined #}
+        AccessLogSettings:
+{%- if override.stage.access_log_settings.destination_arn is defined %}
+          DestinationArn: {{ override.stage.access_log_settings.destination_arn }}
+{%- endif %}
+{%- if override.stage.access_log_settings.format is defined %}
+          Format: {{ override.stage.access_log_settings.format }}
+{%- endif %}
+{%- endif %}{# END if override.stage.access_log_settings is defined #}
+{%- if override.stage.auto_deploy is defined %}
+        AutoDeploy: {{ override.stage.auto_deploy }}
+{%- endif %}
+{%- if override.stage.default_route_settings is defined %}{# BEGIN if override.stage.default_route_settings is defined #}
+        DefaultRouteSettings:
+{%- if override.stage.default_route_settings.data_trace_enabled is defined %}
+          DataTraceEnabled: {{ override.stage.default_route_settings.data_trace_enabled }}
+{%- endif %}
+{%- if override.stage.default_route_settings.detailed_metrics_enabled is defined %}
+          DetailedMetricsEnabled: {{ override.stage.default_route_settings.detailed_metrics_enabled }}
+{%- endif %}
+{%- if override.stage.default_route_settings.logging_level is defined %}
+          LoggingLevel: {{ override.stage.default_route_settings.logging_level }}
+{%- endif %}
+{%- if override.stage.default_route_settings.throttling_burst_limit is defined %}
+          ThrottlingBurstLimit: {{ override.stage.default_route_settings.throttling_burst_limit }}
+{%- endif %}
+{%- if override.stage.default_route_settings.throttling_rate_limit is defined %}
+          ThrottlingRateLimit: {{ override.stage.default_route_settings.throttling_rate_limit }}
+{%- endif %}
+{%- endif %}{# END if override.stage.default_route_settings is defined #}
+{%- if override.stage.description is defined %}
+        Description: {{ override.stage.description }}
+{%- endif %}
+{%- if override.stage.route_settings is defined %}{# BEGIN if override.stage.route_settings is defined #}
+        RouteSettings: |
+          {{ override.stage.route_settings | indent(width=10,first=false) }}
+{%- elif override.stage.route_settings_json is defined %}
+        RouteSettings:
+          {{ override.stage.route_settings_json | indent(width=10,first=false) }}
+{%- endif %}{# END if override.stage.route_settings is defined #}
+{%- if override.stage.stage_variables is defined %}{# BEGIN if override.stage.stage_variables is defined #}
+        StageVariables: |
+          {{ override.stage.stage_variables | indent(width=10,first=false) }}
+{%- elif override.stage.stage_variables_json is defined %}
+        StageVariables:
+          {{ override.stage.stage_variables_json | indent(width=10,first=false) }}
+{%- endif %}{# END if override.stage.stage_variables is defined #}
+{%- endif %}{# END if override.stage is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for override in sceptre_user_data.api_gateway_managed_overrides %}
+{%- set override_name = override.name %}
+  {{ override_name }}Id:
+    Description: The Identifier of the override {{ override_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ override_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ override_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2025-11-27:
+Type: AWS::ApiGatewayV2::ApiGatewayManagedOverrides
+Properties:
+  ApiId: String
+  Integration:
+    Description: String
+    IntegrationMethod: String
+    PayloadFormatVersion: String
+    TimeoutInMillis: Integer
+  Route:
+    AuthorizationScopes:
+      - String
+    AuthorizationType: String
+    AuthorizerId: String
+    OperationName: String
+    Target: String
+  Stage:
+    AccessLogSettings:
+      DestinationArn: String
+      Format: String
+    AutoDeploy: Boolean
+    DefaultRouteSettings:
+      DataTraceEnabled: Boolean
+      DetailedMetricsEnabled: Boolean
+      LoggingLevel: String
+      ThrottlingBurstLimit: Integer
+      ThrottlingRateLimit: Number
+    Description: String
+    RouteSettings: Json
+    StageVariables: Json
+#}

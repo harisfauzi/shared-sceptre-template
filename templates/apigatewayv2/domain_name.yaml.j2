@@ -1,0 +1,115 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 DomainName(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for domain_name in sceptre_user_data.domain_names %}{# BEGIN for domain_name in sceptre_user_data.domain_names #}
+{%- set domain_name_name = domain_name.name %}
+  {{ domain_name_name }}:
+    Type: AWS::ApiGatewayV2::DomainName
+    DeletionPolicy: {{ domain_name.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ domain_name.update_replace_policy | default('Delete') }}
+    Properties:
+      DomainName: {{ domain_name.domain_name}}
+{%- if domain_name.domain_name_configurations is defined %}{# BEGIN if domain_name.domain_name_configurations is defined #}
+      DomainNameConfigurations:
+{%- for configuration in domain_name.domain_name_configurations %}{# BEGIN for configuration in domain_name.domain_name_configurations #}
+        -
+{%- if configuration.certificate_arn is defined %}
+          CertificateArn: {{ configuration.certificate_arn | trim }}
+{%- endif %}
+{%- if configuration.certificate_name is defined %}
+          CertificateName: {{ configuration.certificate_name }}
+{%- endif %}
+{%- if configuration.endpoint_type is defined %}
+          EndpointType: {{ configuration.endpoint_type }}
+{%- endif %}
+{%- if configuration.ip_address_type is defined %}
+          IpAddressType: {{ configuration.ip_address_type }}
+{%- endif %}
+{%- if configuration.ownership_verification_certificate_arn is defined %}
+          OwnershipVerificationCertificateArn: {{ configuration.ownership_verification_certificate_arn | trim }}
+{%- endif %}
+{%- if configuration.security_policy is defined %}
+          SecurityPolicy: {{ configuration.security_policy }}
+{%- endif %}
+{%- endfor %}{# END for configuration in domain_name.domain_name_configurations #}
+{%- endif %}{# END if domain_name.domain_name_configurations is defined #}
+{%- if domain_name.mutual_tls_authentication is defined %}{# BEGIN if domain_name.mutual_tls_authentication is defined #}
+      MutualTlsAuthentication:
+{%- if domain_name.mutual_tls_authentication.truststore_uri is defined %}
+        TruststoreUri: {{ domain_name.mutual_tls_authentication.truststore_uri }}
+{%- endif %}
+{%- if domain_name.mutual_tls_authentication.truststore_version is defined %}
+        TruststoreVersion: {{ domain_name.mutual_tls_authentication.truststore_version }}
+{%- endif %}
+{%- endif %}{# END if domain_name.mutual_tls_authentication is defined #}
+{%- if domain_name.routing_mode is defined %}
+      RoutingMode: {{ domain_name.routing_mode }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- for key,value in domain_name.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endfor %}{# END for domain_name in sceptre_user_data.domain_names #}
+
+Outputs:
+{%- for domain_name in sceptre_user_data.domain_names %}
+{%- set domain_name_name = domain_name.name %}
+  {{ domain_name_name }}:
+    Description: The domain name for {{ domain_name_name }}
+    Value:
+      Ref: {{ domain_name_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name_name }}"
+  {{ domain_name_name }}DomainNameArn:
+    Description: The ARN for {{ domain_name_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name_name }}
+        - DomainNameArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name_name }}-DomainNameArn"
+  {{ domain_name_name }}RegionalDomainName:
+    Description: >
+      The domain name associated with the regional endpoint for
+      the custom domain name {{ domain_name_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name_name }}
+        - RegionalDomainName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name_name }}-RegionalDomainName"
+  {{ domain_name_name }}RegionalHostedZoneId:
+    Description: The region-specific Amazon Route 53 Hosted Zone ID of the regional endpoint for {{ domain_name_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name_name }}
+        - RegionalHostedZoneId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name_name }}-RegionalHostedZoneId"
+{%- endfor %}{#
+# Supported structure as of 2026-01-28:
+Type: AWS::ApiGatewayV2::DomainName
+Properties:
+  DomainName: String
+  DomainNameConfigurations:
+    -
+      CertificateArn: String
+      CertificateName: String
+      EndpointType: String
+      IpAddressType: String
+      OwnershipVerificationCertificateArn: String
+      SecurityPolicy: String
+  MutualTlsAuthentication:
+    TruststoreUri: String
+    TruststoreVersion: String
+  RoutingMode: String
+  Tags:
+    Key: Value
+#}

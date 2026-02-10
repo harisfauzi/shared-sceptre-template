@@ -1,0 +1,86 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 RoutingRule(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for routing_rule in sceptre_user_data.routing_rules %}
+{%- set routing_rule_name = routing_rule.name %}
+  {{ routing_rule_name }}:
+    Type: AWS::ApiGatewayV2::RoutingRule
+    DeletionPolicy: {{ routing_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ routing_rule.update_replace_policy | default('Delete') }}
+    Properties:
+      Actions:
+{%- for action in routing_rule.actions %}{# BEGIN for action in routing_rule.actions #}
+        - InvokeApi:
+            ApiId: {{ action.invoke_api.api_id }}
+            Stage: {{ action.invoke_api.stage }}
+{%- if action.invoke_api.strip_base_path is defined %}
+            StripBasePath: {{ action.invoke_api.strip_base_path }}
+{%- endif %}
+{%- endfor %}{# END for action in routing_rule.actions #}
+      Conditions:
+{%- for condition in routing_rule.conditions %}{# BEGIN for condition in routing_rule.conditions #}
+        -
+{%- if condition.match_base_paths is defined %}{# BEGIN if condition.match_base_paths is defined #}
+          MatchBasePaths:
+            AnyOf:
+{%- for base_path in condition.match_base_paths.any_of %}
+              - {{ base_path }}
+{%- endfor %}
+{%- endif %}{# END if condition.match_base_paths is defined #}
+{%- if condition.match_headers is defined %}{# BEGIN if condition.match_headers is defined #}
+          MatchHeaders:
+            AnyOf:
+{%- for header in condition.match_headers.any_of %}
+              -
+                Header: {{ header.header }}
+                ValueGlob: {{ header.value_glob }}
+{%- endfor %}
+{%- endif %}{# END if condition.match_headers is defined #}
+{%- endfor %}{# END for condition in routing_rule.conditions #}
+      DomainNameArn: {{ routing_rule.domain_name_arn | trim }}
+      Priority: {{ routing_rule.priority }}
+{%- endfor %}
+
+Outputs:
+{%- for routing_rule in sceptre_user_data.routing_rules %}
+{%- set routing_rule_name = routing_rule.name %}
+  {{ routing_rule_name }}:
+    Description: The API ID of {{ routing_rule_name }}
+    Value:
+      Ref: {{ routing_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ routing_rule_name }}"
+  {{ routing_rule_name }}ApiEndpoint:
+    Description: The default endpoint for API {{ routing_rule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ routing_rule_name }}
+        - ApiEndpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ routing_rule_name }}-ApiEndpoint"
+{%- endfor %}{#
+# Supported structure as of 2026-01-29:
+Type: AWS::ApiGatewayV2::RoutingRule
+Properties:
+  Actions:
+    - InvokeApi:
+        ApiId: String
+        Stage: String
+        StripBasePath: Boolean
+  Conditions:
+    -
+      MatchBasePaths:
+        AnyOf:
+          - String
+      MatchHeaders:
+        AnyOf:
+          -
+            Header: String
+            ValueGlob: String
+  DomainNameArn: String
+  Priority: Integer
+#}

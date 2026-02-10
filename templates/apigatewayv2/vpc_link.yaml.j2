@@ -1,0 +1,63 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 VpcLink(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for vpc_link in sceptre_user_data.vpc_links %}
+{%- set vpc_link_name = vpc_link.name %}
+  {{ vpc_link_name }}:
+    Type: AWS::ApiGatewayV2::VpcLink
+    DeletionPolicy: {{ vpc_link.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_link.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ vpc_link.vpc_link_name }}
+      SubnetIds:
+{%- for subnet_id in vpc_link.subnet_ids %}
+        - {{ subnet_id }}
+{%- endfor %}
+{%- if vpc_link.security_group_ids is defined %}
+      SecurityGroupIds:
+{%- for security_group_id in vpc_link.security_group_ids %}
+        - {{ security_group_id }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if vpc_link.tags is defined %}
+{%- for key,value in vpc_link.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for vpc_link in sceptre_user_data.vpc_links %}
+{%- set vpc_link_name = vpc_link.name %}
+  {{ vpc_link_name }}:
+    Description: The VPC link ID of {{ vpc_link_name }}
+    Value:
+      Ref: {{ vpc_link_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_link_name }}"
+  {{ vpc_link_name }}VpcLinkId:
+    Description: The VPC link ID of {{ vpc_link_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vpc_link_name }}
+        - VpcLinkId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_link_name }}-VpcLinkId"
+{%- endfor %}{#
+# Supported structure as of 2026-01-29:
+Type: AWS::ApiGatewayV2::VpcLink
+Properties:
+  Name: String
+  SecurityGroupIds:
+    - String
+  SubnetIds:
+    - String
+  Tags:
+    Key: Value
+#}

@@ -1,0 +1,22 @@
+---
+template:
+  type: file
+  path: apigatewayv2/api_mapping.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  api_mappings:
+    - name: mapping1
+      api_id: a1b2c3d4
+      domain_name: api.example.com
+      stage: prod
+      api_mapping_key: v1
+    - name: mapping2
+      api_id: w9x8y7z6
+      domain_name: api.internal.example.local
+      stage: staging
+      api_mapping_key: abcdefghij0123456789
+
+stack_tags:
+  Test: apigatewayv2-api-mapping
