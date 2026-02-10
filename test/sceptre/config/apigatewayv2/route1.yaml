@@ -1,0 +1,42 @@
+---
+template:
+  type: file
+  path: apigatewayv2/route.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  description: Example API Gateway V2 Routes
+  source_repo_url: "{{git_repo}}"
+  routes:
+    - name: FullRoute
+      api_id: abcdef123
+      route_key: "GET /items"
+      api_key_required: false
+      authorization_scopes:
+        - scope1
+        - scope2
+      authorization_type: CUSTOM
+      authorizer_id: auth-123
+      model_selection_expression: "$request.body#/model"
+      operation_name: GetItems
+      request_models:
+        application/json: MyModel1
+      request_parameters:
+        method.request.querystring.id: true
+      route_response_selection_expression: "$default"
+      target: integrations/abc123
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+    - name: JsonRoute
+      api_id: testapiid2
+      route_key: "POST /items"
+      request_models_json: |
+        application/json: MyModel2
+      request_parameters_json: |
+        method.request.header.Content-Type: true
+      target: integrations/xyz789
+
+    - name: MinimalRoute
+      api_id: minapi
+      route_key: "DELETE /items/{id}"

@@ -1,0 +1,92 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 Authorizer(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for authorizer in sceptre_user_data.authorizers %}
+{%- set authorizer_name = authorizer.name %}
+  {{ authorizer_name }}:
+    Type: AWS::ApiGatewayV2::Authorizer
+    DeletionPolicy: {{ authorizer.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ authorizer.update_replace_policy | default('Delete') }}
+    Properties:
+      ApiId: {{ authorizer.api_id }}
+      AuthorizerType: {{ authorizer.authorizer_type }}
+      Name: {{ authorizer.authorizer_name }}
+{%- if authorizer.authorizer_credentials_arn is defined %}
+      AuthorizerCredentialsArn: {{ authorizer.authorizer_credentials_arn }}
+{%- endif %}
+{%- if authorizer.authorizer_payload_format_version is defined %}
+      AuthorizerPayloadFormatVersion: {{ authorizer.authorizer_payload_format_version }}
+{%- endif %}
+{%- if authorizer.authorizer_result_ttl_in_seconds is defined %}
+      AuthorizerResultTtlInSeconds: {{ authorizer.authorizer_result_ttl_in_seconds }}
+{%- endif %}
+{%- if authorizer.authorizer_uri is defined %}
+      AuthorizerUri: {{ authorizer.authorizer_uri }}
+{%- endif %}
+{%- if authorizer.enable_simple_responses is defined %}
+      EnableSimpleResponses: {{ authorizer.enable_simple_responses | lower }}
+{%- endif %}
+{%- if authorizer.identity_source is defined %}
+      IdentitySource:
+{%- for source in authorizer.identity_source %}
+        - {{ source }}
+{%- endfor %}
+{%- endif %}
+{%- if authorizer.identity_validation_expression is defined %}
+      IdentityValidationExpression: {{ authorizer.identity_validation_expression }}
+{%- endif %}
+{%- if authorizer.jwt_configuration is defined %}{# BEGIN if authorizer.jwt_configuration is defined #}
+      JwtConfiguration:
+{%- if authorizer.jwt_configuration.audience is defined %}
+        Audience:
+{%- for audience in authorizer.jwt_configuration.audience %}
+          - {{ audience }}
+{%- endfor %}
+{%- endif %}
+{%- if authorizer.jwt_configuration.issuer is defined %}
+        Issuer: {{ authorizer.jwt_configuration.issuer }}
+{%- endif %}
+{%- endif %}{# END if authorizer.jwt_configuration is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for authorizer in sceptre_user_data.authorizers %}
+{%- set authorizer_name = authorizer.name %}
+  {{ authorizer_name }}:
+    Description: The authorizer ID of {{ authorizer_name }}
+    Value:
+      Ref: {{ authorizer_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ authorizer_name }}"
+  {{ authorizer_name }}AuthorizerId:
+    Description: The authorizer ID of {{ authorizer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ authorizer_name }}
+        - AuthorizerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ authorizer_name }}-AuthorizerId"
+{%- endfor %}{#
+# Supported structure as of 2025-12-01:
+Type: AWS::ApiGatewayV2::Authorizer
+Properties:
+  ApiId: String
+  AuthorizerCredentialsArn: String
+  AuthorizerPayloadFormatVersion: String
+  AuthorizerResultTtlInSeconds: Integer
+  AuthorizerType: String
+  AuthorizerUri: String
+  EnableSimpleResponses: Boolean
+  IdentitySource:
+    - String
+  IdentityValidationExpression: String
+  JwtConfiguration:
+    Audience:
+      - String
+    Issuer: String
+  Name: String
+#}

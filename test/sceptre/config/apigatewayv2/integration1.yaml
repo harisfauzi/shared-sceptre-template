@@ -1,0 +1,83 @@
+---
+template:
+  type: file
+  path: apigatewayv2/integration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  description: "ApiGatewayV2 Integration(s) for test environment"
+  source_repo_url: "{{git_repo}}"
+  integrations:
+    # Example 1: Full configuration
+    - name: IntegrationFull
+      api_id: a1b2c3d4
+      integration_type: AWS_PROXY
+      connection_id: abc123
+      connection_type: VPC_LINK
+      content_handling_strategy: CONVERT_TO_BINARY
+      credentials_arn: "arn:aws:iam::123456789012:role/IntegrationRole"
+      description: "Full integration example"
+      integration_method: POST
+      integration_subtype: AWS
+      integration_uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:123456789012:function:my-func/invocations"
+      passthrough_behavior: WHEN_NO_MATCH
+      payload_format_version: "2.0"
+      request_parameters:
+        integration.request.header.X-Header: method.request.header.X-Header
+      request_templates:
+        application/json: '{"statusCode": 200}'
+      response_parameters:
+        '"200"':
+          response_parameters:
+            - destination: "method.response.header.X-Header"
+              source: "integration.response.header.X-Header"
+      template_selection_expression: "$request.body.action"
+      timeout_in_millis: 29000
+      tls_config:
+        server_name_to_verify: "example.com"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+    # Example 2: Minimal configuration
+    - name: IntegrationMinimal
+      api_id: a1b2c3d4
+      integration_type: HTTP_PROXY
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+    # Example 3: Only request/response templates
+    - name: IntegrationTemplates
+      api_id: a1b2c3d4
+      integration_type: MOCK
+      request_templates:
+        "application/xml": "<xml>test</xml>"
+      response_parameters:
+        '"400"':
+          response_parameters:
+            - destination: "method.response.header.Error"
+              source: "integration.response.header.Error"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+    # Example 4: Only TLS config and passthrough
+    - name: IntegrationTLS
+      api_id: a1b2c3d4
+      integration_type: AWS_PROXY
+      tls_config:
+        server_name_to_verify: "secure.example.com"
+      passthrough_behavior: WHEN_NO_TEMPLATES
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+    # Example 5: Only connection and credentials
+    - name: IntegrationConnection
+      api_id: a1b2c3d4
+      integration_type: HTTP
+      connection_id: xyz789
+      connection_type: INTERNET
+      credentials_arn: "arn:aws:iam::123456789012:role/AnotherRole"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+stack_tags:
+  Test: apigatewayv2-integration

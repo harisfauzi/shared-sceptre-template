@@ -1,0 +1,125 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 Stage(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for stage in sceptre_user_data.stages %}{# BEGIN for stage in sceptre_user_data.stages #}
+{%- set stage_name = stage.name %}
+  {{ stage_name }}:
+    Type: AWS::ApiGatewayV2::Stage
+    DeletionPolicy: {{ stage.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ stage.update_replace_policy | default('Delete') }}
+    Properties:
+      ApiId: {{ stage.api_id }}
+      StageName: {{ stage.stage_name }}
+{%- if stage.access_log_settings is defined %}{# BEGIN if stage.access_log_settings is defined #}
+      AccessLogSettings:
+{%- if stage.access_log_settings.destination is defined %}
+        DestinationArn: {{ stage.access_log_settings.destination }}
+{%- endif %}
+{%- if stage.access_log_settings.format is defined %}
+        Format: {{ stage.access_log_settings.format }}
+{%- endif %}
+{%- endif %}{# END if stage.access_log_settings is defined #}
+{%- if stage.access_policy_id is defined%}
+      AccessPolicyId: {{ stage.access_policy_id }}
+{%- endif %}
+{%- if stage.auto_deploy is defined %}
+      AutoDeploy: {{ stage.auto_deploy }}
+{%- endif %}
+{%- if stage.client_certificate_id is defined %}
+      ClientCertificateId: {{ stage.client_certificate_id }}
+{%- endif %}
+{%- if stage.default_route_settings is defined %}{# BEGIN if stage.default_route_settings is defined #}
+      DefaultRouteSettings:
+{%- if stage.default_route_settings.data_trace_enabled is defined %}
+        DataTraceEnabled: {{ stage.default_route_settings.data_trace_enabled }}
+{%- endif %}
+{%- if stage.default_route_settings.detailed_metrics_enabled is defined %}
+        DetailedMetricsEnabled: {{ stage.default_route_settings.detailed_metrics_enabled }}
+{%- endif %}
+{%- if stage.default_route_settings.logging_level is defined %}
+        LoggingLevel: {{ stage.default_route_settings.logging_level }}
+{%- endif %}
+{%- if stage.default_route_settings.throttling_burst_limit is defined %}
+        ThrottlingBurstLimit: {{ stage.default_route_settings.throttling_burst_limit }}
+{%- endif %}
+{%- if stage.default_route_settings.throttling_rate_limit is defined %}
+        ThrottlingRateLimit: {{ stage.default_route_settings.throttling_rate_limit }}
+{%- endif %}
+{%- endif %}{# END if stage.default_route_settings is defined #}
+{%- if stage.description is defined %}
+      Description: {{ stage.description }}
+{%- endif %}
+{%- if stage.deployment_id is defined %}
+      DeploymentId: {{ stage.deployment_id }}
+{%- endif %}
+{%- if stage.route_settings is defined %}
+      RouteSettings: {{ stage.route_settings }}
+{%- elif stage.route_settings_json is defined %}
+      RouteSettings:
+        {{ stage.route_settings_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if stage.stage_variables is defined %}
+      StageVariables: {{ stage.stage_variables }}
+{%- elif stage.stage_variables_json is defined %}
+      StageVariables:
+        {{ stage.stage_variables_json | indent(width=8, first=false) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if stage.tags is defined %}
+{%- for key,value in stage.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}{# END for stage in sceptre_user_data.stages #}
+
+Outputs:
+{%- for stage in sceptre_user_data.stages %}
+{%- set stage_name = stage.name %}
+  {{ stage_name }}:
+    Description: The stage name of {{ stage_name }}
+    Value:
+      Ref: {{ stage_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stage_name }}"
+  {{ stage_name }}Id:
+    Description: The stage ID of {{ stage_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ stage_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stage_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-01-29:
+Type: AWS::ApiGatewayV2::Stage
+Properties:
+  AccessLogSettings:
+    DestinationArn: String
+    Format: String
+  AccessPolicyId: String
+  ApiId: String
+  AutoDeploy: Boolean
+  ClientCertificateId: String
+  DefaultRouteSettings:
+    DataTraceEnabled: Boolean
+    DetailedMetricsEnabled: Boolean
+    LoggingLevel: String
+    ThrottlingBurstLimit: Integer
+    ThrottlingRateLimit: Number
+  DeploymentId: String
+  Description: String
+  RouteSettings: Json
+  StageName: String
+  StageVariables: Json
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

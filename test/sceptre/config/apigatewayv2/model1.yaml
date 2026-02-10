@@ -1,0 +1,30 @@
+---
+template:
+  type: file
+  path: apigatewayv2/model.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  description: Example API Gateway V2 Models
+  source_repo_url: "{{git_repo}}"
+  models:
+    - name: MyModel1
+      api_id: abcdef123
+      model_name: MyModel1
+      schema: '{"$schema": "http://json-schema.org/draft-04/schema#", "title": "DummySchema", "type": "object", "properties": {"id": {"type": "string"}}}'
+      content_type: application/json
+      description: Model 1 description
+      deletion_policy: Retain
+      update_replace_policy: Retain
+    - name: MyModel2
+      api_id: xyz789
+      model_name: MyModel2
+      schema_json: |
+        $schema: 'http://json-schema.org/draft-04/schema#'
+        title: DummySchema
+        type: object
+        properties:
+          value:
+            type: integer
+      content_type: application/json
+      description: Model 2 description

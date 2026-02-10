@@ -1,0 +1,66 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 IntegrationResponse(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for integration_response in sceptre_user_data.integration_responses %}{# BEGIN for integration_response in sceptre_user_data.integration_responses #}
+{%- set integration_response_name = integration_response.name %}
+  {{ integration_response_name }}:
+    Type: AWS::ApiGatewayV2::IntegrationResponse
+    DeletionPolicy: {{ integration_response.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ integration_response.update_replace_policy | default('Delete') }}
+    Properties:
+      ApiId: {{ integration_response.api_id }}
+      IntegrationId: {{ integration_response.integration_id }}
+      IntegrationResponseKey: {{ integration_response.integration_response_key }}
+{%- if integration_response.content_handling_strategy is defined %}
+      ContentHandlingStrategy: {{ integration_response.content_handling_strategy }}
+{%- endif %}
+{%- if integration_response.response_parameters is defined %}
+      ResponseParameters: {{ integration_response.response_parameters }}
+{%- elif integration_response.response_parameters_json is defined %}
+      ResponseParameters:
+        {{ integration_response.response_parameters_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if integration_response.response_templates is defined %}
+      ResponseTemplates: {{ integration_response.response_templates }}
+{%- elif integration_response.response_templates_json is defined %}
+      ResponseTemplates:
+        {{ integration_response.response_templates_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if integration_response.template_selection_expression is defined %}
+      TemplateSelectionExpression: {{ integration_response.template_selection_expression }}
+{%- endif %}
+{%- endfor %}{# END for integration_response in sceptre_user_data.integration_responses #}
+
+Outputs:
+{%- for integration_response in sceptre_user_data.integration_responses %}
+{%- set integration_response_name = integration_response.name %}
+  {{ integration_response_name }}:
+    Description: The Integration Response ID of {{ integration_response_name }}
+    Value:
+      Ref: {{ integration_response_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ integration_response_name }}"
+  {{ integration_response_name }}IntegrationResponseId:
+    Description: The Integration Response ID of {{ integration_response_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ integration_response_name }}
+        - IntegrationResponseId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ integration_response_name }}-IntegrationResponseId"
+{%- endfor %}{#
+# Supported structure as of 2026-01-29:
+Type: AWS::ApiGatewayV2::IntegrationResponse
+Properties:
+  ApiId: String
+  ContentHandlingStrategy: String
+  IntegrationId: String
+  IntegrationResponseKey: String
+  ResponseParameters: Json
+  ResponseTemplates: Json
+  TemplateSelectionExpression: String
+#}

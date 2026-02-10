@@ -1,0 +1,103 @@
+---
+template:
+  type: file
+  path: apigatewayv2/integration_response.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  description: "ApiGatewayV2 IntegrationResponse(s) for test environment"
+  source_repo_url: "{{git_repo}}"
+  integration_responses:
+    # Example 1: Full configuration with all properties (using inline format)
+    - name: IntegrationResponseFull
+      api_id: a1b2c3d4
+      integration_id: abc123
+      integration_response_key: "/200/"
+      content_handling_strategy: CONVERT_TO_TEXT
+      response_parameters:
+        "overwrite:statuscode": "200"
+        "append:header.header1": "$context.requestId"
+        "overwrite:header.header2": "$context.stage"
+      response_templates:
+        "application/json": '{"statusCode": 200, "message": "Success"}'
+        "application/xml": '<response><status>200</status><message>Success</message></response>'
+      template_selection_expression: "${request.body.jsonPath}"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+    # Example 2: Minimal configuration (only required properties)
+    - name: IntegrationResponseMinimal
+      api_id: a1b2c3d4
+      integration_id: def456
+      integration_response_key: "/200/"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+    # Example 3: Using JSON format for response parameters (response_parameters_json)
+    - name: IntegrationResponseJsonParams
+      api_id: a1b2c3d4
+      integration_id: ghi789
+      integration_response_key: "/201/"
+      content_handling_strategy: CONVERT_TO_BINARY
+      response_parameters_json: |
+        "overwrite:statuscode": "201"
+        "append:header.X-Custom-Header": "$context.requestId"
+        "append:header.X-Request-Time": "$context.requestTime"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+    # Example 4: Using JSON format for response templates (response_templates_json)
+    - name: IntegrationResponseJsonTemplates
+      api_id: a1b2c3d4
+      integration_id: jkl012
+      integration_response_key: "/400/"
+      response_templates_json: |
+        "application/json": '{"error": "Bad Request", "statusCode": 400}'
+        "text/plain": "Bad Request"
+      template_selection_expression: "${request.body.type}"
+
+    # Example 5: Error response (4xx)
+    - name: IntegrationResponseError400
+      api_id: a1b2c3d4
+      integration_id: mno345
+      integration_response_key: "/4\\d{2}/"
+      response_parameters:
+        "overwrite:statuscode": "400"
+      response_templates:
+        "application/json": '{"error": "$context.error.message"}'
+
+    # Example 6: Server error response (5xx)
+    - name: IntegrationResponseError500
+      api_id: a1b2c3d4
+      integration_id: pqr678
+      integration_response_key: "/5\\d{2}/"
+      response_parameters:
+        "overwrite:statuscode": "500"
+      response_templates:
+        "application/json": '{"error": "Internal Server Error", "requestId": "$context.requestId"}'
+
+    # Example 7: Only content handling strategy
+    - name: IntegrationResponseContentHandling
+      api_id: a1b2c3d4
+      integration_id: stu901
+      integration_response_key: "/202/"
+      content_handling_strategy: CONVERT_TO_TEXT
+
+    # Example 8: Only template selection expression
+    - name: IntegrationResponseTemplateSelection
+      api_id: a1b2c3d4
+      integration_id: vwx234
+      integration_response_key: "/204/"
+      template_selection_expression: "$default"
+      request_templates:
+        "application/xml": "<xml>test</xml>"
+      response_parameters:
+        '"400"':
+          response_parameters:
+            - destination: "method.response.header.Error"
+              source: "integration.response.header.Error"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+stack_tags:
+  Test: apigatewayv2-integration

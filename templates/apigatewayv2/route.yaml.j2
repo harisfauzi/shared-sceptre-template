@@ -1,0 +1,92 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 Route(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for route in sceptre_user_data.routes %}{# BEGIN for route in sceptre_user_data.routes #}
+{%- set route_name = route.name %}
+  {{ route_name }}:
+    Type: AWS::ApiGatewayV2::Route
+    DeletionPolicy: {{ route.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ route.update_replace_policy | default('Delete') }}
+    Properties:
+      ApiId: {{ route.api_id }}
+      RouteKey: {{ route.route_key }}
+{%- if route.api_key_required is defined %}
+      ApiKeyRequired: {{ route.api_key_required }}
+{%- endif %}
+{%- if route.authorization_scopes is defined %}
+      AuthorizationScopes:
+{%- for scope in route.authorization_scopes %}
+        - {{ scope }}
+{%- endfor %}
+{%- endif %}
+{%- if route.authorization_type is defined %}
+      AuthorizationType: {{ route.authorization_type }}
+{%- endif %}
+{%- if route.authorizer_id is defined %}
+      AuthorizerId: {{ route.authorizer_id }}
+{%- endif %}
+{%- if route.model_selection_expression is defined %}
+      ModelSelectionExpression: {{ route.model_selection_expression }}
+{%- endif %}
+{%- if route.operation_name is defined %}
+      OperationName: {{ route.operation_name }}
+{%- endif %}
+{%- if route.request_models is defined %}
+      RequestModels: {{ route.request_models }}
+{%- elif route.request_models_json is defined %}
+      RequestModels:
+        {{ route.request_models_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if route.request_parameters is defined %}
+      RequestParameters: {{ route.request_parameters }}
+{%- elif route.request_parameters_json is defined %}
+      RequestParameters:
+        {{ route.request_parameters_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if route.route_response_selection_expression is defined %}
+      RouteResponseSelectionExpression: {{ route.route_response_selection_expression }}
+{%- endif %}
+{%- if route.target is defined %}
+      Target: {{ route.target }}
+{%- endif %}
+{%- endfor %}{# END for route in sceptre_user_data.routes #}
+
+Outputs:
+{%- for route in sceptre_user_data.routes %}
+{%- set route_name = route.name %}
+  {{ route_name }}:
+    Description: The route ID of {{ route_name }}
+    Value:
+      Ref: {{ route_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_name }}"
+  {{ route_name }}RouteId:
+    Description: The route ID of {{ route_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_name }}
+        - RouteId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_name }}-RouteId"
+{%- endfor %}{#
+# Supported structure as of 2026-01-29:
+Type: AWS::ApiGatewayV2::Route
+Properties:
+  ApiId: String
+  ApiKeyRequired: Boolean
+  AuthorizationScopes:
+    - String
+  AuthorizationType: String
+  AuthorizerId: String
+  ModelSelectionExpression: String
+  OperationName: String
+  RequestModels: Json
+  RequestParameters: Json
+  RouteKey: String
+  RouteResponseSelectionExpression: String
+  Target: String
+#}

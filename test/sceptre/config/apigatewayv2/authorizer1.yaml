@@ -1,0 +1,53 @@
+---
+template:
+  type: file
+  path: apigatewayv2/authorizer.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  description: "ApiGatewayV2 Authorizers for test environment"
+  source_repo_url: "{{git_repo}}"
+  authorizers:
+    # Example 1: JWT Authorizer with full configuration
+    - name: JwtAuthorizer
+      api_id: a1b2c3d4
+      authorizer_type: JWT
+      authorizer_name: jwt-authorizer
+      authorizer_credentials_arn: "arn:aws:iam::123456789012:role/AuthorizerRole"
+      authorizer_payload_format_version: "2.0"
+      authorizer_result_ttl_in_seconds: 300
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      identity_source:
+        - "$request.header.Authorization"
+      identity_validation_expression: '^Bearer [-0-9a-zA-z\.]*$'
+      jwt_configuration:
+        audience:
+          - "api.example.com"
+          - "app.example.com"
+        issuer: "https://auth.example.com"
+    
+    # Example 2: Lambda Authorizer with minimal configuration
+    - name: LambdaAuthorizer
+      api_id: a1b2c3d4
+      authorizer_type: REQUEST
+      authorizer_name: lambda-authorizer
+      authorizer_uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:123456789012:function:my-authorizer/invocations"
+      enable_simple_responses: true
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    
+    # Example 3: Lambda Token Authorizer with identity source
+    - name: TokenAuthorizer
+      api_id: a1b2c3d4
+      authorizer_type: TOKEN
+      authorizer_name: token-authorizer
+      authorizer_uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:123456789012:function:token-authorizer/invocations"
+      authorizer_result_ttl_in_seconds: 600
+      identity_source:
+        - "$request.header.x-custom-auth"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+stack_tags:
+  Test: apigatewayv2-authorizer

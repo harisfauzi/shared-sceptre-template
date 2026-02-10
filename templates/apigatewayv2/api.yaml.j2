@@ -73,7 +73,7 @@ Resources:
 {%- endif %}{# END if api.cors_configuration.max_age is defined #}
 {%- endif %}{# END if api.cors_configuration is defined #}
 {%- if api.credentials_arn is defined %}
-      CredentialsArn: {{ api.credentials_arn }}
+      CredentialsArn: {{ api.credentials_arn | trim }}
 {%- endif %}
 {%- if api.description is defined %}
       Description: {{ api.description }}
@@ -142,9 +142,21 @@ Properties:
   BasePath: String
   Body: Json
   BodyS3Location:
-    BodyS3Location
+    Bucket: String
+    Etag: String
+    Key: String
+    Version: String
   CorsConfiguration:
-    Cors
+    AllowCredentials: Boolean
+    AllowHeaders: 
+      - String
+    AllowMethods: 
+      - String
+    AllowOrigins: 
+      - String
+    ExposeHeaders: 
+      - String
+    MaxAge: Integer
   CredentialsArn: String
   Description: String
   DisableExecuteApiEndpoint: Boolean

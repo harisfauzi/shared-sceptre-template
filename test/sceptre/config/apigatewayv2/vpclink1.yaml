@@ -1,0 +1,38 @@
+---
+template:
+  type: file
+  path: apigatewayv2/vpc_link.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  description: Example API Gateway V2 VPC Links
+  source_repo_url: "{{git_repo}}"
+  vpc_links:
+    - name: FullVpcLink
+      vpc_link_name: FullVpcLink
+      subnet_ids:
+        - subnet-12345678
+        - subnet-87654321
+      security_group_ids:
+        - sg-12345678
+        - sg-87654321
+      tags:
+        Environment: Production
+        Team: DevOps
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+    - name: MinimalVpcLink
+      vpc_link_name: MinimalVpcLink
+      subnet_ids:
+        - subnet-11111111
+
+    - name: JsonVpcLink
+      vpc_link_name: JsonVpcLink
+      subnet_ids:
+        - subnet-22222222
+      security_group_ids:
+        - sg-22222222
+      tags_json: |
+        Environment: Development
+        Team: QA

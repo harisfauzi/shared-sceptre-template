@@ -1,0 +1,61 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 RouteResponse(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for route_response in sceptre_user_data.route_responses %}{# BEGIN for route_response in sceptre_user_data.route_responses #}
+{%- set route_response_name = route_response.name %}
+  {{ route_response_name }}:
+    Type: AWS::ApiGatewayV2::RouteResponse
+    DeletionPolicy: {{ route_response.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ route_response.update_replace_policy | default('Delete') }}
+    Properties:
+      ApiId: {{ route_response.api_id }}
+      RouteId: {{ route_response.route_id }}
+      RouteResponseKey: {{ route_response.route_response_key }}
+{%- if route_response.model_selection_expression is defined %}
+      ModelSelectionExpression: {{ route_response.model_selection_expression }}
+{%- endif %}
+{%- if route_response.response_models is defined %}
+      ResponseModels: {{ route_response.response_models }}
+{%- elif route_response.response_models_json is defined %}
+      ResponseModels:
+        {{ route_response.response_models_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if route_response.response_parameters is defined %}
+      ResponseParameters:
+        Required: {{ route_response.response_parameters.required }}
+{%- endif %}
+{%- endfor %}{# END for route_response in sceptre_user_data.route_responses #}
+
+Outputs:
+{%- for route_response in sceptre_user_data.route_responses %}
+{%- set route_response_name = route_response.name %}
+  {{ route_response_name }}:
+    Description: The route response ID of {{ route_response_name }}
+    Value:
+      Ref: {{ route_response_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_response_name }}"
+  {{ route_response_name }}RouteResponseId:
+    Description: The route response ID of {{ route_response_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_response_name }}
+        - RouteResponseId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_response_name }}-RouteResponseId"
+{%- endfor %}{#
+# Supported structure as of 2026-01-29:
+Type: AWS::ApiGatewayV2::RouteResponse
+Properties:
+  ApiId: String
+  ModelSelectionExpression: String
+  ResponseModels: Json
+  ResponseParameters:
+    Required: Boolean
+  RouteId: String
+  RouteResponseKey: String
+#}

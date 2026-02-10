@@ -1,0 +1,44 @@
+---
+template:
+  type: file
+  path: apigatewayv2/routing_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  description: Example API Gateway V2 Routing Rules
+  source_repo_url: "{{git_repo}}"
+  routing_rules:
+    - name: RoutingRule1
+      domain_name_arn: arn:aws:apigateway:us-east-1::/domainnames/example.com
+      priority: 1
+      actions:
+        - invoke_api:
+            api_id: abcdef123
+            stage: prod
+            strip_base_path: true
+      conditions:
+        - match_base_paths:
+            any_of:
+              - /api/v1/*
+        - match_headers:
+            any_of:
+              - header: X-Custom-Header
+                value_glob: "'*value*'"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+    - name: RoutingRule2
+      domain_name_arn: arn:aws:apigateway:us-west-2::/domainnames/example.com
+      priority: 100
+      actions:
+        - invoke_api:
+            api_id: abcd123
+            stage: prod
+      conditions:
+        - match_headers:
+            any_of:
+              - header: x-version
+                value_glob: beta
+        - match_base_paths:
+            any_of:
+              - users

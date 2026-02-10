@@ -1,0 +1,134 @@
+---
+Description: {{sceptre_user_data.description|default('ApiGatewayV2 Integration(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for integration in sceptre_user_data.integrations %}{# BEGIN for integration in sceptre_user_data.integrations #}
+{%- set integration_name = integration.name %}
+  {{ integration_name }}:
+    Type: AWS::ApiGatewayV2::Integration
+    DeletionPolicy: {{ integration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ integration.update_replace_policy | default('Delete') }}
+    Properties:
+      ApiId: {{ integration.api_id}}
+      IntegrationType: {{ integration.integration_type }}
+{%- if integration.connection_id is defined %}
+      ConnectionId: {{ integration.connection_id }}
+{%- endif %}
+{%- if integration.connection_type is defined %}
+      ConnectionType: {{ integration.connection_type }}
+{%- endif %}
+{%- if integration.content_handling_strategy is defined %}
+      ContentHandlingStrategy: {{ integration.content_handling_strategy }}
+{%- endif %}
+{%- if integration.credentials_arn is defined %}
+      CredentialsArn: {{ integration.credentials_arn | trim }}
+{%- endif %}
+{%- if integration.description is defined %}
+      Description: {{ integration.description }}
+{%- endif %}
+{%- if integration.integration_method is defined %}
+      IntegrationMethod: {{ integration.integration_method }}
+{%- endif %}
+{%- if integration.integration_subtype is defined %}
+      IntegrationSubtype: {{ integration.integration_subtype }}
+{%- endif %}
+{%- if integration.integration_uri is defined %}
+      IntegrationUri: {{ integration.integration_uri }}
+{%- endif %}
+{%- if integration.passthrough_behavior is defined %}
+      PassthroughBehavior: {{ integration.passthrough_behavior }}
+{%- endif %}
+{%- if integration.payload_format_version is defined %}
+      PayloadFormatVersion: {{ integration.payload_format_version }}
+{%- endif %}
+{%- if integration.request_parameters is defined %}
+      RequestParameters:
+{%- for key, value in integration.request_parameters.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if integration.request_templates is defined %}
+      RequestTemplates:
+{%- for key, value in integration.request_templates.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if integration.response_parameters is defined %}{# BEGIN if integration.response_parameters is defined #}
+      ResponseParameters:
+{%- for key, struct in integration.response_parameters.items() %}{# BEGIN for key, response_parameters in integration.response_parameters.items() #}
+        {{ key }}:
+          ResponseParameters:
+{%- for parameter in struct.response_parameters %}{# BEGIN for parameter in response_parameters #}
+            -
+{%- if parameter.destination is defined %}
+              Destination: {{ parameter.destination }}
+{%- endif %}
+{%- if parameter.source is defined %}
+              Source: {{ parameter.source }}
+{%- endif %}
+{%- endfor %}{# END for parameter in response_parameters #}
+{%- endfor %}{# END for key, response_parameters in integration.response_parameters.items() #}
+{%- endif %}{# END if integration.response_parameters is defined #}
+{%- if integration.template_selection_expression is defined %}
+      TemplateSelectionExpression: {{ integration.template_selection_expression }}
+{%- endif %}
+{%- if integration.timeout_in_millis is defined %}
+      TimeoutInMillis: {{ integration.timeout_in_millis }}
+{%- endif %}
+{%- if integration.tls_config is defined %}{# BEGIN if integration.tls_config is defined #}
+      TlsConfig:
+        ServerNameToVerify: {{ integration.tls_config.server_name_to_verify }}
+{%- endif %}{# END if integration.tls_config is defined #}
+{%- endfor %}{# END for integration in sceptre_user_data.integrations#}
+
+Outputs:
+{%- for integration in sceptre_user_data.integrations %}
+{%- set integration_name = integration.name %}
+  {{ integration_name }}:
+    Description: The Integration resource ID of {{ integration_name }}
+    Value:
+      Ref: {{ integration_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ integration_name }}"
+  {{ integration_name }}IntegrationId:
+    Description: The Integration ID for {{ integration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ integration_name }}
+        - IntegrationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ integration_name }}-IntegrationId"
+{%- endfor %}{#
+# Supported structure as of 2026-01-29:
+Type: AWS::ApiGatewayV2::Integration
+Properties:
+  ApiId: String
+  ConnectionId: String
+  ConnectionType: String
+  ContentHandlingStrategy: String
+  CredentialsArn: String
+  Description: String
+  IntegrationMethod: String
+  IntegrationSubtype: String
+  IntegrationType: String
+  IntegrationUri: String
+  PassthroughBehavior: String
+  PayloadFormatVersion: String
+  RequestParameters:
+    Key: Value
+  RequestTemplates:
+    Key: Value
+  ResponseParameters:
+    Key:
+      ResponseParameters:
+        -
+          Destination: String
+          Source: String
+  TemplateSelectionExpression: String
+  TimeoutInMillis: Integer
+  TlsConfig:
+    ServerNameToVerify: String
+#}

@@ -1,0 +1,33 @@
+---
+template:
+  type: file
+  path: apigatewayv2/route_response.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  description: Example API Gateway V2 Route Responses
+  source_repo_url: "{{git_repo}}"
+  route_responses:
+    - name: FullRouteResponse
+      api_id: abcdef123
+      route_id: route123
+      route_response_key: "$default"
+      model_selection_expression: "$response.body#/model"
+      response_models:
+        application/json: MyModel1
+      response_parameters:
+        required: true
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+    - name: JsonRouteResponse
+      api_id: testapiid2
+      route_id: route456
+      route_response_key: "200"
+      response_models_json: |
+        application/json: MyModel2
+
+    - name: MinimalRouteResponse
+      api_id: minapi
+      route_id: route789
+      route_response_key: "404"
