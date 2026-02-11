@@ -1,0 +1,91 @@
+---
+Description: {{sceptre_user_data.description|default('AppConfig Deployment(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for deployment in sceptre_user_data.deployments %}
+{%- set deployment_name = deployment.name %}
+  {{ deployment_name }}:
+    Type: AWS::AppConfig::Deployment
+    DeletionPolicy: {{ deployment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ deployment.update_replace_policy | default('Delete') }}
+    Properties:
+      ApplicationId: {{ deployment.application_id }}
+      ConfigurationProfileId: {{ deployment.configuration_profile_id }}
+      ConfigurationVersion: {{ deployment.configuration_version }}
+      DeploymentStrategyId: {{ deployment.deployment_strategy_id }}
+      EnvironmentId: {{ deployment.environment_id }}
+{%- if deployment.description is defined %}
+      Description: {{ deployment.description }}
+{%- endif %}
+{%- if deployment.dynamic_extension_parameters is defined %}{# BEGIN if deployment.dynamic_extension_parameters is defined #}
+      DynamicExtensionParameters:
+{%- for parameter in deployment.dynamic_extension_parameters %}{# BEGIN for parameter in deployment.dynamic_extension_parameters #}
+        -
+{%- if parameter.extension_reference is defined %}
+          ExtensionReference: {{ parameter.extension_reference }}
+{%- endif %}
+{%- if parameter.parameter_name is defined %}
+          ParameterName: {{ parameter.parameter_name }}
+{%- endif %}
+{%- if parameter.parameter_value is defined %}
+          ParameterValue: {{ parameter.parameter_value }}
+{%- endif %}
+{%- endfor %}{# END for parameter in deployment.dynamic_extension_parameters #}
+{%- endif %}{# END if deployment.dynamic_extension_parameters is defined #}
+{%- if deployment.kms_key_identifier is defined %}
+      KmsKeyIdentifier: {{ deployment.kms_key_identifier }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if deployment.tags is defined %}
+{%- for key,value in deployment.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for deployment in sceptre_user_data.deployments %}
+{%- set deployment_name = deployment.name %}
+  {{ deployment_name }}DeploymentNumber:
+    Description: The sequence number of the deployment for {{ deployment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ deployment_name }}
+        - DeploymentNumber
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ deployment_name }}-DeploymentNumber"
+  {{ deployment_name }}State:
+    Description: The state of the deployment for {{ deployment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ deployment_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ deployment_name }}-State"
+{%- endfor %}{#
+# Supported structure as of 2026-02-11
+Type: AWS::AppConfig::Deployment
+Properties:
+  ApplicationId: String
+  ConfigurationProfileId: String
+  ConfigurationVersion: String
+  DeploymentStrategyId: String
+  Description: String
+  DynamicExtensionParameters:
+    -
+      ExtensionReference: String
+      ParameterName: String
+      ParameterValue: String
+  EnvironmentId: String
+  KmsKeyIdentifier: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

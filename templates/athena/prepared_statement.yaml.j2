@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Athena Prepared Statement(
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for prepared_statement in sceptre_user_data.prepared_statements %}
 {%- set prepared_statement_name = prepared_statement.name %}
   {{ prepared_statement_name }}:
@@ -17,11 +16,9 @@ Resources:
 {%- if prepared_statement.description is defined %}
       Description: {{ prepared_statement.description }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for prepared_statement in sceptre_user_data.prepared_statements %}
 {%- set prepared_statement_name = prepared_statement.name %}
   {{ prepared_statement_name }}:
@@ -31,5 +28,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ prepared_statement_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+Type: AWS::Athena::PreparedStatement
+Properties:
+  Description: String
+  QueryStatement: String
+  StatementName: String
+  WorkGroup: String
+#}

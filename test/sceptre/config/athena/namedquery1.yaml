@@ -1,0 +1,30 @@
+---
+template:
+  type: file
+  path: athena/named_query.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  named_queries:
+    - name: ExampleNamedQuery1
+      database: ExampleDatabase1
+      query_string: |
+        SELECT *
+        FROM example_table1
+      description: "An example named query."
+      named_query_name: NamedQuery1
+      work_group: WorkGroup1
+      deletion_policy: Retain
+      update_replace_policy: Retain
+    - name: ExampleNamedQuery2
+      database: ExampleDatabase2
+      query_string: |
+        SELECT column1, column2
+        FROM example_table2
+        WHERE column3 = 'value'
+      description: "Another example named query."
+      named_query_name: NamedQuery2
+      work_group: WorkGroup2
+      deletion_policy: Delete
+      update_replace_policy: Delete

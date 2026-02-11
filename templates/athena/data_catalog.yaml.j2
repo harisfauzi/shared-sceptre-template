@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Athena Data Catalog(s) for
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for data_catalog in sceptre_user_data.data_catalogs %}
 {%- set data_catalog_name = data_catalog.name %}
   {{ data_catalog_name }}:
@@ -13,14 +12,23 @@ Resources:
     Properties:
       Name: {{ data_catalog.data_catalog_name }}
       Type: {{ data_catalog.type }}
+{%- if data_catalog.connection_type is defined %}
+      ConnectionType: {{ data_catalog.connection_type }}
+{%- endif %}
 {%- if data_catalog.description is defined %}
       Description: {{ data_catalog.description }}
 {%- endif %}
+{%- if data_catalog.error is defined %}
+      Error: {{ data_catalog.error }}
+{%- endif %}
 {%- if data_catalog.parameters is defined %}
       Parameters:
-{%- for key, value indata_catalog.parameters.items() %}
+{%- for key, value in data_catalog.parameters.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}
+{%- endif %}
+{%- if data_catalog.status is defined %}
+      Status: {{ data_catalog.status }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -31,11 +39,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for data_catalog in sceptre_user_data.data_catalogs %}
 {%- set data_catalog_name = data_catalog.name %}
   {{ data_catalog_name }}:
@@ -45,5 +51,19 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ data_catalog_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+Type: AWS::Athena::DataCatalog
+Properties:
+  ConnectionType: String
+  Description: String
+  Error: String
+  Name: String
+  Parameters:
+    Key: Value
+  Status: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  Type: String
+#}

@@ -1,0 +1,31 @@
+---
+template:
+  type: file
+  path: appconfig/environment.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  environments:
+    - name: ExampleEnvironment1
+      application_id: App1
+      environment_name: Env1
+      description: "An example environment."
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      deletion_protection_check: true
+      tags:
+        Environment: Production
+        Owner: TeamA
+      monitors:
+        - alarm_arn: "arn:aws:cloudwatch:region:account-id:alarm/alarm-name"
+          alarm_role_arn: "arn:aws:iam::account-id:role/role-name"
+    - name: ExampleEnvironment2
+      application_id: App2
+      environment_name: Env2
+      description: "Another example environment."
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Development
+        Owner: TeamB

@@ -1,0 +1,33 @@
+---
+template:
+  type: file
+  path: appconfig/deployment_strategy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  deployment_strategies:
+    - name: ExampleDeploymentStrategy1
+      deployment_strategy_name: Strategy1
+      deployment_duration_in_minutes: 10
+      growth_factor: 50
+      replicate_to: NONE
+      description: "An example deployment strategy."
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      final_bake_time_in_minutes: 5
+      growth_type: LINEAR
+      tags:
+        Environment: Production
+        Owner: TeamA
+    - name: ExampleDeploymentStrategy2
+      deployment_strategy_name: Strategy2
+      deployment_duration_in_minutes: 20
+      growth_factor: 75
+      replicate_to: ALL_REGIONS
+      description: "Another example deployment strategy."
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Development
+        Owner: TeamB

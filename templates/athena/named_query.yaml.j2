@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Athena Named Query(s) for 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for named_query in sceptre_user_data.named_queries %}
 {%- set named_query_name = named_query.name %}
   {{ named_query_name }}:
@@ -23,11 +22,9 @@ Resources:
 {%- if named_query.work_group is defined %}
       WorkGroup: {{ named_query.work_group }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for named_query in sceptre_user_data.named_queries %}
 {%- set named_query_name = named_query.name %}
   {{ named_query_name }}:
@@ -37,7 +34,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ named_query_name }}"
-
   {{ named_query_name }}NamedQueryId:
     Description: The unique ID of the query for {{ named_query_name }}
     Value:
@@ -47,5 +43,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ named_query_name }}-NamedQueryId"
-
-{%- endfor %}
+{%- endfor %}{#
+Type: AWS::Athena::NamedQuery
+Properties:
+  Database: String
+  Description: String
+  Name: String
+  QueryString:
+    String
+  WorkGroup: String
+#}

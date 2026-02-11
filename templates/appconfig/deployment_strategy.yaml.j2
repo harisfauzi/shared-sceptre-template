@@ -1,0 +1,71 @@
+---
+Description: {{sceptre_user_data.description|default('AppConfig DeploymentStrategy(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for deployment_strategy in sceptre_user_data.deployment_strategies %}
+{%- set deployment_strategy_name = deployment_strategy.name %}
+  {{ deployment_strategy_name }}:
+    Type: AWS::AppConfig::DeploymentStrategy
+    DeletionPolicy: {{ deployment_strategy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ deployment_strategy.update_replace_policy | default('Delete') }}
+    Properties:
+      DeploymentDurationInMinutes: {{ deployment_strategy.deployment_duration_in_minutes }}
+      GrowthFactor: {{ deployment_strategy.growth_factor }}
+      Name: {{ deployment_strategy.deployment_strategy_name }}
+      ReplicateTo: {{ deployment_strategy.replicate_to }}
+{%- if deployment_strategy.description is defined %}
+      Description: {{ deployment_strategy.description }}
+{%- endif %}
+{%- if deployment_strategy.final_bake_time_in_minutes is defined %}
+      FinalBakeTimeInMinutes: {{ deployment_strategy.final_bake_time_in_minutes }}
+{%- endif %}
+{%- if deployment_strategy.growth_type is defined %}
+      GrowthType: {{ deployment_strategy.growth_type }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if deployment_strategy.tags is defined %}
+{%- for key,value in deployment_strategy.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for deployment_strategy in sceptre_user_data.deployment_strategies %}
+{%- set deployment_strategy_name = deployment_strategy.name %}
+  {{ deployment_strategy_name }}:
+    Description: The deployment strategy ID of {{ deployment_strategy_name }}
+    Value:
+      Ref: {{ deployment_strategy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ deployment_strategy_name }}"
+  {{ deployment_strategy_name }}Id:
+    Description: The deployment strategy ID of {{ deployment_strategy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ deployment_strategy_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ deployment_strategy_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-02-11
+Type: AWS::AppConfig::DeploymentStrategy
+Properties:
+  DeploymentDurationInMinutes: Number
+  Description: String
+  FinalBakeTimeInMinutes: Number
+  GrowthFactor: Number
+  GrowthType: String
+  Name: String
+  ReplicateTo: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

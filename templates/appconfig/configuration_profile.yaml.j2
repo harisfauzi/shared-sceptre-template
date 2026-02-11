@@ -1,0 +1,102 @@
+---
+Description: {{sceptre_user_data.description|default('AppConfig ConfigurationProfile(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for configuration_profile in sceptre_user_data.configuration_profiles %}
+{%- set configuration_profile_name = configuration_profile.name %}
+  {{ configuration_profile_name }}:
+    Type: AWS::AppConfig::ConfigurationProfile
+    DeletionPolicy: {{ configuration_profile.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ configuration_profile.update_replace_policy | default('Delete') }}
+    Properties:
+      ApplicationId: {{ configuration_profile.application_id }}
+      LocationUri: {{ configuration_profile.location_uri }}
+      Name: {{ configuration_profile.configuration_profile_name }}
+{%- if configuration_profile.deletion_protection_check is defined %}
+      DeletionProtectionCheck: {{ configuration_profile.deletion_protection_check }}
+{%- endif %}
+{%- if configuration_profile.description is defined %}
+      Description: {{ configuration_profile.description }}
+{%- endif %}
+{%- if configuration_profile.kms_key_identifier is defined %}
+      KmsKeyIdentifier: {{ configuration_profile.kms_key_identifier | trim }}
+{%- endif %}
+{%- if configuration_profile.retrieval_role_arn is defined %}
+      RetrievalRoleArn: {{ configuration_profile.retrieval_role_arn | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if configuration_profile.tags is defined %}
+{%- for key,value in configuration_profile.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if configuration_profile.type is defined %}
+      Type: {{ configuration_profile.type }}
+{%- endif %}
+{%- if configuration_profile.validators is defined %}{# BEGIN if configuration_profile.validators is defined #}
+      Validators:
+{%- for validator in configuration_profile.validators %}{# BEGIN for validator in configuration_profile.validators #}
+        -
+{%- if validator.content is defined %}
+          Content: {{ validator.content }}
+{%- endif %}
+{%- if validator.type is defined %}
+          Type: {{ validator.type }}
+{%- endif %}
+{%- endfor %}{# END for validator in configuration_profile.validators #}
+{%- endif %}{# END if configuration_profile.validators is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for configuration_profile in sceptre_user_data.configuration_profiles %}
+{%- set configuration_profile_name = configuration_profile.name %}
+  {{ configuration_profile_name }}:
+    Description: The configuration profile ID {{ configuration_profile_name }}
+    Value:
+      Ref: {{ configuration_profile_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ configuration_profile_name }}"
+  {{ configuration_profile_name }}ConfigurationProfileId:
+    Description: The configuration profile ID {{ configuration_profile_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ configuration_profile_name }}
+        - ConfigurationProfileId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ configuration_profile_name }}-ConfigurationProfileId"
+  {{ configuration_profile_name }}KmsKeyArn:
+    Description: The KMS Key ARN used to encrypt the new configuration for {{ configuration_profile_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ configuration_profile_name }}
+        - KmsKeyArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ configuration_profile_name }}-KmsKeyArn"
+{%- endfor %}{#
+# Supported structure as of 2026-02-11
+Type: AWS::AppConfig::ConfigurationProfile
+Properties:
+  ApplicationId: String
+  DeletionProtectionCheck: String
+  Description: String
+  KmsKeyIdentifier: String
+  LocationUri: String
+  Name: String
+  RetrievalRoleArn: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  Type: String
+  Validators:
+    -
+      Content: String
+      Type: String
+#}
