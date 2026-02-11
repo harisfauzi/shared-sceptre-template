@@ -1,0 +1,57 @@
+---
+Description: {{sceptre_user_data.description|default('AppConfig Application(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Type: AWS::AppConfig::Application
+    DeletionPolicy: {{ application.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ application.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ application.application_name }}
+{%- if application.description is defined %}
+      Description: {{ application.description }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if application.tags is defined %}
+{%- for key,value in application.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Description: Application ID of {{ application_name }}
+    Value:
+      Ref: {{ application_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}"
+  {{ application_name }}AApplicationIdn:
+    Description: Application ID of {{ application_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ application_name }}
+        - AApplicationIdn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}-ApplicationId"
+{%- endfor %}{#
+# Supported structure as of 2026-02-11
+Type: AWS::AppConfig::Application
+Properties:
+  Description: String
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

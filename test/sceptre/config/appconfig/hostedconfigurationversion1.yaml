@@ -1,0 +1,29 @@
+---
+template:
+  type: file
+  path: appconfig/hosted_configuration_version.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  hosted_configuration_versions:
+    - name: ExampleHostedConfigurationVersion1
+      application_id: App1
+      configuration_profile_id: ConfigProfile1
+      content: "Example content 1"
+      content_type: "application/json"
+      description: "An example hosted configuration version."
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      latest_version_number: 1
+      version_label: "v1.0"
+    - name: ExampleHostedConfigurationVersion2
+      application_id: App2
+      configuration_profile_id: ConfigProfile2
+      content: "Example content 2"
+      content_type: "text/plain"
+      description: "Another example hosted configuration version."
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      latest_version_number: 2
+      version_label: "v2.0"

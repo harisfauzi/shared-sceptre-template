@@ -1,0 +1,43 @@
+---
+template:
+  type: file
+  path: appconfig/extension.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  extensions:
+    - name: ExampleExtension1
+      extension_name: Extension1
+      description: "An example extension."
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      latest_version_number: 1
+      parameters:
+        Param1: Value1
+        Param2: Value2
+      tags:
+        Environment: Production
+        Owner: TeamA
+      actions:
+        - name: Action1
+          uri: "https://example.com/action1"
+          description: "Action 1 description."
+          role_arn: "arn:aws:iam::account-id:role/role-name"
+    - name: ExampleExtension2
+      extension_name: Extension2
+      description: "Another example extension."
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      latest_version_number: 2
+      parameters:
+        ParamA: ValueA
+        ParamB: ValueB
+      tags:
+        Environment: Development
+        Owner: TeamB
+      actions:
+        - name: ActionA
+          uri: "https://example.com/actionA"
+          description: "Action A description."
+          role_arn: "arn:aws:iam::account-id:role/role-name"
