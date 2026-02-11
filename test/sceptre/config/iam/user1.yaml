@@ -23,3 +23,20 @@ sceptre_user_data:
       tags:
         Name: User2
         Project: "{{ stack_group_config.project_code }}"
+    - name: user3
+      user_name: TestUser2
+      groups:
+        - !stack_output iam/group1.yaml::group2
+      path: /test/
+      access_key_1:
+        status: Active
+        hide_secret: true
+      access_key_2:
+        status: Active
+        show_secret_access_key: true
+        hide_secret: false
+      managed_policy_arns:
+        - arn:aws:iam::aws:policy/ReadOnlyAccess
+      tags:
+        Name: User2
+        Project: "{{ stack_group_config.project_code }}"
