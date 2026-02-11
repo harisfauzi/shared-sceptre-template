@@ -1,0 +1,58 @@
+---
+Description: {{sceptre_user_data.description|default('AppConfig HostedConfigurationVersion(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for hosted_configuration_version in sceptre_user_data.hosted_configuration_versions %}
+{%- set hosted_configuration_version_name = hosted_configuration_version.name %}
+  {{ hosted_configuration_version_name }}:
+    Type: AWS::AppConfig::HostedConfigurationVersion
+    DeletionPolicy: {{ hosted_configuration_version.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ hosted_configuration_version.update_replace_policy | default('Delete') }}
+    Properties:
+      ApplicationId: {{ hosted_configuration_version.application_id }}
+      ConfigurationProfileId: {{ hosted_configuration_version.configuration_profile_id }}
+      Content: {{ hosted_configuration_version.content }}
+      ContentType: {{ hosted_configuration_version.content_type }}
+{%- if hosted_configuration_version.description is defined %}
+      Description: {{ hosted_configuration_version.description }}
+{%- endif %}
+{%- if hosted_configuration_version.latest_version_number is defined %}
+      LatestVersionNumber: {{ hosted_configuration_version.latest_version_number }}
+{%- endif %}
+{%- if hosted_configuration_version.version_label is defined %}
+      VersionLabel: {{ hosted_configuration_version.version_label }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for hosted_configuration_version in sceptre_user_data.hosted_configuration_versions %}
+{%- set hosted_configuration_version_name = hosted_configuration_version.name %}
+  {{ hosted_configuration_version_name }}:
+    Description: Version number of {{ hosted_configuration_version_name }}
+    Value:
+      Ref: {{ hosted_configuration_version_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hosted_configuration_version_name }}"
+  {{ hosted_configuration_version_name }}VersionNumber:
+    Description: The configuration version for {{ hosted_configuration_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ hosted_configuration_version_name }}
+        - VersionNumber
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hosted_configuration_version_name }}-VersionNumber"
+{%- endfor %}{#
+# Supported structure as of 2026-02-11
+Type: AWS::AppConfig::HostedConfigurationVersion
+Properties:
+  ApplicationId: String
+  ConfigurationProfileId: String
+  Content: String
+  ContentType: String
+  Description: String
+  LatestVersionNumber: Integer
+  VersionLabel: String
+#}

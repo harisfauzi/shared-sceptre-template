@@ -1,0 +1,105 @@
+---
+Description: {{sceptre_user_data.description|default('AppConfig Extension(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for extension in sceptre_user_data.extensions %}
+{%- set extension_name = extension.name %}
+  {{ extension_name }}:
+    Type: AWS::AppConfig::Extension
+    DeletionPolicy: {{ extension.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ extension.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ extension.extension_name}}
+      Actions:
+{%- for action in extension.actions %}{# BEGIN for action in extension.actions #}
+        -
+          Name: {{ action.name }}
+          Uri: {{ action.uri }}
+{%- if action.description is defined %}
+          Description: {{ action.description }}
+{%- endif %}
+{%- if action.role_arn is defined %}
+          RoleArn: {{ action.role_arn | trim }}
+{%- endif %}
+{%- endfor %}{# END for action in extension.actions #}
+{%- if extension.description is defined %}
+      Description: {{ extension.description }}
+{%- endif %}
+{%- if extension.latest_version_number is defined %}
+      LatestVersionNumber: {{ extension.latest_version_number }}
+{%- endif %}
+{%- if extension.parameters is defined %}{# BEGIN if extension.parameters is defined #}
+      Parameters:
+{%- for key,value in extension.parameters.items() %}{# BEGIN for key,value in extension.parameters.items() #}
+        {{ key }}: {{ value }}
+{%- endfor %}{# END for key,value in extension.parameters.items() #}
+{%- endif %}{# END if extension.parameters is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if extension.tags is defined %}
+{%- for key,value in extension.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for extension in sceptre_user_data.extensions %}
+{%- set extension_name = extension.name %}
+  {{ extension_name }}:
+    Description: The information about {{ extension_name }}
+    Value:
+      Ref: {{ extension_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ extension_name }}"
+  {{ extension_name }}Arn:
+    Description: The ARN for {{ extension_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ extension_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ extension_name }}-Arn"
+  {{ extension_name }}Id:
+    Description: The Id for {{ extension_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ extension_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ extension_name }}-Id"
+  {{ extension_name }}VersionNumber:
+    Description: The Version Number for {{ extension_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ extension_name }}
+        - VersionNumber
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ extension_name }}-VersionNumber"
+{%- endfor %}{#
+# Supported structure as of 2026-02-11
+Type: AWS::AppConfig::Extension
+Properties:
+  Actions:
+    -
+      Description: String
+      Name: String
+      RoleArn: String
+      Uri: String
+  Description: String
+  LatestVersionNumber: Integer
+  Name: String
+  Parameters:
+    Key: Value
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

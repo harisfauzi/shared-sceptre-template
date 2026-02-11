@@ -1,0 +1,77 @@
+---
+Description: {{sceptre_user_data.description|default('AppConfig Environment(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for environment in sceptre_user_data.environments %}
+{%- set environment_name = environment.name %}
+  {{ environment_name }}:
+    Type: AWS::AppConfig::Environment
+    DeletionPolicy: {{ environment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ environment.update_replace_policy | default('Delete') }}
+    Properties:
+      ApplicationId: {{ environment.application_id }}
+      Name: {{ environment.environment_name }}
+{%- if environment.deletion_protection_check is defined %}
+      DeletionProtectionCheck: {{ environment.deletion_protection_check }}
+{%- endif %}
+{%- if environment.description is defined %}
+      Description: {{ environment.description }}
+{%- endif %}
+{%- if environment.monitors is defined %}
+      Monitors:
+{%- for monitor in environment.monitors %}
+        -
+          AlarmArn: {{ monitor.alarm_arn }}
+{%- if monitor.alarm_role_arn is defined %}
+          AlarmRoleArn: {{ monitor.alarm_role_arn | trim }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if environment.tags is defined %}
+{%- for key,value in environment.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for environment in sceptre_user_data.environments %}
+{%- set environment_name = environment.name %}
+  {{ environment_name }}:
+    Description: The environment ID of {{ environment_name }}
+    Value:
+      Ref: {{ environment_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ environment_name }}"
+  {{ environment_name }}EnvironmentId:
+    Description: The ARN for {{ environment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ environment_name }}
+        - EnvironmentId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ environment_name }}-EnvironmentId"
+{%- endfor %}{#
+# Supported structure as of 2026-02-11
+Type: AWS::AppConfig::Environment
+Properties:
+  ApplicationId: String
+  Name: String
+  DeletionProtectionCheck: String
+  Description: String
+  Monitors:
+    -
+      AlarmArn: String
+      AlarmRoleArn: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

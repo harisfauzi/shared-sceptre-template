@@ -1,0 +1,25 @@
+---
+template:
+  type: file
+  path: appconfig/application.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  applications:
+    - name: ExampleApplication1
+      application_name: ExampleApp1
+      description: "An example application."
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        Owner: TeamA
+    - name: ExampleApplication2
+      application_name: ExampleApp2
+      description: "Another example application."
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Development
+        Owner: TeamB

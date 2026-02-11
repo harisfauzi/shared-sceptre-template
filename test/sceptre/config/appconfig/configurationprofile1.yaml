@@ -1,0 +1,35 @@
+---
+template:
+  type: file
+  path: appconfig/configuration_profile.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  configuration_profiles:
+    - name: ExampleConfigurationProfile1
+      configuration_profile_name: ConfigProfile1
+      application_id: App1
+      location_uri: s3://example-bucket/config1
+      description: "An example configuration profile."
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      kms_key_identifier: "arn:aws:kms:region:account-id:key/key-id"
+      retrieval_role_arn: "arn:aws:iam::account-id:role/role-name"
+      tags:
+        Environment: Production
+        Owner: TeamA
+      type: AWS.Freeform
+      validators:
+        - type: JSON_SCHEMA
+          content: "{\"type\": \"object\"}"
+    - name: ExampleConfigurationProfile2
+      configuration_profile_name: ConfigProfile2
+      application_id: App2
+      location_uri: s3://example-bucket/config2
+      description: "Another example configuration profile."
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Development
+        Owner: TeamB

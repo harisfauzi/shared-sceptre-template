@@ -1,0 +1,33 @@
+---
+template:
+  type: file
+  path: appconfig/extension_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  extension_associations:
+    - name: ExampleExtensionAssociation1
+      extension_identifier: Extension1
+      extension_version_number: 1
+      resource_identifier: Resource1
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      parameters:
+        Param1: Value1
+        Param2: Value2
+      tags:
+        Environment: Production
+        Owner: TeamA
+    - name: ExampleExtensionAssociation2
+      extension_identifier: Extension2
+      extension_version_number: 2
+      resource_identifier: Resource2
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      parameters:
+        ParamA: ValueA
+        ParamB: ValueB
+      tags:
+        Environment: Development
+        Owner: TeamB

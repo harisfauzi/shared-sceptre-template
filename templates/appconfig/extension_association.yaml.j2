@@ -1,0 +1,80 @@
+---
+Description: {{sceptre_user_data.description|default('AppConfig Extension Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for extension_association in sceptre_user_data.extension_associations %}
+{%- set extension_association_name = extension_association.name %}
+  {{ extension_association_name }}:
+    Type: AWS::AppConfig::ExtensionAssociation
+    DeletionPolicy: {{ extension_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ extension_association.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if extension_association.extension_identifier is defined %}
+      ExtensionIdentifier: {{ extension_association.extension_identifier }}
+{%- endif %}
+{%- if extension_association.extension_version_number is defined %}
+      ExtensionVersionNumber: {{ extension_association.extension_version_number }}
+{%- endif %}
+{%- if extension_association.parameters is defined %}
+      Parameters:
+{%- for key,value in extension_association.parameters.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if extension_association.resource_identifier is defined %}
+      ResourceIdentifier: {{ extension_association.resource_identifier }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if extension_association.tags is defined %}
+{%- for key,value in extension_association.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for extension_association in sceptre_user_data.extension_associations %}
+{%- set extension_association_name = extension_association.name %}
+  {{ extension_association_name }}:
+    Description: The information about {{ extension_association_name }}
+    Value:
+      Ref: {{ extension_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ extension_association_name }}"
+  {{ extension_association_name }}Arn:
+    Description: The ARN of {{ extension_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ extension_association_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ extension_association_name }}-Arn"
+  {{ extension_association_name }}Id:
+    Description: The Id of {{ extension_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ extension_association_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ extension_association_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-02-11
+Type: AWS::AppConfig::ExtensionAssociation
+Properties:
+  ExtensionIdentifier: String
+  ExtensionVersionNumber: Integer
+  Parameters:
+    Key: Value
+  ResourceIdentifier: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
