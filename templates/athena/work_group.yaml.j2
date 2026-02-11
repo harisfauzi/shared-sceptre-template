@@ -5,7 +5,6 @@ Description: {{sceptre_user_data.description|default('Athena Work Group(s) for '
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for work_group in sceptre_user_data.work_groups %}
 {%- set work_group_name = work_group.name %}
   {{ work_group_name }}:
@@ -23,36 +22,141 @@ Resources:
 {%- if work_group.state is defined %}
       State: {{ work_group.state }}
 {%- endif %}
-{%- if work_group.work_group_configuration is defined %}{# BEGIN {%- if work_group.work_group_configuration is defined %} #}
+{%- if work_group.work_group_configuration is defined %}{# BEGIN if work_group.work_group_configuration is defined #}
       WorkGroupConfiguration:
+{%- if work_group.work_group_configuration.additional_configuration is defined %}
+        AdditionalConfiguration: |
+          {{ work_group.work_group_configuration.additional_configuration | indent(width=10, first=true) }}
+{%- endif %}
 {%- if work_group.work_group_configuration.bytes_scanned_cutoff_per_query is defined %}
         BytesScannedCutoffPerQuery: {{ work_group.work_group_configuration.bytes_scanned_cutoff_per_query }}
+{%- endif %}
+{%- if work_group.work_group_configuration.customer_content_encryption_configuration is defined %}
+        CustomerContentEncryptionConfiguration:
+          KmsKey: {{ work_group.work_group_configuration.customer_content_encryption_configuration.kms_key }}
 {%- endif %}
 {%- if work_group.work_group_configuration.enforce_work_group_configuration is defined %}
         EnforceWorkGroupConfiguration: {{ work_group.work_group_configuration.enforce_work_group_configuration }}
 {%- endif %}
+{%- if work_group.work_group_configuration.engine_configuration is defined %}{# BEGIN if work_group.work_group_configuration.engine_configuration is defined #}
+        EngineConfiguration:
+{%- if work_group.work_group_configuration.engine_configuration.additional_configs is defined %}{# BEGIN if work_group.work_group_configuration.engine_configuration.additional_configs is defined #}
+          AdditionalConfigs:
+{%- for key,value in work_group.work_group_configuration.engine_configuration.additional_configs.items() %}
+            {{ key }}: {{ value }}
+{%- endfor%}
+{%- endif %}{# END if work_group.work_group_configuration.engine_configuration.additional_configs is defined #}
+{%- if work_group.work_group_configuration.engine_configuration.classifications is defined %}{# BEGIN if work_group.work_group_configuration.engine_configuration.classifications is defined #}
+          Classifications:
+{%- for classification in work_group.work_group_configuration.engine_configuration.classifications %}{# BEGIN for classification in work_group.work_group_configuration.engine_configuration.classifications #}
+            -
+{%- if classification.name is defined %}
+              Name: {{ classification.name }}
+{%- endif %}
+{%- if classification.properties is defined %}{# BEGIN if classification.properties is defined#}
+              Properties:
+{%- for key, value in classification.properties.items() %}
+                {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if classification.properties is defined #}
+{%- endfor %}{# END for classification in work_group.work_group_configuration.engine_configuration.classifications #}
+{%- endif %}{# END if work_group.work_group_configuration.engine_configuration.classifications is defined #}
+{%- if work_group.work_group_configuration.engine_configuration.coordinator_dpu_size is defined %}
+          CoordinatorDpuSize: {{ work_group.work_group_configuration.engine_configuration.coordinator_dpu_size }}
+{%- endif %}
+{%- if work_group.work_group_configuration.engine_configuration.default_executor_dpu_size is defined %}
+          DefaultExecutorDpuSize: {{ work_group.work_group_configuration.engine_configuration.default_executor_dpu_size }}
+{%- endif %}
+{%- if work_group.work_group_configuration.engine_configuration.max_concurent_dpus is defined %}
+          MaxConcurrentDpus: {{ work_group.work_group_configuration.engine_configuration.max_concurent_dpus }}
+{%- endif %}
+{%- if work_group.work_group_configuration.engine_configuration.spark_properties is defined %}
+          SparkProperties:
+{%- for key,value in work_group.work_group_configuration.engine_configuration.spark_properties.items() %}
+            {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END if work_group.work_group_configuration.engine_configuration is defined #}
 {%- if work_group.work_group_configuration.engine_version is defined %}
         EngineVersion:
 {{ macro_engine_version.prep(work_group.work_group_configuration.engine_version) | indent(width=10, first=true)}}
 {%- endif %}
+{%- if work_group.work_group_configuration.execution_role is defined %}
+        ExecutionRole: {{ work_group.work_group_configuration.execution_role }}
+{%- endif %}
+{%- if work_group.work_group_configuration.managed_query_results_configuration is defined %}{# BEGIN if work_group.work_group_configuration.managed_query_results_configuration is defined #}
+        ManagedQueryResultsConfiguration:
+          Enabled: Boolean
+          EncryptionConfiguration:
+            KmsKey: String
+{%- endif %}{# END if work_group.work_group_configuration.managed_query_results_configuration is defined #}
+{%- if work_group.work_group_configuration.monitoring_configuration is defined %}{# BEGIN if work_group.work_group_configuration.monitoring_configuration is defined #}
+        MonitoringConfiguration:
+{%- if work_group.work_group_configuration.monitoring_configuration.cloud_watch_logging_configuration is defined %}{# BEGIN if work_group.work_group_configuration.monitoring_configuration.cloud_watch_logging_configuration is defined #}
+          CloudWatchLoggingConfiguration:
+{%- if work_group.work_group_configuration.monitoring_configuration.cloud_watch_logging_configuration.enabled is defined %}
+            Enabled: {{ work_group.work_group_configuration.monitoring_configuration.cloud_watch_logging_configuration.enabled }}
+{%- endif %}
+{%- if work_group.work_group_configuration.monitoring_configuration.cloud_watch_logging_configuration.log_group is defined %}
+            LogGroup: {{ work_group.work_group_configuration.monitoring_configuration.cloud_watch_logging_configuration.log_group }}
+{%- endif %}
+{%- if work_group.work_group_configuration.monitoring_configuration.cloud_watch_logging_configuration.log_stream_name_prefix is defined %}
+            LogStreamNamePrefix: {{ work_group.work_group_configuration.monitoring_configuration.cloud_watch_logging_configuration.log_stream_name_prefix }}
+{%- endif %}
+{%- if work_group.work_group_configuration.monitoring_configuration.cloud_watch_logging_configuration.log_types is defined %}
+            LogTypes:
+{%- for key, value in work_group.work_group_configuration.monitoring_configuration.cloud_watch_logging_configuration.log_types.items() %}
+              {{ key }}: {{ value }}
+{%- endfor %}  
+{%- endif %}
+{%- endif %}{# END if work_group.work_group_configuration.monitoring_configuration.cloud_watch_logging_configuration is defined #}
+{%- if work_group.work_group_configuration.monitoring_configuration.managed_logging_configuration is defined %}{# BEGIN if work_group.work_group_configuration.monitoring_configuration.managed_logging_configuration is defined #}
+          ManagedLoggingConfiguration:
+{%- if work_group.work_group_configuration.monitoring_configuration.managed_logging_configuration.enabled is defined %}
+            Enabled: {{ work_group.work_group_configuration.monitoring_configuration.managed_logging_configuration.enabled }}
+{%- endif %}
+{%- if work_group.work_group_configuration.monitoring_configuration.managed_logging_configuration.kms_key is defined %}
+            KmsKey: {{ work_group.work_group_configuration.monitoring_configuration.managed_logging_configuration.kms_key }}
+{%- endif %}
+{%- endif %}{# END if work_group.work_group_configuration.monitoring_configuration.managed_logging_configuration is defined #}
+{%- if work_group.work_group_configuration.monitoring_configuration.s3_logging_configuration is defined %}{# BEGIN if work_group.work_group_configuration.monitoring_configuration.s3_logging_configuration is defined #}
+          S3LoggingConfiguration:
+{%- if work_group.work_group_configuration.monitoring_configuration.s3_logging_configuration.enabled is defined %}
+            Enabled: {{ work_group.work_group_configuration.monitoring_configuration.s3_logging_configuration.enabled }}
+{%- endif %}
+{%- if work_group.work_group_configuration.monitoring_configuration.s3_logging_configuration.kms_key is defined %}
+            KmsKey: {{ work_group.work_group_configuration.monitoring_configuration.s3_logging_configuration.kms_key }}
+{%- endif %}
+{%- if work_group.work_group_configuration.monitoring_configuration.s3_logging_configuration.log_location is defined %}
+            LogLocation: {{ work_group.work_group_configuration.monitoring_configuration.s3_logging_configuration.log_location }}
+{%- endif %}
+{%- endif %}{# END if work_group.work_group_configuration.monitoring_configuration.s3_logging_configuration is defined #}
+{%- endif %}{# END if work_group.work_group_configuration.monitoring_configuration is defined #}
 {%- if work_group.work_group_configuration.publish_cloud_watch_metrics_enabled is defined %}
         PublishCloudWatchMetricsEnabled: {{ work_group.work_group_configuration.publish_cloud_watch_metrics_enabled }}
 {%- endif %}
 {%- if work_group.work_group_configuration.requester_pays_enabled is defined %}
         RequesterPaysEnabled: {{ work_group.work_group_configuration.requester_pays_enabled }}
 {%- endif %}
-{%- if work_group.work_group_configuration.result_configuration is defined %}{# BEGIN {%- if work_group.work_group_configuration.result_configuration is defined %} #}
+{%- if work_group.work_group_configuration.result_configuration is defined %}{# BEGIN if work_group.work_group_configuration.result_configuration is defined #}
         ResultConfiguration:
+{%- if work_group.work_group_configuration.result_configuration.acl_configuration is defined %}
+          AclConfiguration:
+            S3AclOption: {{ work_group.work_group_configuration.result_configuration.acl_configuration.s3_acl_option }}
+{%- endif %}
 {%- if work_group.work_group_configuration.result_configuration.encryption_configuration is defined %}
           EncryptionConfiguration:
 {{ macro_encryption_configuration.prep(work_group.work_group_configuration.result_configuration.encryption_configuration) | indent(width=12, first=true) }}
 {%- endif %}
+{%- if work_group.work_group_configuration.result_configuration.expected_bucket_owner is defined %}
+          ExpectedBucketOwner: {{ work_group.work_group_configuration.result_configuration.expected_bucket_owner }}
+{%- endif %}
 {%- if work_group.work_group_configuration.result_configuration.output_location is defined %}
           OutputLocation: {{ work_group.work_group_configuration.result_configuration.output_location }}
 {%- endif %}
-{%- endif %}{# END {%- if work_group.work_group_configuration.result_configuration is defined %} #}
-{%- endif %}{# END {%- if work_group.work_group_configuration is defined %} #}
-{%- if work_group.work_group_configuration_updates is defined %}{# BEGIN {%- if work_group.work_group_configuration_updates is defined %} #}
+{%- endif %}{# END if work_group.work_group_configuration.result_configuration is defined #}
+{%- endif %}{# END if work_group.work_group_configuration is defined #}
+{%- if work_group.work_group_configuration_updates is defined %}{# BEGIN if work_group.work_group_configuration_updates is defined #}
       WorkGroupConfigurationUpdates:
 {%- if work_group.work_group_configuration_updates.bytes_scanned_cutoff_per_query is defined %}
         BytesScannedCutoffPerQuery: {{ work_group.work_group_configuration_updates.bytes_scanned_cutoff_per_query }}
@@ -73,7 +177,7 @@ Resources:
 {%- if work_group.work_group_configuration_updates.requester_pays_enabled is defined %}
         RequesterPaysEnabled: {{ work_group.work_group_configuration_updates.requester_pays_enabled }}
 {%- endif %}
-{%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %}{# BEGIN {%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %} #}
+{%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %}{# BEGIN if work_group.work_group_configuration_updates.result_configuration_updates is defined #}
         ResultConfigurationUpdates:
 {%- if work_group.work_group_configuration_updates.result_configuration_updates.encryption_configuration is defined %}
           EncryptionConfiguration:
@@ -88,8 +192,8 @@ Resources:
 {%- if work_group.work_group_configuration_updates.result_configuration_updates.remove_output_location is defined %}
           RemoveOutputLocation: {{ work_group.work_group_configuration_updates.result_configuration_updates.remove_output_location }}
 {%- endif %}
-{%- endif %}{# END {%- if work_group.work_group_configuration_updates.result_configuration_updates is defined %} #}
-{%- endif %}{# END {%- if work_group.work_group_configuration_updates is defined %} #}
+{%- endif %}{# END if work_group.work_group_configuration_updates.result_configuration_updates is defined #}
+{%- endif %}{# END if work_group.work_group_configuration_updates is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -99,11 +203,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for work_group in sceptre_user_data.work_groups %}
 {%- set work_group_name = work_group.name %}
   {{ work_group_name }}:
@@ -113,7 +215,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ work_group_name }}"
-
   {{ work_group_name }}CreationTime:
     Description: The date and time the workgroup {{ work_group_name }} was created.
     Value:
@@ -123,5 +224,66 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ work_group_name }}-CreationTime"
-
-{%- endfor %}
+{%- endfor %}{#
+Type: AWS::Athena::WorkGroup
+Properties:
+  Description: String
+  Name: String
+  RecursiveDeleteOption: Boolean
+  State: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  WorkGroupConfiguration:
+    AdditionalConfiguration: String
+    BytesScannedCutoffPerQuery: Integer
+    CustomerContentEncryptionConfiguration:
+      KmsKey: String
+    EnforceWorkGroupConfiguration: Boolean
+    EngineConfiguration:
+      AdditionalConfigs:
+        Key: Value
+      Classifications:
+        -
+          Name: String
+          Properties:
+            Key: Value
+      CoordinatorDpuSize: Integer
+      DefaultExecutorDpuSize: Integer
+      MaxConcurrentDpus: Integer
+      SparkProperties:
+        Key: Value
+    EngineVersion:
+      EffectiveEngineVersion: String
+      SelectedEngineVersion: String
+    ExecutionRole: String
+    ManagedQueryResultsConfiguration:
+      Enabled: Boolean
+      EncryptionConfiguration:
+        KmsKey: String
+    MonitoringConfiguration:
+      CloudWatchLoggingConfiguration:
+        Enabled: Boolean
+        LogGroup: String
+        LogStreamNamePrefix: String
+        LogTypes:
+          Key: Value
+      ManagedLoggingConfiguration:
+        Enabled: Boolean
+        KmsKey: String
+      S3LoggingConfiguration:
+        Enabled: Boolean
+        KmsKey: String
+        LogLocation: String
+    PublishCloudWatchMetricsEnabled: Boolean
+    RequesterPaysEnabled: Boolean
+    ResultConfiguration:
+      AclConfiguration:
+        S3AclOption: String
+      EncryptionConfiguration:
+        EncryptionOption: String
+        KmsKey: String
+      ExpectedBucketOwner: String
+      OutputLocation: String
+#}

@@ -1,0 +1,106 @@
+---
+Description: {{sceptre_user_data.description|default('Athena Capacity Reservation(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for capacity_reservation in sceptre_user_data.capacity_reservations %}
+{%- set capacity_reservation_name = capacity_reservation.name %}
+  {{ capacity_reservation_name }}:
+    Type: AWS::Athena::CapacityReservation
+    DeletionPolicy: {{ capacity_reservation.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ capacity_reservation.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ capacity_reservation.capacity_reservation_name}}
+      TargetDpus: {{ capacity_reservation.target_dpus }}
+{%- if capacity_reservation.capacity_assignment_configuration is defined %}{# BEGIN if capacity_reservation.capacity_assignment_configuration is defined #}
+      CapacityAssignmentConfiguration:
+        CapacityAssignments:
+{%- for assignment in capacity_reservation.capacity_assignment_configuration.capacity_assignments %}{# BEGIN for assignment in capacity_reservation.capacity_assignment_configuration.capacity_assignments #}
+          -
+            WorkgroupNames:
+{%- for workgroup_name in assignment.workgroup_names %}{# BEGIN for workgroup_name in assignment.workgroup_names #}
+              - {{ workgroup_name }}
+{%- endfor %}{# END for workgroup_name in assignment.workgroup_names #}
+{%- endfor %}{# END for assignment in capacity_reservation.capacity_assignment_configuration.capacity_assignments #}
+{%- endif %}{# END if capacity_reservation.capacity_assignment_configuration is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if capacity_reservation.tags is defined %}
+{%- for key,value in capacity_reservation.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for capacity_reservation in sceptre_user_data.capacity_reservations %}
+{%- set capacity_reservation_name = capacity_reservation.name %}
+  {{ capacity_reservation_name }}:
+    Description: The ARN of the capacity reservation for {{ capacity_reservation_name }}
+    Value:
+      Ref: {{ capacity_reservation_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}"
+  {{ capacity_reservation_name }}AllocatedDpus:
+    Description: The number of data processing units currently allocated for {{ capacity_reservation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_reservation_name }}
+        - AllocatedDpus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-AllocatedDpus"
+  {{ capacity_reservation_name }}Arn:
+    Description: The ARN of the capacity reservation for {{ capacity_reservation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_reservation_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-Arn"
+  {{ capacity_reservation_name }}CreationTime:
+    Description: The time in UTC epoch millis when the capacity reservation was created for {{ capacity_reservation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_reservation_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-CreationTime"
+  {{ capacity_reservation_name }}LastSuccessfulAllocationTime:
+    Description: AThe time of the most recent capacity allocation that succeeded for {{ capacity_reservation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_reservation_name }}
+        - LastSuccessfulAllocationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-LastSuccessfulAllocationTime"
+  {{ capacity_reservation_name }}Status:
+    Description: The status of the capacity reservation {{ capacity_reservation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_reservation_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-Status"
+{%- endfor %}{#
+Type: AWS::Athena::CapacityReservation
+Properties:
+  CapacityAssignmentConfiguration:
+    CapacityAssignments:
+      -
+        WorkgroupNames:
+          - String
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TargetDpus: Integer
+#}

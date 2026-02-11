@@ -1,0 +1,80 @@
+---
+template:
+  type: file
+  path: athena/work_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  work_groups:
+    - name: ExampleWorkGroup1
+      work_group_name: WorkGroup1
+      description: "An example work group."
+      state: ENABLED
+      recursive_delete_option: true
+      work_group_configuration:
+        bytes_scanned_cutoff_per_query: 1000000
+        enforce_work_group_configuration: true
+        engine_configuration:
+          additional_configs:
+            ConfigKey1: ConfigValue1
+            ConfigKey2: ConfigValue2
+          classifications:
+            - name: Classification1
+              properties:
+                PropertyKey1: PropertyValue1
+                PropertyKey2: PropertyValue2
+          coordinator_dpu_size: 2
+          default_executor_dpu_size: 4
+          max_concurrent_dpus: 10
+          spark_properties:
+            SparkKey1: SparkValue1
+            SparkKey2: SparkValue2
+        engine_version:
+          selected_engine_version: "Athena engine version 2"
+        execution_role: "arn:aws:iam::account-id:role/ExampleRole"
+        result_configuration:
+          output_location: "s3://example-bucket/output/"
+          encryption_configuration:
+            encryption_option: SSE_S3
+        publish_cloud_watch_metrics_enabled: true
+        requester_pays_enabled: false
+      tags:
+        Environment: Production
+        Owner: TeamA
+    - name: ExampleWorkGroup2
+      work_group_name: WorkGroup2
+      description: "Another example work group."
+      state: DISABLED
+      recursive_delete_option: false
+      work_group_configuration:
+        bytes_scanned_cutoff_per_query: 500000
+        enforce_work_group_configuration: false
+        engine_configuration:
+          additional_configs:
+            ConfigKeyA: ConfigValueA
+            ConfigKeyB: ConfigValueB
+          classifications:
+            - name: ClassificationA
+              properties:
+                PropertyKeyA: PropertyValueA
+                PropertyKeyB: PropertyValueB
+          coordinator_dpu_size: 1
+          default_executor_dpu_size: 2
+          max_concurrent_dpus: 5
+          spark_properties:
+            SparkKeyA: SparkValueA
+            SparkKeyB: SparkValueB
+        engine_version:
+          selected_engine_version: "Athena engine version 1"
+        execution_role: "arn:aws:iam::account-id:role/AnotherExampleRole"
+        result_configuration:
+          output_location: "s3://another-example-bucket/output/"
+          encryption_configuration:
+            encryption_option: CSE_KMS
+            kms_key: "arn:aws:kms:region:account-id:key/key-id"
+        publish_cloud_watch_metrics_enabled: false
+        requester_pays_enabled: true
+      tags:
+        Environment: Development
+        Owner: TeamB

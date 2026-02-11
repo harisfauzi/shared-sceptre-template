@@ -35,12 +35,12 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ application_name }}"
-  {{ application_name }}AApplicationIdn:
+  {{ application_name }}ApplicationId:
     Description: Application ID of {{ application_name }}
     Value:
       Fn::GetAtt:
         - {{ application_name }}
-        - AApplicationIdn
+        - ApplicationId
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ application_name }}-ApplicationId"
