@@ -74,7 +74,7 @@ Resources:
       UserName: {{ user.user_name }}
 {%- endif %}
 
-{%- if user.access_key_1 is defined %}{# BEGIN {%- if user.access_key_1 is defined %} #}
+{%- if user.access_key_1 is defined %}{# BEGIN if user.access_key_1 is defined #}
   {{ user_name }}accesskey1:
     Type: AWS::IAM::AccessKey
     DeletionPolicy: {{ user.deletion_policy | default('Delete') }}
@@ -89,6 +89,10 @@ Resources:
       Status: {{ user.access_key_1.status }}
 {%- endif %}
 
+{%- if user.access_key_1.hide_secret is defined and user.access_key_1.hide_secret %}{# BEGIN if user.access_key_1.hide_secret is defined and not user.access_key_1.hide_secret #}
+  # Set {{user_name}}.access_key_1.hide_secret to true
+  # to prevent the Secret Access Key from being stored in Secrets Manager.
+{%- else %}{# ELSE if user.access_key_1.hide_secret is defined and not user.access_key_1.hide_secret #}
   {{ user_name }}accesskey1Secret:
     Type: AWS::SecretsManager::Secret
     Properties:
@@ -124,9 +128,10 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}{# END {%- if user.access_key_1 is defined %} #}
+{%- endif %}{# END if user.access_key_1.hide_secret is defined and not user.access_key_1.hide_secret #}
+{%- endif %}{# END if user.access_key_1 is defined #}
 
-{%- if user.access_key_2 is defined %}{# BEGIN {%- if user.access_key_2 is defined %} #}
+{%- if user.access_key_2 is defined %}{# BEGIN if user.access_key_2 is defined #}
   {{ user_name }}accesskey2:
     Type: AWS::IAM::AccessKey
     DeletionPolicy: {{ user.deletion_policy | default('Delete') }}
@@ -141,6 +146,10 @@ Resources:
       Status: {{ user.access_key_2.status }}
 {%- endif %}
 
+{%- if user.access_key_2.hide_secret is defined and user.access_key_2.hide_secret %}{# BEGIN if user.access_key_2.hide_secret is defined and not user.access_key_2.hide_secret #}
+  # Set {{user_name}}.access_key_2.hide_secret to true
+  # to prevent the Secret Access Key from being stored in Secrets Manager.
+{%- else %}{# ELSE if user.access_key_2.hide_secret is defined and not user.access_key_2.hide_secret #}
   {{ user_name }}accesskey2Secret:
     Type: AWS::SecretsManager::Secret
     Properties:
@@ -176,7 +185,8 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}{# END {%- if user.access_key_2 is defined %} #}
+{%- endif %}{# END if user.access_key_2.hide_secret is defined and not user.access_key_2.hide_secret #}
+{%- endif %}{# END if user.access_key_2 is defined #}
 {%- endfor %}
 
 Outputs:
