@@ -1,0 +1,69 @@
+---
+Description: {{sceptre_user_data.description|default('Backup RestoreTestingSelection(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for report_testing_selection in sceptre_user_data.report_testing_selections %}
+{%- set report_testing_selection_name = report_testing_selection.name %}
+  {{ report_testing_selection_name }}:
+    Type: AWS::Backup::RestoreTestingSelection
+    DeletionPolicy: {{ report_testing_selection.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ report_testing_selection.update_replace_policy | default('Delete') }}
+    Properties:
+      IamRoleArn: {{ report_testing_selection.iam_role_arn }}
+      ProtectedResourceType: {{ report_testing_selection.protected_resource_type }}
+      RestoreTestingPlanName: {{ report_testing_selection.restore_testing_plan_name }}
+      RestoreTestingSelectionName: {{ report_testing_selection.report_testing_selection_name }}
+{%- if report_testing_selection.protected_resource_arns is defined %}{# BEGIN if report_testing_selection.protected_resource_arns is defined #}
+      ProtectedResourceArns:
+{%- for arn in report_testing_selection.protected_resource_arns %}
+        - {{ arn }}
+{%- endfor %}
+{%- endif %}{# END if report_testing_selection.protected_resource_arns is defined #}
+{%- if report_testing_selection.protected_resource_conditions is defined %}{# BEGIN if report_testing_selection.protected_resource_conditions is defined #}
+      ProtectedResourceConditions:
+{%- if report_testing_selection.protected_resource_conditions.string_equals is defined %}{# BEGIN if report_testing_selection.protected_resource_conditions.string_equals is defined #}
+        StringEquals:
+{%- for key,value in report_testing_selection.protected_resource_conditions.string_equals.items() %}
+          - Key: {{ key }}
+            Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if report_testing_selection.protected_resource_conditions.string_equals is defined #}
+{%- if report_testing_selection.protected_resource_conditions.string_not_equals is defined %}{# BEGIN if report_testing_selection.protected_resource_conditions.string_not_equals is defined #}
+        StringNotEquals:
+{%- for key,value in report_testing_selection.protected_resource_conditions.string_not_equals.items() %}
+          - Key: {{ key }}
+            Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if report_testing_selection.protected_resource_conditions.string_not_equals is defined #}
+{%- endif %}{# END if report_testing_selection.protected_resource_conditions is defined#}
+{%- if report_testing_selection.restore_metadata_overrides is defined %}{# BEGIN if report_testing_selection.restore_metadata_overrides is defined #}
+      RestoreMetadataOverrides:
+{%- for key,value in report_testing_selection.restore_metadata_overrides.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if report_testing_selection.restore_metadata_overrides is defined #}
+{%- if report_testing_selection.validation_window_hours is defined %}
+      ValidationWindowHours: {{ report_testing_selection.validation_window_hours }}
+{%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2026-02-26
+Type: AWS::Backup::RestoreTestingSelection
+Properties:
+  IamRoleArn: String
+  ProtectedResourceArns:
+    - String
+  ProtectedResourceConditions:
+    StringEquals:
+      - Key: String
+        Value: String
+    StringNotEquals:
+      - Key: String
+        Value: String
+  ProtectedResourceType: String
+  RestoreMetadataOverrides:
+    Key: Value
+  RestoreTestingPlanName: String
+  RestoreTestingSelectionName: String
+  ValidationWindowHours: Integer
+#}

@@ -1,0 +1,43 @@
+---
+template:
+  type: file
+  path: backup/tiering_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  tiering_configurations:
+    - name: TieringConfiguration1
+      tiering_configuration_name: "tiering-config-1"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      backup_vault_name: "vault1"
+      resource_selection:
+        - resources:
+            - "arn:aws:ec2:us-east-1:123456789012:volume/vol-0abcd1234efgh5678"
+            - "arn:aws:ec2:us-east-1:123456789012:volume/vol-1abcd1234efgh5678"
+          resource_type: "EBS_VOLUME"
+          tiering_down_settings_in_days: 30
+        - resources:
+            - "arn:aws:rds:us-east-1:123456789012:db:mydb"
+          resource_type: "RDS_INSTANCE"
+          tiering_down_settings_in_days: 60
+      tiering_configuration_tags:
+        Environment: test
+        Owner: DevOps
+    - name: TieringConfiguration2
+      tiering_configuration_name: "tiering-config-2"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      backup_vault_name: "vault2"
+      resource_selection:
+        - resources:
+            - "arn:aws:s3:::example-bucket"
+          resource_type: "S3_BUCKET"
+          tiering_down_settings_in_days: 90
+      tiering_configuration_tags:
+        Environment: prod
+        Owner: Admin
+
+stack_tags:
+  Test: tiering-configuration

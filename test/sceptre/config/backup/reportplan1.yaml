@@ -1,0 +1,53 @@
+---
+template:
+  type: file
+  path: backup/report_plan.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  report_plans:
+    - name: ReportPlan1
+      report_plan_name: "report-plan-1"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      report_delivery_channel:
+        s3_bucket_name: "example-bucket"
+        formats:
+          - "JSON"
+          - "CSV"
+        s3_key_prefix: "reports/backup/"
+      report_setting:
+        report_template: "BACKUP_JOB_REPORT"
+        accounts:
+          - "'123456789012'"
+          - "'987654321098'"
+        framework_arns:
+          - "arn:aws:backup:us-east-1:123456789012:framework/framework1"
+        organization_units:
+          - "ou-abc123"
+          - "ou-def456"
+        regions:
+          - "us-east-1"
+          - "us-west-2"
+      report_plan_tags:
+        Environment: test
+        Owner: DevOps
+    - name: ReportPlan2
+      report_plan_name: "report-plan-2"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      report_delivery_channel:
+        s3_bucket_name: "example-bucket-prod"
+        formats:
+          - "PDF"
+      report_setting:
+        report_template: "RECOVERY_POINT_REPORT"
+        regions:
+          - "us-east-1"
+      report_plan_tags:
+        Environment: prod
+        Owner: Admin
+
+stack_tags:
+  Test: report-plan

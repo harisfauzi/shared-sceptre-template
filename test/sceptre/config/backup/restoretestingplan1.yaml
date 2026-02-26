@@ -1,0 +1,48 @@
+---
+template:
+  type: file
+  path: backup/restore_testing_plan.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  report_testing_plans:
+    - name: RestoreTestingPlan1
+      report_testing_plan_name: "restore-plan-1"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      recovery_point_selection:
+        algorithm: "LATEST"
+        include_vaults:
+          - "arn:aws:backup:us-east-1:123456789012:vault/vault1"
+          - "arn:aws:backup:us-east-1:123456789012:vault/vault2"
+        recovery_point_types:
+          - "EBS_SNAPSHOT"
+          - "RDS_SNAPSHOT"
+        exclude_vaults:
+          - "arn:aws:backup:us-east-1:123456789012:vault/excluded-vault"
+        selection_window_days: 7
+      schedule_expression: "cron(0 12 * * ? *)"
+      schedule_expression_timezone: "UTC"
+      start_window_hours: 2
+      tags:
+        Environment: test
+        Owner: DevOps
+    - name: RestoreTestingPlan2
+      report_testing_plan_name: "restore-plan-2"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      recovery_point_selection:
+        algorithm: "OLDEST"
+        include_vaults:
+          - "arn:aws:backup:us-east-1:123456789012:vault/vault3"
+        recovery_point_types:
+          - "DYNAMODB_TABLE"
+      schedule_expression: "rate(1 day)"
+      start_window_hours: 4
+      tags:
+        Environment: prod
+        Owner: Admin
+
+stack_tags:
+  Test: restore-testing-plan
