@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: backup/logically_air_gapped_backup_vault.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  backup_vaults:
+    - name: LogicallyAirGappedVault1
+      backup_vault_name: "lag-vault1"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      max_retention_days: 365
+      min_retention_days: 30
+      access_policy_json: '{"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Principal": "*", "Action": "backup:LogicallyAirGappedBackupVault", "Resource": "*"}]}'
+      backup_vault_tags:
+        Environment: test
+        Owner: DevOps
+      encryption_key_arn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-1234abcd1234"
+      mpa_approval_team_arn: "arn:aws:iam::123456789012:role/MPAApprovalTeam"
+      notifications:
+        backup_vault_events:
+          - BACKUP_JOB_STARTED
+          - BACKUP_JOB_COMPLETED
+        sns_topic_arn: "arn:aws:sns:us-east-1:123456789012:BackupNotifications"
+    - name: LogicallyAirGappedVault2
+      backup_vault_name: "lag-vault2"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      max_retention_days: 180
+      min_retention_days: 15
+      access_policy: |
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: "backup:LogicallyAirGappedBackupVault"
+            Resource: "*"
+      backup_vault_tags:
+        Environment: prod
+        Owner: Admin
+      mpa_approval_team_arn: "arn:aws:iam::123456789012:role/MPAApprovalTeamProd"
+      notifications:
+        backup_vault_events:
+          - BACKUP_JOB_FAILED
+        sns_topic_arn: "arn:aws:sns:us-east-1:123456789012:BackupNotificationsProd"
+
+stack_tags:
+  Test: logically-air-gapped-backup-vault

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Backup BackupPlan(s) for '
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for backup_plan in sceptre_user_data.backup_plans %}
 {%- set backup_plan_name = backup_plan.name %}
   {{ backup_plan_name }}:
@@ -14,17 +13,17 @@ Resources:
       BackupPlan:
         BackupPlanName: {{ backup_plan.backup_plan.backup_plan_name }}
         BackupPlanRule:
-{%- for backup_plan_rule in backup_plan.backup_plan.backup_plan_rule %}
+{%- for backup_plan_rule in backup_plan.backup_plan.backup_plan_rule %}{# BEGIN for backup_plan_rule in backup_plan.backup_plan.backup_plan_rule #}
           - RuleName: {{ backup_plan_rule.rule_name }}
             TargetBackupVault: {{ backup_plan_rule.target_backup_vault }}
-{% if backup_plan_rule.completion_window_minutes is defined %}
+{%- if backup_plan_rule.completion_window_minutes is defined %}
             CompletionWindowMinutes: {{ backup_plan_rule.completion_window_minutes }}
 {%- endif %}
-{% if backup_plan_rule.copy_actions is defined %}
+{%- if backup_plan_rule.copy_actions is defined %}{# BEGIN if backup_plan_rule.copy_actions is defined #}
             CopyActions:
-{%- for copy_action in backup_plan_rule.copy_actions %}
+{%- for copy_action in backup_plan_rule.copy_actions %}{# BEGIN for copy_action in backup_plan_rule.copy_actions #}
               - DestinationBackupVaultArn: {{ copy_action.destination_backup_vault_arn | trim }}
-{%- if copy_action.lifecycle is defined %}
+{%- if copy_action.lifecycle is defined %}{# BEGIN if copy_action.lifecycle is defined #}
                 Lifecycle:
 {%- if copy_action.lifecycle.delete_after_days is defined %}
                   DeleteAfterDays: {{ copy_action.lifecycle.delete_after_days }}
@@ -32,13 +31,28 @@ Resources:
 {%- if copy_action.lifecycle.move_to_cold_storage_after_days is defined %}
                   MoveToColdStorageAfterDays: {{ copy_action.lifecycle.move_to_cold_storage_after_days }}
 {%- endif %}
+{%- if copy_action.lifecycle.opt_in_to_archive_for_supported_resources is defined %}
+                  OptInToArchiveForSupportedResources: {{ copy_action.lifecycle.opt_in_to_archive_for_supported_resources | lower }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
-{% if backup_plan_rule.enable_continuous_backup is defined %}
+{%- endif %}{# END if copy_action.lifecycle is defined #}
+{%- endfor %}{# END for copy_action in backup_plan_rule.copy_actions #}
+{%- endif %}{# END if backup_plan_rule.copy_actions is defined #}
+{%- if backup_plan_rule.enable_continuous_backup is defined %}
             EnableContinuousBackup: {{ backup_plan_rule.enable_continuous_backup }}
 {%- endif %}
-{%- if backup_plan_rule.lifecycle is defined %}
+{%- if backup_plan_rule.index_actions is defined %}{# BEGIN if backup_plan_rule.index_actions is defined #}
+            IndexActions:
+{%- for action in backup_plan_rule.index_actions %}{# BEGIN for action in backup_plan_rule.index_actions #}
+              -
+{%- if action.resource_types is defined %}{# BEGIN if action.resource_types is defined #}
+                ResourceTypes:
+{%- for resource_type in action.resource_types %}
+                  - {{ resource_type }}
+{%- endfor %}
+{%- endif %}{# END if action.resource_types is defined #}
+{%- endfor %}{# END for action in backup_plan_rule.index_actions #}
+{%- endif %}{# END if backup_plan_rule.index_actions is defined #}
+{%- if backup_plan_rule.lifecycle is defined %}{# BEGIN if backup_plan_rule.lifecycle is defined #}
             Lifecycle:
 {%- if backup_plan_rule.lifecycle.delete_after_days is defined %}
               DeleteAfterDays: {{ backup_plan_rule.lifecycle.delete_after_days }}
@@ -46,40 +60,81 @@ Resources:
 {%- if backup_plan_rule.lifecycle.move_to_cold_storage_after_days is defined %}
               MoveToColdStorageAfterDays: {{ backup_plan_rule.lifecycle.move_to_cold_storage_after_days }}
 {%- endif %}
+{%- if backup_plan_rule.lifecycle.opt_in_to_archive_for_supported_resources is defined %}
+              OptInToArchiveForSupportedResources: {{ backup_plan_rule.lifecycle.opt_in_to_archive_for_supported_resources | lower }}
 {%- endif %}
-{% if backup_plan_rule.recovery_point_tags is defined %}
+{%- endif %}{# END if backup_plan_rule.lifecycle is defined #}
+{%- if backup_plan_rule.recovery_point_tags is defined %}
             RecoveryPointTags:
-{{ backup_plan_rule.recovery_point_tags | indent(width=14,first=True)}}
+{%- for key, value in backup_plan_rule.recovery_point_tags.items() %}
+              {{ key }}: {{ value }}
+{%- endfor %}
 {%- endif %}
-{% if backup_plan_rule.schedule_expression is defined %}
+{%- if backup_plan_rule.scan_actions is defined %}{# BEGIN if backup_plan_rule.scan_actions is defined #}
+            ScanActions:
+{%- for action in backup_plan_rule.scan_actions %}{# BEGIN for action in backup_plan_rule.scan_actions #}
+              -
+{%- if action.malware_scanner is defined %}
+                MalwareScanner: {{ action.malware_scanner }}
+{%- endif %}
+{%- if action.scan_mode is defined %}
+                ScanMode: {{ action.scan_mode }}
+{%- endif %}
+{%- endfor %}{# END for action in backup_plan_rule.scan_actions#}
+{%- endif %}{# END if backup_plan_rule.scan_actions is defined#}
+{%- if backup_plan_rule.schedule_expression is defined %}
             ScheduleExpression: {{ backup_plan_rule.schedule_expression }}
 {%- endif %}
-{% if backup_plan_rule.start_window_minutes is defined %}
+{%- if backup_plan_rule.schedule_expression_timezone is defined %}
+            ScheduleExpressionTimezone: {{ backup_plan_rule.schedule_expression_timezone }}
+{%- endif %}
+{%- if backup_plan_rule.start_window_minutes is defined %}
             StartWindowMinutes: {{ backup_plan_rule.start_window_minutes }}
 {%- endif %}
-{%- endfor %}
-{%- if backup_plan.backup_plan.advanced_backup_settings is defined %}
+{%- if backup_plan_rule.target_logically_air_gapped_backup_vault_arn is defined %}
+            TargetLogicallyAirGappedBackupVaultArn: {{ backup_plan_rule.target_logically_air_gapped_backup_vault_arn | trim }}
+{%- endif %}
+{%- endfor %}{# END for backup_plan_rule in backup_plan.backup_plan.backup_plan_rule #}
+{%- if backup_plan.backup_plan.advanced_backup_settings is defined %}{# BEGIN if backup_plan.backup_plan.advanced_backup_settings is defined #}
         AdvancedBackupSettings:
-{%- for setting in backup_plan.backup_plan.advanced_backup_settings %}
+{%- for setting in backup_plan.backup_plan.advanced_backup_settings %}{# BEGIN for setting in backup_plan.backup_plan.advanced_backup_settings #}
           -
 {%- if setting.backup_options_json is defined %}
             BackupOptions: {{ setting.backup_options_json }}
 {%- else %}
             BackupOptions:
-{{ setting.backup_options | indent(width=14, first=True) }}
+{{ setting.backup_options | indent(width=14, first=true) }}
 {%- endif %}
             ResourceType: {{ setting.resource_type }}
-{%- endfor %}
+{%- endfor %}{# END for setting in backup_plan.backup_plan.advanced_backup_settings #}
+{%- endif %}{# END if backup_plan.backup_plan.advanced_backup_settings is defined#}
+{%- if backup_plan.backup_plan.scan_settings is defined %}{# BEGIN if backup_plan.backup_plan.scan_settings is defined #}
+        ScanSettings:
+{%- for setting in backup_plan.backup_plan.scan_settings %}{# BEGIN for setting in backup_plan.backup_plan.scan_settings #}
+          -
+{%- if setting.malware_scanner is defined %}
+            MalwareScanner: {{ setting.malware_scanner }}
 {%- endif %}
+{%- if setting.resource_types is defined %}{# BEGIN if setting.resource_types is defined #}
+            ResourceTypes:
+{%- for resource_type in setting.resource_types %}
+              - {{ resource_type }}
+{%- endfor %}
+{%- endif %}{# END if setting.resource_types is defined #}
+{%- if setting.scanner_role_arn is defined %}
+            ScannerRoleArn: {{ setting.scanner_role_arn }}
+{%- endif %}
+{%- endfor %}{# END for setting in backup_plan.backup_plan.scan_settings #}
+{%- endif %}{# END if backup_plan.backup_plan.scan_settings is defined #}
 {%- if backup_plan.backup_plan_tags is defined %}
       BackupPlanTags:
-{{ backup_plan.backup_plan_tags | indent(width=8, first=True) }}
+{%- for key, value in backup_plan.backup_plan_tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for backup_plan in sceptre_user_data.backup_plans %}
 {%- set backup_plan_name = backup_plan.name %}
   {{ backup_plan_name }}:
@@ -89,17 +144,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ backup_plan_name }}"
-
-  {{ backup_plan_name }}Arn:
+  {{ backup_plan_name }}ABackupPlanArnn:
     Description: The ARN for {{ backup_plan_name }}
     Value:
       Fn::GetAtt:
         - {{ backup_plan_name }}
-        - Arn
+        - ABackupPlanArn
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ backup_plan_name }}-Arn"
-
+        Fn::Sub: "${AWS::StackName}-{{ backup_plan_name }}-BackupPlanArn"
   {{ backup_plan_name }}BackupPlanId:
     Description: The BackupPlan Id for {{ backup_plan_name }}
     Value:
@@ -109,7 +162,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ backup_plan_name }}-BackupPlanId"
-
   {{ backup_plan_name }}VersionId:
     Description: The VersionId for {{ backup_plan_name }}
     Value:
@@ -119,5 +171,53 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ backup_plan_name }}-VersionId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-02-17
+Type: AWS::Backup::BackupPlan
+Properties:
+  BackupPlan:
+    AdvancedBackupSettings:
+      -
+        BackupOptions: Json
+        ResourceType: String
+    BackupPlanName: String
+    BackupPlanRule:
+      -
+        CompletionWindowMinutes: Number
+        CopyActions:
+          -
+            DestinationBackupVaultArn: String
+            Lifecycle:
+              DeleteAfterDays: Number
+              MoveToColdStorageAfterDays: Number
+              OptInToArchiveForSupportedResources: Boolean
+        EnableContinuousBackup: Boolean
+        IndexActions:
+          -
+            ResourceTypes:
+              - String
+        Lifecycle:
+          DeleteAfterDays: Number
+          MoveToColdStorageAfterDays: Number
+          OptInToArchiveForSupportedResources: Boolean
+        RecoveryPointTags:
+          Key: Value
+        RuleName: String
+        ScanActions:
+          -
+            MalwareScanner: String
+            ScanMode: String
+        ScheduleExpression: String
+        ScheduleExpressionTimezone: String
+        StartWindowMinutes: Number
+        TargetBackupVault: String
+        TargetLogicallyAirGappedBackupVaultArn: String
+    ScanSettings:
+      -
+        MalwareScanner: String
+        ResourceTypes:
+          - String
+        ScannerRoleArn: String
+  BackupPlanTags:
+    Key: Value
+#}

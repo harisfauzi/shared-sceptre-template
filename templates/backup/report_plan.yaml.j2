@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Backup ReportPlan(s) for '
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for report_plan in sceptre_user_data.report_plans %}
 {%- set report_plan_name = report_plan.name %}
   {{ report_plan_name }}:
@@ -11,17 +10,42 @@ Resources:
     DeletionPolicy: {{ report_plan.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ report_plan.update_replace_policy | default('Delete') }}
     Properties:
-{%- if report_plan.report_delivery_channel_json is defined %}
-      ReportDeliveryChannel: {{ report_plan.report_delivery_channel_json }}
-{%- else %}
       ReportDeliveryChannel:
-{{ report_plan.report_delivery_channel | indent(width=8,first=True) }}
+        S3BucketName: String
+{%- if report_plan.report_delivery_channel.formats is defined %}{# BEGIN if report_plan.report_delivery_channel.formats is defined #}
+        Formats:
+{%- for format in report_plan.report_delivery_channel.formats %}
+          - {{ format }}
+{%- endfor %}
+{%- endif %}{# END if report_plan.report_delivery_channel.formats is defined #}
+{%- if report_plan.report_delivery_channel.s3_key_prefix is defined %}
+        S3KeyPrefix: {{ report_plan.report_delivery_channel.s3_key_prefix }}
 {%- endif %}
-{%- if report_plan.report_setting_json is defined %}
-      ReportSetting: {{ report_plan.report_setting_json }}
-{%- else %}
       ReportSetting:
-{{ report_plan.report_setting | indent(width=8,first=True) }}
+        ReportTemplate: {{ report_plan.report_setting.report_template }}
+{%- if report_plan.report_setting.accounts is defined %}
+        Accounts:
+{%- for account in report_plan.report_setting.accounts %}
+          - {{ account }}
+{%- endfor %}
+{%- endif %}
+{%- if report_plan.report_setting.framework_arns is defined %}
+        FrameworkArns:
+{%- for framework_arn in report_plan.report_setting.framework_arns %}
+          - {{ framework_arn }}
+{%- endfor %}
+{%- endif %}
+{%- if report_plan.report_setting.organization_units is defined %}
+        OrganizationUnits:
+{%- for organization_unit in report_plan.report_setting.organization_units %}
+          - {{ organization_unit }}
+{%- endfor %}
+{%- endif %}
+{%- if report_plan.report_setting.regions is defined %}
+        Regions:
+{%- for region in report_plan.report_setting.regions %}
+          - {{ region }}
+{%- endfor %}
 {%- endif %}
 {%- if report_plan.report_plan_description is defined %}
       ReportPlanDescription: {{ report_plan.report_plan_description }}
@@ -32,17 +56,15 @@ Resources:
       ReportPlanTags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if report_plan.tags is defined %}
-{%- for key,value in report_plan.tags.items() %}
+{%- if report_plan.report_plan_tags is defined %}
+{%- for key,value in report_plan.report_plan_tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for report_plan in sceptre_user_data.report_plans %}
 {%- set report_plan_name = report_plan.name %}
   {{ report_plan_name }}:
@@ -52,7 +74,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ report_plan_name }}"
-
   {{ report_plan_name }}ReportPlanArn:
     Description: The ARN for {{ report_plan_name }}
     Value:
@@ -62,5 +83,28 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ report_plan_name }}-ReportPlanArn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-02-26
+Type: AWS::Backup::ReportPlan
+Properties:
+  ReportDeliveryChannel:
+    Formats:
+      - String
+    S3BucketName: String
+    S3KeyPrefix: String
+  ReportPlanDescription: String
+  ReportPlanName: String
+  ReportPlanTags:
+    - Key: String
+      Value: String
+  ReportSetting:
+    Accounts:
+      - String
+    FrameworkArns:
+      - String
+    OrganizationUnits:
+      - String
+    Regions:
+      - String
+    ReportTemplate: String
+#}

@@ -1,0 +1,79 @@
+---
+Description: {{sceptre_user_data.description|default('Backup RestoreTestingSelection(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for tiering_configuration in sceptre_user_data.tiering_configurations %}
+{%- set tiering_configuration_name = tiering_configuration.name %}
+  {{ tiering_configuration_name }}:
+    Type: AWS::Backup::TieringConfiguration
+    DeletionPolicy: {{ tiering_configuration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ tiering_configuration.update_replace_policy | default('Delete') }}
+    Properties:
+      BackupVaultName: {{ tiering_configuration.backup_vault_name }}
+      ResourceSelection:
+{%- for selection in tiering_configuration.resource_selection %}{# BEGIN for selection in tiering_configuration.resource_selection #}
+        -
+          Resources:
+{%- for resource in selection.resources %}
+            - {{ resource }}
+{%- endfor %}
+          ResourceType: {{ selection.resource_type }}
+          TieringDownSettingsInDays: {{ selection.tiering_down_settings_in_days }}
+{%- endfor %}{# END for selection in tiering_configuration.resource_selection #}
+      TieringConfigurationName: {{ tiering_configuration.tiering_configuration_name }}
+      TieringConfigurationTags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if tiering_configuration.tiering_configuration_tags is defined %}{# BEGIN if tiering_configuration.tiering_configuration_tags is defined #}
+{%- for key,value in tiering_configuration.tiering_configuration_tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if tiering_configuration.tiering_configuration_tags is defined #}
+{%- endfor %}
+
+
+Outputs:
+{%- for tiering_configuration in sceptre_user_data.tiering_configurations %}
+{%- set tiering_configuration_name = tiering_configuration.name %}
+  {{ tiering_configuration_name }}CreationTime:
+    Description: The UTC time when {{ tiering_configuration_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ tiering_configuration_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ tiering_configuration_name }}-CreationTime"
+  {{ tiering_configuration_name }}LastUpdatedTime:
+    Description: The date and time in UTC when {{ tiering_configuration_name }} was last updated.
+    Value:
+      Fn::GetAtt:
+        - {{ tiering_configuration_name }}
+        - LastUpdatedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ tiering_configuration_name }}-LastUpdatedTime"
+  {{ tiering_configuration_name }}TieringConfigurationArn:
+    Description: The ARN for {{ tiering_configuration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ tiering_configuration_name }}
+        - TieringConfigurationArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ tiering_configuration_name }}-TieringConfigurationArn"
+{%- endfor %}{#
+# Supported structure as of 2026-02-26
+Type: AWS::Backup::TieringConfiguration
+Properties:
+  BackupVaultName: String
+  ResourceSelection:
+    -
+      Resources:
+        - String
+      ResourceType: String
+      TieringDownSettingsInDays: Integer
+  TieringConfigurationName: String
+  TieringConfigurationTags:
+    Key: Value
+#}

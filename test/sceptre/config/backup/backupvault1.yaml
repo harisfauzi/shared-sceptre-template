@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: backup/backup_vault.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  backup_vaults:
+    - name: BackupVault1
+      backup_vault_name: "vault1"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      access_policy_json: '{"Version": "2012-10-17", "Statement": [{"Effect": "Allow", "Principal": "*", "Action": "backup:BackupVault", "Resource": "*"}]}'
+      backup_vault_tags:
+        Environment: test
+        Owner: DevOps
+      encryption_key_arn: "arn:aws:kms:us-east-1:123456789012:key/abcd1234-abcd-1234-abcd-1234abcd1234"
+      lock_configuration:
+        min_retention_days: 30
+        changeable_for_days: 7
+        max_retention_days: 365
+      notifications:
+        backup_vault_events:
+          - BACKUP_JOB_STARTED
+          - BACKUP_JOB_COMPLETED
+        sns_topic_arn: "arn:aws:sns:us-east-1:123456789012:BackupNotifications"
+    - name: BackupVault2
+      backup_vault_name: "vault2"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      access_policy: |
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: "backup:BackupVault"
+            Resource: "*"
+      backup_vault_tags:
+        Environment: prod
+        Owner: Admin
+      lock_configuration:
+        min_retention_days: 90
+      notifications:
+        backup_vault_events:
+          - BACKUP_JOB_FAILED
+        sns_topic_arn: "arn:aws:sns:us-east-1:123456789012:BackupNotificationsProd"
+
+stack_tags:
+  Test: backup-vault

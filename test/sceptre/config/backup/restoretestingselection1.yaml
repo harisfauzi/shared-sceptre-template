@@ -1,0 +1,38 @@
+---
+template:
+  type: file
+  path: backup/restore_testing_selection.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  report_testing_selections:
+    - name: RestoreTestingSelection1
+      report_testing_selection_name: "restore-selection-1"
+      iam_role_arn: "arn:aws:iam::123456789012:role/RestoreRole"
+      protected_resource_type: "EBS_VOLUME"
+      restore_testing_plan_name: "restore-plan-1"
+      protected_resource_arns:
+        - "arn:aws:ec2:us-east-1:123456789012:volume/vol-0abcd1234efgh5678"
+        - "arn:aws:ec2:us-east-1:123456789012:volume/vol-1abcd1234efgh5678"
+      protected_resource_conditions:
+        string_equals:
+          Environment: test
+          Owner: DevOps
+        string_not_equals:
+          Department: Finance
+      restore_metadata_overrides:
+        Key1: Value1
+        Key2: Value2
+      validation_window_hours: 24
+    - name: RestoreTestingSelection2
+      report_testing_selection_name: "restore-selection-2"
+      iam_role_arn: "arn:aws:iam::123456789012:role/RestoreRoleProd"
+      protected_resource_type: "RDS_INSTANCE"
+      restore_testing_plan_name: "restore-plan-2"
+      protected_resource_arns:
+        - "arn:aws:rds:us-east-1:123456789012:db:mydb"
+      validation_window_hours: 48
+
+stack_tags:
+  Test: restore-testing-selection

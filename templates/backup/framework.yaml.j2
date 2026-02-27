@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Backup Framework(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for framework in sceptre_user_data.frameworks %}
 {%- set framework_name = framework.name %}
   {{ framework_name }}:
@@ -12,22 +11,38 @@ Resources:
     UpdateReplacePolicy: {{ framework.update_replace_policy | default('Delete') }}
     Properties:
       FrameworkControls:
-{%- for framework_control in framework.framework_controls %}
+{%- for framework_control in framework.framework_controls %}{# BEGIN for framework_control in framework.framework_controls #}
         - ControlName: {{ framework_control.control_name }}
-{%- if framework_control.control_input_parameters is defined %}
+{%- if framework_control.control_input_parameters is defined %}{# BEGIN if framework_control.control_input_parameters is defined #}
           ControlInputParameters:
 {%- for parameter in framework_control.control_input_parameters %}
             - ParameterName: {{ parameter.parameter_name }}
               ParameterValue: {{ parameter.parameter_value }}
 {%- endfor %}
-{%- endif %}
-{%- if framework_control.control_scope_json is defined %}
-          ControlScope: {{ framework_control.control_scope_json }}
-{%- elif framework_control.control_scope is defined %}
+{%- endif %}{# END if framework_control.control_input_parameters is defined #}
+{%- if framework_control.control_scope is defined %}{# BEGIN if framework_control.control_scope_json is defined #}
           ControlScope:
-{{ framework_control.control_scope | indent(width=12,first=True) }}
-{%- endif %}
+{%- if framework_control.control_scope.compliance_resource_ids is defined %}{# BEGIN if framework_control.control_scope.compliance_resource_ids is defined #}
+            ComplianceResourceIds:
+{%- for compliance_resource_id in framework_control.control_scope.compliance_resource_ids %}
+              - {{ compliance_resource_id }}
 {%- endfor %}
+{%- endif %}{# END if framework_control.control_scope.compliance_resource_ids is defined #}
+{%- if framework_control.control_scope.compliance_resource_types is defined %}{# BEGIN if framework_control.control_scope.compliance_resource_types is defined #}
+            ComplianceResourceTypes:
+{%- for compliance_resource_type in framework_control.control_scope.compliance_resource_types %}
+              - {{ compliance_resource_type }}
+{%- endfor %}
+{%- endif %}{# END if framework_control.control_scope.compliance_resource_types is defined #}
+{%- if framework_control.control_scope.tags is defined %}{# BEGIN if framework_control.control_scope.tags is defined #}
+            Tags:
+{%- for key,value in framework_control.control_scope.tags.items() %}
+              - Key: {{ key }}
+                Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if framework_control.control_scope.tags is defined #}
+{%- endif %}{# END if framework_control.control_scope_json is defined #}
+{%- endfor %}{# END for framework_control in framework.framework_controls #}
 {%- if framework.framework_description is defined %}
       FrameworkDescription: {{ framework.framework_description }}
 {%- endif %}
@@ -37,27 +52,24 @@ Resources:
       FrameworkTags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if framework.tags is defined %}
-{%- for key,value in framework.tags.items() %}
+{%- if framework.framework_tags is defined %}
+{%- for key,value in framework.framework_tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for framework in sceptre_user_data.frameworks %}
 {%- set framework_name = framework.name %}
   {{ framework_name }}:
-    Description: Framework name for {{ framework_name }}
+    Description: Framework ARN for {{ framework_name }}
     Value:
       Ref: {{ framework_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ framework_name }}"
-
   {{ framework_name }}CreationTime:
     Description: The UTC time when {{ framework_name }} was created.
     Value:
@@ -67,7 +79,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ framework_name }}-CreationTime"
-
   {{ framework_name }}DeploymentStatus:
     Description: Deployment status refers to whether {{ framework_name }} has completed deployment.
     Value:
@@ -77,7 +88,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ framework_name }}-DeploymentStatus"
-
   {{ framework_name }}FrameworkArn:
     Description: The ARN for {{ framework_name }}
     Value:
@@ -87,7 +97,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ framework_name }}-FrameworkArn"
-
   {{ framework_name }}FrameworkStatus:
     Description: Whether you have turned on resource tracking for all of your resources for {{ framework_name }}.
     Value:
@@ -97,5 +106,30 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ framework_name }}-FrameworkStatus"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-02-26
+Type: AWS::Backup::Framework
+Properties:
+  FrameworkControls:
+    -
+      ControlInputParameters:
+        -
+          ParameterName: String
+          ParameterValue: String
+      ControlName: String
+      ControlScope:
+        ComplianceResourceIds:
+          - String
+        ComplianceResourceTypes:
+          - String
+        Tags:
+          -
+            Key: String
+            Value: String
+  FrameworkDescription: String
+  FrameworkName: String
+  FrameworkTags:
+    -
+      Key: String
+      Value: String
+#}
