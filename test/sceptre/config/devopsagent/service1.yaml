@@ -1,0 +1,85 @@
+---
+template:
+  type: file
+  path: devopsagent/service.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  services:
+    - name: DynatraceService
+      service_type: "Dynatrace"
+      service_details:
+        dynatrace:
+          account_urn: "arn:aws:devopsagent:us-east-1:123456789012:dynatrace-account/dt-abc123"
+          authorization_config:
+            oauth_client_credentials:
+              client_id: "client-id-123"
+              client_secret: "client-secret-xyz"
+              client_name: "DynatraceDevOpsAgent"
+    - name: GitLabService
+      service_type: "GitLab"
+      service_details:
+        gitlab:
+          group_id: "987654321"
+          target_url: "https://gitlab.company.com"
+          token_type: "PersonalAccessToken"
+          token_value: "glpat-1234567890abcdef"
+    - name: MCPServerService
+      service_type: "MCPServer"
+      service_details:
+        mcp_server:
+          name: "SampleMCPServer"
+          endpoint: "https://mcp-server.example.com:3000"
+          description: "Sample MCP Server for development"
+          authorization_config:
+            oauth_client_credentials:
+              client_id: "mcp-client-id-456"
+              client_secret: "mcp-client-secret-def"
+              exchange_url: "https://auth.example.com/oauth/token"
+              client_name: "MCPDevOpsAgent"
+              scopes:
+                - "read:tools"
+                - "write:tools"
+    - name: MCPServerNewRelicService
+      service_type: "MCPServerNewRelic"
+      service_details:
+        mcp_server_new_relic:
+          authorization_config:
+            api_key:
+              account_id: "1234567"
+              api_key: "nrak-newrelic-api-key-xyz"
+              region: "US"
+              alert_policy_ids:
+                - "policy-001"
+                - "policy-002"
+              application_ids:
+                - "app-001"
+                - "app-002"
+              entity_guids:
+                - "guid-001"
+                - "guid-002"
+    - name: MCPServerSplunkService
+      service_type: "MCPServerSplunk"
+      service_details:
+        mcp_server_splunk:
+          name: "SampleSplunkMCPServer"
+          endpoint: "https://splunk-mcp.example.com:3000"
+          description: "Splunk MCP Server for logging integration"
+          authorization_config:
+            bearer_token:
+              token_name: "splunk-bearer-token"
+              token_value: "bearer-token-value-123"
+              authorization_header: "Authorization"
+    - name: ServiceNowService
+      service_type: "ServiceNow"
+      service_details:
+        service_now:
+          instance_url: "https://dev123456.service-now.com"
+          authorization_config:
+            oauth_client_credentials:
+              client_id: "snow-client-id-789"
+              client_secret: "snow-client-secret-ghi"
+              client_name: "ServiceNowDevOpsAgent"
+stack_tags:
+  Test: devopsagent-service
