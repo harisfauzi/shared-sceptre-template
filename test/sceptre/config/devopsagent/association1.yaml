@@ -1,0 +1,128 @@
+---
+template:
+  type: file
+  path: devopsagent/association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  associations:
+    - name: AwsAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-abc123"
+      service_id: "service-aws-001"
+      configuration:
+        aws:
+          account_id: "123456789012"
+          account_type: "Production"
+          assumable_role_arn: "arn:aws:iam::123456789012:role/AWSDelegatedAdminRole"
+          resources:
+            - resource_arn: "arn:aws:s3:::example-bucket"
+              resource_type: "S3Bucket"
+          tags:
+            Environment: "Production"
+            Team: "DevOps"
+    - name: DynatraceAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-def456"
+      service_id: "service-dynatrace-002"
+      configuration:
+        dynatrace:
+          env_id: "abc12345xyz"
+          enable_webhook_updates: true
+          resources:
+            - resource_arn: "arn:aws:ec2:us-east-1:123456789012:instance/i-1234567890abcdef0"
+    - name: EventChannelAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-ghi789"
+      service_id: "service-eventchannel-003"
+      configuration:
+        event_channel:
+          enable_webhook_updates: false
+    - name: GitHubAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-jkl012"
+      service_id: "service-github-004"
+      configuration:
+        github:
+          owner: "sample-org"
+          owner_type: "Organization"
+          repo_id: "123456789"
+          repo_name: "sample-repository"
+    - name: GitLabAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-mno345"
+      service_id: "service-gitlab-005"
+      configuration:
+        gitlab:
+          project_id: "987654321"
+          project_path: "sample-group/sample-project"
+          enable_webhook_updates: true
+          instance_identifier: "gitlab.company.com"
+    - name: MCPServerAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-pqr678"
+      service_id: "service-mcpserver-006"
+      configuration:
+        mcp_server:
+          endpoint: "https://mcp-server.example.com:3000"
+          name: "SampleMCPServer"
+          tools:
+            - "ExecuteCommand"
+            - "ReadFile"
+            - "WriteFile"
+          description: "Sample MCP Server for development"
+          enable_webhook_updates: true
+    - name: MCPServerDatadogAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-stu901"
+      service_id: "service-mcpserver-datadog-007"
+      configuration:
+        mcp_server_datadog:
+          endpoint: "https://datadog-mcp.example.com:3000"
+          name: "DatadogMCPServer"
+          description: "Datadog MCP Server integration"
+          enable_webhook_updates: false
+    - name: MCPServerNewRelicAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-vwx234"
+      service_id: "service-mcpserver-newrelic-008"
+      configuration:
+        mcp_server_new_relic:
+          account_id: "1234567"
+          endpoint: "https://newrelic-mcp.example.com:3000"
+    - name: MCPServerSplunkAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-yza567"
+      service_id: "service-mcpserver-splunk-009"
+      configuration:
+        mcp_server_splunk:
+          endpoint: "https://splunk-mcp.example.com:3000"
+          name: "SplunkMCPServer"
+          description: "Splunk MCP Server for logging"
+          enable_webhook_updates: true
+    - name: ServiceNowAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-bcd890"
+      service_id: "service-servicenow-010"
+      configuration:
+        service_now:
+          enable_webhook_updates: true
+          instance_id: "dev123456"
+    - name: SlackAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-efg123"
+      service_id: "service-slack-011"
+      configuration:
+        slack:
+          transmission_target:
+            incident_response_target:
+              channel_id: "C123456789ABC"
+              channel_name: "incident-response"
+          workspace_id: "T123456789"
+          workspace_name: "sample-workspace"
+    - name: SourceAwsAssociation
+      agent_space_id: "arn:aws:devopsagent:us-east-1:123456789012:agent-space/space-hij456"
+      service_id: "service-sourceaws-012"
+      configuration:
+        source_aws:
+          account_id: "987654321098"
+          account_type: "Development"
+          assumable_role_arn: "arn:aws:iam::987654321098:role/SourceAWSDelegatedAdminRole"
+          resources:
+            - resource_arn: "arn:aws:lambda:us-east-1:987654321098:function:sample-function"
+              resource_type: "Lambda"
+          tags:
+            Environment: "Development"
+            Application: "SampleApp"
+stack_tags:
+  Test: devopsagent-association
