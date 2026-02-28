@@ -1,0 +1,70 @@
+---
+template:
+  type: file
+  path: backup/backup_plan.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  backup_plans:
+    - name: MyBackupPlan1
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      backup_plan:
+        backup_plan_name: "DailyBackupPlan"
+        backup_plan_rule:
+          - rule_name: "DailyRule"
+            target_backup_vault: "Default"
+            completion_window_minutes: 120
+            copy_actions:
+              - destination_backup_vault_arn: "arn:aws:backup:us-east-1:123456789012:vault:SecondaryVault"
+                lifecycle:
+                  delete_after_days: 30
+                  move_to_cold_storage_after_days: 7
+                  opt_in_to_archive_for_supported_resources: true
+            enable_continuous_backup: true
+            index_actions:
+              - resource_types:
+                  - "AWS::EC2::Volume"
+                  - "AWS::RDS::DBInstance"
+            lifecycle:
+              delete_after_days: 35
+              move_to_cold_storage_after_days: 10
+              opt_in_to_archive_for_supported_resources: false
+            recovery_point_tags:
+              Purpose: "DailyBackup"
+              Owner: "DevOps"
+            scan_actions:
+              - malware_scanner: "ENABLED"
+                scan_mode: "FULL"
+            schedule_expression: "cron(0 5 * * ? *)"
+            schedule_expression_timezone: "UTC"
+            start_window_minutes: 60
+            target_logically_air_gapped_backup_vault_arn: "arn:aws:backup:us-east-1:123456789012:vault:AirGappedVault"
+        advanced_backup_settings:
+          - backup_options: |
+              WindowsVSS: "enabled"
+            resource_type: "EC2"
+        scan_settings:
+          - malware_scanner: "ENABLED"
+            resource_types:
+              - "AWS::EC2::Volume"
+              - "AWS::RDS::DBInstance"
+            scanner_role_arn: "arn:aws:iam::123456789012:role/BackupScannerRole"
+      backup_plan_tags:
+        Environment: "test"
+        Department: "IT"
+    - name: MyBackupPlan2
+      backup_plan:
+        backup_plan_name: "WeeklyBackupPlan"
+        backup_plan_rule:
+          - rule_name: "WeeklyRule"
+            target_backup_vault: "Default"
+            schedule_expression: "cron(0 0 ? * SUN *)"
+            recovery_point_tags:
+              Purpose: "WeeklyBackup"
+              Owner: "DevOps"
+  # Add more backup_plans as needed for further testing
+
+stack_tags:
+  Test: backup-plan

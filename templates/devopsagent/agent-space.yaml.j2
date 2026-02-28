@@ -1,0 +1,115 @@
+---
+Description: {{sceptre_user_data.description|default('DevOpsAgent AgentSpace(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for agent_space in sceptre_user_data.agent_spaces %}
+{%- set agent_space_name = agent_space.name %}
+  {{ agent_space_name }}:
+    Type: AWS::DevOpsAgent::AgentSpace
+    DeletionPolicy: {{ agent_space.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ agent_space.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ agent_space.agent_space_name }}
+{%- if agent_space.description is defined %}
+      Description: {{ agent_space.description }}
+{%- endif %}
+{%- if agent_space.operator_app is defined %}{# BEGIN if agent_space.operator_app is defined #}
+      OperatorApp:
+{%- if agent_space.operator_app.iam is defined %}{# BEGIN if agent_space.operator_app.iam is defined #}
+        Iam:
+{%- if agent_space.operator_app.iam.created_at is defined %}
+          CreatedAt: {{ agent_space.operator_app.iam.created_at }}
+{%- endif %}
+{%- if agent_space.operator_app.iam.operator_app_role_arn is defined %}
+          OperatorAppRoleArn: {{ agent_space.operator_app.iam.operator_app_role_arn | trim }}
+{%- endif %}
+{%- if agent_space.operator_app.iam.updated_at is defined %}
+          UpdatedAt: {{ agent_space.operator_app.iam.updated_at }}
+{%- endif %}
+{%- endif %}{# END if agent_space.operator_app.iam is defined #}
+{%- if agent_space.operator_app.idc is defined %}{# BEGIN if agent_space.operator_app.idc is defined #}
+        Idc:
+{%- if agent_space.operator_app.idc.created_at is defined %}
+          CreatedAt: {{ agent_space.operator_app.idc.created_at }}
+{%- endif %}
+{%- if agent_space.operator_app.idc.idc_application_arn is defined %}
+          IdcApplicationArn: {{ agent_space.operator_app.idc.idc_application_arn | trim }}
+{%- endif %}
+{%- if agent_space.operator_app.idc.idc_instance_arn is defined %}
+          IdcInstanceArn: {{ agent_space.operator_app.idc.idc_instance_arn | trim }}
+{%- endif %}
+{%- if agent_space.operator_app.idc.operator_app_role_arn is defined %}
+          OperatorAppRoleArn: {{ agent_space.operator_app.idc.operator_app_role_arn | trim }}
+{%- endif %}
+{%- if agent_space.operator_app.idc.updated_at is defined %}
+          UpdatedAt: {{ agent_space.operator_app.idc.updated_at }}
+{%- endif %}
+{%- endif %}{# END if agent_space.operator_app.idc is defined #}
+{%- endif %}{# END if agent_space.operator_app is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for agent_space in sceptre_user_data.agent_spaces %}
+{%- set agent_space_name = agent_space.name %}
+  {{ agent_space_name }}:
+    Description: AgentSpaceId for {{ agent_space_name }}
+    Value:
+      Ref: {{ agent_space_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ agent_space_name }}"
+  {{ agent_space_name }}AAgentSpaceIdn:
+    Description: The unique identifier of the Agent Space for {{ agent_space_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ agent_space_name }}
+        - AgentSpaceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ agent_space_name }}-AgentSpaceId"
+  {{ agent_space_name }}Arn:
+    Description: The ARN for {{ agent_space_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ agent_space_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ agent_space_name }}-Arn"
+  {{ agent_space_name }}CreatedAt:
+    Description: The timestamp when the resource {{ agent_space_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ agent_space_name }}
+        - CreatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ agent_space_name }}-CreatedAt"
+  {{ agent_space_name }}UpdatedAt:
+    Description: The timestamp when the resource {{ agent_space_name }} was updated.
+    Value:
+      Fn::GetAtt:
+        - {{ agent_space_name }}
+        - UpdatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ agent_space_name }}-UpdatedAt"
+{%- endfor %}{#
+# Supported structure as of 2026-02-26
+Type: AWS::DevOpsAgent::AgentSpace
+Properties:
+  Description: String
+  Name: String
+  OperatorApp:
+    Iam:
+      CreatedAt: String
+      OperatorAppRoleArn: String
+      UpdatedAt: String
+    Idc:
+      CreatedAt: String
+      IdcApplicationArn: String
+      IdcInstanceArn: String
+      OperatorAppRoleArn: String
+      UpdatedAt: String
+#}

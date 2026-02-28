@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Backup BackupSelection(s) 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for backup_selection in sceptre_user_data.backup_selections %}
 {%- set backup_selection_name = backup_selection.name %}
   {{ backup_selection_name }}:
@@ -15,37 +14,80 @@ Resources:
       BackupSelection:
         IamRoleArn: {{ backup_selection.backup_selection.iam_role_arn | trim }}
         SelectionName: {{ backup_selection.backup_selection.selection_name }}
-{%- if backup_selection.backup_selection.conditions_json is defined %}
-        Conditions: {{ backup_selection.backup_selection.conditions_json }}
-{%- else %}
+{%- if backup_selection.backup_selection.conditions is defined %}{# BEGIN if backup_selection.backup_selection.conditions is defined #}
         Conditions:
-{{ backup_selection.backup_selection.conditions | indent(width=10,first=True) }}
+{%- if backup_selection.backup_selection.conditions.string_equals is defined %}{# BEGIN if backup_selection.backup_selection.conditions.string_equals is defined #}
+          StringEquals:
+{%- for condition in backup_selection.backup_selection.conditions.string_equals %}{# BEGIN for condition in backup_selection.backup_selection.conditions.string_equals #}
+            -
+{%- if condition.condition_key is defined %}
+              ConditionKey: {{ condition.condition_key }}
 {%- endif %}
-{%- if backup_selection.backup_selection.list_of_tags is defined %}
+{%- if condition.condition_value is defined %}
+              ConditionValue: {{ condition.condition_value }}
+{%- endif %}
+{%- endfor %}{# END for condition in backup_selection.backup_selection.conditions.string_equals #}
+{%- endif %}{# END if backup_selection.backup_selection.conditions.string_equals is defined #}
+{%- if backup_selection.backup_selection.conditions.string_like is defined %}{# BEGIN if backup_selection.backup_selection.conditions.string_like is defined #}
+          StringLike:
+{%- for condition in backup_selection.backup_selection.conditions.string_like %}{# BEGIN for condition in backup_selection.backup_selection.conditions.string_like #}
+            -
+{%- if condition.condition_key is defined %}
+              ConditionKey: {{ condition.condition_key }}
+{%- endif %}
+{%- if condition.condition_value is defined %}
+              ConditionValue: {{ condition.condition_value }}
+{%- endif %}
+{%- endfor %}{# END for condition in backup_selection.backup_selection.conditions.string_like #}
+{%- endif %}{# END if backup_selection.backup_selection.conditions.string_like is defined #}
+{%- if backup_selection.backup_selection.conditions.string_not_equals is defined %}{# BEGIN if backup_selection.backup_selection.conditions.string_not_equals is defined #}
+          StringNotEquals:
+{%- for condition in backup_selection.backup_selection.conditions.string_not_equals %}{# BEGIN for condition in backup_selection.backup_selection.conditions.string_not_equals #}
+            -
+{%- if condition.condition_key is defined %}
+              ConditionKey: {{ condition.condition_key }}
+{%- endif %}
+{%- if condition.condition_value is defined %}
+              ConditionValue: {{ condition.condition_value }}
+{%- endif %}
+{%- endfor %}{# END for condition in backup_selection.backup_selection.conditions.string_not_equals #}
+{%- endif %}{# END if backup_selection.backup_selection.conditions.string_not_equals is defined #}
+{%- if backup_selection.backup_selection.conditions.string_not_like is defined %}{# BEGIN if backup_selection.backup_selection.conditions.string_not_like is defined #}
+          StringNotLike:
+{%- for condition in backup_selection.backup_selection.conditions.string_not_like %}{# BEGIN for condition in backup_selection.backup_selection.conditions.string_not_like #}
+            -
+{%- if condition.condition_key is defined %}
+              ConditionKey: {{ condition.condition_key }}
+{%- endif %}
+{%- if condition.condition_value is defined %}
+              ConditionValue: {{ condition.condition_value }}
+{%- endif %}
+{%- endfor %}{# END for condition in backup_selection.backup_selection.conditions.string_not_like #}
+{%- endif %}{# END if backup_selection.backup_selection.conditions.string_not_like is defined #}
+{%- endif %}{# END if backup_selection.backup_selection.conditions is defined #}
+{%- if backup_selection.backup_selection.list_of_tags is defined %}{# BEGIN if backup_selection.backup_selection.list_of_tags is defined#}
         ListOfTags:
-{%- for tag in backup_selection.backup_selection.list_of_tags %}
+{%- for tag in backup_selection.backup_selection.list_of_tags %}{# BEGIN for tag in backup_selection.backup_selection.list_of_tags #}
           - ConditionKey: {{ tag.condition_key }}
             ConditionType: {{ tag.condition_type }}
             ConditionValue: {{ tag.condition_value }}
-{%- endfor %}
-{%- endif %}
-{%- if backup_selection.backup_selection.no_resources is defined %}
+{%- endfor %}{# END for tag in backup_selection.backup_selection.list_of_tags #}
+{%- endif %}{# END if backup_selection.backup_selection.list_of_tags is defined #}
+{%- if backup_selection.backup_selection.not_resources is defined %}{# BEGIN if backup_selection.backup_selection.not_resources is defined #}
         NotResources:
-{%- for not_resource in backup_selection.backup_selection.no_resources %}
+{%- for not_resource in backup_selection.backup_selection.not_resources %}{# BEGIN for not_resource in backup_selection.backup_selection.not_resources #}
           - {{ not_resource }}
-{%- endfor %}
-{%- endif %}
-{%- if backup_selection.backup_selection.resources is defined %}
+{%- endfor %}{# END for not_resource in backup_selection.backup_selection.not_resources#}
+{%- endif %}{# END if backup_selection.backup_selection.not_resources is defined #}
+{%- if backup_selection.backup_selection.resources is defined %}{# BEGIN if backup_selection.backup_selection.resources is defined #}
         Resources:
-{%- for resource in backup_selection.backup_selection.resources %}
+{%- for resource in backup_selection.backup_selection.resources %}{# BEGIN for resource in backup_selection.backup_selection.resources #}
           - {{ resource }}
-{%- endfor %}
-{%- endif %}
-
+{%- endfor %}{# END for resource in backup_selection.backup_selection.resources #}
+{%- endif %}{# END if backup_selection.backup_selection.resources is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for backup_selection in sceptre_user_data.backup_selections %}
 {%- set backup_selection_name = backup_selection.name %}
   {{ backup_selection_name }}:
@@ -55,7 +97,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ backup_selection_name }}"
-
   {{ backup_selection_name }}BackupPlanId:
     Description: The BackupPlanId for {{ backup_selection_name }}
     Value:
@@ -65,7 +106,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ backup_selection_name }}-BackupPlanId"
-
   {{ backup_selection_name }}Id:
     Description: Uniquely identifies the backup selection for {{ backup_selection_name }}
     Value:
@@ -75,7 +115,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ backup_selection_name }}-Id"
-
   {{ backup_selection_name }}SelectionId:
     Description: Uniquely identifies a request to assign a set of resources to {{ backup_selection_name }}
     Value:
@@ -85,5 +124,38 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ backup_selection_name }}-SelectionId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-02-18
+Type: AWS::Backup::BackupSelection
+Properties:
+  BackupPlanId: String
+  BackupSelection:
+    Conditions:
+      StringEquals:
+        -
+          ConditionKey: String
+          ConditionValue: String
+      StringLike:
+        -
+          ConditionKey: String
+          ConditionValue: String
+      StringNotEquals:
+        -
+          ConditionKey: String
+          ConditionValue: String
+      StringNotLike:
+        -
+          ConditionKey: String
+          ConditionValue: String
+    IamRoleArn: String
+    ListOfTags:
+      -
+        ConditionKey: String
+        ConditionType: String
+        ConditionValue: String
+    NotResources:
+      - String
+    Resources:
+      - String
+    SelectionName: String
+#}

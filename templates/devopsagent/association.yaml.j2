@@ -1,0 +1,305 @@
+---
+Description: {{sceptre_user_data.description|default('DevOpsAgent Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for association in sceptre_user_data.associations %}
+{%- set association_name = association.name %}
+  {{ association_name }}:
+    Type: AWS::DevOpsAgent::Association
+    DeletionPolicy: {{ association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ association.update_replace_policy | default('Delete') }}
+    Properties:
+      AgentSpaceId: {{ association.agent_space_id }}
+      Configuration:
+{%- if association.configuration.aws is defined %}{# BEGIN if association.configuration.aws is defined #}
+        Aws:
+          AccountId: {{ association.configuration.aws.account_id }}
+          AccountType: {{ association.configuration.aws.account_type }}
+          AssumableRoleArn: {{ association.configuration.aws.assumable_role_arn | trim }}
+{%- if association.configuration.aws.resources is defined %}{# BEGIN if association.configuration.aws.resources is defined #}
+          Resources:
+{%- for resource in association.configuration.aws.resources %}
+            -
+              ResourceArn: {{ resource.resource_arn }}
+{%- if resource.resource_metadata is defined %}
+              ResourceMetadata:
+                {{ resource.resource_metadata | indent(width=16, first=false) }}
+{%- elif resource.resource_metadata_json is defined %}
+              ResourceMetadata: |
+                {{ resource.resource_metadata_json | indent(width=16, first=false) }}
+{%- endif %}
+{%- if resource.resource_type is defined %}
+              ResourceType: {{ resource.resource_type }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if association.configuration.aws.resources is defined #}
+{%- if association.configuration.aws.tags is defined %}{# BEGIN if association.configuration.aws.tags is defined #}
+          Tags:
+{%- for key,value in association.configuration.aws.tags.items() %}
+            -
+              Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if association.configuration.aws.tags is defined #}
+{%- endif %}{# END if association.configuration.aws is defined #}
+{%- if association.configuration.dynatrace is defined %}{# BEGIN if association.configuration.dynatrace is defined #}
+        Dynatrace:
+          EnvId: {{ association.configuration.dynatrace.env_id }}
+{%- if association.configuration.dynatrace.enable_webhook_updates is defined %}
+          EnableWebhookUpdates: {{ association.configuration.dynatrace.enable_webhook_updates }}
+{%- endif %}
+{%- if association.configuration.dynatrace.resources is defined %}{# BEGIN if association.configuration.dynatrace.resources is defined #}
+          Resources:
+{%- for resource in association.configuration.dynatrace.resources %}
+            -
+              ResourceArn: {{ resource.resource_arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if association.configuration.dynatrace.resources is defined #}
+{%- endif %}{# END if association.configuration.dynatrace is defined #}
+{%- if association.configuration.event_channel is defined %}{# BEGIN if association.configuration.event_channel is defined #}
+        EventChannel:
+{%- if association.configuration.event_channel.enable_webhook_updates is defined %}
+          EnableWebhookUpdates: {{ association.configuration.event_channel.enable_webhook_updates }}
+{%- endif %}
+{%- endif %}{# END if association.configuration.event_channel is defined #}
+{%- if association.configuration.github is defined %}{# BEGIN if association.configuration.github is defined #}
+        GitHub:
+          Owner: {{ association.configuration.github.owner }}
+          OwnerType: {{ association.configuration.github.owner_type }}
+          RepoId: {{ association.configuration.github.repo_id }}
+          RepoName: {{ association.configuration.github.repo_name }}
+{%- endif %}{# END if association.configuration.github is defined #}
+{%- if association.configuration.gitlab is defined %}{# BEGIN if association.configuration.gitlab is defined #}
+        GitLab:
+          ProjectId: {{ association.configuration.gitlab.project_id }}
+          ProjectPath: {{ association.configuration.gitlab.project_path }}
+{%- if association.configuration.gitlab.enable_webhook_updates is defined %}
+          EnableWebhookUpdates: {{ association.configuration.gitlab.enable_webhook_updates }}
+{%- endif %}
+{%- if association.configuration.gitlab.instance_identifier is defined %}
+          InstanceIdentifier: {{ association.configuration.gitlab.instance_identifier }}
+{%- endif %}
+{%- endif %}{# END if association.configuration.gitlab is defined #}
+{%- if association.configuration.mcp_server is defined %}{# BEGIN if association.configuration.mcp_server is defined #}
+        MCPServer:
+          Endpoint: {{ association.configuration.mcp_server.endpoint }}
+          Name: {{ association.configuration.mcp_server.name }}
+          Tools:
+{%- for tool in association.configuration.mcp_server.tools %}
+            - {{ tool }}
+{%- endfor %}
+{%- if association.configuration.mcp_server.description is defined %}
+          Description: {{ association.configuration.mcp_server.description }}
+{%- endif %}
+{%- if association.configuration.mcp_server.enable_webhook_updates is defined %}
+          EnableWebhookUpdates: {{ association.configuration.mcp_server.enable_webhook_updates | lower }}
+{%- endif %}
+{%- endif %}{# END if association.configuration.mcp_server is defined #}
+{%- if association.configuration.mcp_server_datadog is defined %}{# BEGIN if association.configuration.mcp_server_datadog is defined #}
+        MCPServerDatadog:
+          Endpoint: {{ association.configuration.mcp_server_datadog.endpoint }}
+          Name: {{ association.configuration.mcp_server_datadog.name }}
+{%- if association.configuration.mcp_server_datadog.description is defined %}
+          Description: {{ association.configuration.mcp_server_datadog.description }}
+{%- endif %}
+{%- if association.configuration.mcp_server_datadog.enable_webhook_updates is defined %}
+          EnableWebhookUpdates: {{ association.configuration.mcp_server_datadog.enable_webhook_updates | lower }}
+{%- endif %}
+{%- endif %}{# END if association.configuration.mcp_server_datadog is defined #}
+{%- if association.configuration.mcp_server_new_relic is defined %}{# BEGIN if association.configuration.mcp_server_new_relic is defined #}
+        MCPServerNewRelic:
+          AccountId: {{ association.configuration.mcp_server_new_relic.account_id }}
+          Endpoint: {{ association.configuration.mcp_server_new_relic.endpoint }}
+{%- endif %}{# END if association.configuration.mcp_server_new_relic is defined #}
+{%- if association.configuration.mcp_server_splunk is defined %}{# BEGIN if association.configuration.mcp_server_splunk is defined #}
+        MCPServerSplunk:
+          Endpoint: {{ association.configuration.mcp_server_splunk.endpoint }}
+          Name: {{ association.configuration.mcp_server_splunk.name }}
+{%- if association.configuration.mcp_server_splunk.description is defined %}
+          Description: {{ association.configuration.mcp_server_splunk.description }}
+{%- endif %}
+{%- if association.configuration.mcp_server_splunk.enable_webhook_updates is defined %}
+          EnableWebhookUpdates: {{ association.configuration.mcp_server_splunk.enable_webhook_updates | lower }}
+{%- endif %}
+{%- endif %}{# END if association.configuration.mcp_server_splunk is defined #}
+{%- if association.configuration.service_now is defined %}{# BEGIN if association.configuration.service_now is defined #}
+        ServiceNow:
+{%- if association.configuration.service_now.enable_webhook_updates is defined %}
+          EnableWebhookUpdates: {{ association.configuration.service_now.enable_webhook_updates | lower }}
+{%- endif %}
+{%- if association.configuration.service_now.instance_id is defined %}
+          InstanceId: {{ association.configuration.service_now.instance_id }}
+{%- endif %}
+{%- endif %}{# END if association.configuration.service_now is defined #}
+{%- if association.configuration.slack is defined %}{# BEGIN if association.configuration.slack is defined #}
+        Slack:
+          TransmissionTarget:
+            IncidentResponseTarget:
+              ChannelId: {{ association.configuration.slack.transmission_target.incident_response_target.channel_id }}
+{%- if association.configuration.slack.transmission_target.incident_response_target.channel_name is defined %}
+              ChannelName: {{ association.configuration.slack.transmission_target.incident_response_target.channel_name }}
+{%- endif %}
+          WorkspaceId: {{ association.configuration.slack.workspace_id }}
+          WorkspaceName: {{ association.configuration.slack.workspace_name }}
+{%- endif %}{# END if association.configuration.slack is defined #}
+{%- if association.configuration.source_aws is defined %}{# BEGIN if association.configuration.source_aws is defined #}
+        SourceAws:
+          AccountId: {{ association.configuration.source_aws.account_id }}
+          AccountType: {{ association.configuration.source_aws.account_type }}
+          AssumableRoleArn: {{ association.configuration.source_aws.assumable_role_arn | trim }}
+{%- if association.configuration.source_aws.resources is defined %}{# BEGIN if association.configuration.source_aws.resources is defined #}
+          Resources:
+{%- for resource in association.configuration.source_aws.resources %}
+            -
+              ResourceArn: {{ resource.resource_arn }}
+{%- if resource.resource_metadata is defined %}
+              ResourceMetadata:
+                {{ resource.resource_metadata | indent(width=16, first=false) }}
+{%- elif resource.resource_metadata_json is defined %}
+              ResourceMetadata: |
+                {{ resource.resource_metadata_json | indent(width=16, first=false) }}
+{%- endif %}
+{%- if resource.resource_type is defined %}
+              ResourceType: {{ resource.resource_type }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if association.configuration.source_aws.resources is defined #}
+{%- if association.configuration.source_aws.tags is defined %}{# BEGIN if association.configuration.source_aws.tags is defined #}
+          Tags:
+{%- for key,value in association.configuration.source_aws.tags.items() %}
+            -
+              Key: {{ key }}
+              Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if association.configuration.source_aws.tags is defined #}
+{%- endif %}{# END if association.configuration.source_aws is defined #}
+      ServiceId: {{ association.service_id }}
+{%- if association.linked_association_ids is defined %}
+      LinkedAssociationIds:
+        {%- for linked_id in association.linked_association_ids %}
+        - {{ linked_id }}
+        {%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for association in sceptre_user_data.associations %}
+{%- set association_name = association.name %}
+  {{ association_name }}:
+    Description: The association ID for {{ association_name }}
+    Value:
+      Ref: {{ association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}"
+  {{ association_name }}AssociationId:
+    Description: The unique identifier of the association for {{ association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - AssociationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-AssociationId"
+  {{ association_name }}CreatedAt:
+    Description: The creation timestamp for {{ association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - CreatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-CreatedAt"
+  {{ association_name }}UpdatedAt:
+    Description: The last updated timestamp for {{ association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ association_name }}
+        - UpdatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ association_name }}-UpdatedAt"
+{%- endfor %}{#
+# Supported structure as of 2026-02-27
+Type: AWS::DevOpsAgent::Association
+Properties:
+  AgentSpaceId: String
+  Configuration:
+    Aws:
+      AccountId: String
+      AccountType: String
+      AssumableRoleArn: String
+      Resources:
+        -
+          ResourceArn: String
+          ResourceMetadata: Json
+          ResourceType: String
+      Tags:
+        -
+          Key: String
+          Value: String
+    Dynatrace:
+      EnableWebhookUpdates: Boolean
+      EnvId: String
+      Resources:
+        - String
+    EventChannel:
+      EnableWebhookUpdates: Boolean
+    GitHub:
+      Owner: String
+      OwnerType: String
+      RepoId: String
+      RepoName: String
+    GitLab:
+      EnableWebhookUpdates: Boolean
+      InstanceIdentifier: String
+      ProjectId: String
+      ProjectPath: String
+    MCPServer:
+      Description: String
+      EnableWebhookUpdates: Boolean
+      Endpoint: String
+      Name: String
+      Tools:
+        - String
+    MCPServerDatadog:
+      Description: String
+      EnableWebhookUpdates: Boolean
+      Endpoint: String
+      Name: String
+    MCPServerNewRelic:
+      AccountId: String
+      Endpoint: String
+    MCPServerSplunk:
+      Description: String
+      EnableWebhookUpdates: Boolean
+      Endpoint: String
+      Name: String
+    ServiceNow:
+      EnableWebhookUpdates: Boolean
+      InstanceId: String
+    Slack:
+      TransmissionTarget:
+        IncidentResponseTarget:
+          ChannelId: String
+          ChannelName: String
+      WorkspaceId: String
+      WorkspaceName: String
+    SourceAws:
+      AccountId: String
+      AccountType: String
+      AssumableRoleArn: String
+      Resources:
+        -
+          ResourceArn: String
+          ResourceMetadata: Json
+          ResourceType: String
+      Tags:
+          -
+          Key: String
+          Value: String
+  LinkedAssociationIds:
+    - String
+  ServiceId: String
+#}

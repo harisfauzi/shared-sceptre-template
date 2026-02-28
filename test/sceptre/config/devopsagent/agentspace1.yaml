@@ -1,0 +1,29 @@
+---
+template:
+  type: file
+  path: devopsagent/agent-space.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  agent_spaces:
+    - name: Space1
+      agent_space_name: "AgentSpace1-Name"
+      description: "Sample description for AgentSpace1"
+      operator_app:
+        iam:
+          created_at: "2026-02-27T12:00:00Z"
+          operator_app_role_arn: "arn:aws:iam::123456789012:role/OperatorAppRole1"
+          updated_at: "2026-02-27T12:30:00Z"
+    - name: Space2
+      agent_space_name: "AgentSpace2-Name"
+      description: "Sample description for AgentSpace2"
+      operator_app:
+        idc:
+          created_at: "2026-02-27T13:00:00Z"
+          idc_application_arn: "arn:aws:idc::123456789012:application/IDCApp2"
+          idc_instance_arn: "arn:aws:idc::123456789012:instance/IDCInstance2"
+          operator_app_role_arn: "arn:aws:iam::123456789012:role/IDCOperatorAppRole2"
+          updated_at: "2026-02-27T13:30:00Z"
+stack_tags:
+  Test: devopsagent-agentspace

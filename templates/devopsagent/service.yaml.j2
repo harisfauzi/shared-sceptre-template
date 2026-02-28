@@ -1,0 +1,234 @@
+---
+Description: {{sceptre_user_data.description|default('DevOpsAgent Service(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for service in sceptre_user_data.services %}
+{%- set service_name = service.name %}
+  {{ service_name }}:
+    Type: AWS::DevOpsAgent::Service
+    DeletionPolicy: {{ service.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ service.update_replace_policy | default('Delete') }}
+    Properties:
+      ServiceType: {{ service.service_type }}
+{%- if service.service_details is defined %}{# BEGIN if service.service_details is defined #}
+      ServiceDetails:
+{%- if service.service_details.dynatrace is defined %}{# BEGIN if service.service_details.dynatrace is defined #}
+        Dynatrace:
+          AccountUrn: {{ service.service_details.dynatrace.account_urn | trim }}
+{%- if service.service_details.dynatrace.authorization_config is defined %}{# BEGIN if service.service_details.dynatrace.authorization_config is defined #}
+          AuthorizationConfig:
+{%- if service.service_details.dynatrace.authorization_config.oauth_client_credentials is defined %}{# BEGIN if service.service_details.dynatrace.authorization_config.oauth_client_credentials is defined #}
+            OAuthClientCredentials:
+              ClientId: {{ service.service_details.dynatrace.authorization_config.oauth_client_credentials.client_id }}
+              ClientSecret: {{ service.service_details.dynatrace.authorization_config.oauth_client_credentials.client_secret }}
+              ClientName: {{ service.service_details.dynatrace.authorization_config.oauth_client_credentials.client_name }}
+{%- if service.service_details.dynatrace.authorization_config.oauth_client_credentials.exchange_parameters is defined %}
+              ExchangeParameters:
+                {{ service.service_details.dynatrace.authorization_config.oauth_client_credentials.exchange_parameters | indent(width=16, first=false) }}
+{%- elif service.service_details.dynatrace.authorization_config.oauth_client_credentials.exchange_parameters_json is defined %}
+              ExchangeParameters: |
+                {{ service.service_details.dynatrace.authorization_config.oauth_client_credentials.exchange_parameters_json | indent(width=16, first=false) }}
+{%- endif %}
+{%- endif %}{# END if service.service_details.dynatrace.authorization_config.oauth_client_credentials is defined #}
+{%- endif %}{# END f service.service_details.dynatrace.authorization_config is defined #}
+{%- endif %}{# END if service.service_details.dynatrace is defined #}
+{%- if service.service_details.gitlab is defined %}{# BEGIN if service.service_details.gitlab is defined #}
+        GitLab:
+{%- if service.service_details.gitlab.group_id is defined %}
+          GroupId: {{ service.service_details.gitlab.group_id }}
+{%- endif %}
+          TargetUrl: {{ service.service_details.gitlab.target_url }}
+          TokenType: {{ service.service_details.gitlab.token_type }}
+          TokenValue: {{ service.service_details.gitlab.token_value}}
+{%- endif %}{# END if service.service_details.gitlab is defined #}
+{%- if service.service_details.mcp_server is defined %}{# BEGIN if service.service_details.mcp_server is defined #}
+        MCPServer:
+          Name: {{ service.service_details.mcp_server.name }}
+          Endpoint: {{ service.service_details.mcp_server.endpoint }}
+{%- if service.service_details.mcp_server.authorization_config is defined %}{# BEGIN if service.service_details.mcp_server.authorization_config is defined #}
+          AuthorizationConfig:
+{%- if service.service_details.mcp_server.authorization_config.api_key is defined %}{# BEGIN if service.service_details.mcp_server.authorization_config.api_key is defined #}
+            ApiKey:
+              ApiKeyHeader: {{ service.service_details.mcp_server.authorization_config.api_key.api_key_header }}
+              ApiKeyName: {{ service.service_details.mcp_server.authorization_config.api_key.api_key_name }}
+              ApiKeyValue: {{ service.service_details.mcp_server.authorization_config.api_key.api_key_value }}
+{%- endif %}{# END if service.service_details.mcp_server.authorization_config.api_key is defined #}
+{%- if service.service_details.mcp_server.authorization_config.oauth_client_credentials is defined %}{# BEGIN if service.service_details.mcp_server.authorization_config.oauth_client_credentials is defined #}
+            OAuthClientCredentials:
+              ClientId: {{ service.service_details.mcp_server.authorization_config.oauth_client_credentials.client_id }}
+              ClientSecret: {{ service.service_details.mcp_server.authorization_config.oauth_client_credentials.client_secret }}
+              ExchangeUrl: {{ service.service_details.mcp_server.authorization_config.oauth_client_credentials.exchange_url }}
+{%- if service.service_details.mcp_server.authorization_config.oauth_client_credentials.client_name is defined %}
+              ClientName: {{ service.service_details.mcp_server.authorization_config.oauth_client_credentials.client_name }}
+{%- endif %}
+{%- if service.service_details.mcp_server.authorization_config.oauth_client_credentials.exchange_parameters is defined %}
+              ExchangeParameters:
+                {{ service.service_details.mcp_server.authorization_config.oauth_client_credentials.exchange_parameters | indent(width=16, first=false) }}
+{%- elif service.service_details.mcp_server.authorization_config.oauth_client_credentials.exchange_parameters_json is defined %}
+              ExchangeParameters: |
+                {{ service.service_details.mcp_server.authorization_config.oauth_client_credentials.exchange_parameters_json | indent(width=16, first=false) }}
+{%- endif %}
+{%- if service.service_details.mcp_server.authorization_config.oauth_client_credentials.scopes is defined %}{# BEGIN if service.service_details.mcp_server.authorization_config.oauth_client_credentials.scopes is defined #}
+              Scopes:
+{%- for scope in service.service_details.mcp_server.authorization_config.oauth_client_credentials.scopes %}
+                - {{ scope }}
+{%- endfor %}
+{%- endif %}{# END if service.service_details.mcp_server.authorization_config.oauth_client_credentials.scopes is defined #}
+{%- endif %}{# END if service.service_details.mcp_server.authorization_config.oauth_client_credentials is defined #}
+{%- endif %}{# END if service.service_details.mcp_server.authorization_config is defined#}
+{%- if service.service_details.mcp_server.description is defined %}
+          Description: {{ service.service_details.mcp_server.description }}
+{%- endif %}
+{%- endif %}{# END if service.service_details.mcp_server is defined #}
+{%- if service.service_details.mcp_server_new_relic is defined %}{# BEGIN if service.service_details.mcp_server_new_relic is defined #}
+        MCPServerNewRelic:
+          AuthorizationConfig:
+            ApiKey:
+              AccountId: {{ service.service_details.mcp_server_new_relic.authorization_config.api_key.account_id}}
+              ApiKey: {{ service.service_details.mcp_server_new_relic.authorization_config.api_key.api_key }}
+              Region: {{ service.service_details.mcp_server_new_relic.authorization_config.api_key.region }}
+{%- if service.service_details.mcp_server_new_relic.authorization_config.api_key.alert_policy_ids is defined %}{# BEGIN if service.service_details.mcp_server_new_relic.authorization_config.api_key.alert_policy_ids is defined #}
+              AlertPolicyIds:
+{%- for alert_policy_id in service.service_details.mcp_server_new_relic.authorization_config.api_key.alert_policy_ids %}
+                - {{ alert_policy_id }}
+{%- endfor %}
+{%- endif %}{# END if service.service_details.mcp_server_new_relic.authorization_config.api_key.alert_policy_ids is defined #}
+{%- if service.service_details.mcp_server_new_relic.authorization_config.api_key.application_ids is defined %}{# BEGIN if service.service_details.mcp_server_new_relic.authorization_config.api_key.application_ids is defined #}
+              ApplicationIds:
+{%- for application_id in service.service_details.mcp_server_new_relic.authorization_config.api_key.application_ids %}
+                - {{ application_id }}
+{%- endfor %}
+{%- endif %}{# END if service.service_details.mcp_server_new_relic.authorization_config.api_key.application_ids is defined #}
+{%- if service.service_details.mcp_server_new_relic.authorization_config.api_key.entity_guids is defined %}{# BEGIN if service.service_details.mcp_server_new_relic.authorization_config.api_key.entity_guids is defined #}
+              EntityGuids:
+{%- for entity_guid in service.service_details.mcp_server_new_relic.authorization_config.api_key.entity_guids %}
+                - {{ entity_guid }}
+{%- endfor %}
+{%- endif %}{# END if service.service_details.mcp_server_new_relic.authorization_config.api_key.entity_guids is defined #}
+{%- endif %}{# END if service.service_details.mcp_server_new_relic is defined #}
+{%- if service.service_details.mcp_server_splunk is defined %}{# BEGIN if service.service_details.mcp_server_splunk is defined #}
+        MCPServerSplunk:
+          Name: {{ service.service_details.mcp_server_splunk.name }}
+          Endpoint: {{ service.service_details.mcp_server_splunk.endpoint }}
+          AuthorizationConfig:
+            BearerToken:
+              TokenName: {{ service.service_details.mcp_server_splunk.authorization_config.bearer_token.token_name }}
+              TokenValue: {{ service.service_details.mcp_server_splunk.authorization_config.bearer_token.token_value}}
+{%- if service.service_details.mcp_server_splunk.authorization_config.bearer_token.authorization_header is defined %}
+              AuthorizationHeader: {{ service.service_details.mcp_server_splunk.authorization_config.bearer_token.authorization_header }}
+{%- endif %}
+{%- if service.service_details.mcp_server_splunk.description is defined %}
+          Description: {{ service.service_details.mcp_server_splunk.description }}
+{%- endif %}
+{%- endif %}{# END if service.service_details.mcp_server_splunk is defined #}
+{%- if service.service_details.service_now is defined %}{# BEGIN if service.service_details.service_now is defined #}
+        ServiceNow:
+          InstanceUrl: {{ service.service_details.service_now.instance_url }}
+{%- if service.service_details.service_now.authorization_config is defined %}{# BEGIN if service.service_details.service_now.authorization_config is defined #}
+          AuthorizationConfig:
+{%- if service.service_details.service_now.authorization_config.oauth_client_credentials is defined %}{# BEGIN if service.service_details.service_now.authorization_config.oauth_client_credentials is defined #}
+            OAuthClientCredentials:
+              ClientId: {{ service.service_details.service_now.authorization_config.oauth_client_credentials.client_id }}
+              ClientSecret: {{ service.service_details.service_now.authorization_config.oauth_client_credentials.client_secret }}
+{%- if service.service_details.service_now.authorization_config.oauth_client_credentials.client_name is defined %}
+              ClientName: {{ service.service_details.service_now.authorization_config.oauth_client_credentials.client_name }}
+{%- endif %}
+{%- if service.service_details.service_now.authorization_config.oauth_client_credentials.exchange_parameters is defined %}
+              ExchangeParameters:
+                {{ service.service_details.service_now.authorization_config.oauth_client_credentials.exchange_parameters | indent(width=16, first=false) }}
+{%- elif service.service_details.service_now.authorization_config.oauth_client_credentials.exchange_parameters_json is defined %}
+              ExchangeParameters: |
+                {{ service.service_details.service_now.authorization_config.oauth_client_credentials.exchange_parameters_json | indent(width=16, first=false) }}
+{%- endif %}
+{%- endif %}{# END if service.service_details.service_now.authorization_config.oauth_client_credentials is defined #}
+{%- endif %}{# END if service.service_details.service_now.authorization_config is defined #}
+{%- endif %}{# END if service.service_details.service_now is defined #}
+{%- endif %}{# END if service.service_details is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for service in sceptre_user_data.services %}
+{%- set service_name = service.name %}
+  {{ service_name }}:
+    Description: The ServiceId for {{ service_name }}
+    Value:
+      Ref: {{ service_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ service_name }}"
+  {{ service_name }}ServiceId:
+    Description: The unique identifier of the service for {{ service_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ service_name }}
+        - ServiceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ service_name }}-ServiceId"
+{%- endfor %}{#
+# Supported structure as of 2026-02-27
+Type: AWS::DevOpsAgent::Service
+Properties:
+  ServiceDetails:
+    Dynatrace:
+      AccountUrn: String
+      AuthorizationConfig:
+        OAuthClientCredentials:
+          ClientId: String
+          ClientName: String
+          ClientSecret: String
+          ExchangeParameters: Json
+    GitLab:
+      GroupId: String
+      TargetUrl: String
+      TokenType: String
+      TokenValue: String
+    MCPServer:
+      AuthorizationConfig:
+        ApiKey:
+          ApiKeyHeader: String
+          ApiKeyName: String
+          ApiKeyValue: String
+        OAuthClientCredentials:
+          ClientId: String
+          ClientName: String
+          ClientSecret: String
+          ExchangeParameters: Json
+          ExchangeUrl: String
+          Scopes:
+            - String
+      Description: String
+      Endpoint: String
+      Name: String
+    MCPServerNewRelic:
+      AuthorizationConfig:
+        ApiKey:
+          AccountId: String
+          AlertPolicyIds:
+            - String
+          ApiKey: String
+          ApplicationIds:
+            - String
+          EntityGuids:
+            - String
+          Region: String
+    MCPServerSplunk:
+      AuthorizationConfig:
+        BearerToken:
+          AuthorizationHeader: String
+          TokenName: String
+          TokenValue: String
+      Description: String
+      Endpoint: String
+      Name: String
+    ServiceNow:
+      AuthorizationConfig:
+        OAuthClientCredentials:
+          ClientId: String
+          ClientName: String
+          ClientSecret: String
+          ExchangeParameters: Json
+      InstanceUrl: String
+  ServiceType: String
+#}

@@ -1,0 +1,52 @@
+---
+template:
+  type: file
+  path: backup/backup_selection.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  backup_selections:
+    - name: MyBackupSelection1
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      backup_plan_id: arn:aws:backup:us-east-1:123456789012:plan:8F81F553-3A74-4A3F-B93D-B3360DC80C50
+      backup_selection:
+        iam_role_arn: "arn:aws:iam::123456789012:role/AWSBackupDefaultServiceRole"
+        selection_name: "Selection1"
+        conditions:
+          string_equals:
+            - condition_key: "aws:ResourceTag/Environment"
+              condition_value: "test"
+          string_like:
+            - condition_key: "aws:ResourceTag/Name"
+              condition_value: "prod-*"
+          string_not_equals:
+            - condition_key: "aws:ResourceTag/Department"
+              condition_value: "Finance"
+          string_not_like:
+            - condition_key: "aws:ResourceTag/Project"
+              condition_value: "dev-*"
+        list_of_tags:
+          - condition_key: "Environment"
+            condition_type: "STRINGEQUALS"
+            condition_value: "test"
+          - condition_key: "Owner"
+            condition_type: "STRINGEQUALS"
+            condition_value: "DevOps"
+        not_resources:
+          - "arn:aws:ec2:us-east-1:123456789012:volume/vol-0abcd1234efgh5678"
+        resources:
+          - "arn:aws:ec2:us-east-1:123456789012:volume/vol-0abcd1234efgh5678"
+          - "arn:aws:rds:us-east-1:123456789012:db:mydb"
+    - name: MyBackupSelection2
+      backup_plan_id: arn:aws:backup:us-east-1:123456789012:plan:8F81F553-3A74-4A3F-1111-B3360DC80C50
+      backup_selection:
+        iam_role_arn: "arn:aws:iam::123456789012:role/AWSBackupDefaultServiceRole"
+        selection_name: "Selection2"
+        resources:
+          - "arn:aws:ec2:us-east-1:123456789012:volume/vol-1abcd1234efgh5678"
+  # Add more backup_selections as needed for further testing
+
+stack_tags:
+  Test: backup-selection

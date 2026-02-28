@@ -1,0 +1,83 @@
+---
+Description: {{sceptre_user_data.description|default('Backup RestoreTestingPlan(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for report_testing_plan in sceptre_user_data.report_testing_plans %}
+{%- set report_testing_plan_name = report_testing_plan.name %}
+  {{ report_testing_plan_name }}:
+    Type: AWS::Backup::RestoreTestingPlan
+    DeletionPolicy: {{ report_testing_plan.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ report_testing_plan.update_replace_policy | default('Delete') }}
+    Properties:
+      RecoveryPointSelection:
+        Algorithm: {{ report_testing_plan.recovery_point_selection.algorithm }}
+        IncludeVaults:
+{%- for vault in report_testing_plan.recovery_point_selection.include_vaults %}
+          - {{ vault }}
+{%- endfor %}
+        RecoveryPointTypes:
+{%- for recovery_point_type in report_testing_plan.recovery_point_selection.recovery_point_types %}
+          - {{ recovery_point_type }}
+{%- endfor %}
+{%- if report_testing_plan.recovery_point_selection.exclude_vaults is defined %}{# BEGIN if report_testing_plan.recovery_point_selection.exclude_vaults is defined #}
+        ExcludeVaults:
+{%- for vault in report_testing_plan.recovery_point_selection.exclude_vaults %}
+          - {{ vault }}
+{%- endfor %}
+{%- endif %}{# END if report_testing_plan.recovery_point_selection.exclude_vaults is defined #}
+{%- if report_testing_plan.recovery_point_selection.selection_window_days is defined %}
+        SelectionWindowDays: {{ report_testing_plan.recovery_point_selection.selection_window_days }}
+{%- endif %}
+      RestoreTestingPlanName: {{ report_testing_plan.report_testing_plan_name }}
+      ScheduleExpression: {{ report_testing_plan.schedule_expression }}
+{%- if report_testing_plan.schedule_expression_timezone is defined %}
+      ScheduleExpressionTimezone: {{ report_testing_plan.schedule_expression_timezone }}
+{%- endif %}
+{%- if report_testing_plan.start_window_hours is defined %}
+      StartWindowHours: {{ report_testing_plan.start_window_hours }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if report_testing_plan.tags is defined %}
+{%- for key,value in report_testing_plan.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for report_testing_plan in sceptre_user_data.report_testing_plans %}
+{%- set report_testing_plan_name = report_testing_plan.name %}
+  {{ report_testing_plan_name }}RestoreTestingPlanArn:
+    Description: The ARN for {{ report_testing_plan_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ report_testing_plan_name }}
+        - RestoreTestingPlanArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ report_testing_plan_name }}-RestoreTestingPlanArn"
+{%- endfor %}{#
+# Supported structure as of 2026-02-26
+Type: AWS::Backup::RestoreTestingPlan
+Properties:
+  RecoveryPointSelection:
+    Algorithm: String 
+    ExcludeVaults:
+      - String
+    IncludeVaults:
+      - String
+    RecoveryPointTypes:
+      - String
+    SelectionWindowDays: Integer
+  RestoreTestingPlanName: String
+  ScheduleExpression: String
+  ScheduleExpressionTimezone: String
+  StartWindowHours: Integer
+  Tags:
+    - Key: String
+      Value: String
+#}
