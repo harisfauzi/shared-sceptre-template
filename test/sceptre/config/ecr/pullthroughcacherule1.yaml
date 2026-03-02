@@ -1,0 +1,34 @@
+---
+template:
+  type: file
+  path: ecr/pull_through_cache_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "ECR Pull Through Cache Rules for upstream registries"
+  pull_through_cache_rules:
+    - name: DockerHubRule
+      ecr_repository_prefix: "docker"
+      upstream_registry: "docker"
+      credential_arn: "arn:aws:secretsmanager:us-east-1:123456789012:secret:dockerhub-credentials-AbCdEf"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+    - name: GitHubContainerRegistryRule
+      ecr_repository_prefix: "ghcr"
+      upstream_registry_url: "https://ghcr.io"
+      custom_role_arn: "arn:aws:iam::123456789012:role/ECRPullThroughCacheRole"
+      deletion_policy: Retain
+
+    - name: QuayIoRule
+      ecr_repository_prefix: "quay"
+      upstream_registry: "quay"
+      credential_arn: "arn:aws:secretsmanager:us-east-1:123456789012:secret:quay-credentials-XyZaBc"
+
+    - name: CustomRegistryRule
+      ecr_repository_prefix: "internal"
+      upstream_registry_url: "https://registry.internal.company.com"
+      upstream_repository_prefix: "library"
+      custom_role_arn: "arn:aws:iam::123456789012:role/CustomRegistryAccessRole"
+      deletion_policy: Delete

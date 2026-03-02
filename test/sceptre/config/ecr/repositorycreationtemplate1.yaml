@@ -1,0 +1,121 @@
+---
+template:
+  type: file
+  path: ecr/repository_creation_template.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "ECR Repository Creation Templates for automated repository provisioning"
+  repository_creation_templates:
+    - name: ProductionRepositoryTemplate
+      prefix: "prod"
+      applied_for:
+        - PULL_THROUGH_CACHE_RULES
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      description: "Template for production repositories with strict policies"
+      image_tag_mutability: IMMUTABLE
+      encryption_configuration:
+        encryption_type: KMS
+        kms_key: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+      image_tag_mutability_exclusion_filters:
+        - image_tag_mutability_exclusion_filter_type: "tagPatternList"
+          image_tag_mutability_exclusion_filter_value: "latest,stable,release"
+      lifecycle_policy: |
+        {
+          "rules": [
+            {
+              "rulePriority": 1,
+              "description": "Keep last 30 images",
+              "selection": {
+                "tagStatus": "any",
+                "countType": "imageCountMoreThan",
+                "countNumber": 30
+              },
+              "action": {
+                "type": "expire"
+              }
+            },
+            {
+              "rulePriority": 2,
+              "description": "Delete untagged images after 7 days",
+              "selection": {
+                "tagStatus": "untagged",
+                "countType": "sinceImagePushed",
+                "countUnit": "days",
+                "countNumber": 7
+              },
+              "action": {
+                "type": "expire"
+              }
+            }
+          ]
+        }
+      repository_policy: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::123456789012:role/CodeBuildRole"
+              },
+              "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "ecr:BatchCheckLayerAvailability"
+              ]
+            }
+          ]
+        }
+      resource_tags:
+        Environment: production
+        Team: platform
+        CostCenter: "1001"
+        ManagedBy: sceptre
+        DataClassification: confidential
+
+    - name: DevelopmentRepositoryTemplate
+      prefix: "dev"
+      applied_for:
+        - PULL_THROUGH_CACHE_RULES
+        - REPLICATION
+      deletion_policy: Delete
+      description: "Template for development repositories with flexible policies"
+      image_tag_mutability: MUTABLE
+      encryption_configuration:
+        encryption_type: AES256
+      lifecycle_policy: |
+        {
+          "rules": [
+            {
+              "rulePriority": 1,
+              "description": "Keep last 10 images",
+              "selection": {
+                "tagStatus": "any",
+                "countType": "imageCountMoreThan",
+                "countNumber": 10
+              },
+              "action": {
+                "type": "expire"
+              }
+            }
+          ]
+        }
+      resource_tags:
+        Environment: development
+        Team: platform
+        ManagedBy: sceptre
+
+    - name: SharedLibraryTemplate
+      prefix: "lib"
+      applied_for:
+        - REPLICATION
+      deletion_policy: Retain
+      custom_role_arn: "arn:aws:iam::123456789012:role/ECRRepositoryManagementRole"
+      image_tag_mutability: IMMUTABLE
+      resource_tags:
+        Environment: shared
+        Team: infrastructure
+        Purpose: "Shared libraries and utilities"
