@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EFS MountTarget(s) for '+s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for mount_target in sceptre_user_data.mount_targets %}
 {%- set mount_target_name = mount_target.name %}
   {{ mount_target_name }}:
@@ -20,11 +19,15 @@ Resources:
 {%- if mount_target.ip_address is defined %}
       IpAddress: {{mount_target.ip_address}}
 {%- endif %}
-
+{%- if mount_target.ip_address_type is defined %}
+      IpAddressType: {{mount_target.ip_address_type}}
+{%- endif %}
+{%- if mount_target.ipv6_address is defined %}
+      Ipv6Address: {{mount_target.ipv6_address}}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for mount_target in sceptre_user_data.mount_targets %}
 {%- set mount_target_name = mount_target.name %}
   {{ mount_target_name }}:
@@ -34,7 +37,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}"
-
   {{ mount_target_name }}Id:
     Description: The FileSystem ID for {{ mount_target_name }}
     Value:
@@ -44,7 +46,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}-Id"
-
   {{ mount_target_name }}IpAddress:
     Description: The IPv4 address of the mount target for {{ mount_target_name }}
     Value:
@@ -54,5 +55,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}-IpAddress"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-02
+Type: AWS::EFS::MountTarget
+Properties:
+  FileSystemId: String
+  IpAddress: String
+  IpAddressType: String
+  Ipv6Address: String
+  SecurityGroups: 
+    - String
+  SubnetId: String
+#}
