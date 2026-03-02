@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ECR Repository(s) for '+sc
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for repository in sceptre_user_data.repositories %}
 {%- set repository_name = repository.name %}
   {{ repository_name }}:
@@ -11,6 +10,9 @@ Resources:
     DeletionPolicy: {{ repository.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ repository.update_replace_policy | default('Delete') }}
     Properties:
+{%- if repository.empty_on_delete is defined %}
+      EmptyOnDelete: {{ repository.empty_on_delete | lower }}
+{%- endif %}
 {%- if repository.encryption_configuration is defined %}
       EncryptionConfiguration:
         EncryptionType: {{ repository.encryption_configuration.encryption_type }}
@@ -25,10 +27,19 @@ Resources:
 {%- if repository.image_tag_mutability is defined %}
       ImageTagMutability: {{ repository.image_tag_mutability }}
 {%- endif %}
+{%- if repository.image_tag_mutability_exclusion_filters is defined %}
+      ImageTagMutabilityExclusionFilters:
+{%- for filter in repository.image_tag_mutability_exclusion_filters %}
+        -
+          ImageTagMutabilityExclusionFilterType: {{ filter.image_tag_mutability_exclusion_filter_type }}
+          ImageTagMutabilityExclusionFilterValue: {{ filter.image_tag_mutability_exclusion_filter_value }}
+{%- endfor %}
+{%- endif %}
 {%- if repository.lifecycle_policy is defined %}
       LifecyclePolicy:
 {%- if repository.lifecycle_policy.lifecycle_policy_text is defined %}
-        LifecyclePolicyText: {{ repository.lifecycle_policy.lifecycle_policy_text }}
+        LifecyclePolicyText: |
+          {{ repository.lifecycle_policy.lifecycle_policy_text | indent(width=10, first=false) }}
 {%- endif %}
 {%- if repository.lifecycle_policy.registry_id is defined %}
         RegistryId: {{ repository.lifecycle_policy.registry_id }}
@@ -38,10 +49,11 @@ Resources:
       RepositoryName: {{ repository.repository_name }}
 {%- endif %}
 {%- if repository.repository_policy_text_json is defined %}
-      RepositoryPolicyText: "{{ repository.repository_policy_text_json }}"
+      RepositoryPolicyText: |
+        {{ repository.repository_policy_text_json | indent(width=8, first=false) }}
 {%- elif repository.repository_policy_text is defined %}
       RepositoryPolicyText:
-{{ repository.repository_policy_text | indent(width=8, first=true) }}
+        {{ repository.repository_policy_text | indent(width=8, first=false) }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -55,7 +67,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for repository in sceptre_user_data.repositories %}
 {%- set repository_name = repository.name %}
   {{ repository_name }}:
@@ -65,7 +76,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ repository_name }}"
-
   {{ repository_name }}Arn:
     Description: The ARN for {{ repository_name }}
     Value:
@@ -75,7 +85,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ repository_name }}-Arn"
-
   {{ repository_name }}RepositoryUri:
     Description: Returns the URI for {{ repository_name }}
     Value:
@@ -85,5 +94,28 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ repository_name }}-RepositoryUri"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-02
+Type: AWS::ECR::Repository
+Properties:
+  EmptyOnDelete: Boolean
+  EncryptionConfiguration:
+    EncryptionType: String
+    KmsKey: String
+  ImageScanningConfiguration:
+    ScanOnPush: Boolean
+  ImageTagMutability: String
+  ImageTagMutabilityExclusionFilters:
+    -
+      ImageTagMutabilityExclusionFilterType: String
+      ImageTagMutabilityExclusionFilterValue: String
+  LifecyclePolicy:
+    LifecyclePolicyText: String
+    RegistryId: String
+  RepositoryName: String
+  RepositoryPolicyText: Json
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

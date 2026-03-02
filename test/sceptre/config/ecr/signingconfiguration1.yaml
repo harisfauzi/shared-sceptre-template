@@ -1,0 +1,39 @@
+---
+template:
+  type: file
+  path: ecr/signing_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "ECR Signing Configuration for container image signing"
+  signing_configurations:
+    - name: ProductionSigningConfiguration
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      rules:
+        - signing_profile_arn: "arn:aws:signer:us-east-1:123456789012:signing-profile/prod-signing-profile"
+          repository_filters:
+            - filter: "prod-*"
+              filter_type: PREFIX_FILTER
+            - filter: "main-*"
+              filter_type: PREFIX_FILTER
+
+        - signing_profile_arn: "arn:aws:signer:us-east-1:123456789012:signing-profile/critical-signing-profile"
+          repository_filters:
+            - filter: "critical-*"
+              filter_type: PREFIX_FILTER
+
+    - name: DevelopmentSigningConfiguration
+      deletion_policy: Retain
+      rules:
+        - signing_profile_arn: "arn:aws:signer:us-east-1:123456789012:signing-profile/dev-signing-profile"
+          repository_filters:
+            - filter: "dev-*"
+              filter_type: PREFIX_FILTER
+            - filter: "staging-*"
+              filter_type: PREFIX_FILTER
+
+    - name: UniversalSigningConfiguration
+      rules:
+        - signing_profile_arn: "arn:aws:signer:us-east-1:123456789012:signing-profile/default-signing-profile"

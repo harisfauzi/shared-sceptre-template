@@ -1,0 +1,104 @@
+---
+Description: {{sceptre_user_data.description|default('ECR Repository Creation Template(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for repository_creation_template in sceptre_user_data.repository_creation_templates %}
+{%- set repository_creation_template_name = repository_creation_template.name %}
+  {{ repository_creation_template_name }}:
+    Type: AWS::ECR::RepositoryCreationTemplate
+    DeletionPolicy: {{ repository_creation_template.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ repository_creation_template.update_replace_policy | default('Delete') }}
+    Properties:
+      AppliedFor:
+{%- for applied_for in repository_creation_template.applied_for %}
+        - {{ applied_for }}
+{%- endfor %}
+      Prefix: {{ repository_creation_template.prefix }}
+{%- if repository_creation_template.custom_role_arn is defined %}
+      CustomRoleArn: {{ repository_creation_template.custom_role_arn | trim }}
+{%- endif %}
+{%- if repository_creation_template.description is defined %}
+      Description: {{ repository_creation_template.description }}
+{%- endif %}
+{%- if repository_creation_template.encryption_configuration is defined %}{# BEGIN if repository_creation_template.encryption_configuration is defined #}
+      EncryptionConfiguration:
+        EncryptionType: {{ repository_creation_template.encryption_configuration.encryption_type }}
+{%- if repository_creation_template.encryption_configuration.kms_key is defined %}
+        KmsKey: {{ repository_creation_template.encryption_configuration.kms_key | trim }}
+{%- endif %}
+{%- endif %}{# END if repository_creation_template.encryption_configuration is defined #}
+{%- if repository_creation_template.image_tag_mutability is defined %}
+      ImageTagMutability: {{ repository_creation_template.image_tag_mutability }}
+{%- endif %}
+{%- if repository_creation_template.image_tag_mutability_exclusion_filters is defined %}{# BEGIN if repository_creation_template.image_tag_mutability_exclusion_filters is defined #}
+      ImageTagMutabilityExclusionFilters:
+{%- for filter in repository_creation_template.image_tag_mutability_exclusion_filters %}
+        -
+          ImageTagMutabilityExclusionFilterType: {{ filter.image_tag_mutability_exclusion_filter_type }}
+          ImageTagMutabilityExclusionFilterValue: {{ filter.image_tag_mutability_exclusion_filter_value }}
+{%- endfor %}
+{%- endif %}{# END if repository_creation_template.image_tag_mutability_exclusion_filters is defined #}
+{%- if repository_creation_template.lifecycle_policy is defined %}
+      LifecyclePolicy: |
+        {{ repository_creation_template.lifecycle_policy | indent(width=8, first=false) }}
+{%- endif %}
+{%- if repository_creation_template.repository_policy is defined %}
+      RepositoryPolicy: |
+        {{ repository_creation_template.repository_policy | indent(width=8, first=false) }}
+{%- endif %}
+{%- if repository_creation_template.resource_tags is defined %}{# BEGIN if repository_creation_template.resource_tags is defined#}
+      ResourceTags:
+{%- for key,value in repository_creation_template.resource_tags.items() %}
+        -
+          Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if repository_creation_template.resource_tags is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for repository_creation_template in sceptre_user_data.repository_creation_templates %}
+{%- set repository_creation_template_name = repository_creation_template.name %}
+  {{ repository_creation_template_name }}CreatedAt:
+    Description: The date and time, in JavaScript date format, when the repository creation template {{ repository_creation_template_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ repository_creation_template_name }}
+        - CreatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ repository_creation_template_name }}-CreatedAt"
+  {{ repository_creation_template_name }}UpdatedAt:
+    Description: The date and time, in JavaScript date format, when the repository creation template {{ repository_creation_template_name }} was last updated.
+    Value:
+      Fn::GetAtt:
+        - {{ repository_creation_template_name }}
+        - UpdatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ repository_creation_template_name }}-UpdatedAt"
+{%- endfor %}{#
+# Supported structure as of 2026-03-02
+Type: AWS::ECR::RepositoryCreationTemplate
+Properties:
+  AppliedFor:
+    - String
+  CustomRoleArn: String
+  Description: String
+  EncryptionConfiguration:
+    EncryptionType: String
+    KmsKey: String
+  ImageTagMutability: String
+  ImageTagMutabilityExclusionFilters:
+    -
+      ImageTagMutabilityExclusionFilterType: String
+      ImageTagMutabilityExclusionFilterValue: String
+  LifecyclePolicy: String
+  Prefix: String
+  RepositoryPolicy: String
+  ResourceTags:
+    -
+      Key: String
+      Value: String
+#}

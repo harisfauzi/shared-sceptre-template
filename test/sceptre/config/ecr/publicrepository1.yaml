@@ -1,0 +1,52 @@
+---
+template:
+  type: file
+  path: ecr/public_repository.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "ECR Public Repositories for container images"
+  public_repositories:
+    - name: MyAppRepository
+      repository_name: my-app-public-repo
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      repository_catalog_data:
+        about_text: "Main application container image repository"
+        repository_description: "Public repository for MyApp container images"
+        usage_text: "docker pull public.ecr.aws/myorg/my-app:latest"
+        architectures:
+          - x86_64
+          - arm64
+        operating_systems:
+          - Linux
+      repository_policy_text_json: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": [
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:BatchGetImage",
+                "ecr:BatchCheckLayerAvailability"
+              ]
+            }
+          ]
+        }
+      tags:
+        Environment: prod
+        Team: platform
+        ManagedBy: terraform
+    - name: LibraryRepository
+      repository_name: shared-libs-public
+      deletion_policy: Retain
+      repository_catalog_data:
+        repository_description: "Shared libraries and utilities container images"
+        architectures:
+          - x86_64
+      tags:
+        Environment: shared
+        Team: infrastructure

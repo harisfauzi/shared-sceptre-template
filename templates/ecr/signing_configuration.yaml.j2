@@ -1,0 +1,51 @@
+---
+Description: {{sceptre_user_data.description|default('ECR Signing Configuration(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for signing_configuration in sceptre_user_data.signing_configurations %}
+{%- set signing_configuration_name = signing_configuration.name %}
+  {{ signing_configuration_name }}:
+    Type: AWS::ECR::SigningConfiguration
+    DeletionPolicy: {{ signing_configuration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ signing_configuration.update_replace_policy | default('Delete') }}
+    Properties:
+      Rules:
+{%- for rule in signing_configuration.rules %}{# BEGIN for rule in signing_configuration.rules #}
+        -
+          SigningProfileArn: {{ rule.signing_profile_arn | trim }}
+{%- if rule.repository_filters is defined %}{# BEGIN if rule.repository_filters is defined #}
+          RepositoryFilters:
+{%- for filter in rule.repository_filters %}
+            -
+              Filter: {{ filter.filter }}
+              FilterType: {{ filter.filter_type }}
+{%- endfor %}
+{%- endif %}{# END if rule.repository_filters is defined #}
+{%- endfor %}{# END for rule in signing_configuration.rules #}
+{%- endfor %}
+
+Outputs:
+{%- for signing_configuration in sceptre_user_data.signing_configurations %}
+{%- set signing_configuration_name = signing_configuration.name %}
+  {{ signing_configuration_name }}RegistryId:
+    Description: The account ID of the destination registry for {{ signing_configuration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ signing_configuration_name }}
+        - RegistryId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ signing_configuration_name }}-RegistryId"
+{%- endfor %}{#
+# Supported structure as of 2026-03-02
+Type: AWS::ECR::SigningConfiguration
+Properties:
+  Rules:
+    -
+      RepositoryFilters:
+        -
+          Filter: String
+          FilterType: String
+      SigningProfileArn: String
+#}

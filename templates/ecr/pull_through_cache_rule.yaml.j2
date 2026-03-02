@@ -1,0 +1,41 @@
+---
+Description: {{sceptre_user_data.description|default('ECR PullThroughCacheRule(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for pull_through_cache_rule in sceptre_user_data.pull_through_cache_rules %}
+{%- set pull_through_cache_rule_name = pull_through_cache_rule.name %}
+  {{ pull_through_cache_rule_name }}:
+    Type: AWS::ECR::PullThroughCacheRule
+    DeletionPolicy: {{ pull_through_cache_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ pull_through_cache_rule.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if pull_through_cache_rule.credential_arn is defined %}
+      CredentialArn: {{ pull_through_cache_rule.credential_arn | trim }}
+{%- endif %}
+{%- if pull_through_cache_rule.custom_role_arn is defined %}
+      CustomRoleArn: {{ pull_through_cache_rule.custom_role_arn | trim }}
+{%- endif %}
+{%- if pull_through_cache_rule.ecr_repository_prefix is defined %}
+      EcrRepositoryPrefix: {{ pull_through_cache_rule.ecr_repository_prefix }}
+{%- endif %}
+{%- if pull_through_cache_rule.upstream_registry is defined %}
+      UpstreamRegistry: {{ pull_through_cache_rule.upstream_registry }}
+{%- endif %}
+{%- if pull_through_cache_rule.upstream_registry_url is defined %}
+      UpstreamRegistryUrl: {{ pull_through_cache_rule.upstream_registry_url }}
+{%- endif %}
+{%- if pull_through_cache_rule.upstream_repository_prefix is defined %}
+      UpstreamRepositoryPrefix: {{ pull_through_cache_rule.upstream_repository_prefix }}
+{%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-02
+Type: AWS::ECR::PullThroughCacheRule
+Properties:
+  CredentialArn: String
+  CustomRoleArn: String
+  EcrRepositoryPrefix: String
+  UpstreamRegistry: String
+  UpstreamRegistryUrl: String
+  UpstreamRepositoryPrefix: String
+#}
