@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ECS Cluster(s) for '+scept
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for cluster in sceptre_user_data.clusters %}
 {%- set cluster_name = cluster.name %}
   {{ cluster_name }}:
@@ -11,18 +10,18 @@ Resources:
     DeletionPolicy: {{ cluster.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ cluster.update_replace_policy | default('Delete') }}
     Properties:
-{%- if cluster.capacity_providers is defined %}
+{%- if cluster.capacity_providers is defined %}{# BEGIN if cluster.capacity_providers is defined #}
       CapacityProviders:
 {%- for capacity_provider in cluster.capacity_providers %}
         - {{ capacity_provider }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if cluster.capacity_providers is defined #}
 {%- if cluster.cluster_name is defined %}
       ClusterName: {{ cluster.cluster_name }}
 {%- endif %}
-{%- if cluster.cluster_settings is defined %}
+{%- if cluster.cluster_settings is defined %}{# BEGIN if cluster.cluster_settings is defined #}
       ClusterSettings:
-{%- for cluster_setting in cluster.cluster_settings %}
+{%- for cluster_setting in cluster.cluster_settings %}{# BEGIN for cluster_setting in cluster.cluster_settings #}
         -
 {%- if cluster_setting.name is defined %}
           Name: {{ cluster_setting.name }}
@@ -30,18 +29,19 @@ Resources:
 {%- if cluster_setting.value is defined %}
           Value: {{ cluster_setting.value }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if cluster.configuration is defined %}{# BEGIN {%- if cluster.configuration is defined %} #}
+{%- endfor %}{# END for cluster_setting in cluster.cluster_settings #}
+{%- endif %}{# END if cluster.cluster_settings is defined #}
+{%- if cluster.configuration is defined %}{# BEGIN if cluster.configuration is defined #}
       Configuration:
+{%- if cluster.configuration.execute_command_configuration is defined %}{# BEGIN if cluster.configuration.execute_command_configuration is defined #}
         ExecuteCommandConfiguration:
 {%- if cluster.configuration.execute_command_configuration.kms_key_id is defined %}
           KmsKeyId: {{ cluster.configuration.execute_command_configuration.kms_key_id | trim }}
 {%- endif %}
-{%- if cluster.configuration.execute_command_configuration.log_configuration is defined %}{# BEGIN {%- if cluster.configuration.execute_command_configuration.log_configuration is defined %} #}
+{%- if cluster.configuration.execute_command_configuration.log_configuration is defined %}{# BEGIN if cluster.configuration.execute_command_configuration.log_configuration is defined #}
           LogConfiguration:
 {%- if cluster.configuration.execute_command_configuration.log_configuration.cloud_watch_encryption_enabled is defined %}
-            CloudWatchEncryptionEnabled: {{ cluster.configuration.execute_command_configuration.log_configuration.cloud_watch_encryption_enabled }}
+            CloudWatchEncryptionEnabled: {{ cluster.configuration.execute_command_configuration.log_configuration.cloud_watch_encryption_enabled | lower }}
 {%- endif %}
 {%- if cluster.configuration.execute_command_configuration.log_configuration.cloud_watch_log_group_name is defined %}
             CloudWatchLogGroupName: {{ cluster.configuration.execute_command_configuration.log_configuration.cloud_watch_log_group_name }}
@@ -55,14 +55,24 @@ Resources:
 {%- if cluster.configuration.execute_command_configuration.log_configuration.s3_key_prefix is defined %}
             S3KeyPrefix: {{ cluster.configuration.execute_command_configuration.log_configuration.s3_key_prefix }}
 {%- endif %}
-{%- endif %}{# END {%- if cluster.configuration.execute_command_configuration.log_configuration is defined %} #}
+{%- endif %}{# END if cluster.configuration.execute_command_configuration.log_configuration is defined #}
 {%- if cluster.configuration.execute_command_configuration.logging is defined %}
           Logging: {{ cluster.configuration.execute_command_configuration.logging }}
 {%- endif %}
-{%- endif %}{# END {%- if cluster.configuration is defined %} #}
-{%- if cluster.default_capacity_provider_strategy is defined %}{# BEGIN {%- if cluster.default_capacity_provider_strategy is defined %} #}
+{%- endif %}{# END if cluster.configuration.execute_command_configuration is defined #}
+{%- if cluster.configuration.managed_storage_configuration is defined %}{# BEGIN if cluster.configuration.managed_storage_configuration is defined #}
+        ManagedStorageConfiguration:
+{%- if cluster.configuration.managed_storage_configuration.fargate_ephemeral_storage_kms_key_id is defined %}  
+          FargateEphemeralStorageKmsKeyId: {{ cluster.configuration.managed_storage_configuration.fargate_ephemeral_storage_kms_key_id | trim }}
+{%- endif %}
+{%- if cluster.configuration.managed_storage_configuration.kms_key_id is defined %}
+          KmsKeyId: {{ cluster.configuration.managed_storage_configuration.kms_key_id | trim }}
+{%- endif %}
+{%- endif %}{# END if cluster.configuration.managed_storage_configuration is defined #}
+{%- endif %}{# END if cluster.configuration is defined #}
+{%- if cluster.default_capacity_provider_strategy is defined %}{# BEGIN if cluster.default_capacity_provider_strategy is defined #}
       DefaultCapacityProviderStrategy:
-{%- for strategy in cluster.default_capacity_provider_strategy %}
+{%- for strategy in cluster.default_capacity_provider_strategy %}{# BEGIN for strategy in cluster.default_capacity_provider_strategy #}
         -
 {%- if strategy.base is defined %}
           Base: {{ strategy.base }}
@@ -73,8 +83,12 @@ Resources:
 {%- if strategy.weight is defined %}
           Weight: {{ strategy.weight }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}{# END {%- if cluster.default_capacity_provider_strategy is defined %} #}
+{%- endfor %}{# END for strategy in cluster.default_capacity_provider_strategy #}
+{%- endif %}{# END if cluster.default_capacity_provider_strategy is defined #}
+{%- if cluster.service_connect_defaults is defined %}
+      ServiceConnectDefaults:
+        Namespace: {{ cluster.service_connect_defaults.namespace }}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -84,11 +98,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for cluster in sceptre_user_data.clusters %}
 {%- set cluster_name = cluster.name %}
   {{ cluster_name }}:
@@ -98,7 +110,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}"
-
   {{ cluster_name }}Arn:
     Description: The ARN for {{ cluster_name }}
     Value:
@@ -108,5 +119,39 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-03
+Type: AWS::ECS::Cluster
+Properties:
+  CapacityProviders:
+    - String
+  ClusterName: String
+  ClusterSettings:
+    -
+      Name: String
+      Value: String
+  Configuration:
+    ExecuteCommandConfiguration:
+      KmsKeyId: String
+      LogConfiguration:
+        CloudWatchEncryptionEnabled: Boolean
+        CloudWatchLogGroupName: String
+        S3BucketName: String
+        S3EncryptionEnabled: Boolean
+        S3KeyPrefix: String
+      Logging: String
+    ManagedStorageConfiguration:
+      FargateEphemeralStorageKmsKeyId: String
+      KmsKeyId: String
+  DefaultCapacityProviderStrategy:
+    -
+      Base: Integer
+      CapacityProvider: String
+      Weight: Integer
+  ServiceConnectDefaults:
+    Namespace: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

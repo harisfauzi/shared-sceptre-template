@@ -1,0 +1,47 @@
+---
+template:
+  type: file
+  path: ecs/cluster_capacity_provider_associations.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: 'ECS Cluster Capacity Provider Associations for test environment'
+  cluster_capacity_provider_associationss:
+    - name: ProductionClusterAssociations
+      cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/production-cluster'
+      deletion_policy: 'Retain'
+      update_replace_policy: 'Retain'
+      capacity_providers:
+        - 'FARGATE'
+        - 'FARGATE_SPOT'
+        - 'asg-capacity-provider'
+      default_capacity_provider_strategy:
+        - capacity_provider: 'FARGATE'
+          base: 2
+          weight: 100
+        - capacity_provider: 'FARGATE_SPOT'
+          weight: 50
+        - capacity_provider: 'asg-capacity-provider'
+          weight: 25
+    - name: DevelopmentClusterAssociations
+      cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/development-cluster'
+      capacity_providers:
+        - 'FARGATE'
+        - 'FARGATE_SPOT'
+      default_capacity_provider_strategy:
+        - capacity_provider: 'FARGATE'
+          base: 1
+          weight: 100
+        - capacity_provider: 'FARGATE_SPOT'
+          weight: 50
+    - name: SpotClusterAssociations
+      cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/spot-cluster'
+      capacity_providers:
+        - 'FARGATE_SPOT'
+      default_capacity_provider_strategy:
+        - capacity_provider: 'FARGATE_SPOT'
+          weight: 100
+
+stack_tags:
+  Test: ecs-cluster-capacity-provider-associations

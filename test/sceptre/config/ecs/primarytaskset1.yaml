@@ -1,0 +1,27 @@
+---
+template:
+  type: file
+  path: ecs/primary_task_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: 'ECS Primary Task Sets for test environment'
+  primary_task_sets:
+    - name: ProductionPrimaryTaskSet
+      cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/production-cluster'
+      service: 'arn:aws:ecs:us-east-1:123456789012:service/production-cluster/production-service'
+      task_set_id: 'ecs-svc/prod-service/6db35f8e-9f9d-4adc-a3a7-b8f9d9e7b3c2'
+      deletion_policy: 'Retain'
+      update_replace_policy: 'Retain'
+    - name: DevelopmentPrimaryTaskSet
+      cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/development-cluster'
+      service: 'arn:aws:ecs:us-east-1:123456789012:service/development-cluster/development-service'
+      task_set_id: 'ecs-svc/dev-service/a1b2c3d4-e5f6-47a8-b9c0-d1e2f3g4h5i6'
+    - name: SpotPrimaryTaskSet
+      cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/spot-cluster'
+      service: 'arn:aws:ecs:us-east-1:123456789012:service/spot-cluster/spot-service'
+      task_set_id: 'ecs-svc/spot-service/x1y2z3a4-b5c6-48d9-e0f1-g2h3i4j5k6l7'
+
+stack_tags:
+  Test: ecs-primary-task-set

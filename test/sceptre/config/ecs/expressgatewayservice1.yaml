@@ -1,0 +1,100 @@
+---
+template:
+  type: file
+  path: ecs/express_gateway_service.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: 'ECS Express Gateway Services for test environment'
+  express_gateway_services:
+    - name: ProductionGateway
+      service_name: production-gateway
+      deletion_policy: 'Retain'
+      update_replace_policy: 'Retain'
+      execution_role_arn: 'arn:aws:iam::123456789012:role/ecsExpressGatewayExecutionRole'
+      infrastructure_role_arn: 'arn:aws:iam::123456789012:role/ecsExpressGatewayInfrastructureRole'
+      task_role_arn: 'arn:aws:iam::123456789012:role/ecsExpressGatewayTaskRole'
+      cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/production-cluster'
+      cpu: '1024'
+      memory: '2048'
+      health_check_path: '/health'
+      primary_container:
+        image: 'mygateway:latest'
+        container_port: 8080
+        command:
+          - '/bin/sh'
+          - '-c'
+          - 'gateway-server start'
+        environment:
+          - name: ENVIRONMENT
+            value: production
+          - name: LOG_LEVEL
+            value: INFO
+          - name: API_TIMEOUT
+            value: '30'
+        aws_logs_configuration:
+          log_group: '/ecs/gateway/production'
+          log_stream_prefix: 'ecs'
+        repository_credentials:
+          credentials_parameter: 'arn:aws:secretsmanager:us-east-1:123456789012:secret:docker-credentials'
+        secrets:
+          - 'DB_PASSWORD'
+          - 'API_KEY'
+      network_configuration:
+        subnets:
+          - 'subnet-12345678'
+          - 'subnet-87654321'
+        security_groups:
+          - 'sg-12345678'
+      scaling_target:
+        min_task_count: 3
+        max_task_count: 10
+        auto_scaling_metric: 'CPU'
+        auto_scaling_target_value: 70
+      tags:
+        Name: ProductionGateway
+        Environment: production
+        Team: platform
+    - name: DevelopmentGateway
+      service_name: development-gateway
+      execution_role_arn: 'arn:aws:iam::123456789012:role/ecsExpressGatewayExecutionRole'
+      infrastructure_role_arn: 'arn:aws:iam::123456789012:role/ecsExpressGatewayInfrastructureRole'
+      cluster: 'arn:aws:ecs:us-east-1:123456789012:cluster/development-cluster'
+      cpu: '512'
+      memory: '1024'
+      primary_container:
+        image: 'mygateway:dev'
+        container_port: 8080
+        environment:
+          - name: ENVIRONMENT
+            value: development
+          - name: LOG_LEVEL
+            value: DEBUG
+        aws_logs_configuration:
+          log_group: '/ecs/gateway/development'
+          log_stream_prefix: 'ecs'
+      network_configuration:
+        subnets:
+          - 'subnet-dev12345'
+        security_groups:
+          - 'sg-dev12345'
+      scaling_target:
+        min_task_count: 1
+        max_task_count: 3
+        auto_scaling_metric: 'MEMORY'
+        auto_scaling_target_value: 80
+      tags:
+        Name: DevelopmentGateway
+        Environment: development
+    - name: MinimalGateway
+      execution_role_arn: 'arn:aws:iam::123456789012:role/ecsExpressGatewayExecutionRole'
+      infrastructure_role_arn: 'arn:aws:iam::123456789012:role/ecsExpressGatewayInfrastructureRole'
+      primary_container:
+        image: 'mygateway:minimal'
+      tags:
+        Name: MinimalGateway
+        Environment: test
+
+stack_tags:
+  Test: ecs-express-gateway-service

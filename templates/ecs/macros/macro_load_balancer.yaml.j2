@@ -1,6 +1,19 @@
 {%- macro prep(load_balancers) %}
 {%- for load_balancer in load_balancers %}
 -
+{%- if load_balancer.advanced_configuration is defined %}{# BEGIN if load_balancer.advanced_configuration is defined #}
+  AdvancedConfiguration:
+    AlternateTargetGroupArn: {{ load_balancer.advanced_configuration.alternate_target_group_arn | trim }}
+{%- if load_balancer.advanced_configuration.production_listener_rule is defined %}
+    ProductionListenerRule: {{ load_balancer.advanced_configuration.production_listener_rule }}
+{%- endif %}
+{%- if load_balancer.advanced_configuration.role_arn is defined %}
+    RoleArn: {{ load_balancer.advanced_configuration.role_arn | trim }}
+{%- endif %}
+{%- if load_balancer.advanced_configuration.test_listener_rule is defined %}
+    TestListenerRule: {{ load_balancer.advanced_configuration.test_listener_rule }}
+{%- endif %}
+{%- endif %}{# END if load_balancer.advanced_configuration is defined #}
 {%- if load_balancer.container_name is defined %}
   ContainerName: {{ load_balancer.container_name }}
 {%- endif %}

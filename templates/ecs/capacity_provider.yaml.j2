@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ECS Capacity Provider(s) f
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for capacity_provider in sceptre_user_data.capacity_providers %}
 {%- set capacity_provider_name = capacity_provider.name %}
   {{ capacity_provider_name }}:
@@ -11,8 +10,12 @@ Resources:
     DeletionPolicy: {{ capacity_provider.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ capacity_provider.update_replace_policy | default('Delete') }}
     Properties:
+{%- if capacity_provider.auto_scaling_group_provider is defined %}{# BEGIN if capacity_provider.auto_scaling_group_provider is defined #}
       AutoScalingGroupProvider:
         AutoScalingGroupArn: {{ capacity_provider.auto_scaling_group_provider.auto_scaling_group_arn | trim }}
+{%- if capacity_provider.auto_scaling_group_provider.managed_draining is defined %}
+        ManagedDraining: {{ capacity_provider.auto_scaling_group_provider.managed_draining }}
+{%- endif %}
 {%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %}{# BEGIN {%- if capacity_provider.auto_scaling_group_provider.managed_scaling is defined %} #}
         ManagedScaling:
 {%- if capacity_provider.auto_scaling_group_provider.managed_scaling.instance_warmup_period is defined %}
@@ -34,6 +37,199 @@ Resources:
 {%- if capacity_provider.auto_scaling_group_provider.managed_termination_protection is defined %}
         ManagedTerminationProtection: {{ capacity_provider.auto_scaling_group_provider.managed_termination_protection }}
 {%- endif %}
+{%- endif %}{# END if capacity_provider.auto_scaling_group_provider is defined #}
+{%- if capacity_provider.cluster_name is defined %}
+      ClusterName: {{ capacity_provider.cluster_name }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider is defined %}{# BEGIN if capacity_provider.managed_instances_provider is defined #}
+      ManagedInstancesProvider:
+{%- if capacity_provider.managed_instances_provider.infrastructure_optimization is defined %}{# BEGIN if capacity_provider.managed_instances_provider.infrastructure_optimization is defined #}
+        InfrastructureOptimization:
+          ScaleInAfter: {{ capacity_provider.managed_instances_provider.infrastructure_optimization.scale_in_after }}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.infrastructure_optimization is defined #}
+        InfrastructureRoleArn: {{ capacity_provider.managed_instances_provider.infrastructure_role_arn | trim }}
+        InstanceLaunchTemplate:
+          Ec2InstanceProfileArn: {{ capacity_provider.managed_instances_provider.instance_launch_template.ec2_instance_profile_arn | trim }}
+          NetworkConfiguration:
+            SecurityGroups:
+{%- for sg in capacity_provider.managed_instances_provider.instance_launch_template.network_configuration.security_groups %}
+              - {{ sg }}
+{%- endfor %}
+            Subnets:
+{%- for subnet in capacity_provider.managed_instances_provider.instance_launch_template.network_configuration.subnets %}
+              - {{ subnet }}
+{%- endfor %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.capacity_option_type is defined %}
+          CapacityOptionType: {{ capacity_provider.managed_instances_provider.instance_launch_template.capacity_option_type }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.capacity_reservations is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.capacity_reservations is defined #}
+          CapacityReservations:
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.capacity_reservations.reservation_group_arn is defined %}
+            ReservationGroupArn: {{ capacity_provider.managed_instances_provider.instance_launch_template.capacity_reservations.reservation_group_arn | trim }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.capacity_reservations.reservation_preference is defined %}
+            ReservationPreference: {{ capacity_provider.managed_instances_provider.instance_launch_template.capacity_reservations.reservation_preference }}
+{%- endif %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.capacity_reservations is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.fips_enabled is defined %}
+          FipsEnabled: {{ capacity_provider.managed_instances_provider.instance_launch_template.fips_enabled }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements is defined #}
+          InstanceRequirements:
+            MemoryMiB:
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.memory_mib.max is defined %}
+              Max: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.memory_mib.max }}
+{%- endif %}
+              Min: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.memory_mib.min }}
+            VCpuCount:
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.vcpu_count.max is defined %}
+              Max: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.vcpu_count.max }}
+{%- endif %}
+              Min: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.vcpu_count.min }}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_count is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_count is defined #}
+            AcceleratorCount:
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_count.max is defined %}
+              Max: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_count.max }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_count.min is defined %}
+              Min: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_count.min }}
+{%- endif %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_count is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_manufacturers is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_manufacturers is defined #}
+            AcceleratorManufacturers:
+{%- for manufacturer in capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_manufacturers %}
+              - {{ manufacturer }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_manufacturers is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_names is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_names is defined #}
+            AcceleratorNames:
+{%- for accelerator_name in capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_names %}
+              - {{ accelerator_name }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_names is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_total_memory_mib is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_total_memory_mib is defined #}
+            AcceleratorTotalMemoryMiB:
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_total_memory_mib.max is defined %}
+              Max: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_total_memory_mib.max }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_total_memory_mib.min is defined %}
+              Min: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_total_memory_mib.min }}
+{%- endif %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_total_memory_mib is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_types is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_types is defined #}
+            AcceleratorTypes:
+{%- for accelerator_type in capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_types %}
+              - {{ accelerator_type }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.accelerator_types is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.allowed_instance_types is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.allowed_instance_types is defined #}
+            AllowedInstanceTypes:
+{%- for allowed_instance_type in capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.allowed_instance_types %}
+              - {{ allowed_instance_type }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.allowed_instance_types is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.bare_metal is defined %}
+            BareMetal: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.bare_metal }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.baseline_ebs_bandwidth_mbps is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.baseline_ebs_bandwidth_mbps is defined #}
+            BaselineEbsBandwidthMbps:
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.baseline_ebs_bandwidth_mbps.max is defined %}
+              Max: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.baseline_ebs_bandwidth_mbps.max }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.baseline_ebs_bandwidth_mbps.min is defined %}
+              Min: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.baseline_ebs_bandwidth_mbps.min }}
+{%- endif %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.baseline_ebs_bandwidth_mbps is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.burstable_performance is defined %}
+            BurstablePerformance: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.burstable_performance }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.cpu_manufacturers is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.cpu_manufacturers is defined #}
+            CpuManufacturers:
+{%- for cpu_manufacturer in capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.cpu_manufacturers %}
+              - {{ cpu_manufacturer }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.cpu_manufacturers is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.excluded_instance_types is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.excluded_instance_types is defined #}
+            ExcludedInstanceTypes:
+{%- for excluded_instance_type in capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.excluded_instance_types %}
+              - {{ excluded_instance_type }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.excluded_instance_types is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.instance_generations is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.instance_generations is defined #}
+            InstanceGenerations:
+{%- for instance_generation in capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.instance_generations %}
+              - {{ instance_generation }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.instance_generations is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.local_storage is defined %}
+            LocalStorage: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.local_storage }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.local_storage_types is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.local_storage_types is defined #}
+            LocalStorageTypes:
+{%- for local_storage_type in capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.local_storage_types %}
+              - {{ local_storage_type }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.local_storage_types is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.max_spot_price_as_percentage_of_optimal_on_demand_price is defined %}
+            MaxSpotPriceAsPercentageOfOptimalOnDemandPrice: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.max_spot_price_as_percentage_of_optimal_on_demand_price }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.memory_gib_per_vcpu is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.memory_gib_per_vcpu is defined #}
+            MemoryGiBPerVCpu:
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.memory_gib_per_vcpu.max is defined %}
+              Max: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.memory_gib_per_vcpu.max }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.memory_gib_per_vcpu.min is defined %}
+              Min: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.memory_gib_per_vcpu.min }}
+{%- endif %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.memory_gib_per_vcpu is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_bandwidth_gbps is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_bandwidth_gbps is defined #}
+            NetworkBandwidthGbps:
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_bandwidth_gbps.max is defined %}
+              Max: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_bandwidth_gbps.max }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_bandwidth_gbps.min is defined %}
+              Min: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_bandwidth_gbps.min }}
+{%- endif %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_bandwidth_gbps is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_interface_count is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_interface_count is defined #}
+            NetworkInterfaceCount:
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_interface_count.max is defined %}
+              Max: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_interface_count.max }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_interface_count.min is defined %}
+              Min: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_interface_count.min }}
+{%- endif %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.network_interface_count is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.on_demand_max_price_percentage_over_lowest_price is defined %}
+            OnDemandMaxPricePercentageOverLowestPrice: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.on_demand_max_price_percentage_over_lowest_price }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.require_hibernate_support is defined %}
+            RequireHibernateSupport: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.require_hibernate_support | lower }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.spot_max_price_percentage_over_lowest_price is defined %}
+            SpotMaxPricePercentageOverLowestPrice: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.spot_max_price_percentage_over_lowest_price }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.total_local_storage_gb is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.total_local_storage_gb is defined #}
+            TotalLocalStorageGB:
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.total_local_storage_gb.max is defined %}
+              Max: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.total_local_storage_gb.max }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.total_local_storage_gb.min is defined %}
+              Min: {{ capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.total_local_storage_gb.min }}
+{%- endif %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements.total_local_storage_gb is defined #}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.instance_requirements is defined #}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.monitoring is defined %}
+          Monitoring: {{ capacity_provider.managed_instances_provider.instance_launch_template.monitoring }}
+{%- endif %}
+{%- if capacity_provider.managed_instances_provider.instance_launch_template.storage_configuration is defined %}{# BEGIN if capacity_provider.managed_instances_provider.instance_launch_template.storage_configuration is defined #}
+          StorageConfiguration:
+            StorageSizeGiB: {{ capacity_provider.managed_instances_provider.instance_launch_template.storage_configuration.storage_size_gib }}
+{%- endif %}{# END if capacity_provider.managed_instances_provider.instance_launch_template.storage_configuration is defined #}
+{%- if capacity_provider.managed_instances_provider.propagate_tags is defined %}
+        PropagateTags: {{ capacity_provider.managed_instances_provider.propagate_tags }}
+{%- endif %}
+{%- endif %}{# END if capacity_provider.managed_instances_provider is defined #}
 {%- if capacity_provider.capacity_provider_name is defined %}
       Name: {{ capacity_provider.capacity_provider_name }}
 {%- endif %}
@@ -49,7 +245,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for capacity_provider in sceptre_user_data.capacity_providers %}
 {%- set capacity_provider_name = capacity_provider.name %}
   {{ capacity_provider_name }}:
@@ -59,5 +254,95 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ capacity_provider_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-02
+Type: AWS::ECS::CapacityProvider
+Properties:
+  AutoScalingGroupProvider:
+    AutoScalingGroupArn: String
+    ManagedDraining: String
+    ManagedScaling:
+      InstanceWarmupPeriod: Integer
+      MaximumScalingStepSize: Integer
+      MinimumScalingStepSize: Integer
+      Status: String
+      TargetCapacity: Integer
+    ManagedTerminationProtection: String
+  ClusterName: String
+  ManagedInstancesProvider:
+    InfrastructureOptimization:
+      ScaleInAfter: Integer
+    InfrastructureRoleArn: String
+    InstanceLaunchTemplate:
+      CapacityOptionType: String
+      CapacityReservations:
+        ReservationGroupArn: String
+        ReservationPreference: String
+      Ec2InstanceProfileArn: String
+      FipsEnabled: Boolean
+      InstanceRequirements:
+        AcceleratorCount:
+          Max: Integer
+          Min: Integer
+        AcceleratorManufacturers:
+          - String
+        AcceleratorNames:
+          - String
+        AcceleratorTotalMemoryMiB:
+          Max: Integer
+          Min: Integer
+        AcceleratorTypes:
+          - String
+        AllowedInstanceTypes:
+          - String
+        BareMetal: String
+        BaselineEbsBandwidthMbps:
+          Max: Integer
+          Min: Integer
+        BurstablePerformance: String
+        CpuManufacturers:
+          - String
+        ExcludedInstanceTypes:
+          - String
+        InstanceGenerations:
+          - String
+        LocalStorage: String
+        LocalStorageTypes:
+          - String
+        MaxSpotPriceAsPercentageOfOptimalOnDemandPrice: Integer
+        MemoryGiBPerVCpu:
+          Max: Integer
+          Min: Integer
+        MemoryMiB:
+          Max: Integer
+          Min: Integer
+        NetworkBandwidthGbps:
+          Max: Integer
+          Min: Integer
+        NetworkInterfaceCount:
+          Max: Integer
+          Min: Integer
+        OnDemandMaxPricePercentageOverLowestPrice: Integer
+        RequireHibernateSupport: Boolean
+        SpotMaxPricePercentageOverLowestPrice: Integer
+        TotalLocalStorageGB:
+          Max: Integer
+          Min: Integer
+        VCpuCount:
+          Max: Integer
+          Min: Integer
+      Monitoring: String
+      NetworkConfiguration:
+        SecurityGroups:
+          - String
+        Subnets:
+          - String
+      StorageConfiguration:
+        StorageSizeGiB: Integer
+    PropagateTags: String
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
