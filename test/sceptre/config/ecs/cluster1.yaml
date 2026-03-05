@@ -1,34 +1,74 @@
 ---
 template:
+  type: file
   path: ecs/cluster.yaml.j2
 
 sceptre_user_data:
   project_code: "{{stack_group_config.project_code}}"
-  source_repo_url: {{git_repo}}
+  source_repo_url: "{{git_repo}}"
+  description: 'ECS Clusters for test environment'
   clusters:
-    - name: test1
+    - name: ProductionCluster
+      cluster_name: production-cluster
+      deletion_policy: 'Retain'
+      update_replace_policy: 'Retain'
       capacity_providers:
-        - !stack_output ecs/capacityprovider1.yaml::test1
-      cluster_name: cluster-test1
+        - 'FARGATE'
+        - 'FARGATE_SPOT'
+        - 'asg-capacity-provider'
       cluster_settings:
         - name: containerInsights
           value: enabled
       configuration:
         execute_command_configuration:
-          kms_key_id: alias/dummy_kms
+          kms_key_id: 'arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012'
           log_configuration:
-            cloud_watch_encryption_enabled: True
-            cloud_watch_log_group_name: /ecs/cluster/cluster-test1
-            s3_bucket_name: dummy-bucket-abcdefgh12345678
-            s3_encryption_enabled: True
-            s3_key_prefix: cluster-test1
-          logging: OVERRIDE
+            cloud_watch_encryption_enabled: true
+            cloud_watch_log_group_name: '/ecs/cluster/production-cluster'
+            s3_bucket_name: 'my-ecs-logs-bucket'
+            s3_encryption_enabled: true
+            s3_key_prefix: 'production-cluster'
+          logging: 'OVERRIDE'
+        managed_storage_configuration:
+          fargate_ephemeral_storage_kms_key_id: 'arn:aws:kms:us-east-1:123456789012:key/87654321-4321-4321-4321-876543210987'
+      default_capacity_provider_strategy:
+        - base: 2
+          capacity_provider: 'FARGATE'
+          weight: 100
+        - capacity_provider: 'FARGATE_SPOT'
+          weight: 50
+      service_connect_defaults:
+        namespace: 'production.local'
+      tags:
+        Name: ProductionCluster
+        Environment: production
+        CostCenter: engineering
+        Tier: core
+    - name: DevelopmentCluster
+      cluster_name: development-cluster
+      capacity_providers:
+        - 'FARGATE'
+      cluster_settings:
+        - name: containerInsights
+          value: disabled
+      configuration:
+        execute_command_configuration:
+          logging: 'DEFAULT'
+          log_configuration:
+            cloud_watch_log_group_name: '/ecs/cluster/development-cluster'
+            cloud_watch_encryption_enabled: false
       default_capacity_provider_strategy:
         - base: 0
-          capacity_provider: capacity-provider-test1
-          weight: 500
+          capacity_provider: 'FARGATE'
+          weight: 100
       tags:
-        Name: cluster-test
-        Purpose: template test
+        Name: DevelopmentCluster
+        Environment: development
+    - name: TestCluster
+      cluster_name: test-cluster
+      tags:
+        Name: TestCluster
+        Environment: test
+
 stack_tags:
-  Test: ecs-capacityprovider
+  Test: ecs-cluster

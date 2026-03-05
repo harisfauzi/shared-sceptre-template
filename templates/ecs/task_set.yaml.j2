@@ -6,7 +6,6 @@ Description: {{sceptre_user_data.description|default('ECS Task Set(s) for '+scep
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for task_set in sceptre_user_data.task_sets %}
 {%- set task_set_name = task_set.name %}
   {{ task_set_name }}:
@@ -17,23 +16,57 @@ Resources:
       Cluster: {{ task_set.cluster }}
       Service: {{ task_set.service }}
       TaskDefinition: {{ task_set.task_definition }}
+{%- if task_set.capacity_provider_strategy is defined %}{# BEGIN if task_set.capacity_provider_strategy is defined #}
+      CapacityProviderStrategy:
+{%- for strategy in task_set.capacity_provider_strategy %}{# BEGIN for strategy in task_set.capacity_provider_strategy #}
+        -
+{%- if strategy.base is defined %}
+          Base: {{ strategy.base }}
+{%- endif %}
+{%- if strategy.capacity_provider is defined %}
+          CapacityProvider: {{ strategy.capacity_provider }}
+{%- endif %}
+{%- if strategy.weight is defined %}
+          Weight: {{ strategy.weight }}
+{%- endif %}
+{%- endfor %}{# END for strategy in task_set.capacity_provider_strategy #}
+{%- endif %}{# END if task_set.capacity_provider_strategy is defined #}
 {%- if task_set.external_id is defined %}
       ExternalId: {{ task_set.external_id | trim }}
 {%- endif %}
 {%- if task_set.launch_type is defined %}
       LaunchType: {{task_set.launch_type }}
 {%- endif %}
-{%- if task_set.load_balancers is defined %}
+{%- if task_set.load_balancers is defined %}{# BEGIN if task_set.load_balancers is defined #}
       LoadBalancers:
 {{ macro_load_balancer.prep(task_set.load_balancers) | indent(width=8, first=true) }}
+{%- endif %}{# END if task_set.load_balancers is defined #}
+{%- if task_set.network_configuration is defined %}{# BEGIN if task_set.network_configuration is defined #}
+      NetworkConfiguration:
+{%- if task_set.network_configuration.aws_vpc_configuration is defined %}{# BEGIN if task_set.network_configuration.aws_vpc_configuration is defined #}
+        AwsVpcConfiguration:
+          Subnets:
+{%- for subnet in task_set.network_configuration.aws_vpc_configuration.subnets %}
+            - {{ subnet }}
+{%- endfor %}
+{%- if task_set.network_configuration.aws_vpc_configuration.assign_public_ip is defined %}
+          AssignPublicIp: {{ task_set.network_configuration.aws_vpc_configuration.assign_public_ip }}
 {%- endif %}
+{%- if task_set.network_configuration.aws_vpc_configuration.security_groups is defined %}{# BEGIN if task_set.network_configuration.aws_vpc_configuration.security_groups is defined #}
+          SecurityGroups:
+{%- for security_group in task_set.network_configuration.aws_vpc_configuration.security_groups %}
+            - {{ security_group }}
+{%- endfor %}
+{%- endif %}{# END if task_set.network_configuration.aws_vpc_configuration.security_groups is defined #}
+{%- endif %}{# END if task_set.network_configuration.aws_vpc_configuration is defined #}
+{%- endif %}{# END if task_set.network_configuration is defined #}
 {%- if task_set.network_configuration is defined %}
 {{ macro_network_configuration.prep(task_set.network_configuration) | indent(width=6, first=true) }}
 {%- endif %}
 {%- if task_set.platform_version is defined %}
       PlatformVersion: {{ task_set.platform_version }}
 {%- endif %}
-{%- if task_set.scale is defined %}
+{%- if task_set.scale is defined %}{# BEGIN if task_set.scale is defined #}
       Scale:
 {%- if task_set.scale.unit is defined %}
         Unit: {{ task_set.scale.unit }}
@@ -41,16 +74,23 @@ Resources:
 {%- if task_set.scale.value is defined %}
         Value: {{ task_set.scale.value }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if task_set.scale is defined #}
 {%- if task_set.service_registries is defined %}
       ServiceRegistries:
 {{ macro_service_registry.prep(task_set.service_registries) | indent(width=8, first=true) }}
 {%- endif %}
-
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if task_set.tags is defined %}
+{%- for key,value in task_set.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for task_set in sceptre_user_data.task_sets %}
 {%- set task_set_name = task_set.name %}
   {{ task_set_name }}:
@@ -60,7 +100,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ task_set_name }}"
-
   {{ task_set_name }}Id:
     Description: The ID of the task set for {{ task_set_name }}
     Value:
@@ -70,5 +109,44 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ task_set_name }}-Id"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-05:
+Type: AWS::ECS::TaskSet
+Properties:
+  CapacityProviderStrategy:
+    -
+      Base: Integer
+      CapacityProvider: String
+      Weight: Integer
+  Cluster: String
+  ExternalId: String
+  LaunchType: String
+  LoadBalancers:
+    -
+      ContainerName: String
+      ContainerPort: Integer
+      TargetGroupArn: String
+  NetworkConfiguration:
+    AwsVpcConfiguration:
+      AssignPublicIp: String
+      SecurityGroups:
+        - String
+      Subnets:
+        - String
+  PlatformVersion: String
+  Scale:
+    Unit: String
+    Value: Number
+  Service: String
+  ServiceRegistries:
+    -
+      ContainerName: String
+      ContainerPort: Integer
+      Port: Integer
+      RegistryArn: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TaskDefinition: String
+#}

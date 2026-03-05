@@ -1,24 +1,44 @@
 ---
 template:
+  type: file
   path: ecs/capacity_provider.yaml.j2
 
 sceptre_user_data:
   project_code: "{{stack_group_config.project_code}}"
-  source_repo_url: {{git_repo}}
+  source_repo_url: "{{git_repo}}"
+  description: 'ECS Capacity Providers for test environment'
   capacity_providers:
-    - name: test1
+    - name: ASGCapacityProvider
+      capacity_provider_name: 'asg-capacity-provider'
+      deletion_policy: 'Delete'
+      update_replace_policy: 'Delete'
       auto_scaling_group_provider:
-        auto_scaling_group_arn: "!Sub arn:aws:autoscaling:${AWS::Region}:${AWS::AccountId}:autoScalingGroup:12345678-9012-3456-7890-123456789012:autoScalingGroupName/dummy-asg"
-        capacity_provider_name: capacity-provider-test1
+        auto_scaling_group_arn: 'arn:aws:autoscaling:us-east-1:123456789012:autoScalingGroup:12345678-9012-3456-7890-123456789012:autoScalingGroupName/my-asg'
         managed_scaling:
           instance_warmup_period: 120
-          maximum_scaling_step_size: 2
+          maximum_scaling_step_size: 10
           minimum_scaling_step_size: 1
           status: ENABLED
-          target_capacity: 100
+          target_capacity: 85
         managed_termination_protection: ENABLED
       tags:
-        Name: capacity-provider-test
-        Purpose: template test
+        Name: ecs-asg-capacity-provider
+        Environment: test
+        Tier: compute
+    - name: SpotCapacityProvider
+      auto_scaling_group_provider:
+        auto_scaling_group_arn: 'arn:aws:autoscaling:us-east-1:123456789012:autoScalingGroup:87654321-0987-6543-2109-876543210987:autoScalingGroupName/spot-asg'
+        managed_scaling:
+          instance_warmup_period: 60
+          maximum_scaling_step_size: 5
+          minimum_scaling_step_size: 1
+          status: ENABLED
+          target_capacity: 75
+        managed_draining: ENABLED
+      tags:
+        Name: ecs-spot-capacity-provider
+        Environment: test
+        CostCenter: engineering
+
 stack_tags:
   Test: ecs-capacityprovider
