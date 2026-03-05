@@ -42,27 +42,8 @@ Resources:
 {{ macro_load_balancer.prep(task_set.load_balancers) | indent(width=8, first=true) }}
 {%- endif %}{# END if task_set.load_balancers is defined #}
 {%- if task_set.network_configuration is defined %}{# BEGIN if task_set.network_configuration is defined #}
-      NetworkConfiguration:
-{%- if task_set.network_configuration.aws_vpc_configuration is defined %}{# BEGIN if task_set.network_configuration.aws_vpc_configuration is defined #}
-        AwsVpcConfiguration:
-          Subnets:
-{%- for subnet in task_set.network_configuration.aws_vpc_configuration.subnets %}
-            - {{ subnet }}
-{%- endfor %}
-{%- if task_set.network_configuration.aws_vpc_configuration.assign_public_ip is defined %}
-          AssignPublicIp: {{ task_set.network_configuration.aws_vpc_configuration.assign_public_ip }}
-{%- endif %}
-{%- if task_set.network_configuration.aws_vpc_configuration.security_groups is defined %}{# BEGIN if task_set.network_configuration.aws_vpc_configuration.security_groups is defined #}
-          SecurityGroups:
-{%- for security_group in task_set.network_configuration.aws_vpc_configuration.security_groups %}
-            - {{ security_group }}
-{%- endfor %}
-{%- endif %}{# END if task_set.network_configuration.aws_vpc_configuration.security_groups is defined #}
-{%- endif %}{# END if task_set.network_configuration.aws_vpc_configuration is defined #}
-{%- endif %}{# END if task_set.network_configuration is defined #}
-{%- if task_set.network_configuration is defined %}
 {{ macro_network_configuration.prep(task_set.network_configuration) | indent(width=6, first=true) }}
-{%- endif %}
+{%- endif %}{# END if task_set.network_configuration is defined #}
 {%- if task_set.platform_version is defined %}
       PlatformVersion: {{ task_set.platform_version }}
 {%- endif %}
