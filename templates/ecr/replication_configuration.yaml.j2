@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ECR Replication Configurat
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for replication_configuration in sceptre_user_data.replication_configurations %}
 {%- set replication_configuration_name = replication_configuration.name %}
   {{ replication_configuration_name }}:
@@ -13,28 +12,25 @@ Resources:
     Properties:
       ReplicationConfiguration:
         Rules:
-{%- for rule in replication_configuration.replication_configuration.rules %}
+{%- for rule in replication_configuration.replication_configuration.rules %}{# BEGIN for rule in replication_configuration.replication_configuration.rules #}
           - Destinations:
-{%- for destination in rle.destinations %}
+{%- for destination in rule.destinations %}
               - Region: {{ destination.region }}
                 RegistryId: {{ destination.registry_id }}
 {%- endfor %}
-{%- if rule.repository_filters is defined %}
+{%- if rule.repository_filters is defined %}{# BEGIN if rule.repository_filters is defined #}
             RepositoryFilters:
 {%- for repository_filter in rule.repository_filters %}
               - Filter: {{ repository_filter.filter }}
                 FilterType: {{ repository_filter.filter_type }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}
-
+{%- endif %}{# END if rule.repository_filters is defined #}
+{%- endfor %}{# END for rule in replication_configuration.replication_configuration.rules #}
 {%- endfor %}
 
 Outputs:
-
 {%- for replication_configuration in sceptre_user_data.replication_configurations %}
 {%- set replication_configuration_name = replication_configuration.name %}
-
   {{ replication_configuration_name }}RegistryId:
     Description: The account ID of the destination registry for {{ replication_configuration_name }}
     Value:
@@ -44,5 +40,20 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ replication_configuration_name }}-RegistryId"
+{%- endfor %}{#
+# Supported structure as of 2026-03-02
+Type: AWS::ECR::ReplicationConfiguration
+Properties:
+  ReplicationConfiguration:
+    Rules:
+      -
+        Destinations:
+          -
+            Region: String
+            RegistryId: String
 
-{%- endfor %}
+        RepositoryFilters:
+          -
+            Filter: String
+            FilterType: String
+#}

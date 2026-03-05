@@ -1,0 +1,42 @@
+---
+template:
+  type: file
+  path: ecr/registry_scanning_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "ECR Registry Scanning Configuration for vulnerability scanning"
+  registry_scanning_configurations:
+    - name: ComprehensiveScanningPolicy
+      scan_type: ENHANCED
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      rules:
+        - scan_frequency: SCAN_ON_PUSH
+          repository_filters:
+            - filter: "prod-*"
+              filter_type: WILDCARD_FILTER
+            - filter: "main-*"
+              filter_type: WILDCARD_FILTER
+
+        - scan_frequency: CONTINUOUS_SCAN
+          repository_filters:
+            - filter: "'*'"
+              filter_type: WILDCARD_FILTER
+
+    - name: SelectiveScanningPolicy
+      scan_type: BASIC
+      deletion_policy: Retain
+      rules:
+        - scan_frequency: SCAN_ON_PUSH
+          repository_filters:
+            - filter: "arn:aws:ecr:us-east-1:123456789012:repository/critical-*"
+              filter_type: SCAN_ON_PUSH_FILTER
+
+        - scan_frequency: MANUAL
+          repository_filters:
+            - filter: "staging-*"
+              filter_type: WILDCARD_FILTER
+            - filter: "testing-*"
+              filter_type: WILDCARD_FILTER

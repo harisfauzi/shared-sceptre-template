@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ECR Public Repository(s) f
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for public_repository in sceptre_user_data.public_repositories %}
 {%- set public_repository_name = public_repository.name %}
   {{ public_repository_name }}:
@@ -11,20 +10,39 @@ Resources:
     DeletionPolicy: {{ public_repository.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ public_repository.update_replace_policy | default('Delete') }}
     Properties:
-{%- if public_repository.repository_catalog_data_json is defined %}
-      RepositoryCatalogData: "{{ public_repository.repository_catalog_data_json }}"
-{%- elif public_repository.repository_catalog_data is defined %}
+{%- if public_repository.repository_catalog_data is defined %}{# BEGIN if public_repository.repository_catalog_data is defined #}
       RepositoryCatalogData:
-{{ public_repository.repository_catalog_data | indent(width=8, first=true) }}
+{%- if public_repository.repository_catalog_data.about_text is defined %}
+        AboutText: {{ public_repository.repository_catalog_data.about_text }}
 {%- endif %}
+{%- if public_repository.repository_catalog_data.architectures is defined %}{# BEGIN if public_repository.repository_catalog_data.architectures is defined #}
+        Architectures:
+{%- for architecture in public_repository.repository_catalog_data.architectures %}
+          - {{ architecture }}
+{%- endfor %}
+{%- endif %}{# END if public_repository.repository_catalog_data.architectures is defined #}
+{%- if public_repository.repository_catalog_data.operating_systems is defined %}{# BEGIN if public_repository.repository_catalog_data.operating_systems is defined #}
+        OperatingSystems:
+{%- for operating_system in public_repository.repository_catalog_data.operating_systems %}
+          - {{ operating_system }}
+{%- endfor %}
+{%- endif %}{# END if public_repository.repository_catalog_data.operating_systems is defined #}
+{%- if public_repository.repository_catalog_data.repository_description is defined %}
+        RepositoryDescription: {{ public_repository.repository_catalog_data.repository_description }}
+{%- endif %}
+{%- if public_repository.repository_catalog_data.usage_text is defined %}
+        UsageText: {{ public_repository.repository_catalog_data.usage_text }}
+{%- endif %}
+{%- endif %}{# END if public_repository.repository_catalog_data is defined #}
 {%- if public_repository.repository_name is defined %}
       RepositoryName: {{ public_repository.repository_name }}
 {%- endif %}
 {%- if public_repository.repository_policy_text_json is defined %}
-      RepositoryPolicyText: "{{ public_repository.repository_policy_text_json }}"
+      RepositoryPolicyText: |
+        {{ public_repository.repository_policy_text_json | indent(width=8, first=false) }}
 {%- elif public_repository.repository_policy_text is defined %}
       RepositoryPolicyText:
-{{ public_repository.repository_policy_text | indent(width=8, first=true) }}
+        {{ public_repository.repository_policy_text | indent(width=8, first=false) }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -38,7 +56,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for public_repository in sceptre_user_data.public_repositories %}
 {%- set public_repository_name = public_repository.name %}
   {{ public_repository_name }}:
@@ -48,7 +65,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ public_repository_name }}"
-
   {{ public_repository_name }}Arn:
     Description: The ARN for {{ public_repository_name }}
     Value:
@@ -58,5 +74,22 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ public_repository_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-02
+Type: AWS::ECR::PublicRepository
+Properties:
+  RepositoryCatalogData:
+    AboutText: String
+    Architectures:
+      - String
+    OperatingSystems:
+      - String
+    RepositoryDescription: String
+    UsageText: String
+  RepositoryName: String
+  RepositoryPolicyText: Json
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

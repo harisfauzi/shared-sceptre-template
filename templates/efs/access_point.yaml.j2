@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EFS AccessPoint(s) for '+s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for access_point in sceptre_user_data.access_points %}
 {%- set access_point_name = access_point.name %}
   {{ access_point_name }}:
@@ -46,11 +45,9 @@ Resources:
         Path: {{access_point.root_directory.path}}
 {%- endif %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for access_point in sceptre_user_data.access_points %}
 {%- set access_point_name = access_point.name %}
   {{ access_point_name }}:
@@ -60,7 +57,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_point_name }}"
-
   {{ access_point_name }}Arn:
     Description: The ARN for {{ access_point_name }}
     Value:
@@ -70,7 +66,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-Arn"
-
   {{ access_point_name }}AccessPointId:
     Description: The AccessPoint ID for {{ access_point_name }}
     Value:
@@ -80,5 +75,25 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-AccessPointId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-02
+Type: AWS::EFS::AccessPoint
+Properties:
+  AccessPointTags:
+    -
+      Key: String
+      Value: String
+  ClientToken: String
+  FileSystemId: String
+  PosixUser:
+    Gid: String
+    SecondaryGids:
+      - String
+    Uid: String
+  RootDirectory:
+    CreationInfo:
+      OwnerGid: String
+      OwnerUid: String
+      Permissions: String
+    Path: String
+#}

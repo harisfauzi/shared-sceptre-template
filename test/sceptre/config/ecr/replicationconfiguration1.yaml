@@ -1,0 +1,49 @@
+---
+template:
+  type: file
+  path: ecr/replication_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "ECR Replication Configuration for multi-region deployment"
+  replication_configurations:
+    - name: MultiRegionReplication
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      replication_configuration:
+        rules:
+          - destinations:
+              - region: us-west-2
+                registry_id: "987654321098"
+              - region: eu-west-1
+                registry_id: "876543210987"
+            repository_filters:
+              - filter: "prod-*"
+                filter_type: PREFIX_FILTER
+              - filter: "main-*"
+                filter_type: PREFIX_FILTER
+
+          - destinations:
+              - region: ap-southeast-1
+                registry_id: "765432109876"
+            repository_filters:
+              - filter: "critical-*"
+                filter_type: PREFIX_FILTER
+
+    - name: SelectiveReplication
+      deletion_policy: Retain
+      replication_configuration:
+        rules:
+          - destinations:
+              - region: us-east-1
+                registry_id: "654321098765"
+            repository_filters:
+              - filter: "arn:aws:ecr:us-east-1:123456789012:repository/shared-*"
+                filter_type: WILDCARD_FILTER
+
+          - destinations:
+              - region: eu-central-1
+                registry_id: "543210987654"
+              - region: ap-northeast-1
+                registry_id: "432109876543"

@@ -1,0 +1,31 @@
+---
+template:
+  type: file
+  path: ec2/route_entry.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: 'Individual route entries for test environment'
+  route_entries:
+    - name: DefaultInternetRoute
+      route_table_id: 'rtb-12345678'
+      destination_cidr_block: '0.0.0.0/0'
+      gateway_id: 'igw-abcdef01'
+      deletion_policy: 'Delete'
+      update_replace_policy: 'Delete'
+    - name: PrivateNetworkRoute
+      route_table_id: 'rtb-12345678'
+      destination_cidr_block: '10.0.0.0/8'
+      nat_gateway_id: 'natgw-xyz12345'
+    - name: TransitGatewayRoute
+      route_table_id: 'rtb-87654321'
+      destination_cidr_block: '172.16.0.0/12'
+      transit_gateway_id: 'tgw-abcdef01'
+    - name: VpcPeeringRoute
+      route_table_id: 'rtb-87654321'
+      destination_cidr_block: '192.168.0.0/16'
+      vpc_peering_connection_id: 'pcx-12345678'
+
+stack_tags:
+  Test: ec2-route-entry
