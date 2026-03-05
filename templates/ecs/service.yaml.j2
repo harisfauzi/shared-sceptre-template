@@ -6,7 +6,6 @@ Description: {{sceptre_user_data.description|default('ECS Service(s) for '+scept
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for service in sceptre_user_data.services %}
 {%- set service_name = service.name %}
   {{ service_name }}:
@@ -14,9 +13,12 @@ Resources:
     DeletionPolicy: {{ service.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ service.update_replace_policy | default('Delete') }}
     Properties:
-{%- if service.capacity_provider_strategy is defined %}{# BEGIN {%- if service.capacity_provider_strategy is defined %} #}
+{%- if service.availability_zone_rebalancing is defined %}
+      AvailabilityZoneRebalancing: {{ service.availability_zone_rebalancing }}
+{%- endif %}
+{%- if service.capacity_provider_strategy is defined %}{# BEGIN if service.capacity_provider_strategy is defined #}
       CapacityProviderStrategy:
-{%- for capacity_provider_strategy in service.capacity_provider_strategy %}
+{%- for capacity_provider_strategy in service.capacity_provider_strategy %}{# BEGIN for capacity_provider_strategy in service.capacity_provider_strategy #}
         -
 {%- if capacity_provider_strategy.base is defined %}
           Base: {{ capacity_provider_strategy.base }}
@@ -27,47 +29,99 @@ Resources:
 {%- if capacity_provider_strategy.weight is defined %}
           Weight: {{ capacity_provider_strategy.weight }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}{# END {%- if service.capacity_provider_strategy is defined %} #}
+{%- endfor %}{# END for capacity_provider_strategy in service.capacity_provider_strategy #}
+{%- endif %}{# END if service.capacity_provider_strategy is defined #}
 {%- if service.cluster is defined %}
       Cluster: {{ service.cluster }}
 {%- endif %}
-{%- if service.deployment_configuration is defined %}{# BEGIN {%- if service.deployment_configuration is defined %} #}
+{%- if service.deployment_configuration is defined %}{# BEGIN if service.deployment_configuration is defined #}
       DeploymentConfiguration:
-{%- if service.deployment_configuration.alarms is defined %}
+{%- if service.deployment_configuration.alarms is defined %}{# BEGIN if service.deployment_configuration.alarms is defined #}
         Alarms:
           AlarmNames:
 {%- for alarm_name in service.deployment_configuration.alarms.alarm_names %}
             - {{ alarm_name }}
 {%- endfor %}
-          Enable: {{ service.deployment_configuration.alarms.alarm_names.enable }}
-          Rollback: {{ service.deployment_configuration.alarms.alarm_names.rollback }}
+          Enable: {{ service.deployment_configuration.alarms.alarm_names.enable | lower }}
+          Rollback: {{ service.deployment_configuration.alarms.alarm_names.rollback | lower }}
+{%- endif %}{# END if service.deployment_configuration.alarms is defined #}
+{%- if service.deployment_configuration.bake_time_in_minutes is defined %}
+        BakeTimeInMinutes: {{ service.deployment_configuration.bake_time_in_minutes }}
 {%- endif %}
+{%- if service.deployment_configuration.canary_configuration is defined %}{# BEGIN if service.deployment_configuration.canary_configuration is defined #}
+        CanaryConfiguration:
+{%- if service.deployment_configuration.canary_configuration.canary_bake_time_in_minutes is defined %}
+          CanaryBakeTimeInMinutes: {{ service.deployment_configuration.canary_configuration.canary_bake_time_in_minutes }}
+{%- endif %}
+{%- if service.deployment_configuration.canary_configuration.canary_percent is defined %}
+          CanaryPercent: {{ service.deployment_configuration.canary_configuration.canary_percent }}
+{%- endif %}
+{%- endif %}{# END if service.deployment_configuration.canary_configuration is defined #}
 {%- if service.deployment_configuration.deployment_circuit_breaker is defined %}
         DeploymentCircuitBreaker:
           Enable: {{ service.deployment_configuration.deployment_circuit_breaker.enable }}
           Rollback: {{ service.deployment_configuration.deployment_circuit_breaker.rollback}}
 {%- endif %}
+{%- if service.deployment_configuration.lifecycle_hooks is defined %}{# BEGIN if service.deployment_configuration.lifecycle_hooks is defined #}
+        LifecycleHooks:
+{%- for hook in service.deployment_configuration.lifecycle_hooks %}{# BEGIN for hook in service.deployment_configuration.lifecycle_hooks #}
+          -
+            HookTargetArn: {{ hook.hook_target_arn | trim }}
+            LifecycleStages:
+{%- for stage in hook.lifecycle_stages %}
+              - {{ stage }}
+{%- endfor %}
+            RoleArn: {{ hook.role_arn | trim }}
+{%- if hook.hook_details is defined %}
+            HookDetails:
+              {{ hook.hook_details | indent(width=16,first=false) }}
+{%- elif hook.hook_details_json is defined %}
+            HookDetails: |
+              {{ hook.hook_details_json | indent(width=16,first=false) }}
+{%- endif %}
+{%- endfor %}{# END for hook in service.deployment_configuration.lifecycle_hooks #}
+{%- endif %}{# END if service.deployment_configuration.lifecycle_hooks is defined #}
+{%- if service.deployment_configuration.linear_configuration is defined %}{# BEGIN if service.deployment_configuration.linear_configuration is defined #}
+        LinearConfiguration:
+{%- if service.deployment_configuration.linear_configuration.step_bake_time_in_minutes is defined %}
+          StepBakeTimeInMinutes: {{ service.deployment_configuration.linear_configuration.step_bake_time_in_minutes }}
+{%- endif %}
+{%- if service.deployment_configuration.linear_configuration.step_percent is defined %}
+          StepPercent: {{ service.deployment_configuration.linear_configuration.step_percent }}
+{%- endif %}
+{%- endif %}{# END if service.deployment_configuration.linear_configuration is defined #}
 {%- if service.deployment_configuration.maximum_percent is defined %}
         MaximumPercent: {{ service.deployment_configuration.maximum_percent }}
 {%- endif %}
 {%- if service.deployment_configuration.minimum_healthy_percent is defined %}
         MinimumHealthyPercent: {{ service.deployment_configuration.minimum_healthy_percent }}
 {%- endif %}
-{%- endif %}{# END {%- if service.deployment_configuration is defined %} #}
-{%- if service.deployment_controller is defined %}
+{%- if service.deployment_configuration.strategy is defined %}
+        Strategy: {{ service.deployment_configuration.strategy }}
+{%- endif %}
+{%- endif %}{# END if service.deployment_configuration is defined #}
+{%- if service.deployment_controller is defined %}{# BEGIN if service.deployment_controller is defined #}
       DeploymentController:
+{%- if service.deployment_controller.type is defined %}
         Type: {{ service.deployment_controller.type }}
 {%- endif %}
+{%- endif %}{# END if service.deployment_controller is defined #}
 {%- if service.desired_count is defined %}
       DesiredCount: {{ service.desired_count }}
 {%- endif %}
 {%- if service.enable_ecs_managed_tags is defined %}
-      EnableECSManagedTags: {{ service.enable_ecs_managed_tags }}
+      EnableECSManagedTags: {{ service.enable_ecs_managed_tags | lower }}
 {%- endif %}
 {%- if service.enable_execute_command is defined %}
-      EnableExecuteCommand: {{ service.enable_execute_command }}
+      EnableExecuteCommand: {{ service.enable_execute_command | lower }}
 {%- endif %}
+{%- if service.force_new_deployment is defined %}{# BEGIN if service.force_new_deployment is defined #}
+      ForceNewDeployment:
+        EnableForceNewDeployment: {{ service.force_new_deployment.enable | lower }}
+{%- if service.force_new_deployment.nonce is defined %}
+        ForceNewDeploymentNonce: {{ service.force_new_deployment.nonce }}
+{%- endif %}
+{%- endif %}{# END if service.force_new_deployment is defined #}
 {%- if service.health_check_grace_period_seconds is defined %}
       HealthCheckGracePeriodSeconds: {{ service.health_check_grace_period_seconds }}
 {%- endif %}
@@ -79,26 +133,26 @@ Resources:
 {{ macro_load_balancer.prep(service.load_balancers) | indent(width=8, first=true) }}
 {%- endif %}
 {%- if service.network_configuration is defined %}
-{{ macro_network_configuration.prep(service.network_configuration) | indent(width=6, first=True) }}
+{{ macro_network_configuration.prep(service.network_configuration) | indent(width=6, first=true) }}
 {%- endif %}
-{%- if service.placement_constraints is defined %}
+{%- if service.placement_constraints is defined %}{# BEGIN if service.placement_constraints is defined #}
       PlacementConstraints:
-{%- for placement_constraint in service.placement_constraints %}
+{%- for placement_constraint in service.placement_constraints %}{# BEGIN for placement_constraint in service.placement_constraints #}
         - Type: {{ placement_constraint.type }}
 {%- if placement_constraint.expression is defined %}
           Expression: {{ placement_constraint.expression }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if service.placement_strategies is defined %}
+{%- endfor %}{# END for placement_constraint in service.placement_constraints#}
+{%- endif %}{# END if service.placement_constraints is defined #}
+{%- if service.placement_strategies is defined %}{# BEGIN if service.placement_strategies is defined #}
       PlacementStrategies:
-{%- for strategy in service.placement_strategies %}
+{%- for strategy in service.placement_strategies %}{# BEGIN for strategy in service.placement_strategies #}
         - Type: {{ strategy.type }}
 {%- if strategy.field is defined %}
           Field: {{ strategy.field }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for strategy in service.placement_strategies #}
+{%- endif %}{# END if service.placement_strategies is defined #}
 {%- if service.platform_version is defined %}
       PlatformVersion: {{ service.platform_version }}
 {%- endif %}
@@ -111,62 +165,97 @@ Resources:
 {%- if service.scheduling_strategy is defined %}
       SchedulingStrategy: {{ service.scheduling_strategy }}
 {%- endif %}
-{%- if service.service_connect_configuration is defined %}
+{%- if service.service_connect_configuration is defined %}{# BEGIN if service.service_connect_configuration is defined #}
       ServiceConnectConfiguration:
-        Enabled: {{ service.service_connect_configuration.enabled }}
-{%- if service.service_connect_configuration.log_configuration is defined %}
+        Enabled: {{ service.service_connect_configuration.enabled | lower }}
+{%- if service.service_connect_configuration.access_log_configuration is defined %}{# BEGIN if service.service_connect_configuration.access_log_configuration is defined #}
+        AccessLogConfiguration:
+          Format: {{ service.service_connect_configuration.access_log_configuration.format }}
+{%- if service.service_connect_configuration.access_log_configuration.include_query_parameters is defined %}
+          IncludeQueryParameters: {{ service.service_connect_configuration.access_log_configuration.include_query_parameters }}
+{%- endif %}
+{%- endif %}{# END if service.service_connect_configuration.access_log_configuration is defined #}
+{%- if service.service_connect_configuration.log_configuration is defined %}{# BEGIN if service.service_connect_configuration.log_configuration is defined #}
         LogConfiguration:
 {%- if service.service_connect_configuration.log_configuration.log_driver is defined %}
           LogDriver: {{ service.service_connect_configuration.log_configuration.log_driver }}
 {%- endif %}
-{%- if service.service_connect_configuration.log_configuration.options is defined %}
+{%- if service.service_connect_configuration.log_configuration.options is defined %}{# BEGIN if service.service_connect_configuration.log_configuration.options is defined #}
           Options:
 {%- for key,value in service.service_connect_configuration.log_configuration.options.items() %}
             {{ key }}: {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- if service.service_connect_configuration.log_configuration.secret_options is defined %}
+{%- endif %}{# END if service.service_connect_configuration.log_configuration.options is defined #}
+{%- if service.service_connect_configuration.log_configuration.secret_options is defined %}{# BEGIN if service.service_connect_configuration.log_configuration.secret_options is defined #}
           SecretOptions:
 {%- for secret_option in service.service_connect_configuration.log_configuration.secret_options %}
             - Name: {{ secret_option.name }}
               ValueFrom: {{ secret_option.value_from }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}
+{%- endif %}{# END if service.service_connect_configuration.log_configuration.secret_options is defined #}
+{%- endif %}{# END if service.service_connect_configuration.log_configuration is defined #}
 {%- if service.service_connect_configuration.namespace is defined %}
         Namespace: {{ service.service_connect_configuration.namespace }}
 {%- endif %}
-{%- if service.service_connect_configuration.services is defined %}
+{%- if service.service_connect_configuration.services is defined %}{# BEGIN if service.service_connect_configuration.services is defined #}
         Services:
-{%- for service in service.service_connect_configuration.services %}
+{%- for service in service.service_connect_configuration.services %}{# BEGIN for service in service.service_connect_configuration.services #}
           - PortName: {{ service.port_name }}
-{%- if service.client_aliases is defined %}
+{%- if service.client_aliases is defined %}{# BEGIN if service.client_aliases is defined #}
             ClientAliases:
-{%- for client_alias in service.client_aliases %}
+{%- for client_alias in service.client_aliases %}{# BEGIN for client_alias in service.client_aliases #}
               - Port: {{ client_alias.port }}
 {%- if client_alias.dns_name is defined %}
                 DnsName: {{ client_alias.dns_name }}
 {%- endif %}
-{%- endfor %}
+{%- if client_alias.test_traffic_rules is defined %}{# BEGIN if client_alias.test_traffic_rules is defined #}
+                TestTrafficRules:
+                  Header:
+                    Name: {{ client_alias.test_traffic_rules.header.name }}
+{%- if client_alias.test_traffic_rules.header.value is defined %}
+                    Value:
+                      Exact: {{ client_alias.test_traffic_rules.header.value.exact }}
 {%- endif %}
+{%- endif %}{# END if client_alias.test_traffic_rules is defined #}
+{%- endfor %}{# END for client_alias in service.client_aliases #}
+{%- endif %}{# END if service.client_aliases is defined #}
 {%- if service.discovery_name is defined %}
             DiscoveryName: {{ service.discovery_name }}
 {%- endif %}
 {%- if service.ingress_port_override is defined %}
             IngressPortOverride: {{ service.ingress_port_override }}
 {%- endif %}
-{%- endfor %}
+{%- if service.timeout is defined %}{# BEGIN if service.timeout is defined #}
+            Timeout:
+{%- if service.timeout.idle_timeout_seconds is defined %}
+              IdleTimeoutSeconds: {{ service.timeout.idle_timeout_seconds }}
 {%- endif %}
+{%- if service.timeout.per_request_timeout_seconds is defined %}
+              PerRequestTimeoutSeconds: {{ service.timeout.per_request_timeout_seconds }}
 {%- endif %}
+{%- endif %}{# END if service.timeout is defined #}
+{%- if service.tls is defined %}{# BEGIN if service.tls is defined #}
+            Tls:
+              IssuerCertificateAuthority:
+{%- if service.tls.issuer_certificate_authority.aws_pca_authority_arn is defined %}
+                AwsPcaAuthorityArn: {{ service.tls.issuer_certificate_authority.aws_pca_authority_arn | trim }}
+{%- endif %}
+{%- if service.tls.kms_key is defined %}
+              KmsKey: {{ service.tls.kms_key | trim }}
+{%- endif %}
+{%- if service.tls.role_arn is defined %}
+              RoleArn: {{ service.tls.role_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if service.tls is defined #}
+{%- endfor %}{# END for service in service.service_connect_configuration.services #}
+{%- endif %}{# END if service.service_connect_configuration.services is defined #}
+{%- endif %}{# END if service.service_connect_configuration is defined #}
 {%- if service.service_name is defined %}
       ServiceName: {{ service.service_name }}
 {%- endif %}
 {%- if service.service_registries is defined %}
       ServiceRegistries:
-{{ macro_service_registry.prep(service.service_registries) | indent(width=8, first=True) }}
-{%- endif %}
-{%- if service.task_definition is defined %}
-      TaskDefinition: {{ service.task_definition }}
+{{ macro_service_registry.prep(service.service_registries) | indent(width=8, first=true) }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -177,11 +266,77 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
+{%- if service.task_definition is defined %}
+      TaskDefinition: {{ service.task_definition }}
+{%- endif %}
+{%- if service.volume_configurations is defined %}{# BEGIN if service.volume_configurations is defined #}
+      VolumeConfigurations:
+{%- for volume_configuration in service.volume_configurations %}{# BEGIN for volume_configuration in service.volume_configurations #}
+        -
+          Name: {{ volume_configuration.name }}
+{%- if volume_configuration.managed_ebs_volume is defined %}{# BEGIN if volume_configuration.managed_ebs_volume is defined #}
+          ManagedEBSVolume:
+            RoleArn: {{ volume_configuration.managed_ebs_volume.role_arn | trim }}
+{%- if volume_configuration.managed_ebs_volume.encrypted is defined %}
+            Encrypted: {{ volume_configuration.managed_ebs_volume.encrypted | lower }}
+{%- endif %}
+{%- if volume_configuration.managed_ebs_volume.filesystem_type is defined %}
+            FilesystemType: {{ volume_configuration.managed_ebs_volume.filesystem_type }}
+{%- endif %}
+{%- if volume_configuration.managed_ebs_volume.iops is defined %}
+            Iops: {{ volume_configuration.managed_ebs_volume.iops }}
+{%- endif %}
+{%- if volume_configuration.managed_ebs_volume.kms_key_id is defined %}
+            KmsKeyId: {{ volume_configuration.managed_ebs_volume.kms_key_id | trim }}
+{%- endif %}
+{%- if volume_configuration.managed_ebs_volume.size_in_gib is defined %}
+            SizeInGiB: {{ volume_configuration.managed_ebs_volume.size_in_gib }}
+{%- endif %}
+{%- if volume_configuration.managed_ebs_volume.snapshot_id is defined %}
+            SnapshotId: {{ volume_configuration.managed_ebs_volume.snapshot_id | trim }}
+{%- endif %}
+{%- if volume_configuration.managed_ebs_volume.tag_specifications is defined %}{# BEGIN if volume_configuration.managed_ebs_volume.tag_specifications is defined #}
+            TagSpecifications:
+{%- for tag_specification in volume_configuration.managed_ebs_volume.tag_specifications %}{# BEGIN for tag_specification in volume_configuration.managed_ebs_volume.tag_specifications #}  
+              -
+                ResourceType: {{ tag_specification.resource_type }}
+{%- if tag_specification.propagate_tags is defined %}
+                PropagateTags: {{ tag_specification.propagate_tags }}
+{%- endif %}
+{%- if tag_specification.tags is defined %}{# BEGIN if tag_specification.tags is defined #}
+                Tags:
+{%- for key,value in tag_specification.tags.items() %}
+                  -
+                    Key: {{ key }}
+                    Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if tag_specification.tags is defined #}
+{%- endfor %}{# END for tag_specification in volume_configuration.managed_ebs_volume.tag_specifications #}  
+{%- endif %}{# END if volume_configuration.managed_ebs_volume.tag_specifications is defined #}
+{%- if volume_configuration.managed_ebs_volume.throughput is defined %}
+            Throughput: {{ volume_configuration.managed_ebs_volume.throughput }}
+{%- endif %}
+{%- if volume_configuration.managed_ebs_volume.volume_initialization_rate is defined %}
+            VolumeInitializationRate: {{ volume_configuration.managed_ebs_volume.volume_initialization_rate }}
+{%- endif %}
+{%- if volume_configuration.managed_ebs_volume.volume_type is defined %}
+            VolumeType: {{ volume_configuration.managed_ebs_volume.volume_type }}
+{%- endif %}
+{%- endif %}{# END if volume_configuration.managed_ebs_volume is defined #}
+{%- endfor %}{# END for volume_configuration in service.volume_configurations #}
+{%- endif %}{# END if service.volume_configurations is defined #}
+{%- if service.vpc_lattice_configurations is defined %}{# BEGIN if service.vpc_lattice_configurations is defined #}
+      VpcLatticeConfigurations:
+{%- for config in service.vpc_lattice_configurations %}{# BEGIN for config in service.vpc_lattice_configurations #}
+        -
+          PortName: {{ config.port_name }}
+          RoleArn: {{ config.role_arn | trim }}
+          TargetGroupArn: {{ config.target_group_arn | trim }}
+{%- endfor %}{# END for config in service.vpc_lattice_configurations #}
+{%- endif %}{# END if service.vpc_lattice_configurations is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for service in sceptre_user_data.services %}
 {%- set service_name = service.name %}
   {{ service_name }}:
@@ -191,7 +346,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ service_name }}"
-
   {{ service_name }}Name:
     Description: The service name for {{ service_name }}
     Value:
@@ -201,5 +355,165 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ service_name }}-Name"
-
-{%- endfor %}
+  {{ service_name }}ServiceArn:
+    Description: The service ARN for {{ service_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ service_name }}
+        - ServiceArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ service_name }}-ServiceArn"
+{%- endfor %}{#
+# Supported structure as of 2026-03-03
+Type: AWS::ECS::Service
+Properties:
+  AvailabilityZoneRebalancing: String
+  CapacityProviderStrategy:
+    -
+      Base: Integer
+      CapacityProvider: String
+      Weight: Integer
+  Cluster: String
+  DeploymentConfiguration:
+    Alarms:
+      AlarmNames:
+        - String
+      Enable: Boolean
+      Rollback: Boolean
+    BakeTimeInMinutes: Integer
+    CanaryConfiguration:
+      CanaryBakeTimeInMinutes: Integer
+      CanaryPercent: Number
+    DeploymentCircuitBreaker:
+      Enable: Boolean
+      Rollback: Boolean
+    LifecycleHooks:
+      -
+        HookDetails: Json
+        HookTargetArn: String
+        LifecycleStages:
+          - String
+        RoleArn: String
+    LinearConfiguration:
+      StepBakeTimeInMinutes: Integer
+      StepPercent: Number
+    MaximumPercent: Integer
+    MinimumHealthyPercent: Integer
+    Strategy: String
+  DeploymentController:
+    Type: String
+  DesiredCount: Integer
+  EnableECSManagedTags: Boolean
+  EnableExecuteCommand: Boolean
+  ForceNewDeployment:
+    EnableForceNewDeployment: Boolean
+    ForceNewDeploymentNonce: String
+  HealthCheckGracePeriodSeconds: Integer
+  LaunchType: String
+  LoadBalancers:
+    -
+      AdvancedConfiguration:
+        AlternateTargetGroupArn: String
+        ProductionListenerRule: String
+        RoleArn: String
+        TestListenerRule: String
+      ContainerName: String
+      ContainerPort: Integer
+      LoadBalancerName: String
+      TargetGroupArn: String
+  NetworkConfiguration:
+    AwsvpcConfiguration:
+      AssignPublicIp: String
+      SecurityGroups:
+        - String
+      Subnets:
+        - String
+  PlacementConstraints:
+    -
+      Expression: String
+      Type: String
+  PlacementStrategies:
+    -
+      Field: String
+      Type: String
+  PlatformVersion: String
+  PropagateTags: String
+  Role: String
+  SchedulingStrategy: String
+  ServiceConnectConfiguration:
+    AccessLogConfiguration:
+      Format: String
+      IncludeQueryParameters: String
+    Enabled: Boolean
+    LogConfiguration:
+      LogDriver: String
+      Options:
+        Key: Value
+      SecretOptions:
+        -
+          Name: String
+          ValueFrom: String
+    Namespace: String
+    Services:
+      -
+        ClientAliases:
+          -
+            DnsName: String
+            Port: Integer
+            TestTrafficRules:
+              Header:
+                Name: String
+                Value:
+                  Exact: String
+        DiscoveryName: String
+        IngressPortOverride: Integer
+        PortName: String
+        Timeout:
+          IdleTimeoutSeconds: Integer
+          PerRequestTimeoutSeconds: Integer
+        Tls:
+          IssuerCertificateAuthority:
+            AwsPcaAuthorityArn: String
+          KmsKey: String
+          RoleArn: String
+  ServiceName: String
+  ServiceRegistries:
+    -
+      ContainerName: String
+      ContainerPort: Integer
+      Port: Integer
+      RegistryArn: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TaskDefinition: String
+  VolumeConfigurations:
+    -
+      ManagedEBSVolume:
+        Encrypted: Boolean
+        FilesystemType: String
+        Iops: Integer
+        KmsKeyId: String
+        RoleArn: String
+        SizeInGiB: Integer
+        SnapshotId: String
+        TagSpecifications:
+          -
+            PropagateTags: String
+            ResourceType: String
+            Tags:
+              -
+                Key: String
+                Value: String
+        Throughput: Integer
+        VolumeInitializationRate: Integer
+        VolumeType: String
+      Name: String
+  VpcLatticeConfigurations:
+    -
+      PortName: String
+      RoleArn: String
+      TargetGroupArn: String
+#}

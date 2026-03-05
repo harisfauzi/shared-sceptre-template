@@ -1,5 +1,6 @@
 {%- macro prep(network_configuration) %}
 NetworkConfiguration:
+{%- if network_configuration.aws_vpc_configuration is defined %}{# BEGIN if network_configuration.aws_vpc_configuration is defined #}
   AwsVpcConfiguration:
 {%- if network_configuration.aws_vpc_configuration.assign_public_ip is defined %}
     AssignPublicIp: {{ network_configuration.aws_vpc_configuration.assign_public_ip }}
@@ -16,4 +17,5 @@ NetworkConfiguration:
       - {{ subnet_id | trim }}
 {%- endfor %}
 {%- endif %}
+{%- endif %}{# END if network_configuration.aws_vpc_configuration is defined #}
 {%- endmacro %}
