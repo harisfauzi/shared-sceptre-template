@@ -1,0 +1,189 @@
+---
+Description: {{sceptre_user_data.description|default('ECS Capacity Provider(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for express_gateway_service in sceptre_user_data.express_gateway_services %}
+{%- set express_gateway_service_name = express_gateway_service.name %}
+  {{ express_gateway_service_name }}:
+    Type: AWS::ECS::ExpressGatewayService
+    DeletionPolicy: {{ express_gateway_service.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ express_gateway_service.update_replace_policy | default('Delete') }}
+    Properties:
+      ExecutionRoleArn: {{ express_gateway_service.execution_role_arn | trim }}
+      InfrastructureRoleArn: {{ express_gateway_service.infrastructure_role_arn | trim }}
+      PrimaryContainer:
+        Image: {{ express_gateway_service.primary_container.image }}
+{%- if express_gateway_service.primary_container.aws_logs_configuration is defined %}{# BEGIN if express_gateway_service.primary_container.aws_logs_configuration is defined #}
+        AwsLogsConfiguration:
+          LogGroup: {{ express_gateway_service.primary_container.aws_logs_configuration.log_group }}
+          LogStreamPrefix: {{ express_gateway_service.primary_container.aws_logs_configuration.log_stream_prefix }}
+{%- endif %}{# END if express_gateway_service.primary_container.aws_logs_configuration is defined #}
+{%- if express_gateway_service.primary_container.command is defined %}{# BEGIN if express_gateway_service.primary_container.command is defined #}
+        Command:
+{%- for command in express_gateway_service.primary_container.command %}
+          - {{ command }}
+{%- endfor %}
+{%- endif %}{# END if express_gateway_service.primary_container.command is defined #}
+{%- if express_gateway_service.primary_container.container_port is defined %}
+        ContainerPort: {{ express_gateway_service.primary_container.container_port }}
+{%- endif %}
+{%- if express_gateway_service.primary_container.environment is defined %}{# BEGIN if express_gateway_service.primary_container.environment is defined #}
+        Environment:
+{%- for env in express_gateway_service.primary_container.environment %}
+          -
+            Name: {{ env.name }}
+            Value: {{ env.value }}
+{%- endfor %}
+{%- endif %}{# END if express_gateway_service.primary_container.environment is defined #}
+{%- if express_gateway_service.primary_container.repository_credentials is defined %}{# BEGIN if express_gateway_service.primary_container.repository_credentials is defined #}
+        RepositoryCredentials:
+          CredentialsParameter: {{ express_gateway_service.primary_container.repository_credentials.credentials_parameter }}
+{%- endif %}{# END if express_gateway_service.primary_container.repository_credentials is defined #}
+{%- if express_gateway_service.primary_container.secrets is defined %}{# BEGIN if express_gateway_service.primary_container.secrets is defined #}
+        Secrets:
+{%- for secret in express_gateway_service.primary_container.secrets %}
+          - {{ secret }}
+{%- endfor %}
+{%- endif %}{# END if express_gateway_service.primary_container.secrets is defined #}
+{%- if express_gateway_service.cluster is defined %}
+      Cluster: {{ express_gateway_service.cluster }}
+{%- endif %}
+{%- if express_gateway_service.cpu is defined %}
+      Cpu: {{ express_gateway_service.cpu }}
+{%- endif %}
+{%- if express_gateway_service.health_check_path is defined %}
+      HealthCheckPath: {{ express_gateway_service.health_check_path }}
+{%- endif %}
+{%- if express_gateway_service.memory is defined %}
+      Memory: {{ express_gateway_service.memory }}
+{%- endif %}
+{%- if express_gateway_service.network_configuration is defined %}{# BEGIN if express_gateway_service.network_configuration is defined #}
+      NetworkConfiguration:
+{%- if express_gateway_service.network_configuration.security_groups is defined %}{# BEGIN if express_gateway_service.network_configuration.security_groups is defined #}
+        SecurityGroups:
+{%- for security_group in express_gateway_service.network_configuration.security_groups %}
+          - {{ security_group }}
+{%- endfor %}
+{%- endif %}{# END if express_gateway_service.network_configuration.security_groups is defined #}
+{%- if express_gateway_service.network_configuration.subnets is defined %}{# BEGIN if express_gateway_service.network_configuration.subnets is defined #}
+        Subnets:
+{%- for subnet in express_gateway_service.network_configuration.subnets %}
+          - {{ subnet }}
+{%- endfor %}
+{%- endif %}{# END if express_gateway_service.network_configuration.subnets is defined #}
+{%- endif %}{# END if express_gateway_service.network_configuration is defined #}
+{%- if express_gateway_service.scaling_target is defined %}{# BEGIN if express_gateway_service.scaling_target is defined #}
+      ScalingTarget:
+{%- if express_gateway_service.scaling_target.auto_scaling_metric is defined %}
+        AutoScalingMetric: {{ express_gateway_service.scaling_target.auto_scaling_metric }}
+{%- endif %}
+{%- if express_gateway_service.scaling_target.auto_scaling_target_value is defined %}
+        AutoScalingTargetValue: {{ express_gateway_service.scaling_target.auto_scaling_target_value }}
+{%- endif %}
+{%- if express_gateway_service.scaling_target.max_task_count is defined %}
+        MaxTaskCount: {{ express_gateway_service.scaling_target.max_task_count }}
+{%- endif %}
+{%- if express_gateway_service.scaling_target.min_task_count is defined %}
+        MinTaskCount: {{ express_gateway_service.scaling_target.min_task_count }}
+{%- endif %}
+{%- endif %}{# END if express_gateway_service.scaling_target is defined #}
+{%- if express_gateway_service.service_name is defined %}
+      ServiceName: {{ express_gateway_service.service_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if express_gateway_service.tags is defined %}
+{%- for key,value in express_gateway_service.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if express_gateway_service.task_role_arn is defined %}
+      TaskRoleArn: {{ express_gateway_service.task_role_arn | trim }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for express_gateway_service in sceptre_user_data.express_gateway_services %}
+{%- set express_gateway_service_name = express_gateway_service.name %}
+  {{ express_gateway_service_name }}CreatedAt:
+    Description: The Unix timestamp for when the Express service {{ express_gateway_service_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ express_gateway_service_name }}
+        - CreatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ express_gateway_service_name }}-CreatedAt"
+  {{ express_gateway_service_name }}Endpoint:
+    Description: The Endpoint of the express service {{ express_gateway_service_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ express_gateway_service_name }}
+        - Endpoint
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ express_gateway_service_name }}-Endpoint"
+  {{ express_gateway_service_name }}ServiceArn:
+    Description: The ARN that identifies the Express service {{ express_gateway_service_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ express_gateway_service_name }}
+        - ServiceArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ express_gateway_service_name }}-ServiceArn"
+  {{ express_gateway_service_name }}UpdatedAt:
+    Description: The Unix timestamp for when the Express service {{ express_gateway_service_name }} was last updated.
+    Value:
+      Fn::GetAtt:
+        - {{ express_gateway_service_name }}
+        - UpdatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ express_gateway_service_name }}-UpdatedAt"
+{%- endfor %}{#
+# Supported structure as of 2026-03-03
+Type: AWS::ECS::ExpressGatewayService
+Properties:
+  Cluster: String
+  Cpu: String
+  ExecutionRoleArn: String
+  HealthCheckPath: String
+  InfrastructureRoleArn: String
+  Memory: String
+  NetworkConfiguration:
+    SecurityGroups:
+      - String
+    Subnets:
+      - String
+  PrimaryContainer:
+    AwsLogsConfiguration:
+      LogGroup: String
+      LogStreamPrefix: String
+    Command:
+      - String
+    ContainerPort: Integer
+    Environment:
+      -
+        Name: String
+        Value: String
+    Image: String
+    RepositoryCredentials:
+      CredentialsParameter: String
+    Secrets:
+      - Secret
+  ScalingTarget:
+    AutoScalingMetric: String
+    AutoScalingTargetValue: Integer
+    MaxTaskCount: Integer
+    MinTaskCount: Integer
+  ServiceName: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TaskRoleArn: String
+#}

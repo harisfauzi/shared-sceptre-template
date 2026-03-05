@@ -11,7 +11,7 @@
   Port: {{ service_registry.port }}
 {%- endif %}
 {%- if service_registry.registry_arn is defined %}
-  RegistryArn: {{ service_registry.registry_arn }}
+  RegistryArn: {{ service_registry.registry_arn | trim }}
 {%- endif %}
 {%- endfor %}
 {%- endmacro %}
