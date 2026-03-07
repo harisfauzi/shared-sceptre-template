@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CertificateManager Account
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for account in sceptre_user_data.accounts %}
 {%- set account_name = account.name %}
   {{ account_name }}:
@@ -12,11 +11,12 @@ Resources:
     UpdateReplacePolicy: {{ account.update_replace_policy | default('Delete') }}
     Properties:
       ExpiryEventsConfiguration:
+{%- if account.expiry_events_configuration.days_before_expiry is defined %}
         DaysBeforeExpiry: {{ account.expiry_events_configuration.days_before_expiry }}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for account in sceptre_user_data.accounts %}
 {%- set account_name = account.name %}
   {{ account_name }}:
@@ -26,5 +26,19 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ account_name }}"
-
-{%- endfor %}
+  {{ account_name }}AccountId:
+    Description: AWS Account ID for {{ account_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ account_name }}
+        - AccountId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ account_name }}-AccountId"
+{%- endfor %}{#
+# Supported structure as of 2026-03-08
+Type: AWS::CertificateManager::Account
+Properties:
+  ExpiryEventsConfiguration:
+    DaysBeforeExpiry: Integer
+#}
