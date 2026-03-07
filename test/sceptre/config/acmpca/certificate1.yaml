@@ -4,11 +4,15 @@ template:
   path: acmpca/certificate.yaml.j2
 
 sceptre_user_data:
+  # Custom template description (optional - defaults to ACMPCA Certificate(s) for <project_code>)
+  description: "Comprehensive ACMPCA Certificate Test Suite covering all template variables"
   project_code: "{{stack_group_config.project_code}}"
   source_repo_url: "{{git_repo}}"
   certificates:
-    - name: intermediateca1certificate
-      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::rootca1
+    # ========== Test 1: Minimal Certificate ==========
+    # Tests basic required fields with defaults for optional fields
+    - name: CertMinimal
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::rootca_minimal
       certificate_signing_request: |
         -----BEGIN CERTIFICATE REQUEST-----
         MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
@@ -33,5 +37,479 @@ sceptre_user_data:
         type: DAYS
         value: 365
 
+    # ========== Test 2: Certificate with Validity Not Before ==========
+    # Tests optional ValidityNotBefore parameter
+    - name: CertValidityNotBefore
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::rootca_full_subject
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA256WITHRSA
+      validity:
+        type: DAYS
+        value: 730
+      validity_not_before:
+        type: ABSOLUTE
+        value: 1704067200
+
+    # ========== Test 3: Certificate with Deletion/Update Policies ==========
+    # Tests policy override fields
+    - name: CertWithPolicies
+      deletion_policy: Retain
+      update_replace_policy: Snapshot
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca_key_usage
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA384WITHRSA
+      validity:
+        type: DAYS
+        value: 1095
+
+    # ========== Test 4: Certificate with API Passthrough Subject Override ==========
+    # Tests subject override in API passthrough
+    - name: CertApiSubjectOverride
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca_sia_directory
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA256WITHRSA
+      validity:
+        type: DAYS
+        value: 365
+      api_passthrough:
+        subject:
+          common_name: Override Certificate Subject
+          country: US
+          state: CA
+          locality: San Francisco
+          organization: Override Corp
+          organizational_unit: Engineering
+          distinguished_name_qualifier: "override-001"
+          generation_qualifier: "Jr."
+          given_name: Jane
+          initials: "JE"
+          pseudonym: "override-cert"
+          serial_number: "OVERRIDE-999"
+          surname: Engineer
+          title: "Senior Engineer"
+          custom_attributes:
+            - object_identifier: "2.5.4.9"
+              value: "456 Tech Street"
+
+    # ========== Test 5: Certificate with Certificate Policies ==========
+    # Tests certificate policies with policy qualifiers
+    - name: CertWithPoliciesExtension
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca_sia_dns
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA256WITHRSA
+      validity:
+        type: DAYS
+        value: 365
+      api_passthrough:
+        extensions:
+          certificate_policies:
+            - cert_policy_id: "2.5.4.32"
+              policy_qualifiers:
+                - policy_qualifier_id: "1.3.6.1.5.5.7.2.1"
+                  qualifier:
+                    cps_uri: "https://cps.example.com/policy"
+            - cert_policy_id: "2.16.840.1.101.3.2.1.3.13"
+              policy_qualifiers:
+                - policy_qualifier_id: "1.3.6.1.5.5.7.2.2"
+                  qualifier:
+                    cps_uri: "https://www.example.com/corporate-policy"
+
+    # ========== Test 6: Certificate with Custom Extensions ==========
+    # Tests custom extensions with critical flag
+    - name: CertWithCustomExtensions
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca_sia_ip
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA256WITHRSA
+      validity:
+        type: DAYS
+        value: 365
+      api_passthrough:
+        extensions:
+          custom_extensions:
+            - object_identifier: "1.2.3.4.5"
+              value: "CustomExtensionValue1"
+              critical: true
+            - object_identifier: "1.3.6.1.4.1.9.9.9.9.9"
+              value: "CustomVendorExtension"
+              critical: false
+
+    # ========== Test 7: Certificate with Extended Key Usage (by Type) ==========
+    # Tests extended key usage with type values
+    - name: CertWithEkuTypes
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca_sia_rfc822
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA256WITHRSA
+      validity:
+        type: DAYS
+        value: 365
+      api_passthrough:
+        extensions:
+          extended_key_usage:
+            - extended_key_usage_type: SERVERAUTH
+            - extended_key_usage_type: CLIENTAUTH
+            - extended_key_usage_type: CODESIGNING
+
+    # ========== Test 8: Certificate with Extended Key Usage (by OID) ==========
+    # Tests extended key usage with custom object identifiers
+    - name: CertWithEkuOids
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca_sia_uri
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA256WITHRSA
+      validity:
+        type: DAYS
+        value: 365
+      api_passthrough:
+        extensions:
+          extended_key_usage:
+            - extended_key_usage_object_identifier: "1.3.6.1.5.5.7.3.1"
+            - extended_key_usage_object_identifier: "1.3.6.1.5.5.7.3.2"
+            - extended_key_usage_object_identifier: "1.3.6.1.4.1.9999.1"
+
+    # ========== Test 9: Certificate with Key Usage Flags ==========
+    # Tests all key usage boolean flags
+    - name: CertWithKeyUsage
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca_sia_registered_id
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA256WITHRSA
+      validity:
+        type: DAYS
+        value: 365
+      api_passthrough:
+        extensions:
+          key_usage:
+            crl_sign: true
+            data_encipherment: true
+            digital_signature: true
+            key_agreement: true
+            key_cert_sign: true
+            key_encipherment: true
+            non_repudiation: true
+            decipher_only: false
+            encipher_only: false
+
+    # ========== Test 10: Certificate with Subject Alternative Names (DNS) ==========
+    # Tests DNS Subject Alternative Name
+    - name: CertWithSanDns
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca_sia_edi_party
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA256WITHRSA
+      validity:
+        type: DAYS
+        value: 365
+      api_passthrough:
+        extensions:
+          subject_alternative_names:
+            - dns_name: example.com
+            - dns_name: www.example.com
+            - dns_name: api.example.com
+
+    # ========== Test 11: Certificate with All SAN Types ==========
+    # Tests all Subject Alternative Name types (IP, Email, URI, DirectoryName, EDI Party, OtherName, RegisteredId)
+    - name: CertWithAllSanTypes
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca_sia_other_name
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA256WITHRSA
+      validity:
+        type: DAYS
+        value: 365
+      api_passthrough:
+        extensions:
+          subject_alternative_names:
+            - dns_name: primary.example.com
+            - ip_address: "192.0.2.1"
+            - rfc822_name: admin@example.com
+            - uniform_resource_identifier: "https://example.com/cert"
+            - directory_name:
+                common_name: Certificate Directory
+                country: AU
+                state: QLD
+                locality: Brisbane
+                organization: Example Company
+                organizational_unit: Certificates
+            - edi_party_name:
+                name_assigner: "Global EDI"
+                party_name: "EDI-12345"
+            - other_name:
+                type_id: "2.16.840.1.101.3.4.2.1"
+                value: "OtherName-Value"
+            - registered_id: "1.2.3.4.5.6.7.8.9"
+
+    # ========== Test 12: Certificate with Template ARN ==========
+    # Tests template ARN parameter
+    - name: CertWithTemplateArn
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca_sia_custom_method
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA256WITHRSA
+      validity:
+        type: DAYS
+        value: 365
+      template_arn: arn:aws:acm-pca:::template/BluetoothDeviceCertificate/V1
+
+    # ========== Test 13: Complex Certificate with All Features ==========
+    # Combines multiple features to test comprehensive template parsing
+    - name: CertComprehensive
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      certificate_authority_arn: !stack_output acmpca/certificateauthority1.yaml::intermediateca_crl_full
+      certificate_signing_request: |
+        -----BEGIN CERTIFICATE REQUEST-----
+        MIIC4zCCAcsCAQAwazELMAkGA1UEBhMCQVUxDDAKBgNVBAgMA1FMRDERMA8GA1UE
+        BwwIQnJpc2JhbmUxFTATBgNVBAoMDERlbW8gQ29tcGFueTEkMCIGA1UEAwwbZGVt
+        b2NlcnRpZmljYXRlMS5zYW1wbGUuY29tMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAuyS47lbce/lvUAHxiMibmYXnvciOmTunnXLru4Xhj/7ftSc0GHhb
+        jLdz0s1QdlzF2+I1ZCYO1DK00E2LhKI711NUceGhD/TYyyjIdvtdh2MY9NKJcdrB
+        0F8gtpZT4zDyZZlP/PG2FEJCIvmO91DdAsewoLSBHMIHOPBIbjvbjgzOodVL2fKf
+        DIrZbKPjWgpY9tkVQGaai+k0fKGZ3W2FQVNrkbCfrI51eTMSNBwT8JQDxx3OTlW2
+        4B2YQoEwJcjMTSBLh8P4dl+wpSp5ddRanhfYdEOOukxF5DkKmES0QdR4YH6OREsH
+        Mcpul/ukP3E8NKV+q4EkwyPZMdC/lbdWFQIDAQABoDMwMQYJKoZIhvcNAQkOMSQw
+        IjAgBgNVHREEGTAXghVkZW1vc2VydmVyLnNhbXBsZS5jb20wDQYJKoZIhvcNAQEL
+        BQADggEBABUbxX52lfzbhR5MQKHkSuDs3Zc6y92g9RVZkrtDth0wWuecINUoh5uD
+        4vZ7KZMfHf2gJPR14EPbEUhz7uX2WbMpj0xgVaG2oHAicQeqtBLqmdxVSIDq6ikq
+        GUsBIjoHpHwKz7zfXyszGPK1eiPqkCh5ZlvKSK4JQL5FmR+IKx3DBzg9vTT6tEtm
+        4NbA+VnkTp51r/7qSe7TUZFQ0ilQEp0/NtrV1r+C0RIGusL/VvyPndcyrp2iFKHQ
+        hRh2CVOCiCq1TIAmfq8wVYaFCIs4yIZHRNRsUHOoQlasf4ZnBeqe0i+LXZfh0uHx
+        XjQEpt63e8xrsAQ/0YDs9MZtczszDwA=
+        -----END CERTIFICATE REQUEST-----
+      signing_algorithm: SHA512WITHRSA
+      validity:
+        type: DAYS
+        value: 1825
+      validity_not_before:
+        type: RELATIVE
+        value: 0
+      api_passthrough:
+        subject:
+          common_name: Comprehensive Test Certificate
+          country: US
+          state: CA
+          locality: San Francisco
+          organization: Test Organization
+          organizational_unit: Testing Division
+          given_name: Test
+          surname: Certificate
+        extensions:
+          certificate_policies:
+            - cert_policy_id: "2.5.4.32"
+              policy_qualifiers:
+                - policy_qualifier_id: "1.3.6.1.5.5.7.2.1"
+                  qualifier:
+                    cps_uri: "https://cps.example.com"
+          custom_extensions:
+            - object_identifier: "1.2.3.4"
+              value: "TestValue"
+              critical: true
+          extended_key_usage:
+            - extended_key_usage_type: SERVERAUTH
+            - extended_key_usage_object_identifier: "1.3.6.1.5.5.7.3.2"
+          key_usage:
+            digital_signature: true
+            key_encipherment: true
+            key_agreement: true
+          subject_alternative_names:
+            - dns_name: comprehensive-test.example.com
+            - dns_name: test.example.com
+            - ip_address: "10.0.0.1"
+            - rfc822_name: test@example.com
+
 stack_tags:
-  Test: acmpca-certificate
+  TestSuite: "Comprehensive ACMPCA Certificate Coverage"
+  TemplateVersion: "Full Variable Test"
+  Version: "2.0.0"
