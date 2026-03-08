@@ -1,0 +1,135 @@
+---
+Description: {{sceptre_user_data.description|default('CloudTrail Dashboard(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for dashboard in sceptre_user_data.dashboards %}
+{%- set dashboard_name = dashboard.name %}
+  {{ dashboard_name }}:
+    Type: AWS::CloudTrail::Dashboard
+    DeletionPolicy: {{ dashboard.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ dashboard.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if dashboard.dashboard_name is defined %}
+      Name: {{ dashboard.dashboard_name }}
+{%- endif %}
+{%- if dashboard.refresh_schedule is defined %}{# BEGIN if dashboard.refresh_schedule is defined #}
+      RefreshSchedule:
+{%- if dashboard.refresh_schedule.frequency is defined %}
+        Frequency:
+          Unit: {{ dashboard.refresh_schedule.frequency.unit }}
+          Value: {{ dashboard.refresh_schedule.frequency.value }}
+{%- endif %}
+{%- if dashboard.refresh_schedule.status is defined %}
+        Status: {{ dashboard.refresh_schedule.status }}
+{%- endif %}
+{%- if dashboard.refresh_schedule.time_of_day is defined %}
+        TimeOfDay: {{ dashboard.refresh_schedule.time_of_day }}
+{%- endif %}
+{%- endif %}{# END if dashboard.refresh_schedule is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if dashboard.tags is defined %}
+{%- for key,value in dashboard.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if dashboard.termination_protection_enabled is defined %}
+      TerminationProtectionEnabled: {{ dashboard.termination_protection_enabled | lower }}
+{%- endif %}
+{%- if dashboard.widgets is defined %}{# BEGIN if dashboard.widgets is defined #}
+      Widgets:
+{%- for widget in dashboard.widgets %}{# BEGIN for widget in dashboard.widgets #}
+        -
+          QueryStatement: |
+            {{ widget.query_statement | indent(width=12, first=false) }}
+{%- if widget.query_parameters is defined %}{# BEGIN if widget.query_parameters is defined #}
+          QueryParameters:
+{%- for param in widget.query_parameters %}
+            - {{ param }}
+{%- endfor %}
+{%- endif %}{# END if widget.query_parameters is defined #}
+{%- if widget.view_properties is defined %}{# BEGIN if widget.view_properties is defined #}
+          ViewProperties:
+{%- for key,value in widget.view_properties.items() %}
+            {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if widget.view_properties is defined #}
+{%- endfor %}{# END for widget in dashboard.widgets #}  
+{%- endif %}{# END if dashboard.widgets is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for dashboard in sceptre_user_data.dashboards %}
+{%- set dashboard_name = dashboard.name %}
+  {{ dashboard_name }}CreatedTimestamp:
+    Description: The timestamp that shows when the dashboard {{ dashboard_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ dashboard_name }}
+        - CreatedTimestamp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ dashboard_name }}-CreatedTimestamp"
+  {{ dashboard_name }}DashboardArn:
+    Description: The ARN for {{ dashboard_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ dashboard_name }}
+        - DashboardArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ dashboard_name }}-DashboardArn"
+  {{ dashboard_name }}Status:
+    Description: The status of the dashboard {{ dashboard_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ dashboard_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ dashboard_name }}-Status"
+  {{ dashboard_name }}Type:
+    Description: The type of dashboard {{ dashboard_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ dashboard_name }}
+        - Type
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ dashboard_name }}-Type"
+  {{ dashboard_name }}UpdatedTimestamp:
+    Description: The timestamp that shows when the dashboard {{ dashboard_name }} was updated.
+    Value:
+      Fn::GetAtt:
+        - {{ dashboard_name }}
+        - UpdatedTimestamp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ dashboard_name }}-UpdatedTimestamp"
+{%- endfor %}{#
+# Supported structure as of 2026-03-08
+Type: AWS::CloudTrail::Dashboard
+Properties:
+  Name: String
+  RefreshSchedule:
+    Frequency:
+      Unit: String
+      Value: Integer
+    Status: String
+    TimeOfDay: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TerminationProtectionEnabled: Boolean
+  Widgets:
+    -
+      QueryParameters:
+        - String
+      QueryStatement: String
+      ViewProperties:
+        Key: Value
+#}
