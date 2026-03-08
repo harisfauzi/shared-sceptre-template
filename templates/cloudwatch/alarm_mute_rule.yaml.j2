@@ -1,0 +1,72 @@
+Description: {{sceptre_user_data.description|default('CloudWatch Mute Alarm(s) Rule(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+
+{%- for alarm_mute_rule in sceptre_user_data.alarm_mute_rules %}
+{%- set alarm_mute_rule_name = alarm_mute_rule.name %}
+  {{ alarm_mute_rule_name }}:
+    Type: AWS::CloudWatch::AlarmMuteRule
+    DeletionPolicy: {{ alarm_mute_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ alarm_mute_rule.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if alarm_mute_rule.name is defined %}
+      Name: {{ alarm_mute_rule.name }}
+{%- endif %}
+{%- if alarm_mute_rule.description is defined %}
+      Description: {{ alarm_mute_rule.description }}
+{%- endif %}
+{%- if alarm_mute_rule.rule.schedule is defined %}
+      Rule:
+        Schedule:
+          Expression: "{{ alarm_mute_rule.rule.schedule.expression }}"
+          Duration: "{{ alarm_mute_rule.rule.schedule.duration }}"
+{%- if alarm_mute_rule.rule.schedule.timezone is defined %}
+          Timezone: "{{ alarm_mute_rule.rule.schedule.timezone }}"
+{%- endif %}
+{%- endif %}
+{%- if alarm_mute_rule.mute_targets.alarms is defined %}
+      MuteTargets:
+{%- for alarm in alarm_mute_rule.mute_targets.alarms %}
+        AlarmNames:
+          - {{ alarm }}
+{%- endfor %}
+{%- endif %}
+{%- if alarm_mute_rule.start_date is defined %}
+      StartDate: {{ alarm_mute_rule.start_date }}
+{%- endif %}
+{%- if alarm_mute_rule.expire_date is defined %}
+      ExpireDate: {{ alarm_mute_rule.expire_date }}
+{%- endif %}
+{%- if alarm_mute_rule.tags is defined %}
+      Tags:
+{%- for key, value in alarm_mute_rule.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+
+{%- for alarm_mute_rule in sceptre_user_data.alarm_mute_rules %}
+{%- set alarm_mute_rule_name = alarm_mute_rule.name %}
+  {{ alarm_mute_rule_name }}:
+    Description: Alarm Mute Rule Name for {{ alarm_mute_rule_name }}
+    Value:
+      Ref: {{ alarm_mute_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ alarm_mute_rule_name }}"
+
+  {{ alarm_mute_rule_name }}Arn:
+    Description: The ARN for {{ alarm_mute_rule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ alarm_mute_rule_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ alarm_mute_rule_name }}-Arn"
+
+{%- endfor %}

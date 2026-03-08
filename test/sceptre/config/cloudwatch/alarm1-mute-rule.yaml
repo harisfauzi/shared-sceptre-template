@@ -1,0 +1,27 @@
+---
+template:
+  type: file
+  path: cloudwatch/alarm_mute_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  alarm_mute_rules:
+    - name: "MaintenanceMuteRule"
+      description: "Disable alarms during maintenance"
+      start_date: "2026-03-10T01:00"
+      expire_date: "2027-03-10T02:00"
+      rule:
+        schedule:
+          expression: cron(0 1 * * *) # Every day at 1am
+          duration: PT2H # 2 hours
+          timezone: Australia/Sydney
+      mute_targets:
+        alarms:
+          - arn:aws:cloudwatch:ap-southeast-2:123456789012:alarm:HighCPU
+      tags:
+        environment: prod
+        owner: platform
+
+stack_tags:
+  Test: cloudwatch-alarm-mute-rule
