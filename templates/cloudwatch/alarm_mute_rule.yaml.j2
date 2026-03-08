@@ -10,40 +10,42 @@ Resources:
     DeletionPolicy: {{ alarm_mute_rule.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ alarm_mute_rule.update_replace_policy | default('Delete') }}
     Properties:
-{% if alarm_mute_rule.name is defined %}
+{%- if alarm_mute_rule.name is defined %}
       Name: {{ alarm_mute_rule.name }}
-{% endif %}
-{% if alarm_mute_rule.description is defined %}
+{%- endif %}
+{%- if alarm_mute_rule.description is defined %}
       Description: {{ alarm_mute_rule.description }}
-{% endif %}
-{% if alarm_mute_rule.schedule is defined %}
+{%- endif %}
+{%- if alarm_mute_rule.rule.schedule is defined %}
       Rule:
         Schedule:
-          Expression: "{{ alarm_mute_rule.schedule.expression }}"
-          Duration: "{{ alarm_mute_rule.schedule.duration }}"
-{% if alarm_mute_rule.schedule.timezone is defined %}
-          Timezone: "{{ alarm_mute_rule.schedule.timezone }}"
-{% endif %}
-{% endif %}
-{% if alarm_mute_rule.mute_targets is defined %}
+          Expression: "{{ alarm_mute_rule.rule.schedule.expression }}"
+          Duration: "{{ alarm_mute_rule.rule.schedule.duration }}"
+{%- if alarm_mute_rule.rule.schedule.timezone is defined %}
+          Timezone: "{{ alarm_mute_rule.rule.schedule.timezone }}"
+{%- endif %}
+{%- endif %}
+{%- if alarm_mute_rule.mute_targets.alarms is defined %}
       MuteTargets:
-{% for target in alarm_mute_rule.mute_targets %}
-        - {{ target }}
-{% endfor %}
-{% endif %}
-{% if alarm_mute_rule.start_date is defined %}
+{%- for alarm in alarm_mute_rule.mute_targets.alarms %}
+        AlarmNames:
+          - {{ alarm }}
+{%- endfor %}
+{%- endif %}
+{%- if alarm_mute_rule.start_date is defined %}
       StartDate: {{ alarm_mute_rule.start_date }}
-{% endif %}
-{% if alarm_mute_rule.expire_date is defined %}
+{%- endif %}
+{%- if alarm_mute_rule.expire_date is defined %}
       ExpireDate: {{ alarm_mute_rule.expire_date }}
-{% endif %}
-{% if alarm_mute_rule.tags is defined %}
-    Tags:
-{% for key, value in alarm_mute_rule.tags.items() %}
-      - Key: {{ key }}
-        Value: {{ value }}
-{% endfor %}
-{% endif %}
+{%- endif %}
+{%- if alarm_mute_rule.tags is defined %}
+      Tags:
+{%- for key, value in alarm_mute_rule.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
 
 Outputs:
 
