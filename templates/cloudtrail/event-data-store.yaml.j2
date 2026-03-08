@@ -1,0 +1,221 @@
+---
+Description: {{sceptre_user_data.description|default('CloudTrail Event Data Store(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for event_data_store in sceptre_user_data.event_data_stores %}
+{%- set event_data_store_name = event_data_store.name %}
+  {{ event_data_store_name }}:
+    Type: AWS::CloudTrail::EventDataStore
+    DeletionPolicy: {{ event_data_store.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ event_data_store.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if event_data_store.advanced_event_selectors is defined %}{# BEGIN if event_data_store.advanced_event_selectors is defined #}
+      AdvancedEventSelectors:
+{%- for selector in event_data_store.advanced_event_selectors %}{# BEGIN for selector in event_data_store.advanced_event_selectors #}
+        -
+          FieldSelectors:
+{%- for advanced_field_selector in selector.field_selectors %}{# BEGIN for advanced_field_selector in selector.field_selectors #}
+            -
+              Field: {{ advanced_field_selector.field }}
+{%- if advanced_field_selector.ends_with is defined %}{# BEGIN if advanced_field_selector.ends_with is defined #}
+              EndsWith:
+{%- for item in advanced_field_selector.ends_with %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if advanced_field_selector.ends_with is defined #}
+{%- if advanced_field_selector.equals is defined %}{# BEGIN if advanced_field_selector.equals is defined #}
+              Equals:
+{%- for item in advanced_field_selector.equals %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if advanced_field_selector.equals is defined #}
+{%- if advanced_field_selector.not_ends_with is defined %}{# BEGIN if advanced_field_selector.not_ends_with is defined #}
+              NotEndsWith:
+{%- for item in advanced_field_selector.not_ends_with %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if advanced_field_selector.not_ends_with is defined #}
+{%- if advanced_field_selector.not_equals is defined %}{# BEGIN if advanced_field_selector.not_equals is defined #}
+              NotEquals:
+{%- for item in advanced_field_selector.not_equals %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if advanced_field_selector.not_equals is defined #}
+{%- if advanced_field_selector.not_starts_with is defined %}{# BEGIN if advanced_field_selector.not_starts_with is defined #}
+              NotStartsWith:
+{%- for item in advanced_field_selector.not_starts_with %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if advanced_field_selector.not_starts_with is defined #}
+{%- if advanced_field_selector.starts_with is defined %}{# BEGIN if advanced_field_selector.starts_with is defined #}
+              StartsWith:
+{%- for item in advanced_field_selector.starts_with %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if advanced_field_selector.starts_with is defined #}
+{%- endfor %}{# END for advanced_field_selector in selector.field_selectors #}
+{%- if selector.name is defined %}
+          Name: {{ selector.name }}
+{%- endif %}
+{%- endfor %}{# END for selector in event_data_store.advanced_event_selectors #}
+{%- endif %}{# END if event_data_store.advanced_event_selectors is defined #}
+{%- if event_data_store.billing_mode is defined %}
+      BillingMode: {{ event_data_store.billing_mode }}
+{%- endif %}
+{%- if event_data_store.context_key_selectors is defined %}{# BEGIN if event_data_store.context_key_selectors is defined #}
+      ContextKeySelectors:
+{%- for selector in event_data_store.context_key_selectors %}{# BEGIN for selector in event_data_store.context_key_selectors #}
+        -
+          Equals:
+{%- for item in selector.equals %}
+            - {{ item }}
+{%- endfor %}
+          Type: {{ selector.type }}
+{%- endfor %}{# END for selector in event_data_store.context_key_selectors #}
+{%- endif %}{# END if event_data_store.context_key_selectors is defined #}
+{%- if event_data_store.federation_enabled is defined %}
+      FederationEnabled: {{ event_data_store.federation_enabled | lower }}
+{%- endif %}
+{%- if event_data_store.federation_role_arn is defined %}
+      FederationRoleArn: {{ event_data_store.federation_role_arn | trim }}
+{%- endif %}
+{%- if event_data_store.ingestion_enabled is defined %}
+      IngestionEnabled: {{ event_data_store.ingestion_enabled | lower }}
+{%- endif %}
+{%- if event_data_store.insights_destination is defined %}
+      InsightsDestination: {{ event_data_store.insights_destination }}
+{%- endif %}
+{%- if event_data_store.insight_selectors is defined %}{# BEGIN if event_data_store.insight_selectors is defined #}
+      InsightSelectors:
+{%- for selector in event_data_store.insight_selectors %}{# BEGIN for selector in event_data_store.insight_selectors #}
+        -
+{%- if selector.insight_type is defined %}
+          InsightType: {{ selector.insight_type }}
+{%- endif %}
+{%- endfor %}{# END for selector in event_data_store.insight_selectors #}
+{%- endif %}{# END if event_data_store.insight_selectors is defined #}
+{%- if event_data_store.kms_key_id is defined %}
+      KmsKeyId: {{ event_data_store.kms_key_id }}
+{%- endif %}
+{%- if event_data_store.max_event_size is defined %}
+      MaxEventSize: {{ event_data_store.max_event_size }}
+{%- endif %}
+{%- if event_data_store.multi_region_enabled is defined %}
+      MultiRegionEnabled: {{ event_data_store.multi_region_enabled | lower }}
+{%- endif %}
+{%- if event_data_store.name is defined %}
+      Name: {{ event_data_store_name }}
+{%- endif %}
+{%- if event_data_store.organization_enabled is defined %}
+      OrganizationEnabled: {{ event_data_store.organization_enabled | lower }}
+{%- endif %}
+{%- if event_data_store.retention_period is defined %}
+      RetentionPeriod: {{ event_data_store.retention_period }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if event_data_store.tags is defined %}
+{%- for key,value in event_data_store.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if event_data_store.termination_protection_enabled is defined %}
+      TerminationProtectionEnabled: {{ event_data_store.termination_protection_enabled | lower }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for event_data_store in sceptre_user_data.event_data_stores %}
+{%- set event_data_store_name = event_data_store.name %}
+  {{ event_data_store_name }}:
+    Description: Resource name for {{ event_data_store_name }}
+    Value:
+      Ref: {{ event_data_store_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_data_store_name }}"
+  {{ event_data_store_name }}CreatedTimestamp:
+    Description: The time stamp of the creation of {{ event_data_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ event_data_store_name }}
+        - CreatedTimestamp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_data_store_name }}-CreatedTimestamp"
+  {{ event_data_store_name }}EventDataStoreArn:
+    Description: The ARN for {{ event_data_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ event_data_store_name }}
+        - EventDataStoreArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_data_store_name }}-EventDataStoreArn"
+  {{ event_data_store_name }}Status:
+    Description: The status for {{ event_data_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ event_data_store_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_data_store_name }}-Status"
+  {{ event_data_store_name }}UpdatedTimestamp:
+    Description: The time stamp that updates were made to {{ event_data_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ event_data_store_name }}
+        - UpdatedTimestamp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_data_store_name }}-UpdatedTimestamp"
+{%- endfor %}{#
+# Supported structure as of 2026-03-08
+Type: AWS::CloudTrail::EventDataStore
+Properties:
+  AdvancedEventSelectors:
+    -
+      FieldSelectors:
+        - AdvancedFieldSelector
+          EndsWith:
+            - String
+          Equals:
+            - String
+          Field: String
+          NotEndsWith:
+            - String
+          NotEquals:
+            - String
+          NotStartsWith:
+            - String
+          StartsWith:
+            - String
+      Name: String
+  BillingMode: String
+  ContextKeySelectors:
+    -
+      Equals:
+        - String
+      Type: String
+  FederationEnabled: Boolean
+  FederationRoleArn: String
+  IngestionEnabled: Boolean
+  InsightsDestination: String
+  InsightSelectors:
+    - InsightType: String
+  KmsKeyId: String
+  MaxEventSize: String
+  MultiRegionEnabled: Boolean
+  Name: String
+  OrganizationEnabled: Boolean
+  RetentionPeriod: Integer
+  Tags:
+    -
+      Key: String
+      Value: String
+  TerminationProtectionEnabled: Boolean
+#}
