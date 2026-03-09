@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudWatch Dashboard(s) fo
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for dashboard in sceptre_user_data.dashboards %}
 {%- set dashboard_name = dashboard.name %}
   {{ dashboard_name }}:
@@ -12,10 +11,11 @@ Resources:
     UpdateReplacePolicy: {{ dashboard.update_replace_policy | default('Delete') }}
     Properties:
 {%- if dashboard.dashboard_body_json is defined %}
-      DashboardBody: {{ dashboard.dashboard_body_json }}
+      DashboardBody: |
+        {{ dashboard.dashboard_body_json | indent(width=8, first=false) }}
 {%- else %}
       DashboardBody: |
-{{ dashboard.dashboard_body | indent(width=8, first=true) }}
+        {{ dashboard.dashboard_body | indent(width=8, first=false) }}
 {%- endif %}
 {%- if dashboard.dashboard_name is defined %}
       DashboardName: {{ dashboard.dashboard_name }}
@@ -23,7 +23,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for dashboard in sceptre_user_data.dashboards %}
 {%- set dashboard_name = dashboard.name %}
   {{ dashboard_name }}:
@@ -33,5 +32,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ dashboard_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-09
+Type: AWS::CloudWatch::Dashboard
+Properties:
+  DashboardBody: String
+  DashboardName: String
+#}

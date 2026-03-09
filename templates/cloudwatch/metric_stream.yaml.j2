@@ -1,9 +1,9 @@
 ---
+{%- import 'macros/cloudwatch-helper.yaml.j2' as helper %}
 Description: {{sceptre_user_data.description|default('CloudWatch Metric Stream(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for metric_stream in sceptre_user_data.metric_streams %}
 {%- set metric_stream_name = metric_stream.name %}
   {{ metric_stream_name }}:
@@ -11,42 +11,32 @@ Resources:
     DeletionPolicy: {{ metric_stream.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ metric_stream.update_replace_policy | default('Delete') }}
     Properties:
-      FirehoseArn: {{ metric_stream.firehose_arn }}
-      OutputFormat: {{ metric_stream.output_format }}
-      RoleArn: {{ metric_stream.role_arn }}
-{%- if metric_stream.exclude_filters is defined %}
+{%- if metric_stream.exclude_filters is defined %}{# BEGIN if metric_stream.exclude_filters is defined #}
       ExcludeFilters:
-{%- for filter in metric_stream.exclude_filters %}
-        - Namespace: {{ filter.namespace }}
-{%- if filter.metric_names is defined %}
-          MetricNames:
-{%- for metric_name in filter.metric_names %}
-            - {{ metric_name }}
-{%- endfor %}
-{%- endif %}
-{%- endfor %}
+        {{- helper.prep_metric_stream_filter(metric_stream.exclude_filters) | indent(width=8, first=false) }}
+{%- endif %}{# END if metric_stream.exclude_filters is defined #}
+{%- if metric_stream.firehose_arn is defined %}
+      FirehoseArn: {{ metric_stream.firehose_arn | trim }}
 {%- endif %}
 {%- if metric_stream.include_filters is defined %}
       IncludeFilters:
-{%- for filter in metric_stream.include_filters %}
-        - Namespace: {{ filter.namespace }}
-{%- if filter.metric_names is defined %}
-          MetricNames:
-{%- for metric_name in filter.metric_names %}
-            - {{ metric_name }}
-{%- endfor %}
-{%- endif %}
-{%- endfor %}
+        {{- helper.prep_metric_stream_filter(metric_stream.include_filters) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if metric_stream.include_linked_accounts_metrics is defined %}
-      IncludeLinkedAccountsMetrics: {{ metric_stream.include_linked_accounts_metrics }}
+      IncludeLinkedAccountsMetrics: {{ metric_stream.include_linked_accounts_metrics | lower }}
 {%- endif %}
 {%- if metric_stream.metric_stream_name is defined %}
       Name: {{ metric_stream.metric_stream_name }}
 {%- endif %}
-{%- if metric_stream.statistics_configurations is defined %}{# BEGIN {%- if metric_stream.statistics_configurations is defined %} #}
+{%- if metric_stream.output_format is defined %}
+      OutputFormat: {{ metric_stream.output_format }}
+{%- endif %}
+{%- if metric_stream.role_arn is defined %}
+      RoleArn: {{ metric_stream.role_arn | trim }}
+{%- endif %}
+{%- if metric_stream.statistics_configurations is defined %}{# BEGIN if metric_stream.statistics_configurations is defined #}
       StatisticsConfigurations:
-{%- for statistics_configuration in metric_stream.statistics_configurations %}
+{%- for statistics_configuration in metric_stream.statistics_configurations %}{# BEGIN for statistics_configuration in metric_stream.statistics_configurations #}
         -
           AdditionalStatistics:
 {%- for additional_statistic in statistics_configuration.additional_statistics %}
@@ -57,8 +47,8 @@ Resources:
             - MetricName: {{ include_metric.metric_name }}
               Namespace: {{ include_metric.namespace }}
 {%- endfor %}
-{%- endfor %}
-{%- endif %}{# END {%- if metric_stream.statistics_configurations is defined %} #}
+{%- endfor %}{# END for statistics_configuration in metric_stream.statistics_configurations #}
+{%- endif %}{# END if metric_stream.statistics_configurations is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -71,7 +61,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for metric_stream in sceptre_user_data.metric_streams %}
 {%- set metric_stream_name = metric_stream.name %}
   {{ metric_stream_name }}:
@@ -81,7 +70,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ metric_stream_name }}"
-
   {{ metric_stream_name }}Arn:
     Description: The ARN of {{ metric_stream_name }}
     Value:
@@ -91,7 +79,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ metric_stream_name }}-Arn"
-
   {{ metric_stream_name }}CreationDate:
     Description: The date that the metric stream {{ metric_stream_name }} was originally created.
     Value:
@@ -101,7 +88,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ metric_stream_name }}-CreationDate"
-
   {{ metric_stream_name }}LastUpdateDate:
     Description: The date that the metric stream {{ metric_stream_name }} was most recently updated.
     Value:
@@ -111,7 +97,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ metric_stream_name }}-LastUpdateDate"
-
   {{ metric_stream_name }}State:
     Description: The state of the metric stream {{ metric_stream_name }}.
     Value:
@@ -121,4 +106,35 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ metric_stream_name }}-State"
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-09
+Type: AWS::CloudWatch::MetricStream
+Properties:
+  ExcludeFilters:
+    -
+      MetricNames:
+        - String
+      Namespace: String
+  FirehoseArn: String
+  IncludeFilters:
+    -
+      MetricNames:
+        - String
+      Namespace: String
+  IncludeLinkedAccountsMetrics: Boolean
+  Name: String
+  OutputFormat: String
+  RoleArn: String
+  StatisticsConfigurations:
+    -
+      AdditionalStatistics:
+        - String
+      IncludeMetrics:
+        -
+          MetricName: String
+          Namespace: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

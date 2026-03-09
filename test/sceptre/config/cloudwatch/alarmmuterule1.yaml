@@ -1,0 +1,73 @@
+---
+template:
+  type: file
+  path: cloudwatch/alarm_mute_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  alarm_mute_rules:
+    - name: DailyMaintenanceMuteRule
+      alarm_mute_rule_name: daily-maintenance-window
+      description: Disable alarms during daily maintenance window
+      start_date: "2026-03-10T01:00"
+      expire_date: "2027-12-31T23:59"
+      rule:
+        schedule:
+          expression: cron(0 1 * * *)
+          duration: PT2H
+          timezone: Australia/Sydney
+      mute_targets:
+        alarms:
+          - HighCPUAlarm
+          - HighMemoryAlarm
+          - DiskSpaceAlarm
+      tags:
+        environment: production
+        owner: platform-team
+        cost-center: infrastructure-001
+
+    - name: WeekendMaintenanceMuteRule
+      description: Suppress alarms during weekend patches
+      rule:
+        schedule:
+          expression: cron(0 2 ? * SAT)
+          duration: PT4H
+          timezone: America/New_York
+      mute_targets:
+        alarms:
+          - ApplicationHealthAlarm
+          - DatabaseConnectionPoolAlarm
+      tags:
+        schedule-type: weekend
+        critical: false
+
+    - name: QuarterlyUpgradeMuteRule
+      alarm_mute_rule_name: quarterly-infrastructure-upgrade
+      description: Extended mute window for quarterly infrastructure upgrades
+      start_date: "2026-04-01T00:00"
+      expire_date: "2026-04-01T12:00"
+      rule:
+        schedule:
+          expression: cron(0 0 1 */3 *)
+          duration: PT12H
+          timezone: America/Chicago
+      mute_targets:
+        alarms:
+          - RDSInstanceAlarm
+          - ElastiCacheNodeAlarm
+          - NetworkThroughputAlarm
+          - StorageUsageAlarm
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+    - name: MinimalMuteRule
+      rule:
+        schedule:
+          expression: cron(0 0 * * *)
+          duration: PT1H
+      tags:
+        purpose: testing
+
+stack_tags:
+  Test: cloudwatch-alarm-mute-rule

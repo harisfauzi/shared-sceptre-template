@@ -1,9 +1,9 @@
 ---
+{%- import 'macros/cloudwatch-helper.yaml.j2' as helper %}
 Description: {{sceptre_user_data.description|default('CloudWatch Anomaly Detector(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for anomaly_detector in sceptre_user_data.anomaly_detectors %}
 {%- set anomaly_detector_name = anomaly_detector.name %}
   {{ anomaly_detector_name }}:
@@ -11,91 +11,51 @@ Resources:
     DeletionPolicy: {{ anomaly_detector.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ anomaly_detector.update_replace_policy | default('Delete') }}
     Properties:
-{%- if anomaly_detector.configuration is defined %}
+{%- if anomaly_detector.configuration is defined %}{# BEGIN if anomaly_detector.configuration is defined #}
       Configuration:
-{%- if anomaly_detector.configuration.excluded_time_ranges is defined %}
+{%- if anomaly_detector.configuration.excluded_time_ranges is defined %}{# BEGIN if anomaly_detector.configuration.excluded_time_ranges is defined #}
         ExcludedTimeRanges:
 {%- for excluded_time_range in anomaly_detector.configuration.excluded_time_ranges %}
           - EndTime: {{ excluded_time_range.end_time }}
             StartTime: {{ excluded_time_range.start_time }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if anomaly_detector.configuration.excluded_time_ranges is defined #}
 {%- if anomaly_detector.configuration.metric_time_zone is defined %}
         MetricTimeZone: {{ anomaly_detector.configuration.metric_time_zone }}
 {%- endif %}
-{%- endif %}
-{%- if anomaly_detector.dimensions is defined %}
+{%- endif %}{# END if anomaly_detector.configuration is defined #}
+{%- if anomaly_detector.dimensions is defined %}{# BEGIN if anomaly_detector.dimensions is defined #}
       Dimensions:
-{%- for name, value in anomaly_detector.dimensions.items() %}
-        - Name: {{ name }}
-          Value: {{ value }}
-{%- endfor %}
-{%- endif %}
-{%- if anomaly_detector.metric_characteristics is defined %}
+        {{- helper.prep_dimensions(anomaly_detector.dimensions) | indent(width=8,first=false) }}
+{%- endif %}{# END if anomaly_detector.dimensions is defined #}
+{%- if anomaly_detector.metric_characteristics is defined %}{# BEGIN if anomaly_detector.metric_characteristics is defined #}
       MetricCharacteristics:
+{%- if anomaly_detector.metric_characteristics.periodic_spikes is defined %}
         PeriodicSpikes: {{ anomaly_detector.metric_characteristics.periodic_spikes }}
 {%- endif %}
-{%- if anomaly_detector.metric_math_anomaly_detector is defined %}{# BEGIN {%- if anomaly_detector.metric_math_anomaly_detector is defined %} #}
+{%- endif %}{# END if anomaly_detector.metric_characteristics is defined #}
+{%- if anomaly_detector.metric_math_anomaly_detector is defined %}{# BEGIN if anomaly_detector.metric_math_anomaly_detector is defined #}
       MetricMathAnomalyDetector:
+{%- if anomaly_detector.metric_math_anomaly_detector.metric_data_queries is defined %}{# BEGIN if anomaly_detector.metric_math_anomaly_detector.metric_data_queries is defined #}
         MetricDataQueries:
-{%- for metric_data_query in anomaly_detector.metric_math_anomaly_detector.metric_data_queries %}
-          -
-            Id: {{ metric_data_query.id }}
-{%- if metric_data_query.account_id is defined %}
-            AccountId: {{ metric_data_query.account_id }}
-{%- endif %}
-{%- if metric_data_query.expression is defined %}
-            Expression: {{ metric_data_query.expression }}
-{%- endif %}
-{%- if metric_data_query.label is defined %}
-            Label: {{ metric_data_query.label }}
-{%- endif %}
-{%- if metric_data_query.metric_stat is defined %}{# BEGIN {%- if metric_data_query.metric_stat is defined %} #}
-            MetricStat:
-              Metric:
-                MetricName: {{ metric_data_query.metric_stat.metric.metric_name }}
-                Namespace: {{ metric_data_query.metric_stat.metric.namespace }}
-{%- if metric_data_query.metric_stat.metric.dimensions is defined %}{# BEGIN {%- if metric_data_query.metric_stat.metric.dimensions is defined %} #}
-                Dimensions:
-{%- for name,value in metric_data_query.metric_stat.metric.dimensions.items() %}
-                  -
-                    Name: {{ name }}
-                    Value: {{ value  }}
-{%- endfor %}
-{%- endif %}{# END {%- if metric_data_query.metric_stat.metric.dimensions is defined %} #}
-              Period: {{ metric_data_query.metric_stat.period }}
-              Stat: {{ metric_data_query.metric_stat.stat }}
-{%- if metric_data_query.metric_stat.unit is defined %}
-              Unit: {{ metric_data_query.metric_stat.unit }}
-{%- endif %}
-{%- endif %}{# END {%- if metric_data_query.metric_stat is defined %} #}
-{%- if metric_data_query.period is defined %}
-            Period: {{ metric_data_query.period }}
-{%- endif %}
-{%- if metric_data_query.return_data is defined %}
-            ReturnData: {{ metric_data_query.return_data }}
-{%- endif %}
-{%- endfor %}
-{%- endif %}{# END {%- if anomaly_detector.metric_math_anomaly_detector is defined %} #}
+          {{- helper.prep_metric_data_query(anomaly_detector.metric_math_anomaly_detector.metric_data_queries) | indent(width=10,first=false) }}
+{%- endif %}{# END if anomaly_detector.metric_math_anomaly_detector.metric_data_queries is defined #}
+{%- endif %}{# END if anomaly_detector.metric_math_anomaly_detector is defined #}
 {%- if anomaly_detector.metric_name is defined %}
       MetricName: {{ anomaly_detector.metric_name }}
 {%- endif %}
 {%- if anomaly_detector.namespace is defined %}
       Namespace: {{ anomaly_detector.namespace }}
 {%- endif %}
-{%- if anomaly_detector.single_metric_anomaly_detector is defined %}{# BEGIN {%- if anomaly_detector.single_metric_anomaly_detector is defined %} #}
+{%- if anomaly_detector.single_metric_anomaly_detector is defined %}{# BEGIN if anomaly_detector.single_metric_anomaly_detector is defined #}
       SingleMetricAnomalyDetector:
 {%- if anomaly_detector.single_metric_anomaly_detector.account_id is defined %}
         AccountId: {{ anomaly_detector.single_metric_anomaly_detector.account_id }}
 {%- endif %}
-{%- if anomaly_detector.single_metric_anomaly_detector.dimensions is defined %}
+{%- if anomaly_detector.single_metric_anomaly_detector.dimensions is defined %}{# BEGIN if anomaly_detector.single_metric_anomaly_detector.dimensions is defined #}
         Dimensions:
-{%- for name,value in anomaly_detector.single_metric_anomaly_detector.dimensions.items() %}
-          -
-            Name: {{ name }}
-            Value: {{ value }}
-{%- endfor %}
-{%- endif %}
+          {{- helper.prep_dimensions(anomaly_detector.single_metric_anomaly_detector.dimensions) | indent(width=10,first=false) }}
+{%- endif %}{# END if anomaly_detector.single_metric_anomaly_detector.dimensions is defined #}
 {%- if anomaly_detector.single_metric_anomaly_detector.metric_name is defined %}
         MetricName: {{ anomaly_detector.single_metric_anomaly_detector.metric_name }}
 {%- endif %}
@@ -105,8 +65,56 @@ Resources:
 {%- if anomaly_detector.single_metric_anomaly_detector.stat is defined %}
         Stat: {{ anomaly_detector.single_metric_anomaly_detector.stat }}
 {%- endif %}
-{%- endif %}{# END {%- if anomaly_detector.single_metric_anomaly_detector is defined %} #}
+{%- endif %}{# END if anomaly_detector.single_metric_anomaly_detector is defined #}
 {%- if anomaly_detector.stat is defined %}
       Stat: {{ anomaly_detector.stat }}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-09
+Type: AWS::CloudWatch::AnomalyDetector
+Properties:
+  Configuration:
+    ExcludedTimeRanges:
+      -
+        EndTime: String
+        StartTime: String
+    MetricTimeZone: String
+  Dimensions:
+    -
+      Name: String
+      Value: String
+  MetricCharacteristics:
+    PeriodicSpikes: Boolean
+  MetricMathAnomalyDetector:
+    MetricDataQueries:
+      -
+        AccountId: String
+        Expression: String
+        Id: String
+        Label: String
+        MetricStat:
+          Metric:
+            Dimensions:
+              -
+                Name: String
+                Value: String
+            MetricName: String
+            Namespace: String
+          Period: Integer
+          Stat: String
+          Unit: String
+        Period: Integer
+        ReturnData: Boolean
+  MetricName: String
+  Namespace: String
+  SingleMetricAnomalyDetector:
+    AccountId: String
+    Dimensions:
+      -
+        Name: String
+        Value: String
+    MetricName: String
+    Namespace: String
+    Stat: String
+  Stat: String
+#}

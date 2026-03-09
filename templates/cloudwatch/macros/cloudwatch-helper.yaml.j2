@@ -1,0 +1,82 @@
+{# Subject Structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-cloudwatch-alarm-dimension.html
+and https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-cloudwatch-anomalydetector-dimension.html
+-
+  Name: String
+  Value: String
+#}
+{%- macro prep_dimensions(dimensions) -%}
+{%- for name, value in dimensions.items() %}
+- Name: {{ name }}
+  Value: {{ value }}
+{%- endfor %}
+{%- endmacro %}
+
+{# Subject structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-cloudwatch-alarm-metricdataquery.html:
+-
+  AccountId: String
+  Expression: String
+  Id: String
+  Label: String
+  MetricStat:
+    MetricStat
+  Period: Integer
+  ReturnData: Boolean
+#}
+{% macro prep_metric_data_query(metric_data_query) -%}
+{%- for metric in metric_data_query %}{# BEGIN for metric in metric_data_query #}
+- Id: {{ metric.id }}
+{%- if metric.account_id is defined %}
+  AccountId: {{ metric.account_id | trim }}
+{%- endif %}
+{%- if metric.expression is defined %}
+  Expression: {{ metric.expression }}
+{%- endif %}
+{%- if metric.label is defined %}
+  Label: {{ metric.label }}
+{%- endif %}
+{%- if metric.metric_stat is defined %}
+  MetricStat:
+    Metric:
+{%- if metric.metric_stat.metric.dimensions is defined %}{# BEGIN metric.metric_stat.metric.dimensions is defined #}
+      Dimensions:
+        {{ prep_dimensions(metric.metric_stat.metric.dimensions) | indent(width=8,first=false) }}
+{%- endif %}{# END metric.metric_stat.metric.dimensions is defined #}
+{%- if metric.metric_stat.metric.metric_name is defined %}
+      MetricName: {{ metric.metric_stat.metric.metric_name }}
+{%- endif %}
+{%- if metric.metric_stat.metric.namespace is defined %}
+      Namespace: {{ metric.metric_stat.metric.namespace }}
+{%- endif %}
+    Period: {{ metric.metric_stat.period }}
+    Stat: {{ metric.metric_stat.stat }}
+{%- if metric.metric_stat.unit is defined %}
+    Unit: {{ metric.metric_stat.unit }}
+{%- endif %}
+{%- endif %}
+{%- if metric.period is defined %}
+  Period: {{ metric.period }}
+{%- endif %}
+{%- if metric.return_data is defined %}
+  ReturnData: {{ metric.return_data | lower }}
+{%- endif %}
+{%- endfor %}{# END for metric in metric_data_query #}
+{%- endmacro %}
+
+{# Subject structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-cloudwatch-metricstream-metricstreamfilter.html
+-
+  MetricNames:
+    - String
+  Namespace: String
+#}
+{% macro prep_metric_stream_filter(metric_stream_filter) -%}
+{%- for metric_filter in metric_stream_filter %}{# BEGIN for metric_filter in metric_stream_filter #}
+-
+  Namespace: {{ metric_filter.namespace }}
+{%- if metric_filter.metric_names is defined %}{# BEGIN if metric_filter.metric_names is defined #}
+  MetricNames:
+{%- for name in metric_filter.metric_names %}
+    - {{ name }}
+{%- endfor %}
+{%- endif %}{# END if metric_filter.metric_names is defined #}
+{%- endfor %}{# END for metric_filter in metric_stream_filter #}
+{%- endmacro %}
