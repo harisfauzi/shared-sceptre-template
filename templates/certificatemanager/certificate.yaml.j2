@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CertificateManager Certifi
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for certificate in sceptre_user_data.certificates %}
 {%- set certificate_name = certificate.name %}
   {{ certificate_name }}:
@@ -14,6 +13,9 @@ Resources:
       DomainName: {{ certificate.domain_name }}
 {%- if certificate.certificate_authority_arn is defined %}
       CertificateAuthorityArn: {{ certificate.certificate_authority_arn }}
+{%- endif %}
+{%- if certificate.certificate_export is defined %}
+      CertificateExport: {{ certificate.certificate_export }}
 {%- endif %}
 {%- if certificate.certificate_transparency_logging_preferences is defined %}
       CertificateTransparencyLoggingPreference: {{ certificate.certificate_transparency_logging_preferences }}
@@ -29,6 +31,9 @@ Resources:
           ValidationDomain: {{ domain_validation_option.validation_domain }}
 {%- endif %}
 {%- endfor %}
+{%- endif %}
+{%- if certificate.key_algorithm is defined %}
+      KeyAlgorithm: {{ certificate.key_algorithm }}
 {%- endif %}
 {%- if certificate.subject_alternative_names is defined %}
       SubjectAlternativeNames:
@@ -51,7 +56,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for certificate in sceptre_user_data.certificates %}
 {%- set certificate_name = certificate.name %}
   {{ certificate_name }}:
@@ -61,5 +65,25 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ certificate_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-08
+Type: AWS::CertificateManager::Certificate
+Properties:
+  CertificateAuthorityArn: String
+  CertificateExport: String
+  CertificateTransparencyLoggingPreference: String
+  DomainName: String
+  DomainValidationOptions:
+    -
+      DomainName: String
+      HostedZoneId: String
+      ValidationDomain: String
+  KeyAlgorithm: String
+  SubjectAlternativeNames:
+    - String
+  Tags:
+    -
+      Key: String
+      Value: String
+  ValidationMethod: String
+#}

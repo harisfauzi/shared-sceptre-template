@@ -1,10 +1,9 @@
 ---
-{%- import 'macros/subject.yaml.j2' as certificate_subject %}
+{%- import 'macros/certificate-helper.yaml.j2' as helper %}
 Description: {{sceptre_user_data.description|default('ACMPCA Certificate(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for certificate in sceptre_user_data.certificates %}
 {%- set certificate_name = certificate.name %}
   {{ certificate_name }}:
@@ -57,7 +56,7 @@ Resources:
 {%- endif %}{# endif certificate.api_passthrough.extensions.custom_extensions is defined #}
 {%- if certificate.api_passthrough.extensions.extended_key_usage is defined %}{# if certificate.api_passthrough.extensions.extended_key_usage is defined #}
           ExtendedKeyUsage:
-{%- for key_usage in certificate.api_passthrough.extensions.extended_key_usage %}
+{%- for key_usage in certificate.api_passthrough.extensions.extended_key_usage %}{# BEGIN for key_usage in certificate.api_passthrough.extensions.extended_key_usage #}
             -
 {%- if key_usage.extended_key_usage_object_identifier is defined %}
               ExtendedKeyUsageObjectIdentifier: {{key_usage.extended_key_usage_object_identifier}}
@@ -65,45 +64,19 @@ Resources:
 {%- if key_usage.extended_key_usage_type is defined %}
               ExtendedKeyUsageType: {{key_usage.extended_key_usage_type}}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{# END for key_usage in certificate.api_passthrough.extensions.extended_key_usage #}
 {%- endif %}{# endif certificate.api_passthrough.extensions.extended_key_usage is defined #}
 {%- if certificate.api_passthrough.extensions.key_usage is defined %}{# if certificate.api_passthrough.extensions.key_usage is defined #}
           KeyUsage:
-{%- if certificate.api_passthrough.extensions.key_usage.crl_sign is defined %}
-            CRLSign: {{certificate.api_passthrough.extensions.key_usage.crl_sign}}
-{%- endif %}
-{%- if certificate.api_passthrough.extensions.key_usage.data_encipherment is defined %}
-            DataEncipherment: {{certificate.api_passthrough.extensions.key_usage.data_encipherment}}
-{%- endif %}
-{%- if certificate.api_passthrough.extensions.key_usage.decipher_only is defined %}
-            DecipherOnly: {{certificate.api_passthrough.extensions.key_usage.decipher_only}}
-{%- endif %}
-{%- if certificate.api_passthrough.extensions.key_usage.digital_signature is defined %}
-            DigitalSignature: {{certificate.api_passthrough.extensions.key_usage.digital_signature}}
-{%- endif %}
-{%- if certificate.api_passthrough.extensions.key_usage.encipher_only is defined %}
-            EncipherOnly: {{certificate.api_passthrough.extensions.key_usage.encipher_only}}
-{%- endif %}
-{%- if certificate.api_passthrough.extensions.key_usage.key_agreement is defined %}
-            KeyAgreement: {{certificate.api_passthrough.extensions.key_usage.key_agreement}}
-{%- endif %}
-{%- if certificate.api_passthrough.extensions.key_usage.key_cert_sign is defined %}
-            KeyCertSign: {{certificate.api_passthrough.extensions.key_usage.key_cert_sign}}
-{%- endif %}
-{%- if certificate.api_passthrough.extensions.key_usage.key_encipherment is defined %}
-            KeyEncipherment: {{certificate.api_passthrough.extensions.key_usage.key_encipherment}}
-{%- endif %}
-{%- if certificate.api_passthrough.extensions.key_usage.non_repudiation is defined %}
-            NonRepudiation: {{certificate.api_passthrough.extensions.key_usage.non_repudiation}}
-{%- endif %}
+            {{ helper.prep_key_usage(certificate.api_passthrough.extensions.key_usage)|indent(width=12,first=false)}}
 {%- endif %}{# endif certificate.api_passthrough.extensions.key_usage is defined #}
 {%- if certificate.api_passthrough.extensions.subject_alternative_names is defined %}{# if certificate.api_passthrough.extensions.subject_alternative_names is defined #}
           SubjectAlternativeNames:
-{%- for san in certificate.api_passthrough.extensions.subject_alternative_names %}
+{%- for san in certificate.api_passthrough.extensions.subject_alternative_names %}{# BEGIN for san in certificate.api_passthrough.extensions.subject_alternative_names #}
             -
 {%- if san.directory_name is defined %}
               DirectoryName:
-                {{certificate_subject.prep(san.directory_name)|indent(width=16,first=false)}}
+                {{helper.prep_subject(san.directory_name)|indent(width=16,first=false)}}
 {%- endif %}
 {%- if san.dns_name is defined %}
               DnsName: {{san.dns_name}}
@@ -130,22 +103,20 @@ Resources:
 {%- if san.uniform_resource_identifier is defined %}
               UniformResourceIdentifier: {{san.uniform_resource_identifier}}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{# END for san in certificate.api_passthrough.extensions.subject_alternative_names #}
 {%- endif %}{# endif certificate.api_passthrough.extensions.subject_alternative_names is defined #}
 {%- endif %}
 {%- if certificate.api_passthrough.subject is defined %}
         Subject:
-          {{certificate_subject.prep(certificate.api_passthrough.subject)|indent(width=10,first=false)}}
+          {{helper.prep_subject(certificate.api_passthrough.subject)|indent(width=10,first=false)}}
 {%- endif %}
 {%- endif %}{# endif certificate.api_passthrough is defined #}
 {%- if certificate.template_arn is defined %}
       TemplateArn: {{certificate.template_arn|trim}}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for certificate in sceptre_user_data.certificates %}
 {%- set certificate_name = certificate.name %}
   {{ certificate_name }}Arn:
@@ -157,7 +128,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ certificate_name }}-Arn"
-
   {{ certificate_name }}Certificate:
     Description: The issued Base64 PEM-encoded certificate for {{ certificate_name }}.
     Value:
@@ -167,5 +137,98 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ certificate_name }}-Certificate"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-07
+Type: AWS::ACMPCA::Certificate
+Properties:
+  ApiPassthrough:
+    Extensions:
+      CertificatePolicies:
+        -
+          CertPolicyId: String
+          PolicyQualifiers:
+            -
+              PolicyQualifierId: String
+              Qualifier:
+                CpsUri: String
+      CustomExtensions:
+        -
+          Critical: Boolean
+          ObjectIdentifier: String
+          Value: String
+      ExtendedKeyUsage:
+        -
+          ExtendedKeyUsageObjectIdentifier: String
+          ExtendedKeyUsageType: String
+      KeyUsage:
+        CRLSign: Boolean
+        DataEncipherment: Boolean
+        DecipherOnly: Boolean
+        DigitalSignature: Boolean
+        EncipherOnly: Boolean
+        KeyAgreement: Boolean
+        KeyCertSign: Boolean
+        KeyEncipherment: Boolean
+        NonRepudiation: Boolean
+      SubjectAlternativeNames:
+        -
+          DirectoryName:
+            CommonName: String
+            Country: String
+            CustomAttributes:
+              -
+                ObjectIdentifier: String
+                Value: String
+            DistinguishedNameQualifier: String
+            GenerationQualifier: String
+            GivenName: String
+            Initials: String
+            Locality: String
+            Organization: String
+            OrganizationalUnit: String
+            Pseudonym: String
+            SerialNumber: String
+            State: String
+            Surname: String
+            Title: String
+          DnsName: String
+          EdiPartyName:
+            NameAssigner: String
+            PartyName: String
+          IpAddress: String
+          OtherName:
+            TypeId: String
+            Value: String
+          RegisteredId: String
+          Rfc822Name: String
+          UniformResourceIdentifier: String
+    Subject:
+      CommonName: String
+      Country: String
+      CustomAttributes:
+        -
+          ObjectIdentifier: String
+          Value: String
+      DistinguishedNameQualifier: String
+      GenerationQualifier: String
+      GivenName: String
+      Initials: String
+      Locality: String
+      Organization: String
+      OrganizationalUnit: String
+      Pseudonym: String
+      SerialNumber: String
+      State: String
+      Surname: String
+      Title: String
+  CertificateAuthorityArn: String
+  CertificateSigningRequest: String
+  SigningAlgorithm: String
+  TemplateArn: String
+  Validity:
+    Type: String
+    Value: Number
+  ValidityNotBefore:
+    Type: String
+    Value: Number
+#}

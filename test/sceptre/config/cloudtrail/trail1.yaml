@@ -1,0 +1,80 @@
+---
+template:
+  type: file
+  path: cloudtrail/trail.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Sample CloudTrail Configuration"
+  trails:
+    - name: OrganizationTrail
+      s3_bucket_name: my-org-trail-bucket
+      is_logging: true
+      trail_name: OrganizationTrail
+      is_multi_region_trail: true
+      is_organization_trail: true
+      include_global_service_events: true
+      enable_log_file_validation: true
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      kms_key_id: "!Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/12345678-1234-1234-1234-123456789012"
+      s3_key_prefix: "organization-trail"
+      sns_topic_name: "!Sub ${AWS::StackName}-trail-notifications"
+      cloud_watch_logs_log_group_arn: "!Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/cloudtrail/organization-trail"
+      cloud_watch_logs_role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/CloudTrailLogsRole"
+      advanced_event_selectors:
+        - name: "CaptureAllS3DataEvents"
+          field_selectors:
+            - field: "eventCategory"
+              equals:
+                - "Management"
+            - field: "resources.type"
+              equals:
+                - "AWS::S3::Object"
+            - field: "resources.ARN"
+              starts_with:
+                - "'arn:aws:s3:::'"
+        - name: "CaptureEC2Events"
+          field_selectors:
+            - field: "eventCategory"
+              equals:
+                - "Management"
+            - field: "eventName"
+              starts_with:
+                - "RunInstances"
+                - "TerminateInstances"
+      insight_selectors:
+        - insight_type: "ApiCallRateInsight"
+          event_categories:
+            - "Management"
+      tags:
+        Environment: Production
+        ManagedBy: Sceptre
+        Purpose: OrganizationAuditing
+
+    - name: ApplicationTrail
+      s3_bucket_name: my-app-trail-bucket
+      is_logging: true
+      trail_name: ApplicationTrail
+      is_multi_region_trail: false
+      include_global_service_events: false
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      s3_key_prefix: "application-trail"
+      event_selectors:
+        - read_write_type: "All"
+          include_management_events: true
+          data_resources:
+            - type: "AWS::S3::Object"
+              _values:
+                - "arn:aws:s3:::my-app-bucket/*"
+            - type: "AWS::Lambda::Function"
+              _values:
+                - "arn:aws:lambda:*:*:function/*"
+      tags:
+        Environment: Development
+        Usage: ApplicationMonitoring
+
+stack_tags:
+  Test: cloudformation-lambda-hook

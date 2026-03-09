@@ -1,0 +1,118 @@
+---
+template:
+  type: file
+  path: certificatemanager/certificate.yaml.j2
+
+sceptre_user_data:
+  # Custom template description (optional - defaults to CertificateManager Certificate(s) for <project_code>)
+  description: "CertificateManager Certificate Test Suite covering all template variables"
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  certificates:
+    # ========== Test 1: Minimal Certificate ==========
+    # Tests basic required fields with defaults for optional fields
+    - name: MinimalCertificate
+      domain_name: example.com
+
+    # ========== Test 2: Certificate with DNS Validation ==========
+    # Tests DNS validation method
+    - name: DnsValidatedCertificate
+      domain_name: api.example.com
+      validation_method: DNS
+
+    # ========== Test 3: Certificate with Email Validation ==========
+    # Tests EMAIL validation method
+    - name: EmailValidatedCertificate
+      domain_name: secure.example.com
+      validation_method: EMAIL
+
+    # ========== Test 4: Certificate with Subject Alternative Names ==========
+    # Tests multiple SANs
+    - name: WildcardCertificate
+      domain_name: example.com
+      subject_alternative_names:
+        - "'*.example.com'"
+        - "www.example.com"
+        - "api.example.com"
+      validation_method: DNS
+
+    # ========== Test 5: Certificate with Domain Validation Options ==========
+    # Tests domain validation with hosted zone
+    - name: CertificateWithValidation
+      domain_name: myapp.example.com
+      validation_method: DNS
+      domain_validation_options:
+        - domain_name: myapp.example.com
+          hosted_zone_id: Z1234567890ABC
+        - domain_name: api.example.com
+          hosted_zone_id: Z1234567890ABC
+          validation_domain: example.com
+
+    # ========== Test 6: Certificate with Key Algorithm ==========
+    # Tests key algorithm specification
+    - name: EcdsaCertificate
+      domain_name: crypto.example.com
+      key_algorithm: EC_prime256v1
+      validation_method: DNS
+
+    # ========== Test 7: Certificate with RSA Key ==========
+    # Tests RSA key algorithm
+    - name: RsaCertificate
+      domain_name: rsa.example.com
+      key_algorithm: RSA_2048
+      validation_method: DNS
+
+    # ========== Test 8: Certificate with Custom Tags ==========
+    # Tests custom tags
+    - name: TaggedCertificate
+      domain_name: tagged.example.com
+      validation_method: DNS
+      tags:
+        Environment: Production
+        Owner: CloudTeam
+        CostCenter: "12345"
+        Compliance: PCI-DSS
+
+    # ========== Test 9: Certificate with CA ARN ==========
+    # Tests certificate authority ARN
+    - name: CertificateWithCa
+      domain_name: internal.example.com
+      certificate_authority_arn: arn:aws:acm-pca:us-east-1:123456789012:certificate-authority/12345678-1234-1234-1234-123456789012
+      validation_method: DNS
+
+    # ========== Test 10: Certificate with Transparency Logging ==========
+    # Tests certificate transparency logging preference
+    - name: TransparencyCertificate
+      domain_name: transparent.example.com
+      certificate_transparency_logging_preferences: ENABLED
+      validation_method: DNS
+
+    # ========== Test 11: Certificate with All Features ==========
+    # Comprehensive test combining multiple features
+    - name: ComprehensiveCertificate
+      deletion_policy: Retain
+      update_replace_policy: Delete
+      domain_name: comprehensive.example.com
+      certificate_transparency_logging_preferences: ENABLED
+      domain_validation_options:
+        - domain_name: comprehensive.example.com
+          hosted_zone_id: Z9876543210ZYX
+        - domain_name: "'*.comprehensive.example.com'"
+          hosted_zone_id: Z9876543210ZYX
+          validation_domain: comprehensive.example.com
+      key_algorithm: RSA_2048
+      subject_alternative_names:
+        - "'*.comprehensive.example.com'"
+        - "api.comprehensive.example.com"
+        - "admin.comprehensive.example.com"
+      validation_method: DNS
+      tags:
+        Environment: Staging
+        Owner: SecurityTeam
+        Compliance: HIPAA
+        Version: "2.0"
+
+stack_tags:
+  TestSuite: "CertificateManager Certificate Coverage"
+  TemplateVersion: "Certificate Test"
+  Version: "1.0.0"

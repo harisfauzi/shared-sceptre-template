@@ -1,0 +1,98 @@
+---
+template:
+  type: file
+  path: cloudtrail/event-data-store.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Sample CloudTrail Event Data Store Configuration"
+  event_data_stores:
+    - name: OrganizationEventDataStore
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      multi_region_enabled: true
+      organization_enabled: true
+      ingestion_enabled: true
+      termination_protection_enabled: true
+      retention_period: 90
+      billing_mode: ADVANCED
+      kms_key_id: "!Sub arn:aws:kms:${AWS::Region}:${AWS::AccountId}:key/12345678-1234-1234-1234-123456789012"
+      advanced_event_selectors:
+        - name: "CaptureManagementEvents"
+          field_selectors:
+            - field: "eventCategory"
+              equals:
+                - "Management"
+        - name: "CaptureDataEvents"
+          field_selectors:
+            - field: "eventCategory"
+              equals:
+                - "Data"
+            - field: "resources.type"
+              equals:
+                - "AWS::S3::Object"
+                - "AWS::Lambda::Function"
+      context_key_selectors:
+        - type: "AWS::EC2::Instance"
+          equals:
+            - "i-0123456789abcdef0"
+            - "i-0987654321fedcba0"
+      insight_selectors:
+        - insight_type: "ApiCallRateInsight"
+      tags:
+        Environment: Production
+        Purpose: OrganizationAuditing
+        CostCenter: Security
+
+    - name: ApplicationEventDataStore
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      multi_region_enabled: false
+      organization_enabled: false
+      ingestion_enabled: true
+      termination_protection_enabled: false
+      retention_period: 30
+      billing_mode: STANDARD
+      advanced_event_selectors:
+        - name: "CaptureAppManagementEvents"
+          field_selectors:
+            - field: "eventCategory"
+              equals:
+                - "Management"
+            - field: "eventSource"
+              equals:
+                - "lambda.amazonaws.com"
+                - "apigateway.amazonaws.com"
+      tags:
+        Environment: Development
+        Application: MyApp
+
+    - name: ComplianceEventDataStore
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      multi_region_enabled: true
+      retention_period: 365
+      termination_protection_enabled: true
+      ingestion_enabled: true
+      advanced_event_selectors:
+        - name: "CaptureAllManagementEvents"
+          field_selectors:
+            - field: "eventCategory"
+              equals:
+                - "Management"
+        - name: "CaptureIamEvents"
+          field_selectors:
+            - field: "eventCategory"
+              equals:
+                - "Management"
+            - field: "eventSource"
+              equals:
+                - "iam.amazonaws.com"
+      tags:
+        Environment: Production
+        Purpose: ComplianceAudit
+        CostCenter: Governance
+
+stack_tags:
+  Test: cloudformation-cloudtrail-event-data-store

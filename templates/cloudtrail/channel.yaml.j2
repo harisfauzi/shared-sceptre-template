@@ -1,0 +1,71 @@
+---
+Description: {{sceptre_user_data.description|default('CloudTrail Channel(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for channel in sceptre_user_data.channels %}
+{%- set channel_name = channel.name %}
+  {{ channel_name }}:
+    Type: AWS::CloudTrail::Channel
+    DeletionPolicy: {{ channel.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ channel.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if channel.destinations is defined %}{# BEGIN if channel.destinations is defined #}
+      Destinations:
+{%- for destination in channel.destinations %}{# BEGIN for destination in channel.destinations #}
+        -
+          Location: {{ destination.location }}
+          Type: {{ destination.type }}
+{%- endfor %}{# END for destination in channel.destinations #}
+{%- endif %}{# END if channel.destinations is defined #}
+{%- if channel.channel_name is defined %}
+      Name: {{ channel.channel_name }}
+{%- endif %}
+{%- if channel.source is defined %}
+      Source: {{ channel.source }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if channel.tags is defined %}
+{%- for key,value in channel.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for channel in sceptre_user_data.channels %}
+{%- set channel_name = channel.name %}
+  {{ channel_name }}:
+    Description: Resource name for channel {{ channel_name }}.
+    Value:
+      Ref: {{ channel_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ channel_name }}"
+  {{ channel_name }}ChannelArn:
+    Description: The ARN for {{ channel_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ channel_name }}
+        - ChannelArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ channel_name }}-ChannelArn"
+{%- endfor %}{#
+# Supported structure as of 2026-03-08
+Type: AWS::CloudTrail::Channel
+Properties:
+  Destinations:
+    -
+      Location: String
+      Type: String
+  Name: String
+  Source: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

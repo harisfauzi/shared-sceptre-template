@@ -19,4 +19,13 @@ Resources:
 {%- if permission.source_account is defined %}
       SourceAccount: {{ permission.source_account }}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-07
+Type: AWS::ACMPCA::Permission
+Properties:
+  Actions: 
+    - String
+  CertificateAuthorityArn: String
+  Principal: String
+  SourceAccount: String
+#}

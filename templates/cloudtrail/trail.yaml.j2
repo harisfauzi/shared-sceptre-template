@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudTrail Trail(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for trail in sceptre_user_data.trails %}
 {%- set trail_name = trail.name %}
   {{ trail_name }}:
@@ -11,16 +10,77 @@ Resources:
     DeletionPolicy: {{ trail.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ trail.update_replace_policy | default('Delete') }}
     Properties:
-      IsLogging: {{ trail.is_logging }}
+      IsLogging: {{ trail.is_logging | lower }}
       S3BucketName: {{ trail.s3_bucket_name }}
+{%- if trail.advanced_event_selectors is defined %}{# BEGIN if trail.advanced_event_selectors is defined #}
+      AdvancedEventSelectors:
+{%- for selector in trail.advanced_event_selectors %}{# BEGIN for selector in trail.advanced_event_selectors #}
+        -
+          FieldSelectors:
+{%- for field_selector in selector.field_selectors %}{# BEGIN for field_selector in selector.field_selectors #}
+            -
+              Field: {{ field_selector.field }}
+{%- if field_selector.ends_with is defined %}{# BEGIN if field_selector.ends_with is defined #}
+              EndsWith:
+{%- for item in field_selector.ends_with %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if field_selector.ends_with is defined #}
+{%- if field_selector.equals is defined %}{# BEGIN if field_selector.equals is defined #}
+              Equals:
+{%- for item in field_selector.equals %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if field_selector.equals is defined #}
+{%- if field_selector.not_ends_with is defined %}{# BEGIN if field_selector.not_ends_with is defined #}
+              NotEndsWith:
+{%- for item in field_selector.not_ends_with %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if field_selector.not_ends_with is defined #}
+{%- if field_selector.not_equals is defined %}{# BEGIN if field_selector.not_equals is defined #}
+              NotEquals:
+{%- for item in field_selector.not_equals %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if field_selector.not_equals is defined #}
+{%- if field_selector.not_starts_with is defined %}{# BEGIN if field_selector.not_starts_with is defined #}
+              NotStartsWith:
+{%- for item in field_selector.not_starts_with %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if field_selector.not_starts_with is defined #}
+{%- if field_selector.starts_with is defined %}{# BEGIN if field_selector.starts_with is defined #}
+              StartsWith:
+{%- for item in field_selector.starts_with %}
+                - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if field_selector.starts_with is defined #}
+{%- endfor %}{# END for field_selector in selector.field_selectors #}
+{%- if selector.name is defined %}
+          Name: {{ selector.name }}
+{%- endif %}
+{%- endfor %}{# END for selector in trail.advanced_event_selectors #}
+{%- endif %}{# END if trail.advanced_event_selectors is defined #}
+{%- if trail.aggregation_configurations is defined %}{# BEGIN if trail.aggregation_configurations is defined #}
+      AggregationConfigurations:
+{%- for config in trail.aggregation_configurations %}{# BEGIN for config in trail.aggregation_configurations #}
+        -
+          EventCategory: {{ config.event_category }}
+          Templates:
+{%- for template in config.templates %}
+            - {{ template }}
+{%- endfor %}
+{%- endfor %}{# END for config in trail.aggregation_configurations #}
+{%- endif %}{# END if trail.aggregation_configurations is defined #}
 {%- if trail.cloud_watch_logs_log_group_arn is defined %}
-      CloudWatchLogsLogGroupArn: {{ trail.cloud_watch_logs_log_group_arn }}
+      CloudWatchLogsLogGroupArn: {{ trail.cloud_watch_logs_log_group_arn | trim }}
 {%- endif %}
 {%- if trail.cloud_watch_logs_role_arn is defined %}
-      CloudWatchLogsRoleArn: {{ trail.cloud_watch_logs_role_arn }}
+      CloudWatchLogsRoleArn: {{ trail.cloud_watch_logs_role_arn | trim }}
 {%- endif %}
 {%- if trail.enable_log_file_validation is defined %}
-      EnableLogFileValidation: {{ trail.enable_log_file_validation }}
+      EnableLogFileValidation: {{ trail.enable_log_file_validation | lower }}
 {%- endif %}
 {%- if trail.event_selectors is defined %}{# BEGIN {%- if trail.event_selectors is defined %} #}
       EventSelectors:
@@ -45,7 +105,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if event_selector.include_management_events is defined %}
-          IncludeManagementEvents: {{ event_selector.include_management_events }}
+          IncludeManagementEvents: {{ event_selector.include_management_events | lower }}
 {%- endif %}
 {%- if event_selector.read_write_type is defined %}
           ReadWriteType: {{ event_selector.read_write_type }}
@@ -53,20 +113,31 @@ Resources:
 {%- endfor %}
 {%- endif %}{# END {%- if trail.event_selectors is defined %} #}
 {%- if trail.include_global_service_events is defined %}
-      IncludeGlobalServiceEvents: {{ trail.include_global_service_events }}
+      IncludeGlobalServiceEvents: {{ trail.include_global_service_events | lower }}
 {%- endif %}
-{%- if trail.insight_selectors is defined %}
+{%- if trail.insight_selectors is defined %}{# BEGIN if trail.insight_selectors is defined #}
       InsightSelectors:
-        - InsightType: ApiCallRateInsight
+{%- for selector in trail.insight_selectors %}{# BEGIN for selector in trail.insight_selectors #}
+        -
+{%- if selector.event_categories is defined %}{# BEGIN if selector.event_categories is defined #}
+          EventCategories:
+{%- for category in selector.event_categories %}
+            - {{ category }}
+{%- endfor %}
+{%- endif %}{# END if selector.event_categories is defined #}
+{%- if selector.insight_type is defined %}
+          InsightType: {{ selector.insight_type }}
 {%- endif %}
+{%- endfor %}{# END for selector in trail.insight_selectors #}
+{%- endif %}{# END if trail.insight_selectors is defined #}
 {%- if trail.is_multi_region_trail is defined %}
-      IsMultiRegionTrail: {{ trail.is_multi_region_trail }}
+      IsMultiRegionTrail: {{ trail.is_multi_region_trail | lower }}
 {%- endif %}
 {%- if trail.is_organization_trail is defined %}
-      IsOrganizationTrail: {{ trail.is_organization_trail }}
+      IsOrganizationTrail: {{ trail.is_organization_trail | lower }}
 {%- endif %}
 {%- if trail.kms_key_id is defined %}
-      KMSKeyId: {{ trail.kms_key_id }}
+      KMSKeyId: {{ trail.kms_key_id | trim }}
 {%- endif %}
 {%- if trail.s3_key_prefix is defined %}
       S3KeyPrefix: {{ trail.s3_key_prefix }}
@@ -86,11 +157,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for trail in sceptre_user_data.trails %}
 {%- set trail_name = trail.name %}
   {{ trail_name }}:
@@ -100,7 +169,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ trail_name }}"
-
   {{ trail_name }}Arn:
     Description: The ARN for {{ trail_name }}
     Value:
@@ -110,7 +178,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ trail_name }}-Arn"
-
 {%- if trail.sns_topic_name is defined %}
   {{ trail_name }}SnsTopicArn:
     Description: The SNS Topic ARN associated with the trail for {{ trail_name }}
@@ -122,5 +189,63 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ trail_name }}-SnsTopicArn"
 {%- endif %}
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-08
+Type: AWS::CloudTrail::Trail
+Properties:
+  AdvancedEventSelectors:
+    -
+      FieldSelectors:
+        -
+          EndsWith:
+            - String
+          Equals:
+            - String
+          Field: String
+          NotEndsWith:
+            - String
+          NotEquals:
+            - String
+          NotStartsWith:
+            - String
+          StartsWith:
+            - String
+      Name: String
+  AggregationConfigurations:
+    -
+      EventCategory: String
+      Templates:
+        - String
+  CloudWatchLogsLogGroupArn: String
+  CloudWatchLogsRoleArn: String
+  EnableLogFileValidation: Boolean
+  EventSelectors:
+    -
+      DataResources:
+        -
+          Type: String
+          Values:
+            - String
+      ExcludeManagementEventSources:
+        - String
+      IncludeManagementEvents: Boolean
+      ReadWriteType: String
+  IncludeGlobalServiceEvents: Boolean
+  InsightSelectors:
+    -
+      EventCategories:
+        - String
+      InsightType: String
+  IsLogging: Boolean
+  IsMultiRegionTrail: Boolean
+  IsOrganizationTrail: Boolean
+  KMSKeyId: String
+  S3BucketName: String
+  S3KeyPrefix: String
+  SnsTopicName: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TrailName: String
+#}

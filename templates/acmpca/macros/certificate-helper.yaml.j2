@@ -1,0 +1,108 @@
+{# Subject Structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-acmpca-certificate-subject.html:
+  CommonName: String
+  Country: String
+  CustomAttributes: 
+    - CustomAttribute
+  DistinguishedNameQualifier: String
+  GenerationQualifier: String
+  GivenName: String
+  Initials: String
+  Locality: String
+  Organization: String
+  OrganizationalUnit: String
+  Pseudonym: String
+  SerialNumber: String
+  State: String
+  Surname: String
+  Title: String
+#}
+{% macro prep_subject(subject) -%}{%- if subject.common_name is defined -%}
+CommonName: {{subject.common_name}}
+{%- endif %}
+{%- if subject.country is defined %}
+Country: {{subject.country}}
+{%- endif %}
+{%- if subject.custom_attributes is defined %}
+CustomAttributes:
+{%- for attribute in subject.custom_attributes %}
+  -
+    ObjectIdentifier: {{attribute.object_identifier}}
+    Value: {{attribute.value}}
+{%- endfor %}
+{%- endif %}
+{%- if subject.distinguished_name_qualifier is defined %}
+DistinguishedNameQualifier: {{subject.distinguished_name_qualifier}}
+{%- endif %}
+{%- if subject.generation_qualifier is defined %}
+GenerationQualifier: {{subject.generation_qualifier}}
+{%- endif %}
+{%- if subject.given_name is defined %}
+GivenName: {{subject.given_name}}
+{%- endif %}
+{%- if subject.initials is defined %}
+Initials: {{subject.initials}}
+{%- endif %}
+{%- if subject.locality is defined %}
+Locality: {{subject.locality}}
+{%- endif %}
+{%- if subject.organization is defined %}
+Organization: {{subject.organization}}
+{%- endif %}
+{%- if subject.organizational_unit is defined %}
+OrganizationalUnit: {{subject.organizational_unit}}
+{%- endif %}
+{%- if subject.pseudonym is defined %}
+Pseudonym: {{subject.pseudonym}}
+{%- endif %}
+{%- if subject.serial_number is defined %}
+SerialNumber: {{subject.serial_number}}
+{%- endif %}
+{%- if subject.state is defined %}
+State: {{subject.state}}
+{%- endif %}
+{%- if subject.surname is defined %}
+Surname: {{subject.surname}}
+{%- endif %}
+{%- if subject.title is defined %}
+Title: {{subject.title}}
+{%- endif %}
+{%- endmacro %}
+
+{# Key Usage Structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-acmpca-certificate-keyusage.html:
+  CRLSign: Boolean
+  DataEncipherment: Boolean
+  DecipherOnly: Boolean
+  DigitalSignature: Boolean
+  EncipherOnly: Boolean
+  KeyAgreement: Boolean
+  KeyCertSign: Boolean
+  KeyEncipherment: Boolean
+  NonRepudiation: Boolean
+#}{% macro prep_key_usage(key_usage) -%}{%- if key_usage.crl_sign is defined -%}
+CRLSign: {{key_usage.crl_sign | lower}}
+{%- endif %}
+{%- if key_usage.data_encipherment is defined %}
+DataEncipherment: {{key_usage.data_encipherment | lower}}
+{%- endif %}
+{%- if key_usage.decipher_only is defined %}
+DecipherOnly: {{key_usage.decipher_only | lower}}
+{%- endif %}
+{%- if key_usage.digital_signature is defined %}
+DigitalSignature: {{key_usage.digital_signature | lower}}
+{%- endif %}
+{%- if key_usage.encipher_only is defined %}
+EncipherOnly: {{key_usage.encipher_only | lower}}
+{%- endif %}
+{%- if key_usage.key_agreement is defined %}
+KeyAgreement: {{key_usage.key_agreement | lower}}
+{%- endif %}
+{%- if key_usage.key_cert_sign is defined %}
+KeyCertSign: {{key_usage.key_cert_sign | lower}}
+{%- endif %}
+{%- if key_usage.key_encipherment is defined %}
+KeyEncipherment: {{key_usage.key_encipherment | lower}}
+{%- endif %}
+{%- if key_usage.non_repudiation is defined %}
+NonRepudiation: {{key_usage.non_repudiation | lower}}
+{%- endif %}
+{%- endmacro %}

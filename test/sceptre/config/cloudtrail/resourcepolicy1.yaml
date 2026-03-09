@@ -1,0 +1,49 @@
+---
+template:
+  type: file
+  path: cloudtrail/resource-policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Sample CloudTrail Resource Policy Configuration"
+  resource_policies:
+    - name: Sample1
+      resource_arn: "!Sub arn:aws:cloudtrail:${AWS::Region}:${AWS::AccountId}:trail/SampleTrail"
+      resource_policy_json: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowReadOnlyAccess",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "*"
+              },
+              "Action": [
+                "cloudtrail:GetTrailStatus",
+                "cloudtrail:GetTrail",
+                "cloudtrail:ListTags"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      deletion_policy: Retain
+      update_replace_policy: Retain
+    - name: Sample2
+      resource_arn: "!Sub arn:aws:cloudtrail:${AWS::Region}:${AWS::AccountId}:channel/SampleChannel"
+      resource_policy: |
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AllowReadOnlyAccess"
+            Effect: "Allow"
+            Principal:
+              AWS: "*"
+            Action:
+              - "cloudtrail:GetChannel"
+              - "cloudtrail:ListTags"
+            Resource: "*"
+
+stack_tags:
+  Test: cloudformation-lambda-hook

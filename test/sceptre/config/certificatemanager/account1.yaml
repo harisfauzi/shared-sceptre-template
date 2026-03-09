@@ -1,0 +1,21 @@
+---
+template:
+  type: file
+  path: certificatemanager/account.yaml.j2
+
+sceptre_user_data:
+  # Custom template description (optional - defaults to CertificateManager Account(s) for <project_code>)
+  description: "CertificateManager Account Test Suite covering all template variables"
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  accounts:
+    # ========== Test: Account with Expiry Configuration ==========
+    # Tests expiry events configuration
+    - name: ProductionAccount
+      expiry_events_configuration:
+        days_before_expiry: 45
+
+stack_tags:
+  TestSuite: "CertificateManager Account Coverage"
+  TemplateVersion: "Account Test"
+  Version: "1.0.0"

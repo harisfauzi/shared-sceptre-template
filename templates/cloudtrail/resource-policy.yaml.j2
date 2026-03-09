@@ -1,0 +1,27 @@
+---
+Description: {{sceptre_user_data.description|default('CloudTrail Resource Policy(es) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for resource_policy in sceptre_user_data.resource_policies %}
+{%- set resource_policy_name = resource_policy.name %}
+  {{ resource_policy_name }}:
+    Type: AWS::CloudTrail::ResourcePolicy
+    DeletionPolicy: {{ resource_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ resource_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      ResourceArn: {{ resource_policy.resource_arn | trim }}
+{%- if resource_policy.resource_policy is defined %}
+      ResourcePolicy:
+        {{ resource_policy.resource_policy | indent(width=8, first=false) }}
+{%- elif resource_policy.resource_policy_json is defined %}
+      ResourcePolicy: |
+        {{ resource_policy.resource_policy_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-08
+Type: AWS::CloudTrail::ResourcePolicy
+Properties:
+  ResourceArn: String
+  ResourcePolicy: Json
+#}
