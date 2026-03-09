@@ -7,18 +7,52 @@ sceptre_user_data:
   project_code: "{{ stack_group_config.project_code }}"
   source_repo_url: "{{ git_repo }}"
   anomaly_detectors:
-    - name: detector1
+    - name: JavaJvmMemoryDetector
       namespace: AWSSDK/Java
       metric_name: JvmMetric
       stat: Average
       dimensions:
         Memory: UsedMemory
-      threshold: 30
       configuration:
         metric_time_zone: UTC
         excluded_time_ranges:
           - start_time: "2019-07-01T00:00:00"
             end_time: "2019-07-01T23:59:59"
+
+    - name: ApplicationResponseTimeDetector
+      namespace: CustomMetrics/Application
+      metric_name: ResponseTime
+      stat: Average
+      dimensions:
+        Environment: Production
+        Service: WebAPI
+      metric_characteristics:
+        periodic_spikes: true
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+    - name: DatabaseConnectionPoolDetector
+      namespace: AWS/RDS
+      metric_name: DatabaseConnections
+      stat: Maximum
+      dimensions:
+        DBInstanceIdentifier: prod-mysql-01
+      configuration:
+        metric_time_zone: America/New_York
+        excluded_time_ranges:
+          - start_time: "2024-01-01T22:00:00"
+            end_time: "2024-01-02T06:00:00"
+          - start_time: "2024-01-06T22:00:00"
+            end_time: "2024-01-07T06:00:00"
+
+    - name: CompositeMetricDetector
+      single_metric_anomaly_detector:
+        namespace: AWS/Lambda
+        metric_name: Duration
+        stat: Average
+        dimensions:
+          FunctionName: ProcessingFunction
+          Resource: ProcessingFunction:live
 
 stack_tags:
   Test: cloudwatch-anomalydetector

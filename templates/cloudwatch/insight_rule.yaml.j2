@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudWatch Insight Rule(s)
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for insight_rule in sceptre_user_data.insight_rules %}
 {%- set insight_rule_name = insight_rule.name %}
   {{ insight_rule_name }}:
@@ -12,13 +11,17 @@ Resources:
     UpdateReplacePolicy: {{ insight_rule.update_replace_policy | default('Delete') }}
     Properties:
 {%- if insight_rule.rule_body_json is defined %}
-      RuleBody: {{ insight_rule.rule_body_json }}
+      RuleBody: |
+        {{ insight_rule.rule_body_json | indent(width=8, first=false) }}
 {%- else %}
       RuleBody: |
-{{ insight_rule.rule_body | indent(width=8, first=true) }}
+        {{ insight_rule.rule_body | indent(width=8, first=false) }}
 {%- endif %}
       RuleName: {{ insight_rule.rule_name }}
       RuleState: {{ insight_rule.rule_state }}
+{%- if insight_rule.apply_on_transformed_logs is defined %}
+      ApplyOnTransformedLogs: {{ insight_rule.apply_on_transformed_logs | lower }}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -31,7 +34,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for insight_rule in sceptre_user_data.insight_rules %}
 {%- set insight_rule_name = insight_rule.name %}
   {{ insight_rule_name }}:
@@ -41,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ insight_rule_name }}"
-
   {{ insight_rule_name }}RuleName:
     Description: The Role Id for {{ insight_rule_name }}
     Value:
@@ -51,4 +52,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ insight_rule_name }}-RuleName"
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-09
+Type: AWS::CloudWatch::InsightRule
+Properties:
+  ApplyOnTransformedLogs: Boolean
+  RuleBody: String
+  RuleName: String
+  RuleState: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudWatch Composite Alarm
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for composite_alarm in sceptre_user_data.composite_alarms %}
 {%- set composite_alarm_name = composite_alarm.name %}
   {{ composite_alarm_name }}:
@@ -13,7 +12,7 @@ Resources:
     Properties:
       AlarmRule: {{ composite_alarm.alarm_rule}}
 {%- if composite_alarm.actions_enabled is defined %}
-      ActionsEnabled: {{ composite_alarm.actions_enabled }}
+      ActionsEnabled: {{ composite_alarm.actions_enabled | lower }}
 {%- endif %}
 {%- if composite_alarm.actions_supressor is defined %}
       ActionsSuppressor: {{ composite_alarm.actions_supressor }}
@@ -30,7 +29,7 @@ Resources:
 {%- if composite_alarm.alarm_actions is defined %}
       AlarmActions:
 {%- for alarm_action in composite_alarm.alarm_actions %}
-        - {{ alarm_action }}
+        - {{ alarm_action | trim }}
 {%- endfor %}
 {%- endif %}
 {%- if composite_alarm.alarm_description is defined %}
@@ -39,13 +38,13 @@ Resources:
 {%- if composite_alarm.insufficient_data_actions is defined %}
       InsufficientDataActions:
 {%- for insufficient_data_action in composite_alarm.insufficient_data_actions %}
-        - {{ insufficient_data_action }}
+        - {{ insufficient_data_action | trim }}
 {%- endfor %}
 {%- endif %}
 {%- if composite_alarm.ok_actions is defined %}
       OKActions:
 {%- for ok_action in composite_alarm.ok_actions %}
-        - {{ ok_action }}
+        - {{ ok_action | trim }}
 {%- endfor %}
 {%- endif %}
       Tags:
@@ -60,7 +59,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for composite_alarm in sceptre_user_data.composite_alarms %}
 {%- set composite_alarm_name = composite_alarm.name %}
   {{ composite_alarm_name }}:
@@ -79,5 +77,25 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ composite_alarm_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-09
+Type: AWS::CloudWatch::CompositeAlarm
+Properties:
+  ActionsEnabled: Boolean
+  ActionsSuppressor: String
+  ActionsSuppressorExtensionPeriod: Integer
+  ActionsSuppressorWaitPeriod: Integer
+  AlarmActions:
+    - String
+  AlarmDescription: String
+  AlarmName: String
+  AlarmRule: String
+  InsufficientDataActions:
+    - String
+  OKActions:
+    - String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
