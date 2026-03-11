@@ -12,7 +12,7 @@ Resources:
     UpdateReplacePolicy: {{ project.update_replace_policy | default('Delete') }}
     Properties:
       Artifacts:
-        {{ prop_project.prep_artifacts(project.artifacts) | indent(width=8, first=false) }}
+        {{- prop_project.prep_artifacts(project.artifacts) | indent(width=8, first=false) }}
       Environment:
         ComputeType: {{ project.environment.compute_type }}
         Image: {{ project.environment.image }}
@@ -49,7 +49,7 @@ Resources:
 {%- endif %}
       ServiceRole: {{ project.service_role }}
       Source:
-        {{ prop_project.prep_source(project.source) | indent(width=8, first=false) }}
+        {{- prop_project.prep_source(project.source) | indent(width=8, first=false) }}
 {%- if project.badge_enabled is defined %}
       BadgeEnabled: {{ project.badge_enabled | lower }}
 {%- endif %}
@@ -83,6 +83,9 @@ Resources:
 {%- if project.cache is defined %}
       Cache:
         Type: {{ project.cache.type }}
+{%- if project.cache.cache_namespace is defined %}
+        CacheNamespace: {{ project.cache.cache_namespace }}
+{%- endif %}
 {%- if project.cache.location is defined %}
         Location: {{ project.cache.location }}
 {%- endif %}
@@ -190,6 +193,16 @@ Resources:
 {%- endif %}
 {%- endfor %}{# END for filter_group in project.triggers.filter_groups #}
 {%- endif %}{# END if project.triggers.filter_groups is defined #}
+{%- if project.triggers.scope_configuration is defined %}{# BEGIN if project.triggers.scope_configuration is defined #}
+        ScopeConfiguration:
+          Name: {{ project.triggers.scope_configuration.name }}
+{%- if project.triggers.scope_configuration.domain is defined %}
+          Domain: {{ project.triggers.scope_configuration.domain }}
+{%- endif %}
+{%- if project.triggers.scope_configuration.scope is defined %}
+          Scope: {{ project.triggers.scope_configuration.scope }}
+{%- endif %}
+{%- endif %}{# END if project.triggers.scope_configuration is defined #}
 {%- if project.triggers.webhook is defined %}
         Webhook: {{ project.triggers.webhook | lower }}
 {%- endif %}
@@ -246,7 +259,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ project_name }}-Arn"
 {%- endfor %}{#
-# Supported structure as of 2025-04-11:
+# Supported structure as of 2026-03-12:
 Type: AWS::CodeBuild::Project
 Properties:
   Artifacts:
@@ -270,6 +283,7 @@ Properties:
     ServiceRole: String
     TimeoutInMins: Integer
   Cache:
+    CacheNamespace: String
     Location: String
     Modes:
       - String
@@ -375,7 +389,9 @@ Properties:
         Type: String
         ExcludeMatchedPattern: Boolean
     ScopeConfiguration:
+      Domain: String
       Name: String
+      Scope: String
     Webhook: Boolean
   Visibility: String
   VpcConfig:
