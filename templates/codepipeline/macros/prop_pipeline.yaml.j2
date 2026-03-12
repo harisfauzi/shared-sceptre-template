@@ -1,4 +1,4 @@
-{%- macro prep_artifact_store(store) -%}
+{% macro prep_artifact_store(store) -%}
 ArtifactStore:
   Location: {{ store.location }}
   Type: {{ store.type }}
@@ -7,9 +7,17 @@ ArtifactStore:
     Id: {{ store.encryption_key.id }}
     Type: {{ store.encryption_key.type }}
 {%- endif %}
-{%- endmacro -%}
+{%- endmacro %}{#
+Structure as of 2026-03-12:
+ArtifactStore:
+  Location: String
+  Type: String
+  EncryptionKey:
+    Id: String
+    Type: String
+#}
 
-{%- macro prep_conditions(conditions) -%}
+{% macro prep_conditions(conditions) -%}
 Conditions:
 {%- for condition in conditions%}
   -
@@ -28,7 +36,10 @@ Conditions:
 {%- endif %}
 {%- if rule.configuration is defined %}
         Configuration:
-          {{ rule.configuration | indent(width=10, first=False) }}
+          {{ rule.configuration | indent(width=10, first=false) }}
+{%- elif rule.configuration_json is defined %}
+        Configuration: |
+          {{ rule.configuration_json | indent(width=10, first=false) }}
 {%- endif %}
 {%- if rule.input_artifacts is defined %}
         InputArtifacts:
@@ -63,9 +74,29 @@ Conditions:
 {%- endfor %}{## END for rule in condition.rules #}
 {%- endif %}{# END if condition.rules is defined #}
 {%- endfor %}
-{%- endmacro -%}
+{%- endmacro %}{#
+Structure as of 2026-03-12:
+Conditions:
+  - Condition
+    Result: String
+    Rules:
+      -
+        Commands:
+          - String
+        Configuration: Json
+        InputArtifacts:
+          - Name: String
+        Name: String
+        Region: String
+        RoleArn: String
+        RuleTypeId:
+          Category: String
+          Owner: String
+          Provider: String
+          Version: String
+#}
 
-{%- macro prep_filter_criteria(filter_criteria) -%}
+{% macro prep_filter_criteria(filter_criteria) -%}
 {%- if filter_criteria.excludes is defined %}
 Excludes:
 {%- for item in filter_criteria.excludes %}
@@ -78,4 +109,10 @@ Includes:
   - {{ item }}
 {%- endfor %}
 {%- endif %}
-{%- endmacro -%}
+{%- endmacro %}{#
+Structure as of 2026-03-12:
+Excludes:
+  - String
+Includes:
+  - String
+#}
