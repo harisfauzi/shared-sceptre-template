@@ -18,6 +18,9 @@ Resources:
 {%- if fleet.compute_configuration.disk is defined %}
         disk: {{ fleet.compute_configuration.disk }}
 {%- endif %}
+{%- if fleet.compute_configuration.instance_type is defined %}
+        instanceType: {{ fleet.compute_configuration.instance_type }}
+{%- endif %}
 {%- if fleet.compute_configuration.machine_type is defined %}
         machineType: {{ fleet.compute_configuration.machine_type }}
 {%- endif %}
@@ -140,12 +143,13 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ fleet_name }}-Arn"
 {%- endfor %}{#
-# Supported structure as of 2025-04-11:
+# Supported structure as of 2026-03-12:
 Type: AWS::CodeBuild::Fleet
 Properties:
   BaseCapacity: Integer
   ComputeConfiguration:
     disk: Integer
+    instanceType: String
     machineType: String
     memory: Integer
     vCpu: Integer
