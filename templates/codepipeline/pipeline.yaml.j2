@@ -13,10 +13,10 @@ Resources:
     Properties:
       RoleArn: {{ pipeline.role_arn }}
       Stages:
-{%- for stage in pipeline.stages %}{## BEGIN for stage in pipeline.stages #}
+{%- for stage in pipeline.stages %}{# BEGIN for stage in pipeline.stages #}
         - Name: {{ stage.name }}
           Actions:
-{%- for action_declaration in stage.actions %}{### BEGIN for action_declaration in stage.actions #}
+{%- for action_declaration in stage.actions %}{# BEGIN for action_declaration in stage.actions #}
             - Name: {{ action_declaration.name }}
               ActionTypeId:
                 Category: {{ action_declaration.action_type_id.category }}
@@ -29,61 +29,70 @@ Resources:
                 - {{ item }}
 {%- endfor %}
 {%- endif %}{# END if action_declaration.commands is defined#}
-{%- if action_declaration.configuration is defined %}{#### BEGIN if action_declaration.configuration is defined #}
+{%- if action_declaration.configuration is defined %}{# BEGIN if action_declaration.configuration is defined #}
               Configuration:
-                {{ action_declaration.configuration | indent(width=16, first=False) }}
-{%- endif %}{#### END if action_declaration.configuration is defined #}
-{%- if action_declaration.input_artifacts is defined %}{#### BEGIN if action_declaration.input_artifacts is defined #}
+                {{ action_declaration.configuration | indent(width=16, first=false) }}
+{%- elif action_declaration.configuration_json is defined %}
+              Configuration: |
+                {{ action_declaration.configuration_json | indent(width=16, first=false) }}
+{%- endif %}{# END if action_declaration.configuration is defined #}
+{%- if action_declaration.input_artifacts is defined %}{# BEGIN if action_declaration.input_artifacts is defined #}
               InputArtifacts:
-{%- for artifact in action_declaration.input_artifacts %}{##### BEGIN for artifact in action_declaration.input_artifacts #}
+{%- for artifact in action_declaration.input_artifacts %}{# BEGIN for artifact in action_declaration.input_artifacts #}
                 - Name: {{ artifact.name }}
-{%- endfor %}{##### END for artifact in action_declaration.input_artifacts #}
-{%- endif %}{#### END if action_declaration.input_artifacts is defined #}
-{%- if action_declaration.namespace is defined %}{#### BEGIN if action_declaration.namespace is defined #}
+{%- endfor %}{# END for artifact in action_declaration.input_artifacts #}
+{%- endif %}{# END if action_declaration.input_artifacts is defined #}
+{%- if action_declaration.namespace is defined %}{# BEGIN if action_declaration.namespace is defined #}
               Namespace: {{ action_declaration.namespace }}
-{%- endif %}{#### END if action_declaration.namespace is defined #}
-{%- if action_declaration.output_artifacts is defined %}{#### BEGIN if action_declaration.output_artifacts is defined #}
+{%- endif %}{# END if action_declaration.namespace is defined #}
+{%- if action_declaration.output_artifacts is defined %}{# BEGIN if action_declaration.output_artifacts is defined #}
               OutputArtifacts:
-{%- for artifact in action_declaration.output_artifacts %}{##### BEGIN for artifact in action_declaration.output_artifacts #}
+{%- for artifact in action_declaration.output_artifacts %}{# BEGIN for artifact in action_declaration.output_artifacts #}
                 - Name: {{ artifact.name }}
-{%- endfor %}{##### END for artifact in action_declaration.output_artifacts #}
-{%- endif %}{#### END if action_declaration.output_artifacts is defined #}
-{%- if action_declaration.output_variables is defined %}
+{%- if artifact.files is defined %}{# BEGIN if artifact.files is defined #}
+                  Files:
+{%- for file in artifact.files %}
+                    - {{ file }}
+{%- endfor %}
+{%- endif %}{# END if artifact.files is defined #}
+{%- endfor %}{# END for artifact in action_declaration.output_artifacts #}
+{%- endif %}{# END if action_declaration.output_artifacts is defined #}
+{%- if action_declaration.output_variables is defined %}{# BEGIN if action_declaration.output_variables is defined #}
               OutputVariables:
 {%- for item in action_declaration.output_variables %}
                 - {{ item }}
 {%- endfor %}
-{%- endif %}
-{%- if action_declaration.region is defined %}{#### BEGIN if action_declaration.region is defined #}
+{%- endif %}{# END if action_declaration.output_variables is defined #}
+{%- if action_declaration.region is defined %}
               Region: {{ action_declaration.region }}
-{%- endif %}{#### END if action_declaration.region is defined #}
-{%- if action_declaration.role_arn is defined %}{#### BEGIN if action_declaration.role_arn is defined #}
+{%- endif %}
+{%- if action_declaration.role_arn is defined %}
               RoleArn: {{ action_declaration.role_arn }}
-{%- endif %}{#### END if action_declaration.role_arn is defined #}
-{%- if action_declaration.run_order is defined %}{#### BEGIN if action_declaration.run_order is defined #}
+{%- endif %}
+{%- if action_declaration.run_order is defined %}
               RunOrder: {{ action_declaration.run_order }}
-{%- endif %}{#### END if action_declaration.run_order is defined #}
+{%- endif %}
 {%- if action_declaration.timeout_in_minutes is defined %}
               TimeoutInMinutes: {{ action_declaration.timeout_in_minutes }}
 {%- endif %}
-{%- endfor %}{### END for action_declaration in stage.actions #}
+{%- endfor %}{# END for action_declaration in stage.actions #}
 {%- if stage.before_entry is defined %}{# BEGIN if stage.before_entry is defined #}
           BeforeEntry:
 {%- if stage.before_entry.conditions is defined %}
-            {{ prop_pipeline.prep_conditions(stage.before_entry.conditions) | indent(width=12, first=False) }}
+            {{ prop_pipeline.prep_conditions(stage.before_entry.conditions) | indent(width=12, first=false) }}
 {%- endif %}
 {%- endif %}{# END if stage.before_entry is defined #}
-{%- if stage.blockers is defined %}{### BEGIN if stage.blockers is defined #}
+{%- if stage.blockers is defined %}{# BEGIN if stage.blockers is defined #}
           Blockers:
-{%- for blocker in stage.blockers %}{#### BEGIN for blocker in stage.blockers #}
+{%- for blocker in stage.blockers %}{# BEGIN for blocker in stage.blockers #}
             - Name: {{ blocker.name }}
               Type: {{ blocker.type }}
-{%- endfor %}{##### END for blocker in stage.blockers #}
-{%- endif %}{### END if stage.blockers is defined #}
-{%- if stage.on_failure is defined %}{### BEGIN if stage.on_failure is defined #}
+{%- endfor %}{# END for blocker in stage.blockers #}
+{%- endif %}{# END if stage.blockers is defined #}
+{%- if stage.on_failure is defined %}{# BEGIN if stage.on_failure is defined #}
           OnFailure:
 {%- if stage.on_failure.conditions is defined %}
-            {{ prop_pipeline.prep_conditions(stage.on_failure.conditions) | indent(width=12, first=False) }}
+            {{ prop_pipeline.prep_conditions(stage.on_failure.conditions) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if stage.on_failure.result is defined %}
             Result: {{ stage.on_failure.result }}
@@ -92,69 +101,69 @@ Resources:
             RetryConfiguration:
               RetryMode: {{ stage.on_failure.retry_configuration.retry_mode}}
 {%- endif %}
-{%- endif %}{### END if stage.on_failure is defined #}
-{%- if stage.on_success is defined %}{### BEGIN if stage.on_success is defined #}
+{%- endif %}{# END if stage.on_failure is defined #}
+{%- if stage.on_success is defined %}{# BEGIN if stage.on_success is defined #}
           OnSuccess:
 {%- if stage.on_success.conditions is defined %}
-            {{ prop_pipeline.prep_conditions(stage.on_success.conditions) | indent(width=12, first=False) }}
+            {{ prop_pipeline.prep_conditions(stage.on_success.conditions) | indent(width=12, first=false) }}
 {%- endif %}
-{%- endif %}{### END if stage.on_success is defined #}
-{%- endfor %}{## END for stage in pipeline.stages #}
-{%- if pipeline.artifact_store is defined %}{## BEGIN if pipeline.artifact_store is defined #}
-      {{ prop_pipeline.prep_artifact_store(pipeline.artifact_store) | indent(width=6, first=False) }}
-{## {%- endif %}  END if pipeline.artifact_store is defined #}
-{%- elif pipeline.artifact_stores is defined %}{## BEGIN if pipeline.artifact_stores is defined #}
+{%- endif %}{# END if stage.on_success is defined #}
+{%- endfor %}{# END for stage in pipeline.stages #}
+{%- if pipeline.artifact_store is defined %}{# BEGIN if pipeline.artifact_store is defined #}
+      {{ prop_pipeline.prep_artifact_store(pipeline.artifact_store) | indent(width=6, first=false) }}
+{# {%- endif %}  END if pipeline.artifact_store is defined #}
+{%- elif pipeline.artifact_stores is defined %}{# BEGIN if pipeline.artifact_stores is defined #}
       ArtifactStores:
-{%- for artifact_store_map in pipeline.artifact_stores %}{### BEGIN for artifact_store_map in pipeline.artifact_stores #}
+{%- for artifact_store_map in pipeline.artifact_stores %}{# BEGIN for artifact_store_map in pipeline.artifact_stores #}
         - Region: {{ artifact_store_map.region }}
 {%- if artifact_store_map.artifact_store is defined %}
-          {{ prop_pipeline.prep_artifact_store(artifact_store_map.artifact_store) | indent(width=10, first=False) }}
+          {{ prop_pipeline.prep_artifact_store(artifact_store_map.artifact_store) | indent(width=10, first=false) }}
 {%- endif %}
-{%- endfor %}{### END for artifact_store_map in pipeline.artifact_stores #}
-{%- endif %}{## END if pipeline.artifact_stores is defined #}
-{%- if pipeline.disable_inbound_stage_transitions is defined %}{## BEGIN if pipeline.disable_inbound_stage_transitions is defined #}
+{%- endfor %}{# END for artifact_store_map in pipeline.artifact_stores #}
+{%- endif %}{# END if pipeline.artifact_stores is defined #}
+{%- if pipeline.disable_inbound_stage_transitions is defined %}{# BEGIN if pipeline.disable_inbound_stage_transitions is defined #}
       DisableInboundStageTransitions:
-{%- for stage_transition in pipeline.disable_inbound_stage_transitions %}{### BEGIN for stage_transition in pipeline.disable_inbound_stage_transitions #}
+{%- for stage_transition in pipeline.disable_inbound_stage_transitions %}{# BEGIN for stage_transition in pipeline.disable_inbound_stage_transitions #}
         - Reason: {{ stage_transition.reason }}
           StageName: {{ stage_transition.stage_name }}
-{%- endfor %}{### END for stage_transition in pipeline.disable_inbound_stage_transitions #}
-{%- endif %}{## END if pipeline.disable_inbound_stage_transitions is defined #}
-{%- if pipeline.execution_mode is defined %}{## BEGIN if pipeline.execution_mode is defined #}
+{%- endfor %}{# END for stage_transition in pipeline.disable_inbound_stage_transitions #}
+{%- endif %}{# END if pipeline.disable_inbound_stage_transitions is defined #}
+{%- if pipeline.execution_mode is defined %}{# BEGIN if pipeline.execution_mode is defined #}
       ExecutionMode: {{ pipeline.execution_mode }}
-{%- endif %}{## END if pipeline.execution_mode is defined #}
-{%- if pipeline.pipeline_name is defined %}{## BEGIN if pipeline.pipeline_name is defined #}
+{%- endif %}{# END if pipeline.execution_mode is defined #}
+{%- if pipeline.pipeline_name is defined %}{# BEGIN if pipeline.pipeline_name is defined #}
       Name: {{ pipeline.pipeline_name }}
-{%- endif %}{## END if pipeline.pipeline_name is defined #}
+{%- endif %}{# END if pipeline.pipeline_name is defined #}
 {%- if pipeline.pipeline_type is defined %}
       PipelineType: {{ pipeline.pipeline_type }}
 {%- endif %}
-{%- if pipeline.restart_execution_on_update is defined %}{## BEGIN if pipeline.restart_execution_on_update is defined #}
+{%- if pipeline.restart_execution_on_update is defined %}{# BEGIN if pipeline.restart_execution_on_update is defined #}
       RestartExecutionOnUpdate: {{ pipeline.restart_execution_on_update }}
-{%- endif %}{## END if pipeline.restart_execution_on_update is defined #}
+{%- endif %}{# END if pipeline.restart_execution_on_update is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if pipeline.tags is defined %}{## BEGIN if pipeline.tags is defined #}
-{%- for key,value in pipeline.tags.items() %}{### BEGIN for key,value in pipeline.tags.items() #}
+{%- if pipeline.tags is defined %}{# BEGIN if pipeline.tags is defined #}
+{%- for key,value in pipeline.tags.items() %}{# BEGIN for key,value in pipeline.tags.items() #}
         - Key: {{ key }}
           Value: {{ value }}
-{%- endfor %}{### END for key,value in pipeline.tags.items() #}
-{%- endif %}{## END if pipeline.tags is defined #}
-{%- if pipeline.triggers is defined %}{## BEGIN if pipeline.triggers is defined #}
+{%- endfor %}{# END for key,value in pipeline.tags.items() #}
+{%- endif %}{# END if pipeline.tags is defined #}
+{%- if pipeline.triggers is defined %}{# BEGIN if pipeline.triggers is defined #}
       Triggers:
-{%- for trigger in pipeline.triggers %}{### BEGIN for trigger in pipeline.triggers #}
+{%- for trigger in pipeline.triggers %}{# BEGIN for trigger in pipeline.triggers #}
         - ProviderType: {{trigger.provider_type}}
-{%- if trigger.git_configuration is defined %}{#### BEGIN if trigger.git_configuration is defined #}
+{%- if trigger.git_configuration is defined %}{# BEGIN if trigger.git_configuration is defined #}
           GitConfiguration:
             SourceActionName: {{trigger.git_configuration.source_action_name}}
 {%- if trigger.git_configuration.pull_request is defined %}{# BEGIN if trigger.git_configuration.pull_request is defined #}
             PullRequest:
 {%- for pull_request in trigger.git_configuration.pull_request %}
               -
-{%- if pull_request.branches is defined %}{## BEGIN if pull_request.branches is defined #}
+{%- if pull_request.branches is defined %}{# BEGIN if pull_request.branches is defined #}
                 Branches:
-                  {{ prop_pipeline.prep_filter_criteria(pull_request.branches) | indent(width=18, first=False) }}
-{%- endif %}{## END if pull_request.branches is defined #}
+                  {{ prop_pipeline.prep_filter_criteria(pull_request.branches) | indent(width=18, first=false) }}
+{%- endif %}{# END if pull_request.branches is defined #}
 {%- if pull_request.events is defined %}
                 Events:
 {%- for item in pull_request.events %}
@@ -163,32 +172,32 @@ Resources:
 {%- endif %}
 {%- if pull_request.file_paths is defined %}
                 FilePaths:
-                  {{ prop_pipeline.prep_filter_criteria(pull_request.file_paths) | indent(width=18, first=False) }}
+                  {{ prop_pipeline.prep_filter_criteria(pull_request.file_paths) | indent(width=18, first=false) }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}{# END if trigger.git_configuration.pull_request is defined #}
-{%- if trigger.git_configuration.push is defined %}{##### BEGIN if trigger.git_configuration.push is defined #}
+{%- if trigger.git_configuration.push is defined %}{# BEGIN if trigger.git_configuration.push is defined #}
             Push:
-{%- for git_push_filter in trigger.git_configuration.push %}{###### BEGIN for git_push_filter in trigger.git_configuration.push #}
+{%- for git_push_filter in trigger.git_configuration.push %}{# BEGIN for git_push_filter in trigger.git_configuration.push #}
               -
 {%- if git_push_filter.branches is defined %}
                 Branches:
-                  {{ prop_pipeline.prep_filter_criteria(git_push_filter.branches) | indent(width=18, first=False) }}
+                  {{ prop_pipeline.prep_filter_criteria(git_push_filter.branches) | indent(width=18, first=false) }}
 {%- endif %}
 {%- if git_push_filter.file_paths is defined %}
                 FilePaths:
-                  {{ prop_pipeline.prep_filter_criteria(git_push_filter.file_paths) | ident(width=18, first=False) }}
+                  {{ prop_pipeline.prep_filter_criteria(git_push_filter.file_paths) | indent(width=18, first=false) }}
 {%- endif %}
 {%- if git_push_filter.tags is defined %}
                 Tags:
-                  {{ prop_pipeline.prep_filter_criteria(git_push_filter.tags) | indent(width=18, first=False) }}
+                  {{ prop_pipeline.prep_filter_criteria(git_push_filter.tags) | indent(width=18, first=false) }}
 {%- endif %}
-{%- endfor %}{###### END for git_push_filter in trigger.git_configuration.push #}
-{%- endif %}{##### END if trigger.git_configuration.push is defined #}
-{%- endif %}{#### END if trigger.git_configuration is defined #}
-{%- endfor %}{### END for trigger in pipeline.triggers #}
-{%- endif %}{## END if pipeline.triggers is defined #}
-{%- if pipeline.variables is defined %}{## BEGIN if pipeline.variables is defined #}
+{%- endfor %}{# END for git_push_filter in trigger.git_configuration.push #}
+{%- endif %}{# END if trigger.git_configuration.push is defined #}
+{%- endif %}{# END if trigger.git_configuration is defined #}
+{%- endfor %}{# END for trigger in pipeline.triggers #}
+{%- endif %}{# END if pipeline.triggers is defined #}
+{%- if pipeline.variables is defined %}{# BEGIN if pipeline.variables is defined #}
       Variables:
 {%- for pipeline_variable in pipeline.variables %}
         - Name: {{pipeline_variable.name}}
@@ -199,7 +208,7 @@ Resources:
           Description: {{pipeline_variable.description}}
 {%- endif %}
 {%- endfor %}
-{%- endif %}{## END if pipeline.variables is defined #}
+{%- endif %}{# END if pipeline.variables is defined #}
 {%- endfor %}{# END for pipeline in sceptre_user_data.pipelines #}
 
 Outputs:
@@ -212,7 +221,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ pipeline_name }}"
-
   {{ pipeline_name }}Version:
     Description: The Version for {{ pipeline_name }}
     Value:
@@ -222,7 +230,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ pipeline_name }}-Version"
-
   {{ pipeline_name }}Arn:
     Description: The ARN for {{ pipeline_name }}
     Value:
@@ -233,15 +240,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ pipeline_name }}-Arn"
-{%- endfor %}
-{#
-# Supported structure as of 20250325:
+{%- endfor %}{#
+# Supported structure as of 2026-03-12:
 Type: AWS::CodePipeline::Pipeline
 Properties:
   RoleArn: String
   Stages:
-    - Actions:
-        - ActionTypeId:
+    -
+      Actions:
+        -
+          ActionTypeId:
             Category: String
             Owner: String
             Provider: String
@@ -386,7 +394,6 @@ Properties:
                 - String
               Includes:
                 - String
-
   Variables:
     - Name: String
       DefaultValue: String

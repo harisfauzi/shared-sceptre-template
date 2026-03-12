@@ -75,8 +75,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ custom_action_type_name }}"
 
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20250325:
 Type: AWS::CodePipeline::CustomActionType
 Properties:
