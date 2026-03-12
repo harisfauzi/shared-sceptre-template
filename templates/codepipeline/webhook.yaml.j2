@@ -35,7 +35,6 @@ Resources:
 {%- if webhook.register_with_third_party is defined %}
       RegisterWithThirdParty: {{webhook.register_with_third_party|lower}}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
@@ -48,7 +47,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ webhook_name }}"
-
   {{ webhook_name }}Url:
     Description: The generated webhook URL for {{ webhook_name }}
     Value:
@@ -58,10 +56,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ webhook_name }}-Url"
-
-{%- endfor %}
-{#
-# Supported structure as of 20250325:
+{%- endfor %}{#
+# Supported structure as of 2026-03-12:
 Type: AWS::CodePipeline::Webhook
 Properties:
   Authentication: String

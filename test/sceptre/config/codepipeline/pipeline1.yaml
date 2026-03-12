@@ -4,12 +4,18 @@ template:
   path: codepipeline/pipeline.yaml.j2
 
 sceptre_user_data:
+  description: "CodePipeline configurations with comprehensive template variable coverage"
   project_code: "{{stack_group_config.project_code}}"
   source_repo_url: "{{git_repo}}"
+  
   pipelines:
-    - name: simplepipeline
-      pipeline_name: simple-pipeline
+    # Pipeline 1: Basic pipeline with S3 source and CodeDeploy
+    - name: SimplePipeline
+      pipeline_name: "simple-pipeline-{{stack_group_config.project_code}}"
       role_arn: !stack_output "{{pwd}}/iamrole.yaml::pipelineArn"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      
       stages:
         - name: SourceStage
           actions:
@@ -18,13 +24,15 @@ sceptre_user_data:
                 category: Source
                 owner: AWS
                 provider: S3
-                version: 1
+                version: "1"
               configuration: |
                 S3Bucket: dummy-s3-bucket
                 S3ObjectKey: no-exist.zip
                 PollForSourceChanges: "false"
-              output_artifcats:
+              output_artifacts:
                 - name: ZipSource
+              run_order: 1
+        
         - name: DeployStage
           actions:
             - name: DeployToCodeDeploy
@@ -32,19 +40,29 @@ sceptre_user_data:
                 category: Deploy
                 owner: AWS
                 provider: CodeDeploy
-                version: 1
+                version: "1"
+              input_artifacts:
+                - name: ZipSource
               configuration: |
                 ApplicationName: DummyApplication
                 DeploymentGroupName: DummyApplicationDefaultGroup
-              input_artifacts:
-                - name: ZipSource
+              run_order: 1
+      
       artifact_store:
-        location: dummmy-artifact-store
+        location: dummy-artifact-store-basic
         type: S3
+      
+      tags:
+        Pipeline: "SimplePipeline"
+        Purpose: "Basic testing"
 
-    - name: moderatepipeline
-      pipeline_name: moderate-pipeline
+    # Pipeline 2: Moderate complexity with CodeStar, CodeBuild, and multiple variables
+    - name: ModeratePipeline
+      pipeline_name: "moderate-pipeline-{{stack_group_config.project_code}}"
       role_arn: !stack_output "{{pwd}}/iamrole.yaml::pipelineArn"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      
       stages:
         - name: SourceStage
           actions:
@@ -53,17 +71,17 @@ sceptre_user_data:
                 category: Source
                 owner: AWS
                 provider: CodeStarSourceConnection
-                version: 1
+                version: "1"
               configuration: |
-                # See https://docs.aws.amazon.com/codepipeline/latest/userguide/action-reference-CodestarConnectionSource.html#action-reference-CodestarConnectionSource-config
-                # for reference
                 ConnectionArn: !Sub arn:${AWS::Partition}:codestar-connections:${AWS::Region}:${AWS::AccountId}:connection/39e4c34d-e13a-4e94-a886-ea67651bf042
                 FullRepositoryId: sample-user/sample-repo
                 BranchName: main
                 OutputArtifactFormat: CODE_ZIP
                 DetectChanges: "false"
-              output_artifcats:
+              output_artifacts:
                 - name: RepoSource
+              run_order: 1
+        
         - name: BuildStage
           actions:
             - name: CompileSource
@@ -71,12 +89,36 @@ sceptre_user_data:
                 category: Build
                 owner: AWS
                 provider: CodeBuild
-                version: 1
+                version: "1"
+              input_artifacts:
+                - name: RepoSource
+              output_artifacts:
+                - name: BuildSource
               configuration: |
                 ProjectName: dummy-project
                 PrimarySource: RepoSource
-              output_artifcats:
-                - name: BuildSource
+              namespace: "BuildStageNamespace"
+              timeout_in_minutes: 15
+              run_order: 1
+            
+            - name: RunTests
+              action_type_id:
+                category: Build
+                owner: AWS
+                provider: CodeBuild
+                version: "1"
+              input_artifacts:
+                - name: RepoSource
+              output_artifacts:
+                - name: TestReports
+              output_variables:
+                - "TEST_STATUS"
+                - "TEST_COVERAGE"
+              configuration: |
+                ProjectName: test-project
+              namespace: "TestStageNamespace"
+              run_order: 2
+        
         - name: DeployStage
           actions:
             - name: DeployToCodeDeploy
@@ -84,24 +126,41 @@ sceptre_user_data:
                 category: Deploy
                 owner: AWS
                 provider: CodeDeploy
-                version: 1
+                version: "1"
+              input_artifacts:
+                - name: BuildSource
               configuration: |
                 ApplicationName: DummyApplication
                 DeploymentGroupName: DummyApplicationDefaultGroup
-              input_artifacts:
-                - name: BuildSource
+              run_order: 1
+      
       artifact_store:
-        location: dummmy-artifact-store
+        location: dummy-artifact-store-moderate
         type: S3
-      restart_execution_on_update: True
+      
+      restart_execution_on_update: true
       pipeline_type: V2
+      execution_mode: QUEUED
+      
       variables:
         - name: Environment
           default_value: Test
           description: Target environment
-    - name: testpipeline
-      pipeline_name: test-pipeline
+        - name: BuildVersion
+          default_value: "1.0.0"
+          description: Build version number
+      
+      tags:
+        Pipeline: "ModeratePipeline"
+        Purpose: "Standard configuration"
+
+    # Pipeline 3: Complex pipeline with all variable coverage
+    - name: ComprehensivePipeline
+      pipeline_name: "comprehensive-pipeline-{{stack_group_config.project_code}}"
       role_arn: !stack_output "{{pwd}}/iamrole.yaml::pipelineArn"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      
       stages:
         - name: SourceStage
           actions:
@@ -110,7 +169,7 @@ sceptre_user_data:
                 category: Source
                 owner: AWS
                 provider: CodeStarSourceConnection
-                version: 1
+                version: "1"
               configuration: |
                 ConnectionArn: !Sub arn:${AWS::Partition}:codestar-connections:${AWS::Region}:${AWS::AccountId}:connection/39e4c34d-e13a-4e94-a886-ea67651bf042
                 FullRepositoryId: sample-user/sample-repo
@@ -119,6 +178,8 @@ sceptre_user_data:
                 DetectChanges: "false"
               output_artifacts:
                 - name: RepoSource
+              run_order: 1
+        
         - name: BuildStage
           actions:
             - name: CompileSource
@@ -126,30 +187,54 @@ sceptre_user_data:
                 category: Build
                 owner: AWS
                 provider: CodeBuild
-                version: 1
+                version: "1"
+              input_artifacts:
+                - name: RepoSource
+              output_artifacts:
+                - name: BuildSource
               configuration: |
                 ProjectName: dummy-project
                 PrimarySource: RepoSource
+              namespace: "BuildPhase"
+              timeout_in_minutes: 20
+              run_order: 1
+            
+            - name: RunTests
+              action_type_id:
+                category: Build
+                owner: AWS
+                provider: CodeBuild
+                version: "1"
+              input_artifacts:
+                - name: RepoSource
               output_artifacts:
-                - name: BuildSource
+                - name: TestReports
+              output_variables:
+                - "TEST_RESULT"
+                - "COVERAGE_PERCENT"
+              configuration: |
+                ProjectName: test-project
+              namespace: "TestPhase"
+              run_order: 2
+          
           on_failure:
+            result: STOP
             conditions:
-              - result: SKIP
+              - result: FAILURE
                 rules:
-                  - commands:
-                      - echo "Pipeline failed"
+                  - name: FailureCondition1
+                    commands:
+                      - echo "Build stage failed"
                     configuration: |
                       {}
                     input_artifacts:
                       - name: RepoSource
-                    name: failure-condition-1
-                    role_arn: !stack_output "{{pwd}}/iamrole.yaml::pipelineArn"
-                    region: "!Sub ${AWS::Region}"
                     rule_type_id:
                       category: Rule
                       owner: AWS
                       provider: Commands
-                      version: 1
+                      version: "1"
+        
         - name: DeployStage
           actions:
             - name: DeployToCodeDeploy
@@ -157,18 +242,58 @@ sceptre_user_data:
                 category: Deploy
                 owner: AWS
                 provider: CodeDeploy
-                version: 1
+                version: "1"
+              input_artifacts:
+                - name: BuildSource
               configuration: |
                 ApplicationName: DummyApplication
                 DeploymentGroupName: DummyApplicationDefaultGroup
+              role_arn: !stack_output "{{pwd}}/iamrole.yaml::deployArn"
+              region: "!Sub ${AWS::Region}"
+              run_order: 1
+            
+            - name: DeployToSecondaryRegion
+              action_type_id:
+                category: Deploy
+                owner: AWS
+                provider: CodeDeploy
+                version: "1"
               input_artifacts:
                 - name: BuildSource
-      artifact_store:
-        location: dummy-artifact-store
-        type: S3
-      restart_execution_on_update: True
+              configuration: |
+                ApplicationName: DummyApplication
+                DeploymentGroupName: DummyApplicationSecondaryGroup
+              region: eu-west-1
+              run_order: 2
+      
+      artifact_stores:
+        - region: us-west-2
+          artifact_store:
+            location: dummy-artifact-store-comprehensive-us-west-2
+            type: S3
+        - region: us-east-1
+          artifact_store:
+            location: dummy-artifact-store-comprehensive-us-east-1
+            type: S3
+      
+      disable_inbound_stage_transitions:
+        - stage_name: DeployStage
+          reason: "Require manual approval before deployment"
+      
+      restart_execution_on_update: false
       pipeline_type: V2
+      execution_mode: PARALLEL
+      
       variables:
         - name: Environment
-          default_value: Test
+          default_value: Staging
           description: Target environment
+        - name: BuildVersion
+          default_value: "1.0.0"
+          description: Build version number
+        - name: DeploymentApprover
+          description: Person approving deployment
+      
+      tags:
+        Pipeline: "ComprehensivePipeline"
+        Purpose: "Full template coverage"
