@@ -1,0 +1,422 @@
+---
+Description: {{sceptre_user_data.description|default('Logs Transformer(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for transformer in sceptre_user_data.transformers %}
+{%- set transformer_name = transformer.name %}
+  {{ transformer_name }}:
+    Type: AWS::Logs::Transformer
+    DeletionPolicy: {{ transformer.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transformer.update_replace_policy | default('Delete') }}
+    Properties:
+      LogGroupIdentifier: String
+      TransformerConfig:
+{%- for config in transformer.transformer_config %}{# BEGIN for config in transformer.transformer_config #}
+        -
+{%- if config.add_keys is defined %}{# BEGIN if config.add_keys is defined #}
+          AddKeys:
+            Entries:
+{%- for entry in config.add_keys.entries %}
+              -
+                Key: {{ entry.key }}
+                OverwriteIfExists: {{ entry.overwrite_if_exists | default('false') | lower }}
+                Value: {{ entry.value }}
+{%- endfor %}
+{%- endif %}{# END if config.add_keys is defined #}
+{%- if config.copy_value is defined %}{# BEGIN if config.copy_value is defined #}
+          CopyValue:
+            Entries:
+{%- for entry in config.copy_value.entries %}
+              -
+                OverwriteIfExists: {{ entry.overwrite_if_exists | default('false') | lower }}
+                Source: {{ entry.source }}
+                Target: {{ entry.target }}
+{%- endfor %}
+{%- endif %}{# END if config.copy_value is defined #}
+{%- if config.csv is defined %}{# BEGIN if config.csv is defined #}
+          Csv:
+{%- if config.csv.columns is defined %}
+            Columns:
+{%- for column in config.csv.columns %}
+              - {{ column }}
+{%- endfor %}
+{%- endif %}
+{%- if config.csv.delimiter is defined %}
+            Delimiter: {{ config.csv.delimiter }}
+{%- endif %}
+{%- if config.csv.quote_character is defined %}
+            QuoteCharacter: {{ config.csv.quote_character }}
+{%- endif %}
+{%- if config.csv.source is defined %}
+            Source: {{ config.csv.source }}
+{%- endif %}
+{%- endif %}{# END if config.csv is defined #}
+{%- if config.date_time_converter is defined %}{# BEGIN if config.date_time_converter is defined #}
+          DateTimeConverter:
+            MatchPatterns:
+{%- for pattern in config.date_time_converter.match_patterns %}
+              - {{ pattern }}
+{%- endfor %}
+            Source: {{ config.date_time_converter.source }}
+            Target: {{ config.date_time_converter.target }}
+{%- if config.date_time_converter.locale is defined %}
+            Locale: {{ config.date_time_converter.locale }}
+{%- endif %}
+{%- if config.date_time_converter.source_timezone is defined %}
+            SourceTimezone: {{ config.date_time_converter.source_timezone }}
+{%- endif %}
+{%- if config.date_time_converter.target_format is defined %}
+            TargetFormat: {{ config.date_time_converter.target_format }}
+{%- endif %}
+{%- if config.date_time_converter.target_timezone is defined %}
+            TargetTimezone: {{ config.date_time_converter.target_timezone }}
+{%- endif %}
+{%- endif %}{# END if config.date_time_converter is defined #}
+{%- if config.delete_keys is defined %}{# BEGIN if config.delete_keys is defined #}
+          DeleteKeys:
+            WithKeys:
+{%- for key in config.delete_keys.with_keys %}
+              - {{ key }}
+{%- endfor %}
+{%- endif %}{# END if config.delete_keys is defined #}
+{%- if config.grok is defined %}{# BEGIN if config.grok is defined #}
+          Grok:
+            Match: {{ config.grok.match }}
+{%- if config.grok.source is defined %}
+            Source: {{ config.grok.source }}
+{%- endif %}
+{%- endif %}{# END if config.grok is defined #}
+{%- if config.list_to_map is defined %}{# BEGIN if config.list_to_map is defined #}
+          ListToMap:
+            Key: {{ config.list_to_map.key }}
+            Source: {{ config.list_to_map.source }}
+{%- if config.list_to_map.flatten is defined %}
+            Flatten: {{ config.list_to_map.flatten | lower }}
+{%- endif %}
+{%- if config.list_to_map.flattened_element is defined %}
+            FlattenedElement: {{ config.list_to_map.flattened_element }}
+{%- endif %}
+{%- if config.list_to_map.target is defined %}
+            Target: {{ config.list_to_map.target }}
+{%- endif %}
+{%- if config.list_to_map.value_key is defined %}
+            ValueKey: {{ config.list_to_map.value_key }}
+{%- endif %}
+{%- endif %}{# END if config.list_to_map is defined #}
+{%- if config.lower_case_string is defined %}{# BEGIN if config.lower_case_string is defined #}
+          LowerCaseString:
+            WithKeys:
+{%- for item in config.lower_case_string.with_keys %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if config.lower_case_string is defined #}
+{%- if config.move_keys is defined %}{# BEGIN if config.move_keys is defined #}
+          MoveKeys:
+            Entries:
+{%- for entry in config.move_keys.entries %}
+              -
+                OverwriteIfExists: {{ entry.overwrite_if_exists | default('false') | lower }}
+                Source: {{ entry.source }}
+                Target: {{ entry.target }}
+{%- endfor %}
+{%- endif %}{# END if config.move_keys is defined #}
+{%- if config.parse_cloudfront is defined %}{# BEGIN if config.parse_cloudfront is defined #}
+          ParseCloudfront:
+{%- if config.parse_cloudfront.source is defined %}
+            Source: {{ config.parse_cloudfront.source }}
+{%- endif %}
+{%- endif %}{# END if config.parse_cloudfront is defined #}
+{%- if config.parse_json is defined %}{# BEGIN if config.parse_json is defined #}
+          ParseJSON:
+{%- if config.parse_json.destination is defined %}
+            Destination: {{ config.parse_json.destination }}
+{%- endif %}
+{%- if config.parse_json.source is defined %}
+            Source: {{ config.parse_json.source }}
+{%- endif %}
+{%- endif %}{# END if config.parse_json is defined #}
+{%- if config.parse_key_value is defined %}{# BEGIN if config.parse_key_value is defined #}
+          ParseKeyValue:
+{%- if config.parse_key_value.destination is defined %}
+            Destination: {{ config.parse_key_value.destination }}
+{%- endif %}
+{%- if config.parse_key_value.field_delimiter is defined %}
+            FieldDelimiter: {{ config.parse_key_value.field_delimiter }}
+{%- endif %}
+{%- if config.parse_key_value.key_prefix is defined %}
+            KeyPrefix: {{ config.parse_key_value.key_prefix }}
+{%- endif %}
+{%- if config.parse_key_value.key_value_delimiter is defined %}
+            KeyValueDelimiter: {{ config.parse_key_value.key_value_delimiter }}
+{%- endif %}
+{%- if config.parse_key_value.non_match_value is defined %}
+            NonMatchValue: {{ config.parse_key_value.non_match_value }}
+{%- endif %}
+{%- if config.parse_key_value.overwrite_if_exists is defined %}
+            OverwriteIfExists: {{ config.parse_key_value.overwrite_if_exists }}
+{%- endif %}
+{%- if config.parse_key_value.source is defined %}
+            Source: {{ config.parse_key_value.source }}
+{%- endif %}
+{%- endif %}{# END if config.parse_key_value is defined #}
+{%- if config.parse_postgres is defined %}{# BEGIN if config.parse_postgres is defined #}
+          ParsePostgres:
+{%- if config.parse_postgres.source is defined %}
+            Source: {{ config.parse_postgres.source }}
+{%- endif %}
+{%- endif %}{# END if config.parse_postgres is defined #}
+{%- if config.parse_route53 is defined %}{# BEGIN if config.parse_route53 is defined #}
+          ParseRoute53:
+{%- if config.parse_route53.source is defined %}
+            Source: {{ config.parse_route53.source }}
+{%- endif %}
+{%- endif %}{# END if config.parse_route53 is defined #}
+{%- if config.parse_to_ocsf is defined %}{# BEGIN if config.parse_to_ocsf is defined #}
+          ParseToOCSF:
+            EventSource: {{ config.parse_to_ocsf.event_source }}
+            OcsfVersion: {{ config.parse_to_ocsf.ocsf_version }}
+{%- if config.parse_to_ocsf.mapping_version is defined %}
+            MappingVersion: {{ config.parse_to_ocsf.mapping_version }}
+{%- endif %}
+{%- if config.parse_to_ocsf.source is defined %}
+            Source: {{ config.parse_to_ocsf.source }}
+{%- endif %}
+{%- endif %}{# END if config.parse_to_ocsf is defined #}
+{%- if config.parse_vpc is defined %}{# BEGIN if config.parse_vpc is defined #}
+          ParseVPC:
+{%- if config.parse_vpc.source is defined %}
+            Source: {{ config.parse_vpc.source }}
+{%- endif %}
+{%- endif %}{# END if config.parse_vpc is defined #}
+{%- if config.parse_waf is defined %}{# BEGIN if config.parse_waf is defined #}
+          ParseWAF:
+{%- if config.parse_waf.source is defined %}
+            Source: {{ config.parse_waf.source }}
+{%- endif %}
+{%- endif %}{# END if config.parse_waf is defined #}
+{%- if config.rename_keys is defined %}{# BEGIN if config.rename_keys is defined #}
+          RenameKeys:
+            Entries:
+{%- for entry in config.rename_keys.entries %}
+              -
+                Key: {{ entry.key }}
+                OverwriteIfExists: {{ entry.overwrite_if_exists | default('false') | lower }}
+                RenameTo: {{ entry.rename_to }}
+{%- endfor %}
+{%- endif %}{# END if config.rename_keys is defined #}
+{%- if config.split_string is defined %}{# BEGIN if config.split_string is defined #}
+          SplitString:
+            Entries:
+{%- for entry in config.split_string.entries %}
+              -
+                Delimiter: {{ entry.delimiter }}
+                Source: {{ entry.source }}
+{%- endfor %}
+{%- endif %}{# END if config.split_string is defined #}
+{%- if config.substitute_string is defined %}{# BEGIN if config.substitute_string is defined #}
+          SubstituteString:
+            Entries:
+{%- for entry in config.substitute_string.entries %}
+              -
+                From: {{ entry.from }}
+                Source: {{ entry.source }}
+                To: {{ entry.to }}
+{%- endfor %}
+{%- endif %}{# END if config.substitute_string is defined #}
+{%- if config.trim_string is defined %}{# BEGIN if config.trim_string is defined #}
+          TrimString:
+            WithKeys:
+{%- for item in config.trim_string.with_keys %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if config.trim_string is defined #}
+{%- if config.type_converter is defined %}{# BEGIN if config.type_converter is defined #}
+          TypeConverter:
+            Entries:
+{%- for entry in config.type_converter.entries %}
+              -
+                Key: {{ entry.key }}
+                Type: {{ entry.type }}
+{%- endfor %}
+{%- endif %}{# END if config.type_converter is defined #}
+{%- if config.upper_case_string is defined %}{# BEGIN if config.upper_case_string is defined #}
+          UpperCaseString:
+            WithKeys:
+{%- for item in config.upper_case_string.with_keys %}
+              - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if config.upper_case_string is defined #}
+{%- endfor %}{# END for config in transformer.transformer_config#}
+
+    Type: AWS::Logs::Delivery
+    Properties:
+      DeliveryDestinationArn: {{ transformer.transformer_destination_arn | trim }}
+      DeliverySourceName: {{ transformer.transformer_source_name }}
+{%- if transformer.field_delimiter is defined %}
+      FieldDelimiter: {{ transformer.field_delimiter }}
+{%- endif %}
+{%- if transformer.record_fields is defined %}
+      RecordFields:
+{%- for field in transformer.record_fields %}
+        - {{ field }}
+{%- endfor %}
+{%- endif %}
+{%- if transformer.s3_enable_hive_compatible_path is defined %}
+      S3EnableHiveCompatiblePath: {{ transformer.s3_enable_hive_compatible_path | lower }}
+{%- endif %}
+{%- if transformer.s3_suffix_path is defined %}
+      S3SuffixPath: {{ transformer.s3_suffix_path }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if transformer.tags is defined %}
+{%- for key,value in transformer.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for transformer in sceptre_user_data.transformers %}
+{%- set transformer_name = transformer.name %}
+  {{ transformer_name }}Arn:
+    Description: The ARN that uniquely identifies the transformer {{ transformer_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ transformer_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transformer_name }}-Arn"
+  {{ transformer_name }}DeliveryDestinationType:
+    Description: The transformer destination type of the transformer {{ transformer_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ transformer_name }}
+        - DeliveryDestinationType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transformer_name }}-DeliveryDestinationType"
+  {{ transformer_name }}DeliveryId:
+    Description: The transformer ID of the transformer {{ transformer_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ transformer_name }}
+        - DeliveryId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transformer_name }}-DeliveryId"
+{%- endfor %}{#
+# Supported structure as of 2026-03-28:
+Type: AWS::Logs::Transformer
+Properties:
+  LogGroupIdentifier: String
+  TransformerConfig:
+    -
+      AddKeys:
+        Entries:
+          -
+            Key: String
+            OverwriteIfExists: Boolean
+            Value: String
+      CopyValue:
+        Entries:
+          -
+            OverwriteIfExists: Boolean
+            Source: String
+            Target: String
+      Csv:
+        Columns:
+          - String
+        Delimiter: String
+        QuoteCharacter: String
+        Source: String
+      DateTimeConverter:
+        Locale: String
+        MatchPatterns:
+          - String
+        Source: String
+        SourceTimezone: String
+        Target: String
+        TargetFormat: String
+        TargetTimezone: String
+      DeleteKeys:
+        WithKeys:
+          - String
+      Grok:
+        Match: String
+        Source: String
+      ListToMap:
+        Flatten: Boolean
+        FlattenedElement: String
+        Key: String
+        Source: String
+        Target: String
+        ValueKey: String
+      LowerCaseString:
+        WithKeys:
+          - String
+      MoveKeys:
+        Entries:
+          -
+            OverwriteIfExists: Boolean
+            Source: String
+            Target: String
+      ParseCloudfront:
+        Source: String
+      ParseJSON:
+        Destination: String
+        Source: String
+      ParseKeyValue:
+        Destination: String
+        FieldDelimiter: String
+        KeyPrefix: String
+        KeyValueDelimiter: String
+        NonMatchValue: String
+        OverwriteIfExists: Boolean
+        Source: String
+      ParsePostgres:
+        Source: String
+      ParseRoute53:
+        Source: String
+      ParseToOCSF:
+        EventSource: String
+        MappingVersion: String
+        OcsfVersion: String
+        Source: String
+      ParseVPC:
+        Source: String
+      ParseWAF:
+        Source: String
+      RenameKeys:
+        Entries:
+          -
+            Key: String
+            OverwriteIfExists: Boolean
+            RenameTo: String
+      SplitString:
+        Entries:
+          -
+            Delimiter: String
+            Source: String
+      SubstituteString:
+        Entries:
+          -
+            From: String
+            Source: String
+            To: String
+      TrimString:
+        WithKeys:
+          - String
+      TypeConverter:
+        Entries:
+          -
+            Key: String
+            Type: String
+      UpperCaseString:
+        WithKeys:
+          - String
+#}

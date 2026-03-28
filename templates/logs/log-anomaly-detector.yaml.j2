@@ -1,0 +1,90 @@
+---
+Description: {{sceptre_user_data.description|default('Logs Delivery(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for log_anomaly_detector in sceptre_user_data.log_anomaly_detectors %}
+{%- set log_anomaly_detector_name = log_anomaly_detector.name %}
+  {{ log_anomaly_detector_name }}:
+    Type: AWS::Logs::LogAnomalyDetector
+    DeletionPolicy: {{ log_anomaly_detector.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ log_anomaly_detector.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if log_anomaly_detector.account_id is defined %}
+      AccountId: {{ log_anomaly_detector.account_id}}
+{%- endif %}
+{%- if log_anomaly_detector.anomaly_visibility_time is defined %}
+      AnomalyVisibilityTime: {{ log_anomaly_detector.anomaly_visibility_time }}
+{%- endif %}
+{%- if log_anomaly_detector.detector_name is defined %}
+      DetectorName: {{ log_anomaly_detector.detector_name }}
+{%- endif %}
+{%- if log_anomaly_detector.evaluation_frequency is defined %}
+      EvaluationFrequency: {{ log_anomaly_detector.evaluation_frequency }}
+{%- endif %}
+{%- if log_anomaly_detector.filter_pattern is defined %}
+      FilterPattern: {{ log_anomaly_detector.filter_pattern }}
+{%- endif %}
+{%- if log_anomaly_detector.kms_key_id is defined %}
+      KmsKeyId: {{ log_anomaly_detector.kms_key_id | trim }}
+{%- endif %}
+{%- if log_anomaly_detector.log_group_arn_list is defined %}{# BEGIN if log_anomaly_detector.log_group_arn_list is defined #}
+      LogGroupArnList:
+{%- for log_group_arn in log_anomaly_detector.log_group_arn_list %}
+        - {{ log_group_arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if log_anomaly_detector.log_group_arn_list is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for log_anomaly_detector in sceptre_user_data.log_anomaly_detectors %}
+{%- set log_anomaly_detector_name = log_anomaly_detector.name %}
+  {{ log_anomaly_detector_name }}AnomalyDetectorArn:
+    Description: The ARN of the log anomaly detector {{ log_anomaly_detector_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ log_anomaly_detector_name }}
+        - AnomalyDetectorArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ log_anomaly_detector_name }}-AnomalyDetectorArn"
+  {{ log_anomaly_detector_name }}AnomalyDetectorStatus:
+    Description: Specifies whether the anomaly detector {{ log_anomaly_detector_name }} is currently active.
+    Value:
+      Fn::GetAtt:
+        - {{ log_anomaly_detector_name }}
+        - AnomalyDetectorStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ log_anomaly_detector_name }}-AnomalyDetectorStatus"
+  {{ log_anomaly_detector_name }}CreationTimeStamp:
+    Description: The time that the anomaly detector {{ log_anomaly_detector_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ log_anomaly_detector_name }}
+        - CreationTimeStamp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ log_anomaly_detector_name }}-CreationTimeStamp"
+  {{ log_anomaly_detector_name }}LastModifiedTimeStamp:
+    Description: The time that the anomaly detector {{ log_anomaly_detector_name }} was most recently modified.
+    Value:
+      Fn::GetAtt:
+        - {{ log_anomaly_detector_name }}
+        - LastModifiedTimeStamp
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ log_anomaly_detector_name }}-LastModifiedTimeStamp"
+{%- endfor %}{#
+# Supported structure as of 2026-03-28:
+Type: AWS::Logs::LogAnomalyDetector
+Properties:
+  AccountId: String
+  AnomalyVisibilityTime: Number
+  DetectorName: String
+  EvaluationFrequency: String
+  FilterPattern: String
+  KmsKeyId: String
+  LogGroupArnList:
+    - String
+#}

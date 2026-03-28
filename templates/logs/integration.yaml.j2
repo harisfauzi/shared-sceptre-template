@@ -1,0 +1,61 @@
+---
+Description: {{sceptre_user_data.description|default('Logs Integration(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for integration in sceptre_user_data.deliveries %}
+{%- set integration_name = integration.name %}
+  {{ integration_name }}:
+    Type: AWS::Logs::Integration
+    DeletionPolicy: {{ integration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ integration.update_replace_policy | default('Delete') }}
+    Properties:
+      IntegrationName: {{ integration.integration_name }}
+      IntegrationType: {{ integration.integration_type }}
+      ResourceConfig:
+{%- if integration.resource_config.open_search_resource_config is defined %}{# BEGIN if integration.resource_config.open_search_resource_config is defined #}
+        OpenSearchResourceConfig:
+          DashboardViewerPrincipals:
+{%- for principal in integration.resource_config.open_search_resource_config.dashboard_viewer_principals%}
+            - {{ principal }}
+{%- endfor %}
+          DataSourceRoleArn: {{ integration.resource_config.open_search_resource_config.data_source_role_arn | trim }}
+{%- if integration.resource_config.open_search_resource_config.application_arn is defined %}
+          ApplicationARN: {{ integration.resource_config.open_search_resource_config.application_arn | trim }}
+{%- endif %}
+{%- if integration.resource_config.open_search_resource_config.kms_key_arn is defined %}
+          KmsKeyArn: {{ integration.resource_config.open_search_resource_config.kms_key_arn | trim }}
+{%- endif %}
+{%- if integration.resource_config.open_search_resource_config.retention_days is defined %}
+          RetentionDays: {{ integration.resource_config.open_search_resource_config.retention_days }}
+{%- endif %}
+{%- endif %}{# END if integration.resource_config.open_search_resource_config is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for integration in sceptre_user_data.deliveries %}
+{%- set integration_name = integration.name %}
+  {{ integration_name }}IntegrationStatus:
+    Description: The current status of the integration {{ integration_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ integration_name }}
+        - IntegrationStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ integration_name }}-IntegrationStatus"
+{%- endfor %}{#
+# Supported structure as of 2026-03-28:
+Type: AWS::Logs::Integration
+Properties:
+  IntegrationName: String
+  IntegrationType: String
+  ResourceConfig:
+    OpenSearchResourceConfig:
+      ApplicationARN: String
+      DashboardViewerPrincipals:
+        - String
+      DataSourceRoleArn: String
+      KmsKeyArn: String
+      RetentionDays: Integer
+#}
