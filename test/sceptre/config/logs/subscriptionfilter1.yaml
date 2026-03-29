@@ -1,0 +1,52 @@
+---
+template:
+  type: file
+  path: logs/subscription_filter.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "CloudWatch Logs Subscription Filters"
+  subscription_filters:
+    - name: ApplicationErrorSubscriptionFilter
+      filter_name: app-error-subscription-filter
+      destination_arn: "arn:aws:logs:us-west-2:123456789012:destination:app-error-destination"
+      filter_pattern: "'[timestamp, request_id, event_type = ERROR, ...]'"
+      log_group_name: "/aws/lambda/app-function-prod"
+      role_arn: "arn:aws:iam::123456789012:role/CloudWatchLogsSubscriptionRole"
+      apply_on_transformed_logs: false
+      distribution: "Random"
+      emit_system_fields:
+        - "'@timestamp'"
+        - "'@message'"
+        - "'@logStream'"
+        - "'@logEventId'"
+      tags:
+        Environment: Production
+        Service: Application
+        AlertType: Error
+
+    - name: DatabaseLogsSubscriptionFilter
+      filter_pattern: "'{ $.response_time > 1000 }'"
+      log_group_name: "/aws/rds/db-instance-prod"
+      destination_arn: "arn:aws:kinesis:us-west-2:123456789012:stream/CloudWatchLogsStream"
+      role_arn: "arn:aws:iam::123456789012:role/CloudWatchLogsKinesisRole"
+      apply_on_transformed_logs: true
+      distribution: "ByLogStream"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        Database: PostgreSQL
+        Team: DataEngineering
+
+    - name: APIGatewaySubscriptionFilter
+      filter_pattern: "'{ $.statusCode >= 400 }'"
+      log_group_name: "/aws/apigateway/prod-api"
+      destination_arn: "arn:aws:lambda:us-west-2:123456789012:function:cloudwatch-logs-processor"
+      tags:
+        Environment: Production
+        Service: APIGateway
+
+stack_tags:
+  Test: logs-subscription-filter

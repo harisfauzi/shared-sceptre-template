@@ -1,0 +1,61 @@
+---
+template:
+  type: file
+  path: logs/delivery.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Logs Deliveries for CloudWatch Logs"
+  deliveries:
+    - name: VPCFlowLogsToS3Delivery
+      delivery_destination_arn: "arn:aws:logs:us-west-2:123456789012:delivery-destination:s3-delivery-destination-prod"
+      delivery_source_name: vpc-flow-logs-source-prod
+      field_delimiter: "' '"
+      record_fields:
+        - version
+        - account-id
+        - interface-id
+        - srcaddr
+        - dstaddr
+        - srcport
+        - dstport
+        - protocol
+        - packets
+        - bytes
+        - windowstart
+        - windowend
+        - action
+        - tcpflags
+        - type
+      s3_enable_hive_compatible_path: true
+      s3_suffix_path: "logs/vpc-flow/!{log-id}/!{timestamp:yyyy/MM/dd/HH}"
+      tags:
+        Environment: Production
+        DataFormat: VPCFlowLogs
+        CostCenter: Infrastructure
+
+    - name: RDSLogsToKinesisDelivery
+      delivery_destination_arn: "arn:aws:kinesis:us-west-2:123456789012:stream/CloudWatchLogsStream"
+      delivery_source_name: rds-logs-source-prod
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      record_fields:
+        - timestamp
+        - log_type
+        - message
+      tags:
+        Environment: Production
+        Database: PostgreSQL
+        Team: DataEngineering
+
+    - name: LambdaLogsToS3Delivery
+      delivery_destination_arn: "arn:aws:logs:us-west-2:123456789012:delivery-destination:s3-delivery-destination-prod"
+      delivery_source_name: lambda-logs-source-prod
+      s3_suffix_path: "logs/lambda/!{timestamp:yyyy/MM/dd}"
+      tags:
+        Environment: Production
+        Service: Lambda
+
+stack_tags:
+  Test: logs-delivery

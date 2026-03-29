@@ -1,0 +1,72 @@
+---
+Description: {{sceptre_user_data.description|default('Logs Delivery Destination(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for delivery_destination in sceptre_user_data.delivery_destinations %}
+{%- set delivery_destination_name = delivery_destination.name %}
+  {{ delivery_destination_name }}:
+    Type: AWS::Logs::DeliveryDestination
+    DeletionPolicy: {{ delivery_destination.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ delivery_destination.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ delivery_destination.delivery_destination_name}}
+{%- if delivery_destination.delivery_destination_policy is defined %}{# BEGIN if delivery_destination.delivery_destination_policy is defined #}
+      DeliveryDestinationPolicy:
+{%- if delivery_destination.delivery_destination_policy.delivery_destination_name is defined %}
+        DeliveryDestinationName: {{ delivery_destination.delivery_destination_policy.delivery_destination_name }}
+{%- endif %}
+{%- if delivery_destination.delivery_destination_policy.delivery_destination_policy is defined %}
+        DeliveryDestinationPolicy:
+          {{ delivery_destination.delivery_destination_policy.delivery_destination_policy | indent(width=10, first=false)}}
+{%- elif delivery_destination.delivery_destination_policy.delivery_destination_policy_json is defined %}
+        DeliveryDestinationPolicy: |
+          {{ delivery_destination.delivery_destination_policy.delivery_destination_policy_json | indent(width=10, first=false)}}
+{%- endif %}
+{%- endif %}{# END if delivery_destination.delivery_destination_policy is defined #}
+{%- if delivery_destination.delivery_destination_type is defined %}
+      DeliveryDestinationType: {{ delivery_destination.delivery_destination_type }}
+{%- endif %}
+{%- if delivery_destination.destination_resource_arn is defined %}
+      DestinationResourceArn: {{ delivery_destination.destination_resource_arn | trim }}
+{%- endif %}
+      OutputFormat: String
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if delivery_destination.tags is defined %}
+{%- for key,value in delivery_destination.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for delivery_destination in sceptre_user_data.delivery_destinations %}
+{%- set delivery_destination_name = delivery_destination.name %}
+  {{ delivery_destination_name }}Arn:
+    Description: The ARN that uniquely identifies the delivery destination {{ delivery_destination_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ delivery_destination_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ delivery_destination_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2026-03-28:
+Type: AWS::Logs::DeliveryDestination
+Properties:
+  DeliveryDestinationPolicy:
+    DeliveryDestinationName: String
+    DeliveryDestinationPolicy: Json
+  DeliveryDestinationType: String
+  DestinationResourceArn: String
+  Name: String
+  OutputFormat: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

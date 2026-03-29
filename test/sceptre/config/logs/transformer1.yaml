@@ -1,0 +1,94 @@
+---
+template:
+  type: file
+  path: logs/transformer.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "CloudWatch Logs Transformers"
+  transformers:
+    - name: ApplicationLogTransformer
+      log_group_identifier: "/aws/lambda/app-function-prod"
+      transformer_destination_arn: "arn:aws:logs:us-west-2:123456789012:delivery-destination:s3-delivery-destination-prod"
+      transformer_source_name: app-logs-source
+      field_delimiter: "','"
+      record_fields:
+        - "'@timestamp'"
+        - "'@message'"
+        - "'error_type'"
+        - "'status_code'"
+      s3_enable_hive_compatible_path: true
+      s3_suffix_path: "logs/app/!{log-id}/!{timestamp:yyyy/MM/dd/HH}"
+      transformer_config:
+        - parse_json:
+            source: "'@message'"
+            destination: "parsed"
+        - add_keys:
+            entries:
+              - key: "environment"
+                value: "production"
+                overwrite_if_exists: false
+              - key: "service"
+                value: "application"
+        - rename_keys:
+            entries:
+              - key: "error_type"
+                rename_to: "errorType"
+                overwrite_if_exists: false
+      tags:
+        Environment: Production
+        Service: Application
+        TransformType: JSONParser
+
+    - name: DatabaseLogTransformer
+      log_group_identifier: "/aws/rds/db-instance-prod"
+      transformer_destination_arn: "arn:aws:kinesis:us-west-2:123456789012:stream/CloudWatchLogsStream"
+      transformer_source_name: db-logs-source
+      transformer_config:
+        - csv:
+            source: "'@message'"
+            delimiter: "|"
+            columns:
+              - "timestamp"
+              - "user"
+              - "query"
+              - "response_time"
+              - "status"
+        - type_converter:
+            entries:
+              - key: "response_time"
+                type: "DOUBLE"
+        - copy_value:
+            entries:
+              - source: "response_time"
+                target: "duration_ms"
+                overwrite_if_exists: false
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        Database: PostgreSQL
+        Team: DataEngineering
+
+    - name: VPCFlowLogTransformer
+      log_group_identifier: "/aws/vpc/flowlogs"
+      transformer_destination_arn: "arn:aws:s3:::my-cloudwatch-logs-bucket"
+      transformer_source_name: vpc-logs-source
+      transformer_config:
+        - parse_vpc:
+            source: "'@message'"
+        - add_keys:
+            entries:
+              - key: "region"
+                value: "us-west-2"
+        - lower_case_string:
+            with_keys:
+              - "action"
+              - "protocol"
+      tags:
+        Environment: Production
+        Service: VPC
+
+stack_tags:
+  Test: logs-transformer

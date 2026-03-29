@@ -1,0 +1,61 @@
+---
+template:
+  type: file
+  path: logs/query_definition.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "CloudWatch Logs Query Definitions"
+  query_definitions:
+    - name: ApplicationErrorAnalysisQuery
+      query_definition_name: app-error-analysis-query
+      query_string: |
+        fields @timestamp, @message, @duration, @duration_ms, error_type, error_code
+        | filter @message like /ERROR/
+        | stats count() as error_count, avg(@duration_ms) as avg_duration by error_type
+        | sort error_count desc
+      log_group_names:
+        - "/aws/lambda/app-function-prod"
+        - "/aws/ecs/app-service-prod"
+      query_language: "CloudWatch Insights"
+      tags:
+        Environment: Production
+        Service: Application
+        QueryType: ErrorAnalysis
+
+    - name: DatabasePerformanceAnalysisQuery
+      query_definition_name: db-performance-analysis-query
+      query_string: |
+        fields @timestamp, @message, response_time, query_id, user
+        | filter response_time > 1000
+        | stats count() as slow_query_count, pct(response_time, 95) as p95_response_time, 
+                 pct(response_time, 99) as p99_response_time by user
+        | sort p99_response_time desc
+      log_group_names:
+        - "/aws/rds/db-instance-prod"
+      query_language: "CloudWatch Insights"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        Database: PostgreSQL
+        Team: DataEngineering
+
+    - name: APIGatewayErrorAnalysisQuery
+      query_definition_name: api-gateway-error-analysis-query
+      query_string: |
+        fields @timestamp, @message, statusCode, httpMethod, path, latency
+        | filter statusCode >= 400
+        | stats count() as error_response_count, 
+                avg(latency) as avg_latency,
+                max(latency) as max_latency by statusCode, httpMethod
+        | sort error_response_count desc
+      log_group_names:
+        - "/aws/apigateway/prod-api"
+      tags:
+        Environment: Production
+        Service: APIGateway
+
+stack_tags:
+  Test: logs-query-definition

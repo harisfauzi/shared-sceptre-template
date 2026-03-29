@@ -1,0 +1,86 @@
+---
+Description: {{sceptre_user_data.description|default('Logs Delivery(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for delivery in sceptre_user_data.deliveries %}
+{%- set delivery_name = delivery.name %}
+  {{ delivery_name }}:
+    Type: AWS::Logs::Delivery
+    DeletionPolicy: {{ delivery.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ delivery.update_replace_policy | default('Delete') }}
+    Properties:
+      DeliveryDestinationArn: {{ delivery.delivery_destination_arn | trim }}
+      DeliverySourceName: {{ delivery.delivery_source_name }}
+{%- if delivery.field_delimiter is defined %}
+      FieldDelimiter: {{ delivery.field_delimiter }}
+{%- endif %}
+{%- if delivery.record_fields is defined %}
+      RecordFields:
+{%- for field in delivery.record_fields %}
+        - {{ field }}
+{%- endfor %}
+{%- endif %}
+{%- if delivery.s3_enable_hive_compatible_path is defined %}
+      S3EnableHiveCompatiblePath: {{ delivery.s3_enable_hive_compatible_path | lower }}
+{%- endif %}
+{%- if delivery.s3_suffix_path is defined %}
+      S3SuffixPath: {{ delivery.s3_suffix_path }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if delivery.tags is defined %}
+{%- for key,value in delivery.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for delivery in sceptre_user_data.deliveries %}
+{%- set delivery_name = delivery.name %}
+  {{ delivery_name }}Arn:
+    Description: The ARN that uniquely identifies the delivery {{ delivery_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ delivery_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ delivery_name }}-Arn"
+  {{ delivery_name }}DeliveryDestinationType:
+    Description: The delivery destination type of the delivery {{ delivery_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ delivery_name }}
+        - DeliveryDestinationType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ delivery_name }}-DeliveryDestinationType"
+  {{ delivery_name }}DeliveryId:
+    Description: The delivery ID of the delivery {{ delivery_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ delivery_name }}
+        - DeliveryId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ delivery_name }}-DeliveryId"
+{%- endfor %}{#
+# Supported structure as of 2026-03-23:
+Type: AWS::Logs::Delivery
+Properties:
+  DeliveryDestinationArn: String
+  DeliverySourceName: String
+  FieldDelimiter: String
+  RecordFields:
+    - String
+  S3EnableHiveCompatiblePath: Boolean
+  S3SuffixPath: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

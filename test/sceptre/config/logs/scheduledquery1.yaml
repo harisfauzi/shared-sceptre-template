@@ -1,0 +1,89 @@
+---
+template:
+  type: file
+  path: logs/scheduled-query.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "CloudWatch Logs Scheduled Queries"
+  scheduled_queries:
+    - name: HourlyApplicationErrorQuery
+      scheduled_query_name: hourly-app-error-query
+      execution_role_arn: "arn:aws:iam::123456789012:role/CloudWatchLogsScheduledQueryRole"
+      query_language: CLOUDWATCH_INSIGHTS
+      query_string: |
+        fields @timestamp, @message, error_type, error_code, @duration_ms
+        | filter @message like /ERROR/
+        | stats count() as error_count, avg(@duration_ms) as avg_duration, 
+                max(@duration_ms) as max_duration by error_type
+        | sort error_count desc
+      schedule_expression: "rate(1 hour)"
+      description: "Hourly query to analyze application errors"
+      destination_configuration:
+        s3_configuration:
+          destination_identifier: "arn:aws:s3:::my-cloudwatch-logs-bucket/scheduled-queries/"
+          role_arn: "arn:aws:iam::123456789012:role/CloudWatchLogsS3WriteRole"
+      log_group_identifiers:
+        - "/aws/lambda/app-function-prod"
+        - "/aws/ecs/app-service-prod"
+      schedule_start_time: 1672531200
+      timezone: "America/New_York"
+      state: "ACTIVE"
+      tags:
+        Environment: Production
+        Query: ApplicationErrors
+        Frequency: Hourly
+
+    - name: DailyDatabasePerformanceQuery
+      scheduled_query_name: daily-db-performance-query
+      execution_role_arn: "arn:aws:iam::123456789012:role/CloudWatchLogsScheduledQueryRole"
+      query_language: CLOUDWATCH_INSIGHTS
+      query_string: |
+        fields @timestamp, response_time, query_id, user, database_name
+        | filter response_time > 1000
+        | stats count() as slow_query_count,
+                pct(response_time, 50) as p50_response_time,
+                pct(response_time, 95) as p95_response_time,
+                pct(response_time, 99) as p99_response_time by user, database_name
+        | sort p99_response_time desc
+      schedule_expression: "cron(0 2 * * ? *)"
+      description: "Daily query to analyze database performance and slow queries"
+      destination_configuration:
+        s3_configuration:
+          destination_identifier: "arn:aws:s3:::my-cloudwatch-logs-bucket/scheduled-queries/"
+          role_arn: "arn:aws:iam::123456789012:role/CloudWatchLogsS3WriteRole"
+      log_group_identifiers:
+        - "/aws/rds/db-instance-prod"
+      schedule_start_time: 1672531200
+      schedule_end_time: 1704067200
+      start_time_offset: 1800
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      timezone: "America/Chicago"
+      state: "ACTIVE"
+      tags:
+        Environment: Production
+        Query: DatabasePerformance
+        Frequency: Daily
+
+    - name: WeeklyAPIGatewayQuery
+      scheduled_query_name: weekly-api-gateway-query
+      execution_role_arn: "arn:aws:iam::123456789012:role/CloudWatchLogsScheduledQueryRole"
+      query_language: CLOUDWATCH_INSIGHTS
+      query_string: |
+        fields @timestamp, statusCode, httpMethod, path, latency, userAgent
+        | filter statusCode >= 400
+        | stats count() as error_count, avg(latency) as avg_latency, max(latency) as max_latency by statusCode, httpMethod
+        | sort error_count desc
+      schedule_expression: "cron(0 0 ? * MON *)"
+      log_group_identifiers:
+        - "/aws/apigateway/prod-api"
+      timezone: "UTC"
+      tags:
+        Environment: Production
+        Query: APIGateway
+        Frequency: Weekly
+
+stack_tags:
+  Test: logs-scheduled-query

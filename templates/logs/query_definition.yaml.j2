@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Logs Query Definition(s) f
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for query_definition in sceptre_user_data.query_definitions %}
 {%- set query_definition_name = query_definition.name %}
   {{ query_definition_name }}:
@@ -12,18 +11,20 @@ Resources:
     UpdateReplacePolicy: {{ query_definition.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ query_definition.query_definition_name }}
-      QueryString:
-        {{ query_definition.query_string }}
+      QueryString: |
+        {{ query_definition.query_string | indent(width=8, first=false) }}
 {%- if query_definition.log_group_names is defined %}
       LogGroupNames:
 {%- for log_group_name in query_definition.log_group_names %}
         - {{ log_group_name }}
 {%- endfor %}
 {%- endif %}
+{%- if query_definition.query_language is defined %}
+      QueryLanguage: {{ query_definition.query_language }}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for query_definition in sceptre_user_data.query_definitions %}
 {%- set query_definition_name = query_definition.name %}
   {{ query_definition_name }}:
@@ -33,5 +34,23 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ query_definition_name }}"
-
-{%- endfor %}
+  {{ query_definition_name }}QueryDefinitionId:
+    Description: The ID of the query definition {{ query_definition_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ query_definition_name }}
+        - QueryDefinitionId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ query_definition_name }}-QueryDefinitionId"
+{%- endfor %}{#
+# Supported structure as of 2026-03-28:
+Type: AWS::Logs::QueryDefinition
+Properties:
+  LogGroupNames:
+    - String
+  Name: String
+  QueryLanguage: String
+  QueryString:
+    String
+#}

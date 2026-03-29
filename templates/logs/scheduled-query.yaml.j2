@@ -1,0 +1,136 @@
+---
+Description: {{sceptre_user_data.description|default('Logs Scheduled Query(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for scheduled_query in sceptre_user_data.scheduled_queries %}
+{%- set scheduled_query_name = scheduled_query.name %}
+  {{ scheduled_query_name }}:
+    Type: AWS::Logs::ScheduledQuery
+    DeletionPolicy: {{ scheduled_query.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ scheduled_query.update_replace_policy | default('Delete') }}
+    Properties:
+      ExecutionRoleArn: {{ scheduled_query.execution_role_arn | trim }}
+      Name: {{ scheduled_query.scheduled_query_name}}
+      QueryLanguage: {{ scheduled_query.query_language }}
+      QueryString: |
+        {{ scheduled_query.query_string | indent(width=8, first=false) }}
+      ScheduleExpression: {{ scheduled_query.schedule_expression }}
+{%- if scheduled_query.description is defined %}
+      Description: {{ scheduled_query.description }}
+{%- endif %}
+{%- if scheduled_query.destination_configuration is defined %}{# BEGIN if scheduled_query.destination_configuration is defined #}
+      DestinationConfiguration:
+{%- if scheduled_query.destination_configuration.s3_configuration is defined %}
+        S3Configuration:
+          DestinationIdentifier: {{ scheduled_query.destination_configuration.s3_configuration.destination_identifier }}
+          RoleArn: {{ scheduled_query.destination_configuration.s3_configuration.role_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if scheduled_query.destination_configuration is defined #}
+{%- if scheduled_query.log_group_identifiers is defined %}{# BEGIN if scheduled_query.log_group_identifiers is defined#}
+      LogGroupIdentifiers:
+{%- for log_group_identifier in scheduled_query.log_group_identifiers %}
+        - {{ log_group_identifier }}
+{%- endfor %}
+{%- endif %}{# END if scheduled_query.log_group_identifiers is defined #}
+{%- if scheduled_query.schedule_end_time is defined %}
+      ScheduleEndTime: {{ scheduled_query.schedule_end_time }}
+{%- endif %}
+{%- if scheduled_query.schedule_start_time is defined %}
+      ScheduleStartTime: {{ scheduled_query.schedule_start_time }}
+{%- endif %}
+{%- if scheduled_query.start_time_offset is defined %}
+      StartTimeOffset: {{ scheduled_query.start_time_offset }}
+{%- endif %}
+{%- if scheduled_query.state is defined %}
+      State: {{ scheduled_query.state }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if scheduled_query.tags is defined %}
+{%- for key,value in scheduled_query.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if scheduled_query.timezone is defined %}
+      Timezone: {{ scheduled_query.timezone }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for scheduled_query in sceptre_user_data.scheduled_queries %}
+{%- set scheduled_query_name = scheduled_query.name %}
+  {{ scheduled_query_name }}CreationTime:
+    Description: The timestamp when the scheduled query {{ scheduled_query_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ scheduled_query_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scheduled_query_name }}-CreationTime"
+  {{ scheduled_query_name }}LastExecutionStatus:
+    Description: The status of the most recent execution for {{ scheduled_query_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ scheduled_query_name }}
+        - LastExecutionStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scheduled_query_name }}-LastExecutionStatus"
+  {{ scheduled_query_name }}LastTriggeredTime:
+    Description: The timestamp when the scheduled query {{ scheduled_query_name }} was last executed.
+    Value:
+      Fn::GetAtt:
+        - {{ scheduled_query_name }}
+        - LastTriggeredTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scheduled_query_name }}-LastTriggeredTime"
+  {{ scheduled_query_name }}LastUpdatedTime:
+    Description: The timestamp when the scheduled query {{ scheduled_query_name }} was last updated.
+    Value:
+      Fn::GetAtt:
+        - {{ scheduled_query_name }}
+        - LastUpdatedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scheduled_query_name }}-LastUpdatedTime"
+  {{ scheduled_query_name }}ScheduledQueryArn:
+    Description: The ARN for {{ scheduled_query_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ scheduled_query_name }}
+        - ScheduledQueryArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ scheduled_query_name }}-ScheduledQueryArn"
+{%- endfor %}{#
+# Supported structure as of 2026-03-28:
+Type: AWS::Logs::ScheduledQuery
+Properties:
+  Description: String
+  DestinationConfiguration:
+    S3Configuration:
+      DestinationIdentifier: String
+      RoleArn: String
+  ExecutionRoleArn: String
+  LogGroupIdentifiers:
+    - String
+  Name: String
+  QueryLanguage: String
+  QueryString:
+    String
+  ScheduleEndTime: Number
+  ScheduleExpression: String
+  ScheduleStartTime: Number
+  StartTimeOffset: Integer
+  State: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  Timezone: String
+#}

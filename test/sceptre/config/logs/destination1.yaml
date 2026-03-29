@@ -1,0 +1,73 @@
+---
+template:
+  type: file
+  path: logs/destination.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "CloudWatch Logs Destinations"
+  destinations:
+    - name: S3DestinationWithPolicy
+      destination_name: s3-cloudwatch-destination-prod
+      role_arn: "arn:aws:iam::123456789012:role/CloudWatchLogsRole"
+      target_arn: "arn:aws:s3:::my-cloudwatch-logs-bucket"
+      destination_policy: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::987654321098:root"
+              },
+              "Action": "logs:PutLogEvents",
+              "Resource": "arn:aws:logs:us-west-2:123456789012:destination:s3-cloudwatch-destination-prod:*"
+            }
+          ]
+        }
+      tags:
+        Environment: Production
+        DataStorage: S3
+        Team: Platform
+
+    - name: KinesisStreamDestination
+      destination_name: kinesis-cloudwatch-destination-prod
+      role_arn: "arn:aws:iam::123456789012:role/CloudWatchLogsKinesisRole"
+      target_arn: "arn:aws:kinesis:us-west-2:123456789012:stream/CloudWatchLogsStream"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      destination_policy: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "*"
+              },
+              "Action": "logs:PutLogEvents",
+              "Resource": "arn:aws:logs:us-west-2:123456789012:destination:kinesis-cloudwatch-destination-prod:*",
+              "Condition": {
+                "StringEquals": {
+                  "aws:SourceAccount": "123456789012"
+                }
+              }
+            }
+          ]
+        }
+      tags:
+        Environment: Production
+        DataStream: Kinesis
+        Team: DataEngineering
+
+    - name: LambdaDestination
+      destination_name: lambda-cloudwatch-destination-prod
+      role_arn: "arn:aws:iam::123456789012:role/CloudWatchLogsLambdaRole"
+      target_arn: "arn:aws:lambda:us-west-2:123456789012:function:cloudwatch-logs-processor"
+      tags:
+        Environment: Production
+        Service: Lambda
+
+stack_tags:
+  Test: logs-destination
