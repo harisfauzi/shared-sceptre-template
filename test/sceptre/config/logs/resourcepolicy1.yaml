@@ -1,0 +1,94 @@
+---
+template:
+  type: file
+  path: logs/resource_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "CloudWatch Logs Resource Policies"
+  resource_policies:
+    - name: CrossAccountAccessPolicy
+      policy_name: cross-account-access-policy
+      policy_document_json: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::987654321098:root"
+              },
+              "Action": [
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": "arn:aws:logs:us-west-2:123456789012:log-group:/aws/multi-account/*"
+            },
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::876543210987:root"
+              },
+              "Action": "logs:DescribeLogGroups",
+              "Resource": "*"
+            }
+          ]
+        }
+      tags:
+        Environment: Production
+        AccessType: CrossAccount
+        Team: Platform
+
+    - name: ServiceAccessPolicy
+      policy_name: service-access-policy
+      policy_document_json: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "apigateway.amazonaws.com"
+              },
+              "Action": [
+                "logs:CreateLogDelivery",
+                "logs:GetLogDelivery",
+                "logs:UpdateLogDelivery",
+                "logs:DeleteLogDelivery",
+                "logs:ListLogDeliveries",
+                "logs:PutResourcePolicy",
+                "logs:DescribeResourcePolicies",
+                "logs:DescribeLogGroups"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        Service: APIGateway
+        Team: Infrastructure
+
+    - name: OrganizationWideAccessPolicy
+      policy_name: organization-wide-access-policy
+      policy_document: |
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - logs:PutLogEvents
+              - logs:CreateLogStream
+            Resource: 'arn:aws:logs:*:123456789012:log-group:/aws/org/*'
+            Condition:
+              StringEquals:
+                aws:PrincipalOrgID: 'o-xxxxxxxxxxx'
+      tags:
+        Environment: Production
+        AccessScope: Organization
+
+stack_tags:
+  Test: logs-resource-policy

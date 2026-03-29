@@ -1,0 +1,91 @@
+---
+template:
+  type: file
+  path: logs/account_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Account Policies for Data Protection and Compliance"
+  account_policies:
+    - name: DataProtectionPolicy
+      policy_name: data-protection-policy-prod
+      type: DATA_PROTECTION_POLICY
+      policy_document: |
+        {
+          "Version": "2021-06-01",
+          "Statement": [
+            {
+              "Sid": "AuditFinancialData",
+              "DataIdentifier": [
+                "arn:aws:dataprotection::aws:data-identifier/EmailAddress",
+                "arn:aws:dataprotection::aws:data-identifier/CreditCardNumber"
+              ],
+              "Operation": {
+                "Audit": {
+                  "FindingsDestination": {
+                    "CloudWatchLogs": {
+                      "LogGroup": "/aws/logs/audit/financial"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      scope: ALL
+
+    - name: ComplianceRedactionPolicy
+      policy_name: compliance-redaction-policy-prod
+      type: DATA_PROTECTION_POLICY
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      policy_document: |
+        {
+          "Version": "2021-06-01",
+          "Statement": [
+            {
+              "Sid": "RedactPersonalData",
+              "DataIdentifier": [
+                "arn:aws:dataprotection::aws:data-identifier/EmailAddress",
+                "arn:aws:dataprotection::aws:data-identifier/DriversLicense-US",
+                "arn:aws:dataprotection::aws:data-identifier/CreditCardNumber"
+              ],
+              "Operation": {
+                "Deidentify": {
+                  "MaskConfig": {
+                    "MaskCharacter": "X"
+                  }
+                }
+              }
+            }
+          ]
+        }
+
+    - name: SecurityAuditPolicy
+      policy_name: security-audit-policy-prod
+      type: DATA_PROTECTION_POLICY
+      policy_document: |
+        {
+          "Version": "2021-06-01",
+          "Statement": [
+            {
+              "Sid": "SecurityAudit",
+              "DataIdentifier": [
+                "arn:aws:dataprotection::aws:data-identifier/EmailAddress"
+              ],
+              "Operation": {
+                "Audit": {
+                  "FindingsDestination": {
+                    "CloudWatchLogs": {
+                      "LogGroup": "/aws/logs/security/audit"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+
+stack_tags:
+  Test: logs-account-policy

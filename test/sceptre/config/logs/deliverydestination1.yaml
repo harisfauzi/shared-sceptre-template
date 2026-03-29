@@ -1,0 +1,68 @@
+---
+template:
+  type: file
+  path: logs/delivery-destination.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Delivery Destinations for CloudWatch Logs"
+  delivery_destinations:
+    - name: S3DeliveryDestination
+      delivery_destination_name: s3-delivery-destination-prod
+      delivery_destination_type: S3
+      destination_resource_arn: "arn:aws:s3:::my-cloudwatch-logs-bucket/"
+      delivery_destination_policy:
+        delivery_destination_policy: |
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: logs.amazonaws.com
+              Action: s3:PutObject
+              Resource: 'arn:aws:s3:::my-cloudwatch-logs-bucket/*'
+              Condition:
+                StringEquals:
+                  aws:SourceAccount: '123456789012'
+      tags:
+        Environment: Production
+        DataClassification: Sensitive
+        CostCenter: Operations
+
+    - name: FirehoseDeliveryDestination
+      delivery_destination_name: firehose-delivery-destination-prod
+      delivery_destination_type: Kinesis
+      destination_resource_arn: "arn:aws:kinesis:us-west-2:123456789012:stream/CloudWatchLogsStream"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      delivery_destination_policy:
+        delivery_destination_policy_json: |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": "logs.amazonaws.com"
+                },
+                "Action": [
+                  "kinesis:PutRecord",
+                  "kinesis:PutRecords"
+                ],
+                "Resource": "arn:aws:kinesis:us-west-2:123456789012:stream/CloudWatchLogsStream"
+              }
+            ]
+          }
+      tags:
+        Environment: Production
+        Team: DataEngineering
+
+    - name: CrossAccountDeliveryDestination
+      delivery_destination_name: cross-account-delivery-destination-prod
+      destination_resource_arn: "arn:aws:logs:us-west-2:987654321098:destination:cross-account-destination"
+      tags:
+        Environment: Production
+        AccountType: CrossAccount
+
+stack_tags:
+  Test: logs-delivery-destination

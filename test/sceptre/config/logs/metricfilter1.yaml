@@ -1,0 +1,70 @@
+---
+template:
+  type: file
+  path: logs/metric_filter.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "CloudWatch Logs Metric Filters"
+  metric_filters:
+    - name: ApplicationErrorMetricFilter
+      filter_name: app-error-metric-filter
+      filter_pattern: "'[timestamp, request_id, event_type = ERROR, ...]'"
+      log_group_name: "/aws/lambda/app-function-prod"
+      metric_transformations:
+        - metric_name: ApplicationErrorCount
+          metric_namespace: CustomMetrics/Application
+          metric_value: "1"
+          default_value: 0
+          dimensions:
+            Environment: Production
+            Service: Application
+          unit: Count
+      emit_system_field_dimensions:
+        - "'@timestamp'"
+        - "'@message'"
+      apply_on_transformed_logs: false
+      tags:
+        Environment: Production
+        Service: Application
+        AlertType: Error
+
+    - name: DatabaseResponseTimeMetricFilter
+      filter_name: db-response-time-metric-filter
+      filter_pattern: "'{ $.response_time > 1000 }'"
+      log_group_name: "/aws/rds/db-instance-prod"
+      metric_transformations:
+        - metric_name: SlowQueryCount
+          metric_namespace: CustomMetrics/Database
+          metric_value: "1"
+          default_value: 0
+          dimensions:
+            Environment: Production
+            Database: PostgreSQL
+          unit: Count
+        - metric_name: ResponseTimePercentile
+          metric_namespace: CustomMetrics/Database
+          metric_value: "$.response_time"
+          unit: Milliseconds
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        Database: PostgreSQL
+        Team: DataEngineering
+
+    - name: APIGatewayStatusCodeMetricFilter
+      filter_pattern: "'{ $.statusCode >= 400 }'"
+      log_group_name: "/aws/apigateway/prod-api"
+      metric_transformations:
+        - metric_name: APIErrorResponses
+          metric_namespace: CustomMetrics/APIGateway
+          metric_value: "1"
+          default_value: 0
+      tags:
+        Environment: Production
+        Service: APIGateway
+
+stack_tags:
+  Test: logs-metric-filter

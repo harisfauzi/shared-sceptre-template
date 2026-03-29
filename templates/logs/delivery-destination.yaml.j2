@@ -19,7 +19,7 @@ Resources:
 {%- if delivery_destination.delivery_destination_policy.delivery_destination_policy is defined %}
         DeliveryDestinationPolicy:
           {{ delivery_destination.delivery_destination_policy.delivery_destination_policy | indent(width=10, first=false)}}
-{%- if delivery_destination.delivery_destination_policy.delivery_destination_policy_json is defined %}
+{%- elif delivery_destination.delivery_destination_policy.delivery_destination_policy_json is defined %}
         DeliveryDestinationPolicy: |
           {{ delivery_destination.delivery_destination_policy.delivery_destination_policy_json | indent(width=10, first=false)}}
 {%- endif %}
