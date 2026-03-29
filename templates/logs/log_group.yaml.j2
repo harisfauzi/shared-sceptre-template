@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Logs LogGroup(s) for '+sce
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for log_group in sceptre_user_data.log_groups %}
 {%- set log_group_name = log_group.name %}
   {{ log_group_name }}:
@@ -11,11 +10,34 @@ Resources:
     DeletionPolicy: {{ log_group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ log_group.update_replace_policy | default('Delete') }}
     Properties:
+{%- if log_group.bearer_token_authentication_enabled is defined %}
+      BearerTokenAuthenticationEnabled: {{ log_group.bearer_token_authentication_enabled | lower }}
+{%- endif %}
+{%- if log_group.deletion_protection_enabled is defined %}
+      DeletionProtectionEnabled: {{ log_group.deletion_protection_enabled | lower }}
+{%- endif %}
+{%- if log_group.field_index_policies is defined %}{# BEGIN if log_group.field_index_policies is defined #}
+      FieldIndexPolicies:
+{%- for key,value in log_group.field_index_policies.items() %}
+        - {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if log_group.field_index_policies is defined #}
+{%- if log_group.log_group_class is defined %}
+      LogGroupClass: {{ log_group.log_group_class }}
+{%- endif %}
+{%- if log_group.resource_policy_document is defined %}
+      ResourcePolicyDocument:
+        {{log_group.resource_policy_document|indent(width=8, first=false)}}
+{%- elif log_group.resource_policy_document_json is defined %}
+      ResourcePolicyDocument: |
+        {{log_group.resource_policy_document_json | indent(width=8, first=false)}}
+{%- endif %}
 {%- if log_group.data_protection_policy is defined %}
       DataProtectionPolicy:
-        {{log_group.data_protection_policy|indent(8)}}
+        {{log_group.data_protection_policy|indent(width=8, first=false)}}
 {%- elif log_group.data_protection_policy_json is defined %}
-      DataProtectionPolicy: {{log_group.data_protection_policy_json}}
+      DataProtectionPolicy: |
+        {{log_group.data_protection_policy_json | indent(width=8, first=false)}}
 {%- endif %}
 {%- if log_group.kms_key_id is defined %}
       KmsKeyId: {{ log_group.kms_key_id | trim }}
@@ -35,8 +57,7 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
-{%- if log_group.streams is defined %}
+{%- if log_group.streams is defined %}{# BEGIN if log_group.streams is defined #}
 {%- set ns1 = namespace() %}
 {%- set ns1.ii = 0 %}
 {%- for stream in log_group.streams %}
@@ -51,11 +72,10 @@ Resources:
         Ref: {{ log_group_name }}
       LogStreamName: {{ stream }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if log_group.streams is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for log_group in sceptre_user_data.log_groups %}
 {%- set log_group_name = log_group.name %}
   {{ log_group_name }}:
@@ -65,7 +85,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ log_group_name }}"
-
   {{ log_group_name }}Arn:
     Description: The ARN for {{ log_group_name }}
     Value:
@@ -75,7 +94,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ log_group_name }}-Arn"
-{%- if log_group.streams is defined %}
+{%- if log_group.streams is defined %}{# BEGIN if log_group.streams is defined #}
 {%- set ns1 = namespace() %}
 {%- set ns1.ii = 0 %}
 {%- for stream in log_group.streams %}
@@ -88,8 +107,30 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ log_group_name }}-stream{{ "%03d" % ns1.ii }}"
-
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if log_group.streams is defined #}
+{%- endfor %}{#
+# Supported structure as of 2026-03-28:
+Type: AWS::Logs::LogGroup
+Properties:
+  BearerTokenAuthenticationEnabled: Boolean
+  DataProtectionPolicy: Json
+  DeletionProtectionEnabled: Boolean
+  FieldIndexPolicies:
+    -
+    Key: Value
+  KmsKeyId: String
+  LogGroupClass: String
+  LogGroupName: String
+  ResourcePolicyDocument: Json
+  RetentionInDays: Integer
+  Tags:
+    -
+      Key: String
+      Value: String
 
-{%- endfor %}
+Type: AWS::Logs::LogStream
+Properties:
+  LogGroupName: String
+  LogStreamName: String
+#}

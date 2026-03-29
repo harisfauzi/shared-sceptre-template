@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Logs Subscription Filter(s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for subscription_filter in sceptre_user_data.subscription_filters %}
 {%- set subscription_filter_name = subscription_filter.name %}
   {{ subscription_filter_name }}:
@@ -14,8 +13,20 @@ Resources:
       DestinationArn: {{ subscription_filter.destination_arn | trim }}
       FilterPattern: {{ subscription_filter.filter_pattern }}
       LogGroupName: {{ subscription_filter.log_group_name }}
+{%- if subscription_filter.apply_on_transformed_logs is defined %}
+      ApplyOnTransformedLogs: {{ subscription_filter.apply_on_transformed_logs }}
+{%- endif %}
 {%- if subscription_filter.distribution is defined %}
       Distribution: {{ subscription_filter.distribution }}
+{%- endif %}
+{%- if subscription_filter.emit_system_fields is defined %}
+      EmitSystemFields:
+{%- for field in subscription_filter.emit_system_fields %}
+        - {{ field }}
+{%- endfor %}
+{%- endif %}
+{%- if subscription_filter.field_selection_criteria is defined %}
+      FieldSelectionCriteria: {{ subscription_filter.field_selection_criteria }}
 {%- endif %}
 {%- if subscription_filter.filter_name is defined %}
       FilterName: {{ subscription_filter.filter_name }}
@@ -26,7 +37,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for subscription_filter in sceptre_user_data.subscription_filters %}
 {%- set subscription_filter_name = subscription_filter.name %}
   {{ subscription_filter_name }}:
@@ -36,5 +46,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ subscription_filter_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-28:
+Type: AWS::Logs::SubscriptionFilter
+Properties:
+  ApplyOnTransformedLogs: Boolean
+  DestinationArn: String
+  Distribution: String
+  EmitSystemFields:
+    - String
+  FieldSelectionCriteria: String
+  FilterName: String
+  FilterPattern: String
+  LogGroupName: String
+  RoleArn: String
+#}

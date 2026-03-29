@@ -1,0 +1,63 @@
+---
+Description: {{sceptre_user_data.description|default('Logs Delivery Source(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for delivery_source in sceptre_user_data.delivery_sources %}
+{%- set delivery_source_name = delivery_source.name %}
+  {{ delivery_source_name }}:
+    Type: AWS::Logs::DeliverySource
+    DeletionPolicy: {{ delivery_source.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ delivery_source.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ delivery_source.delivery_source_name }}
+{%- if delivery_source.log_type is defined %}
+      LogType: {{ delivery_source.log_type }}
+{%- endif %}
+{%- if delivery_source.resource_arn is defined %}
+      ResourceArn: {{ delivery_source.resource_arn | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if delivery_source.tags is defined %}
+{%- for key,value in delivery_source.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for delivery_source in sceptre_user_data.delivery_sources %}
+{%- set delivery_source_name = delivery_source.name %}
+  {{ delivery_source_name }}Arn:
+    Description: The ARN that uniquely identifies the delivery_source {{ delivery_source_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ delivery_source_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ delivery_source_name }}-Arn"
+  {{ delivery_source_name }}Service:
+    Description: The AWS service that is sending logs for{{ delivery_source_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ delivery_source_name }}
+        - Service
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ delivery_source_name }}-Service"
+{%- endfor %}{#
+# Supported structure as of 2026-03-28:
+Type: AWS::Logs::DeliverySource
+Properties:
+  LogType: String
+  Name: String
+  ResourceArn: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Logs Destination(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for destination in sceptre_user_data.destinations %}
 {%- set destination_name = destination.name %}
   {{ destination_name }}:
@@ -12,14 +11,24 @@ Resources:
     UpdateReplacePolicy: {{ destination.update_replace_policy | default('Delete') }}
     Properties:
       DestinationName: {{ destination.destination_name }}
-      DestinationPolicy: |
-        {{destination.destination_policy | indent(width=8)}}
       RoleArn: {{ destination.role_arn | trim }}
       TargetArn: {{ destination.target_arn | trim }}
+{%- if destination.destination_policy is defined %}{# BEGIN if destination.destination_policy is defined #}  
+      DestinationPolicy: |
+        {{destination.destination_policy | indent(width=8, first=false)}}
+{%- endif %}{# END if destination.destination_policy is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if destination.tags is defined %}
+{%- for key,value in destination.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for destination in sceptre_user_data.destinations %}
 {%- set destination_name = destination.name %}
   {{ destination_name }}:
@@ -29,7 +38,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ destination_name }}"
-
   {{ destination_name }}Arn:
     Description: The ARN for {{ destination_name }}
     Value:
@@ -39,5 +47,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ destination_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-28:
+Type: AWS::Logs::Destination
+Properties:
+  DestinationName: String
+  DestinationPolicy: String
+  RoleArn: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TargetArn: String
+#}

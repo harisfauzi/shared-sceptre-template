@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Logs Metric Filter(s) for 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for metric_filter in sceptre_user_data.metric_filters %}
 {%- set metric_filter_name = metric_filter.name %}
   {{ metric_filter_name }}:
@@ -14,25 +13,59 @@ Resources:
       FilterPattern: {{ metric_filter.filter_pattern }}
       LogGroupName: {{ metric_filter.log_group_name }}
       MetricTransformations:
-{%- for metric_transformation in metric_filter.metric_transformations %}
+{%- for metric_transformation in metric_filter.metric_transformations %}{# BEGIN for metric_transformation in metric_filter.metric_transformations #}
         - MetricName: {{ metric_transformation.metric_name }}
           MetricNamespace: {{ metric_transformation.metric_namespace }}
           MetricValue: {{ metric_transformation.metric_value }}
 {%- if metric_transformation.default_value is defined %}
           DefaultValue: {{ metric_transformation.default_value }}
 {%- endif %}
-{%- if metric_transformation.default_value is defined %}
+{%- if metric_transformation.dimensions is defined %}{# BEGIN if metric_transformation.dimensions is defined #}
           Dimensions:
-{%- for dimension in metric_transformation.dimensions %}
-            - Key: {{ dimension.key }}
-              Value: {{ dimension.value }}
+{%- for key,value in metric_transformation.dimensions.items() %}
+            - Key: {{ key }}
+              Value: {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- if metric_transformation.default_value is defined %}
+{%- endif %}{# END if metric_transformation.dimensions is defined #}
+{%- if metric_transformation.unit is defined %}
           Unit: {{ metric_transformation.unit }}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{# END for metric_transformation in metric_filter.metric_transformations #}
 {%- if metric_filter.filter_name is defined %}
       FilterName: {{ metric_filter.filter_name }}
 {%- endif %}
+{%- if metric_filter.apply_on_transformed_logs is defined %}
+      ApplyOnTransformedLogs: {{ metric_filter.apply_on_transformed_logs | lower }}
+{%- endif %}
+{%- if metric_filter.emit_system_field_dimensions is defined %}
+      EmitSystemFieldDimensions:
+{%- for dimension in metric_filter.emit_system_field_dimensions %}
+        - {{ dimension }}
 {%- endfor %}
+{%- endif %}
+{%- if metric_filter.field_selection_criteria is defined %}
+      FieldSelectionCriteria: {{ metric_filter.field_selection_criteria }}
+{%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2026-03-28:
+Type: AWS::Logs::MetricFilter
+Properties:
+  ApplyOnTransformedLogs: Boolean
+  EmitSystemFieldDimensions:
+    - String
+  FieldSelectionCriteria: String
+  FilterName: String
+  FilterPattern: String
+  LogGroupName: String
+  MetricTransformations:
+    -
+      DefaultValue: Number
+      Dimensions:
+        -
+          Key: String
+          Value: String
+      MetricName: String
+      MetricNamespace: String
+      MetricValue: String
+      Unit: String
+#}
