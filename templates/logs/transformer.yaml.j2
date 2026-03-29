@@ -248,35 +248,6 @@ Resources:
 {%- endfor %}
 {%- endif %}{# END if config.upper_case_string is defined #}
 {%- endfor %}{# END for config in transformer.transformer_config#}
-
-    Type: AWS::Logs::Delivery
-    Properties:
-      DeliveryDestinationArn: {{ transformer.transformer_destination_arn | trim }}
-      DeliverySourceName: {{ transformer.transformer_source_name }}
-{%- if transformer.field_delimiter is defined %}
-      FieldDelimiter: {{ transformer.field_delimiter }}
-{%- endif %}
-{%- if transformer.record_fields is defined %}
-      RecordFields:
-{%- for field in transformer.record_fields %}
-        - {{ field }}
-{%- endfor %}
-{%- endif %}
-{%- if transformer.s3_enable_hive_compatible_path is defined %}
-      S3EnableHiveCompatiblePath: {{ transformer.s3_enable_hive_compatible_path | lower }}
-{%- endif %}
-{%- if transformer.s3_suffix_path is defined %}
-      S3SuffixPath: {{ transformer.s3_suffix_path }}
-{%- endif %}
-      Tags:
-        - Key: SourceRepoURL
-          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if transformer.tags is defined %}
-{%- for key,value in transformer.tags.items() %}
-        - Key: {{ key }}
-          Value: {{ value }}
-{%- endfor %}
-{%- endif %}
 {%- endfor %}
 
 Outputs:
