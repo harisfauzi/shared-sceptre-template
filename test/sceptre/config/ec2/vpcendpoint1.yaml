@@ -1,0 +1,65 @@
+---
+template:
+  type: file
+  path: ec2/vpc_endpoint.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPC Endpoints
+  vpc_endpoints:
+    - name: PrimaryS3Endpoint
+      vpc_id: "vpc-12345678901234567"
+      vpc_endpoint_type: "Gateway"
+      service_name: "com.amazonaws.us-east-1.s3"
+      route_table_ids:
+        - "rtb-12345678901234567"
+        - "rtb-87654321098765432"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      policy_document_json: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "s3:*",
+              "Resource": "*"
+            }
+          ]
+        }
+    - name: SecondaryDataServiceEndpoint
+      vpc_id: "vpc-87654321098765432"
+      vpc_endpoint_type: "Interface"
+      service_name: "com.amazonaws.us-east-1.ec2"
+      subnet_ids:
+        - "subnet-12345678901234567"
+        - "subnet-87654321098765432"
+        - "subnet-abcdef1234567890ab"
+      security_group_ids:
+        - "sg-12345678901234567"
+        - "sg-87654321098765432"
+      private_dns_enabled: true
+      ip_address_type: "ipv4"
+      deletion_policy: Delete
+    - name: TertiaryCustomEndpoint
+      vpc_id: "vpc-abcdef1234567890ab"
+      vpc_endpoint_type: "Interface"
+      service_name: "com.amazonaws.us-east-1.elasticloadbalancing"
+      subnet_ids:
+        - "subnet-abcdef1234567890ab"
+      security_group_ids:
+        - "sg-abcdef1234567890ab"
+      private_dns_enabled: false
+      ip_address_type: "ipv6"
+      deletion_policy: Retain
+      dns_options:
+        dns_record_ip_type: "ipv6"
+        private_dns_preference: "PreferPrivateDnsRecord"
+        private_dns_specified_domains:
+          - "elasticloadbalancing.us-east-1.amazonaws.com"
+          - "elasticloadbalancing.compute.amazonaws.com"
+
+stack_tags:
+  Test: ec2-vpc-endpoint

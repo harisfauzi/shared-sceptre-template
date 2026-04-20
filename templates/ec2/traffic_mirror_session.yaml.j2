@@ -17,6 +17,9 @@ Resources:
 {%- if traffic_mirror_session.description is defined %}
       Description: {{ traffic_mirror_session.description }}
 {%- endif %}
+{%- if traffic_mirror_session.owner_id is defined %}
+      OwnerId: {{ traffic_mirror_session.owner_id | trim }}
+{%- endif %}
 {%- if traffic_mirror_session.packet_length is defined %}
       PacketLength: {{ traffic_mirror_session.packet_length }}
 {%- endif %}
@@ -45,15 +48,17 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_session_name }}"
 {%- endfor %}{#
-# Supported structure as of 2025-04-09:
+# Supported structure as of 2026-04-19:
 Type: AWS::EC2::TrafficMirrorSession
 Properties:
   Description: String
   NetworkInterfaceId: String
+  OwnerId: String
   PacketLength: Integer
   SessionNumber: Integer
   Tags:
-    - Tag
+    - Key: String
+      Value: String
   TrafficMirrorFilterId: String
   TrafficMirrorTargetId: String
   VirtualNetworkId: Integer

@@ -1,0 +1,125 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Transit Gateway Connect Peer(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for transit_gateway_connect_peer in sceptre_user_data.transit_gateway_connect_peers %}
+{%- set transit_gateway_connect_peer_name = transit_gateway_connect_peer.name %}
+  {{ transit_gateway_connect_peer_name }}:
+    Type: AWS::EC2::TransitGatewayConnectPeer
+    DeletionPolicy: {{ transit_gateway_connect_peer.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_connect_peer.update_replace_policy | default('Delete') }}
+    Properties:
+      ConnectPeerConfiguration:
+        InsideCidrBlocks:
+{%- for cidr_block in transit_gateway_connect_peer.connect_peer_configuration.inside_cidr_blocks %}
+          - {{ cidr_block }}
+{%- endfor %}
+        PeerAddress: {{ transit_gateway_connect_peer.connect_peer_configuration.peer_address }}
+{%- if transit_gateway_connect_peer.connect_peer_configuration.bgp_configurations is defined %}{# BEGIN if transit_gateway_connect_peer.connect_peer_configuration.bgp_configurations is defined #}
+        BgpConfigurations:
+{%- for configuration in transit_gateway_connect_peer.connect_peer_configuration.bgp_configurations %}{# BEGIN for configuration in transit_gateway_connect_peer.connect_peer_configuration.bgp_configurations #}
+          -
+{%- if configuration.bgp_status is defined %}
+            BgpStatus: {{ configuration.bgp_status }}
+{%- endif %}
+{%- if configuration.peer_address is defined %}
+            PeerAddress: {{ configuration.peer_address }}
+{%- endif %}
+{%- if configuration.peer_asn is defined %}
+            PeerAsn: {{ configuration.peer_asn }}
+{%- endif %}
+{%- if configuration.transit_gateway_address is defined %}
+            TransitGatewayAddress: {{ configuration.transit_gateway_address }}
+{%- endif %}
+{%- if configuration.transit_gateway_asn is defined %}
+            TransitGatewayAsn: {{ configuration.transit_gateway_asn }}
+{%- endif %}
+{%- endfor %}{# END for configuration in transit_gateway_connect_peer.connect_peer_configuration.bgp_configurations #}
+{%- endif %}{# END if transit_gateway_connect_peer.connect_peer_configuration.bgp_configurations is defined #}
+{%- if transit_gateway_connect_peer.connect_peer_configuration.protocol is defined %}
+        Protocol: {{ transit_gateway_connect_peer.connect_peer_configuration.protocol }}
+{%- endif %}
+{%- if transit_gateway_connect_peer.connect_peer_configuration.transit_gateway_address is defined %}
+        TransitGatewayAddress: {{ transit_gateway_connect_peer.connect_peer_configuration.transit_gateway_address }}
+{%- endif %}
+      TransitGatewayAttachmentId: {{ transit_gateway_connect_peer.transit_gateway_attachment_id | trim }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if transit_gateway_connect_peer.tags is defined %}
+{%- for key,value in transit_gateway_connect_peer.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for transit_gateway_connect_peer in sceptre_user_data.transit_gateway_connect_peers %}
+{%- set transit_gateway_connect_peer_name = transit_gateway_connect_peer.name %}
+  {{ transit_gateway_connect_peer_name }}:
+    Description: The ID of the Connect peer for {{ transit_gateway_connect_peer_name }}
+    Value:
+      Ref: {{ transit_gateway_connect_peer_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_peer_name }}"
+  {{ transit_gateway_connect_peer_name }}CreationTime:
+    Description: The creation time for {{ transit_gateway_connect_peer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_connect_peer_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_peer_name }}-CreationTime"
+  {{ transit_gateway_connect_peer_name }}State:
+    Description: The state of the Connect peer for {{ transit_gateway_connect_peer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_connect_peer_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_peer_name }}-State"
+  {{ transit_gateway_connect_peer_name }}ConnectPeerConfigurationProtocol:
+    Description: The tunnel protocol for {{ transit_gateway_connect_peer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_connect_peer_name }}
+        - ConnectPeerConfiguration.Protocol
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_peer_name }}-ConnectPeerConfigurationProtocol"
+  {{ transit_gateway_connect_peer_name }}TransitGatewayConnectPeerId:
+    Description: The ID of the Connect peer for {{ transit_gateway_connect_peer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_connect_peer_name }}
+        - TransitGatewayConnectPeerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_connect_peer_name }}-TransitGatewayConnectPeerId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::TransitGatewayConnectPeer
+Properties:
+  ConnectPeerConfiguration:
+    BgpConfigurations:
+      -
+        BgpStatus: String
+        PeerAddress: String
+        PeerAsn: Number
+        TransitGatewayAddress: String
+        TransitGatewayAsn: Number
+    InsideCidrBlocks:
+      - String
+    PeerAddress: String
+    Protocol: String
+    TransitGatewayAddress: String
+  Tags:
+    - Key: String
+      Value: String
+  TransitGatewayAttachmentId: String
+#}

@@ -1,0 +1,38 @@
+---
+template:
+  type: file
+  path: ec2/traffic_mirror_filter.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Traffic Mirror Filters
+  traffic_mirror_filters:
+    - name: TrafficMirrorFilter1
+      tags:
+        Name: TrafficMirrorFilter1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: TrafficMirrorFilter2
+      description: "Mirror filter for network services"
+      network_services:
+        - "amazon-dns"
+      deletion_policy: Retain
+      tags:
+        Name: TrafficMirrorFilter2
+        Project: "{{ project_code }}"
+        Environment: Staging
+        Tier: Network
+    - name: TrafficMirrorFilter3
+      description: "Comprehensive traffic mirror filter with multiple services"
+      network_services:
+        - "amazon-dns"
+        - "amazon-ntp"
+      update_replace_policy: Retain
+      tags:
+        Name: TrafficMirrorFilter3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-traffic-mirror-filter

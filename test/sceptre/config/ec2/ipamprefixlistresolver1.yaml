@@ -1,0 +1,56 @@
+---
+template:
+  type: file
+  path: ec2/ipam_prefix_list_resolver.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample IPAM Prefix List Resolvers
+  ipam_prefix_list_resolvers:
+    - name: PrefixResolver1
+      address_family: ipv4
+      description: IPv4 prefix resolver with static CIDR rule
+      ipam_id: ipam-12345678
+      rules:
+        - rule_type: allow
+          static_cidr: "10.0.0.0/8"
+          ipam_scope_id: ipam-scope-abcd1234
+      tags:
+        Name: PrefixResolver1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: PrefixResolver2
+      address_family: ipv6
+      description: IPv6 prefix resolver with conditions
+      rules:
+        - rule_type: deny
+          resource_type: ec2:instance
+          conditions:
+            - resource_region: us-east-1
+              resource_owner: "123456789012"
+            - resource_id: vpc-12345678
+              operation: exact
+      tags:
+        Name: PrefixResolver2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: PrefixResolver3
+      address_family: ipv4
+      deletion_policy: Retain
+      rules:
+        - rule_type: allow
+          conditions:
+            - cidr: "172.16.0.0/12"
+              ipam_pool_id: ipam-pool-xyz789
+            - resource_tag:
+                key: Environment
+                value: Production
+              operation: substring
+      tags:
+        Name: PrefixResolver3
+        Project: "{{ project_code }}"
+        Owner: NetworkTeam
+
+stack_tags:
+  Test: ec2-ipam

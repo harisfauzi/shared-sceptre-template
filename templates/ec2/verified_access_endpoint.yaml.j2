@@ -1,0 +1,284 @@
+---
+{%- macro prep_port_ranges(port_ranges) %}
+PortRanges:
+{%- for port_range in port_ranges %}
+  -
+{%- if port_range.from_port is defined %}
+    FromPort: {{ port_range.from_port }}
+{%- endif %}
+{%- if port_range.to_port is defined %}
+    ToPort: {{ port_range.to_port }}
+{%- endif %}
+{%- endfor %}
+{%- endmacro %}
+Description: {{sceptre_user_data.description|default('EC2 Verified Access Endpoint(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for verified_access_endpoint in sceptre_user_data.verified_access_endpoints %}
+{%- set verified_access_endpoint_name = verified_access_endpoint.name %}
+  {{ verified_access_endpoint_name }}:
+    Type: AWS::EC2::VerifiedAccessEndpoint
+    DeletionPolicy: {{ verified_access_endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ verified_access_endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      AttachmentType: {{ verified_access_endpoint.attachment_type }}
+      EndpointType: {{ verified_access_endpoint.endpoint_type }}
+      VerifiedAccessGroupId: {{ verified_access_endpoint.verified_access_group_id | trim }}
+{%- if verified_access_endpoint.application_domain is defined %}
+      ApplicationDomain: {{ verified_access_endpoint.application_domain }}
+{%- endif %}
+{%- if verified_access_endpoint.cidr_options is defined %}{# BEGIN if verified_access_endpoint.cidr_options is defined #}
+      CidrOptions:
+{%- if verified_access_endpoint.cidr_options.cidr is defined %}
+        Cidr: {{ verified_access_endpoint.cidr_options.cidr }}
+{%- endif %}
+{%- if verified_access_endpoint.cidr_options.port_ranges is defined %}
+        {{- prep_port_ranges(verified_access_endpoint.cidr_options.port_ranges) | indent(width=8, first=false) }}
+{%- endif %}
+{%- if verified_access_endpoint.cidr_options.protocol is defined %}
+        Protocol: {{ verified_access_endpoint.cidr_options.protocol }}
+{%- endif %}
+{%- if verified_access_endpoint.cidr_options.subnet_ids is defined %}{# BEGIN if verified_access_endpoint.cidr_options.subnet_ids is defined #}
+        SubnetIds:
+{%- for subnet_id in verified_access_endpoint.cidr_options.subnet_ids %}
+          - {{ subnet_id }}
+{%- endfor %}
+{%- endif %}{# END if verified_access_endpoint.cidr_options.subnet_ids is defined #}
+{%- endif %}{# END if verified_access_endpoint.cidr_options is defined #}
+{%- if verified_access_endpoint.description is defined %}
+      Description: {{ verified_access_endpoint.description }}
+{%- endif %}
+{%- if verified_access_endpoint.domain_certificate_arn is defined %}
+      DomainCertificateArn: {{ verified_access_endpoint.domain_certificate_arn }}
+{%- endif %}
+{%- if verified_access_endpoint.endpoint_domain_prefix is defined %}
+      EndpointDomainPrefix: {{ verified_access_endpoint.endpoint_domain_prefix }}
+{%- endif %}
+{%- if verified_access_endpoint.load_balancer_options is defined %}{# BEGIN if verified_access_endpoint.load_balancer_options is defined #}
+      LoadBalancerOptions:
+{%- if verified_access_endpoint.load_balancer_options.load_balancer_arn is defined %}
+        LoadBalancerArn: {{ verified_access_endpoint.load_balancer_options.load_balancer_arn }}
+{%- endif %}
+{%- if verified_access_endpoint.load_balancer_options.port is defined %}
+        Port: {{ verified_access_endpoint.load_balancer_options.port }}
+{%- endif %}
+{%- if verified_access_endpoint.load_balancer_options.port_ranges is defined %}
+        {{- prep_port_ranges(verified_access_endpoint.load_balancer_options.port_ranges) | indent(width=8, first=false) }}
+{%- endif %}
+{%- if verified_access_endpoint.load_balancer_options.protocol is defined %}
+        Protocol: {{ verified_access_endpoint.load_balancer_options.protocol }}
+{%- endif %}
+{%- if verified_access_endpoint.load_balancer_options.subnet_ids is defined %}{# BEGIN if verified_access_endpoint.load_balancer_options.subnet_ids is defined #}
+        SubnetIds:
+{%- for subnet_id in verified_access_endpoint.load_balancer_options.subnet_ids %}
+          - {{ subnet_id }}
+{%- endfor %}
+{%- endif %}{# END if verified_access_endpoint.load_balancer_options.subnet_ids is defined #}
+{%- endif %}{# END if verified_access_endpoint.load_balancer_options is defined #}
+{%- if verified_access_endpoint.network_interface_options is defined %}{# BEGIN if verified_access_endpoint.network_interface_options is defined #}
+      NetworkInterfaceOptions:
+{%- if verified_access_endpoint.network_interface_options.network_interface_id is defined %}
+        NetworkInterfaceId: {{ verified_access_endpoint.network_interface_options.network_interface_id }}
+{%- endif %}
+{%- if verified_access_endpoint.network_interface_options.port is defined %}
+        Port: {{ verified_access_endpoint.network_interface_options.port }}
+{%- endif %}
+{%- if verified_access_endpoint.network_interface_options.port_ranges is defined %}
+        {{- prep_port_ranges(verified_access_endpoint.network_interface_options.port_ranges) | indent(width=8, first=false) }}
+{%- endif %}
+{%- if verified_access_endpoint.network_interface_options.protocol is defined %}
+        Protocol: {{ verified_access_endpoint.network_interface_options.protocol }}
+{%- endif %}
+{%- endif %}{# END if verified_access_endpoint.network_interface_options is defined #}
+{%- if verified_access_endpoint.policy_document is defined %}
+      PolicyDocument: {{ verified_access_endpoint.policy_document }}
+{%- endif %}
+{%- if verified_access_endpoint.policy_enabled is defined %}
+      PolicyEnabled: {{ verified_access_endpoint.policy_enabled }}
+{%- endif %}
+{%- if verified_access_endpoint.rds_options is defined %}{# BEGIN if verified_access_endpoint.rds_options is defined #}
+      RdsOptions:
+{%- if verified_access_endpoint.rds_options.port is defined %}
+        Port: {{ verified_access_endpoint.rds_options.port }}
+{%- endif %}
+{%- if verified_access_endpoint.rds_options.protocol is defined %}
+        Protocol: {{ verified_access_endpoint.rds_options.protocol }}
+{%- endif %}
+{%- if verified_access_endpoint.rds_options.rds_db_cluster_arn is defined %}
+        RdsDbClusterArn: {{ verified_access_endpoint.rds_options.rds_db_cluster_arn }}
+{%- endif %}
+{%- if verified_access_endpoint.rds_options.rds_db_instance_arn is defined %}
+        RdsDbInstanceArn: {{ verified_access_endpoint.rds_options.rds_db_instance_arn }}
+{%- endif %}
+{%- if verified_access_endpoint.rds_options.rds_db_proxy_arn is defined %}
+        RdsDbProxyArn: {{ verified_access_endpoint.rds_options.rds_db_proxy_arn }}
+{%- endif %}
+{%- if verified_access_endpoint.rds_options.rds_endpoint is defined %}
+        RdsEndpoint: {{ verified_access_endpoint.rds_options.rds_endpoint }}
+{%- endif %}
+{%- if verified_access_endpoint.rds_options.subnet_ids is defined %}{# BEGIN if verified_access_endpoint.rds_options.subnet_ids is defined #}
+        SubnetIds:
+{%- for subnet_id in verified_access_endpoint.rds_options.subnet_ids %}
+          - {{ subnet_id }}
+{%- endfor %}
+{%- endif %}{# END if verified_access_endpoint.rds_options.subnet_ids is defined #}
+{%- endif %}{# END if verified_access_endpoint.rds_options is defined #}
+{%- if verified_access_endpoint.security_group_ids is defined %}{# BEGIN if verified_access_endpoint.security_group_ids is defined #}
+      SecurityGroupIds:
+{%- for security_group_id in verified_access_endpoint.security_group_ids %}
+        - {{ security_group_id }}
+{%- endfor %}
+{%- endif %}{# END if verified_access_endpoint.security_group_ids is defined #}
+{%- if verified_access_endpoint.sse_specification is defined %}{# BEGIN if verified_access_endpoint.sse_specification is defined #}
+      SseSpecification:
+{%- if verified_access_endpoint.sse_specification.customer_managed_key_enabled is defined %}
+        CustomerManagedKeyEnabled: {{ verified_access_endpoint.sse_specification.customer_managed_key_enabled | lower }}
+{%- endif %}
+{%- if verified_access_endpoint.sse_specification.kms_key_arn is defined %}
+        KmsKeyArn: {{ verified_access_endpoint.sse_specification.kms_key_arn }}
+{%- endif %}
+{%- endif %}{# END if verified_access_endpoint.sse_specification is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if verified_access_endpoint.tags is defined %}
+{%- for key,value in verified_access_endpoint.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for verified_access_endpoint in sceptre_user_data.verified_access_endpoints %}
+{%- set verified_access_endpoint_name = verified_access_endpoint.name %}
+  {{ verified_access_endpoint_name }}:
+    Description: The ID of the Verified Access endpoint {{ verified_access_endpoint_name }}
+    Value:
+      Ref: {{ verified_access_endpoint_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_endpoint_name }}"
+  {{ verified_access_endpoint_name }}CreationTime:
+    Description: The creation time of {{ verified_access_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_endpoint_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_endpoint_name }}-CreationTime"
+  {{ verified_access_endpoint_name }}DeviceValidationDomain:
+    Description: The device validation domain for {{ verified_access_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_endpoint_name }}
+        - DeviceValidationDomain
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_endpoint_name }}-DeviceValidationDomain"
+  {{ verified_access_endpoint_name }}EndpointDomain:
+    Description: The DNS name generated for the endpoint for {{ verified_access_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_endpoint_name }}
+        - EndpointDomain
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_endpoint_name }}-EndpointDomain"
+  {{ verified_access_endpoint_name }}LastUpdatedTime:
+    Description: The last updated time of {{ verified_access_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_endpoint_name }}
+        - LastUpdatedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_endpoint_name }}-LastUpdatedTime"
+  {{ verified_access_endpoint_name }}Status:
+    Description: The endpoint status for {{ verified_access_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_endpoint_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_endpoint_name }}-Status"
+  {{ verified_access_endpoint_name }}VerifiedAccessEndpointId:
+    Description: The ID of the Verified Access endpoint {{ verified_access_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_endpoint_name }}
+        - VerifiedAccessEndpointId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_endpoint_name }}-VerifiedAccessEndpointId"
+  {{ verified_access_endpoint_name }}VerifiedAccessInstanceId:
+    Description: The instance identifier for {{ verified_access_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_endpoint_name }}
+        - VerifiedAccessInstanceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_endpoint_name }}-VerifiedAccessInstanceId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::VerifiedAccessEndpoint
+Properties:
+  ApplicationDomain: String
+  AttachmentType: String
+  CidrOptions:
+    Cidr: String
+    PortRanges:
+      -
+        FromPort: Integer
+        ToPort: Integer
+    Protocol: String
+    SubnetIds:
+      - String
+  Description: String
+  DomainCertificateArn: String
+  EndpointDomainPrefix: String
+  EndpointType: String
+  LoadBalancerOptions:
+    LoadBalancerOptions
+    LoadBalancerArn: String
+    Port: Integer
+    PortRanges:
+      -
+        FromPort: Integer
+        ToPort: Integer
+    Protocol: String
+    SubnetIds:
+      - String
+  NetworkInterfaceOptions:
+    NetworkInterfaceId: String
+    Port: Integer
+    PortRanges:
+      -
+        FromPort: Integer
+        ToPort: Integer
+    Protocol: String
+  PolicyDocument: String
+  PolicyEnabled: Boolean
+  RdsOptions:
+    Port: Integer
+    Protocol: String
+    RdsDbClusterArn: String
+    RdsDbInstanceArn: String
+    RdsDbProxyArn: String
+    RdsEndpoint: String
+    SubnetIds:
+      - String
+  SecurityGroupIds:
+    - String
+  SseSpecification:
+    CustomerManagedKeyEnabled: Boolean
+    KmsKeyArn: String
+  Tags:
+    - Key: String
+      Value: String
+  VerifiedAccessGroupId: String
+#}

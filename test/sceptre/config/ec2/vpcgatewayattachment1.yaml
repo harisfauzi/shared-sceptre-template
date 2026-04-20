@@ -1,0 +1,26 @@
+---
+template:
+  type: file
+  path: ec2/vpc_gateway_attachment.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPC Gateway Attachments
+  vpc_gateway_attachments:
+    - name: PrimaryInternetGatewayAttachment
+      vpc_id: "vpc-12345678901234567"
+      internet_gateway_id: "igw-12345678901234567"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondaryVpnGatewayAttachment
+      vpc_id: "vpc-87654321098765432"
+      vpn_gateway_id: "vgw-87654321098765432"
+      deletion_policy: Delete
+    - name: TertiaryInternetGatewayAttachment
+      vpc_id: "vpc-abcdef1234567890ab"
+      internet_gateway_id: "igw-abcdef1234567890ab"
+      deletion_policy: Retain
+
+stack_tags:
+  Test: ec2-vpc-gateway-attachment

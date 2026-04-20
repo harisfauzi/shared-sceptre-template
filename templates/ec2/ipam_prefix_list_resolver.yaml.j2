@@ -1,0 +1,140 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 IPAM Prefix List Resolver(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for ipam_prefix_list_resolver in sceptre_user_data.ipam_prefix_list_resolvers %}
+{%- set ipam_prefix_list_resolver_name = ipam_prefix_list_resolver.name %}
+  {{ ipam_prefix_list_resolver_name }}:
+    Type: AWS::EC2::IPAMPrefixListResolver
+    DeletionPolicy: {{ ipam_prefix_list_resolver.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ ipam_prefix_list_resolver.update_replace_policy | default('Delete') }}
+    Properties:
+      AddressFamily: {{ ipam_prefix_list_resolver.address_family }}
+{%- if ipam_prefix_list_resolver.description is defined %}
+      Description: {{ ipam_prefix_list_resolver.description }}
+{%- endif %}
+{%- if ipam_prefix_list_resolver.ipam_id is defined %}
+      IpamId: {{ ipam_prefix_list_resolver.ipam_id }}
+{%- endif %}
+{%- if ipam_prefix_list_resolver.rules is defined %}{# BEGIN if ipam_prefix_list_resolver.rules is defined #}
+      Rules:
+{%- for rule in ipam_prefix_list_resolver.rules %}{# BEGIN for rule in ipam_prefix_list_resolver.rules #}
+        -
+          RuleType: {{ rule.rule_type }}
+{%- if rule.conditions is defined %}{# BEGIN if rule.conditions is defined #}
+          Conditions:
+{%- for condition in rule.conditions %}{# BEGIN for condition in rule.conditions #}
+            -
+{%- if condition.cidr is defined %}
+              Cidr: {{ condition.cidr }}
+{%- endif %}
+{%- if condition.ipam_pool_id is defined %}
+              IpamPoolId: {{ condition.ipam_pool_id }}
+{%- endif %}
+{%- if condition.operation is defined %}
+              Operation: {{ condition.operation }}
+{%- endif %}
+{%- if condition.resource_id is defined %}
+              ResourceId: {{ condition.resource_id }}
+{%- endif %}
+{%- if condition.resource_owner is defined %}
+              ResourceOwner: {{ condition.resource_owner }}
+{%- endif %}
+{%- if condition.resource_region is defined %}
+              ResourceRegion: {{ condition.resource_region }}
+{%- endif %}
+{%- if condition.resource_tag is defined %}
+              ResourceTag:
+                Key: {{ condition.resource_tag.key }}
+                Value: {{ condition.resource_tag.value }}
+{%- endif %}
+{%- endfor %}{# END for condition in rule.conditions #}
+{%- endif %}{# END if rule.conditions is defined #}
+{%- if rule.ipam_scope_id is defined %}
+          IpamScopeId: {{ rule.ipam_scope_id }}
+{%- endif %}
+{%- if rule.resource_type is defined %}
+          ResourceType: {{ rule.resource_type }}
+{%- endif %}
+{%- if rule.static_cidr is defined %}
+          StaticCidr: {{ rule.static_cidr }}
+{%- endif %}
+{%- endfor %}{# END for rule in ipam_prefix_list_resolver.rules #}
+{%- endif %}{# END if ipam_prefix_list_resolver.rules is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if ipam_prefix_list_resolver.tags is defined %}
+{%- for key, value in ipam_prefix_list_resolver.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for ipam_prefix_list_resolver in sceptre_user_data.ipam_prefix_list_resolvers %}
+{%- set ipam_prefix_list_resolver_name = ipam_prefix_list_resolver.name %}
+  {{ ipam_prefix_list_resolver_name }}:
+    Description: The resolver ID for {{ ipam_prefix_list_resolver_name }}
+    Value:
+      Ref: {{ ipam_prefix_list_resolver_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ipam_prefix_list_resolver_name }}"
+  {{ ipam_prefix_list_resolver_name }}IpamArn:
+    Description: The IPAM ARN for {{ ipam_prefix_list_resolver_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ ipam_prefix_list_resolver_name }}
+        - IpamArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ipam_prefix_list_resolver_name }}-IpamArn"
+  {{ ipam_prefix_list_resolver_name }}IpamPrefixListResolverArn:
+    Description: The ARN for IPAM prefix list resolver {{ ipam_prefix_list_resolver_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ ipam_prefix_list_resolver_name }}
+        - IpamPrefixListResolverArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ipam_prefix_list_resolver_name }}-IpamPrefixListResolverArn"
+  {{ ipam_prefix_list_resolver_name }}IpamPrefixListResolverId:
+    Description: The ID for IPAM prefix list resolver {{ ipam_prefix_list_resolver_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ ipam_prefix_list_resolver_name }}
+        - IpamPrefixListResolverId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ipam_prefix_list_resolver_name }}-IpamPrefixListResolverId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::IPAMPrefixListResolver
+Properties:
+  AddressFamily: String
+  Description: String
+  IpamId: String
+  Rules:
+    -
+      Conditions:
+        -
+          Cidr: String
+          IpamPoolId: String
+          Operation: String
+          ResourceId: String
+          ResourceOwner: String
+          ResourceRegion: String
+          ResourceTag:
+            Key: String
+            Value: String
+      IpamScopeId: String
+      ResourceType: String
+      RuleType: String
+      StaticCidr: String
+  Tags:
+    - Key: String
+      Value: String
+#}

@@ -1,0 +1,17 @@
+---
+template:
+  type: file
+  path: ec2/vpc_block_public_access_options.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPC Block Public Access Options
+  vpc_block_public_access_options:
+    name: BlockPublicAccessOptions
+    internet_gateway_block_mode: block-bidirectional
+    deletion_policy: Delete
+    update_replace_policy: Delete
+
+stack_tags:
+  Test: ec2-vpc-block-public-access-options

@@ -1,0 +1,29 @@
+---
+template:
+  type: file
+  path: ec2/volume_attachment.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 Volume Attachments
+  volume_attachments:
+    - name: PrimaryVolumeAttachment
+      instance_id: "i-1234567890abcdef0"
+      volume_id: "vol-1234567890abcdef0"
+      device: "/dev/sdf"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondaryVolumeAttachment
+      instance_id: "i-0987654321fedcba0"
+      volume_id: "vol-0987654321fedcba0"
+      device: "/dev/sdg"
+      deletion_policy: Delete
+    - name: TertiaryVolumeAttachment
+      instance_id: "i-abcdef1234567890ab"
+      volume_id: "vol-abcdef1234567890ab"
+      ebs_card_index: 1
+      deletion_policy: Retain
+
+stack_tags:
+  Test: ec2-volume-attachment

@@ -31,6 +31,9 @@ Resources:
 {%- if transit_gateway.dns_support is defined %}
       DnsSupport: {{ transit_gateway.dns_support }}
 {%- endif %}
+{%- if transit_gateway.encryption_support is defined %}
+      EncryptionSupport: {{ transit_gateway.encryption_support }}
+{%- endif %}
 {%- if transit_gateway.multicast_support is defined %}
       MulticastSupport: {{ transit_gateway.multicast_support }}
 {%- endif %}
@@ -81,7 +84,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ transit_gateway_name }}-Arn"
 {%- endfor %}{#
-# Supported structure as of 20241027:
+# Supported structure as of 2026-04-19:
 Type: AWS::EC2::TransitGateway
 Properties:
   AmazonSideAsn: Integer
@@ -91,6 +94,7 @@ Properties:
   DefaultRouteTablePropagation: String
   Description: String
   DnsSupport: String
+  EncryptionSupport: String
   MulticastSupport: String
   PropagationDefaultRouteTableId: String
   SecurityGroupReferencingSupport: String

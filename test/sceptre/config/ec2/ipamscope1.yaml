@@ -6,13 +6,35 @@ template:
 sceptre_user_data:
   project_code: "{{ stack_group_config.project_code }}"
   source_repo_url: "{{git_repo}}"
+  description: Sample IPAM Scopes
   ipam_scopes:
-    - name: scope1
+    - name: IpamScope1
       ipam_id: ipam-036486dfa6af58ee0
       description: Private scope for IPAM1
       tags:
-        Name: scope1
+        Name: IpamScope1
         Project: "{{ project_code }}"
+        Environment: Production
+    - name: IpamScope2
+      ipam_id: ipam-0987654321abcdef0
+      description: Public scope with external authority
+      external_authority_configuration:
+        external_resource_identifier: arn:aws:route53:us-east-1:123456789012:resource
+        ipam_scope_external_authority_type: route53
+      deletion_policy: Retain
+      tags:
+        Name: IpamScope2
+        Project: "{{ project_code }}"
+        Environment: Staging
+        Authority: External
+    - name: IpamScope3
+      ipam_id: ipam-0aabbccdd11223344
+      description: Private scope with custom retention
+      update_replace_policy: Retain
+      tags:
+        Name: IpamScope3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
 
 stack_tags:
   Test: ec2-ipamscope

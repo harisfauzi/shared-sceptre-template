@@ -1,0 +1,71 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 IPAM Prefix List Resolver Target(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for ipam_prefix_list_resolver_target in sceptre_user_data.ipam_prefix_list_resolver_targets %}
+{%- set ipam_prefix_list_resolver_target_name = ipam_prefix_list_resolver_target.name %}
+  {{ ipam_prefix_list_resolver_target_name }}:
+    Type: AWS::EC2::IPAMPrefixListResolverTarget
+    DeletionPolicy: {{ ipam_prefix_list_resolver_target.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ ipam_prefix_list_resolver_target.update_replace_policy | default('Delete') }}
+    Properties:
+      IpamPrefixListResolverId: {{ ipam_prefix_list_resolver_target.ipam_prefix_list_resolver_id | trim }}
+      PrefixListId: {{ ipam_prefix_list_resolver_target.prefix_list_id | trim }}
+      PrefixListRegion: {{ ipam_prefix_list_resolver_target.prefix_list_region }}
+      TrackLatestVersion: {{ ipam_prefix_list_resolver_target.track_latest_version | default('false') }}
+{%- if ipam_prefix_list_resolver_target.desired_version is defined %}
+      DesiredVersion: {{ ipam_prefix_list_resolver_target.desired_version }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if ipam_prefix_list_resolver_target.tags is defined %}
+{%- for key, value in ipam_prefix_list_resolver_target.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for ipam_prefix_list_resolver_target in sceptre_user_data.ipam_prefix_list_resolver_targets %}
+{%- set ipam_prefix_list_resolver_target_name = ipam_prefix_list_resolver_target.name %}
+  {{ ipam_prefix_list_resolver_target_name }}:
+    Description: The resolver target ID for {{ ipam_prefix_list_resolver_target_name }}
+    Value:
+      Ref: {{ ipam_prefix_list_resolver_target_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ipam_prefix_list_resolver_target_name }}"
+  {{ ipam_prefix_list_resolver_target_name }}IpamPrefixListResolverTargetArn:
+    Description: The ARN of the IPAM prefix list resolver target {{ ipam_prefix_list_resolver_target_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ ipam_prefix_list_resolver_target_name }}
+        - IpamPrefixListResolverTargetArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ipam_prefix_list_resolver_target_name }}-IpamPrefixListResolverTargetArn"
+  {{ ipam_prefix_list_resolver_target_name }}IpamPrefixListResolverTargetId:
+    Description: The ID of the IPAM prefix list resolver target {{ ipam_prefix_list_resolver_target_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ ipam_prefix_list_resolver_target_name }}
+        - IpamPrefixListResolverTargetId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ipam_prefix_list_resolver_target_name }}-IpamPrefixListResolverTargetId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::IPAMPrefixListResolverTarget
+Properties:
+  DesiredVersion: Integer
+  IpamPrefixListResolverId: String
+  PrefixListId: String
+  PrefixListRegion: String
+  Tags:
+    - Key: String
+      Value: String
+  TrackLatestVersion: Boolean
+#}

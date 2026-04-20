@@ -147,6 +147,24 @@ Resources:
         - LicenseConfigurationArn: {{ specification.license_configuration_arn | trim }}
 {%- endfor %}
 {%- endif %}
+{%- if instance.metadata_options is defined %}{# BEGIN if instance.metadata_options is defined #}
+      MetadataOptions:
+{%- if instance.metadata_options.http_endpoint is defined %}
+        HttpEndpoint: {{ instance.metadata_options.http_endpoint }}
+{%- endif %}
+{%- if instance.metadata_options.http_protocol_ipv6 is defined %}
+        HttpProtocolIpv6: {{ instance.metadata_options.http_protocol_ipv6 }}
+{%- endif %}
+{%- if instance.metadata_options.http_put_response_hop_limit is defined %}
+        HttpPutResponseHopLimit: {{ instance.metadata_options.http_put_response_hop_limit }}
+{%- endif %}
+{%- if instance.metadata_options.http_tokens is defined %}
+        HttpTokens: {{ instance.metadata_options.http_tokens }}
+{%- endif %}
+{%- if instance.metadata_options.instance_metadata_tags is defined %}
+        InstanceMetadataTags: {{ instance.metadata_options.instance_metadata_tags }}
+{%- endif %}
+{%- endif %}{# END if instance.metadata_options is defined #}
 {%- if instance.monitoring is defined %}
       Monitoring: {{ instance.monitoring | lower }}
 {%- endif %}
@@ -262,15 +280,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}"
-  {{ instance_name }}AvailabilityZone:
-    Description: The Availability Zone for {{ instance_name }}
+  {{ instance_name }}VpcId:
+    Description: The VPC ID for {{ instance_name }}
     Value:
       Fn::GetAtt:
         - {{ instance_name }}
-        - AvailabilityZone
+        - VpcId
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-AvailabilityZone"
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-VpcId"
   {{ instance_name }}PrivateDnsName:
     Description: The Private DNS Name for {{ instance_name }}
     Value:
@@ -290,7 +308,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}-PrivateIp"
 {%- endfor %}{#
-# Supported structure as of 2025-04-08:
+# Supported structure as of 2026-04-19:
 Type: AWS::EC2::Instance
 Properties:
   AdditionalInfo: String
@@ -343,6 +361,12 @@ Properties:
     Version: String
   LicenseSpecifications:
     - LicenseConfigurationArn: String
+  MetadataOptions:
+    HttpEndpoint: String
+    HttpProtocolIpv6: String
+    HttpPutResponseHopLimit: Integer
+    HttpTokens: String
+    InstanceMetadataTags: String
   Monitoring: Boolean
   NetworkInterfaces:
     -

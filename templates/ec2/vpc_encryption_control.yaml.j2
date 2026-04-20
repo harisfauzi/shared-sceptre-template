@@ -1,0 +1,79 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 VPC Encryption Control(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for vpc_encryption_control in sceptre_user_data.vpc_encryption_controls %}
+{%- set vpc_encryption_control_name = vpc_encryption_control.name %}
+  {{ vpc_encryption_control_name }}:
+    Type: AWS::EC2::VPCEncryptionControl
+    DeletionPolicy: {{ vpc_encryption_control.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_encryption_control.update_replace_policy | default('Delete') }}
+    Properties:
+      VpcId: {{ vpc_encryption_control.vpc_id }}
+{%- if vpc_encryption_control.egress_only_internet_gateway_exclusion_input is defined %}
+      EgressOnlyInternetGatewayExclusionInput: {{ vpc_encryption_control.egress_only_internet_gateway_exclusion_input }}
+{%- endif %}
+{%- if vpc_encryption_control.elastic_file_system_exclusion_input is defined %}
+      ElasticFileSystemExclusionInput: {{ vpc_encryption_control.elastic_file_system_exclusion_input }}
+{%- endif %}
+{%- if vpc_encryption_control.internet_gateway_exclusion_input is defined %}
+      InternetGatewayExclusionInput: {{ vpc_encryption_control.internet_gateway_exclusion_input }}
+{%- endif %}
+{%- if vpc_encryption_control.lambda_exclusion_input is defined %}
+      LambdaExclusionInput: {{ vpc_encryption_control.lambda_exclusion_input }}
+{%- endif %}
+{%- if vpc_encryption_control.mode is defined %}
+      Mode: {{ vpc_encryption_control.mode }}
+{%- endif %}
+{%- if vpc_encryption_control.nat_gateway_exclusion_input is defined %}
+      NatGatewayExclusionInput: {{ vpc_encryption_control.nat_gateway_exclusion_input }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if vpc_encryption_control.tags is defined %}
+{%- for key,value in vpc_encryption_control.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if vpc_encryption_control.virtual_private_gateway_exclusion_input is defined %}
+      VirtualPrivateGatewayExclusionInput: {{ vpc_encryption_control.virtual_private_gateway_exclusion_input }}
+{%- endif %}
+{%- if vpc_encryption_control.vpc_lattice_exclusion_input is defined %}
+      VpcLatticeExclusionInput: {{ vpc_encryption_control.vpc_lattice_exclusion_input }}
+{%- endif %}
+{%- if vpc_encryption_control.vpc_peering_exclusion_input is defined %}
+      VpcPeeringExclusionInput: {{ vpc_encryption_control.vpc_peering_exclusion_input }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for vpc_encryption_control in sceptre_user_data.vpc_encryption_controls %}
+{%- set vpc_encryption_control_name = vpc_encryption_control.name %}
+  {{ vpc_encryption_control_name }}:
+    Description: The VPC Encryption Control ID for {{ vpc_encryption_control_name }}
+    Value:
+      Ref: {{ vpc_encryption_control_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_encryption_control_name }}"
+{%- endfor %}{#
+# Support structure as of 2026-04-20:
+Type: AWS::EC2::VPCEncryptionControl
+Properties:
+  EgressOnlyInternetGatewayExclusionInput: String
+  ElasticFileSystemExclusionInput: String
+  InternetGatewayExclusionInput: String
+  LambdaExclusionInput: String
+  Mode: String
+  NatGatewayExclusionInput: String
+  Tags:
+    - Key: String
+      Value: String
+  VirtualPrivateGatewayExclusionInput: String
+  VpcId: String
+  VpcLatticeExclusionInput: String
+  VpcPeeringExclusionInput: String
+#}

@@ -1,0 +1,194 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Verified Access Trust Provider(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for verified_access_trust_provider in sceptre_user_data.verified_access_trust_providers %}
+{%- set verified_access_trust_provider_name = verified_access_trust_provider.name %}
+  {{ verified_access_trust_provider_name }}:
+    Type: AWS::EC2::VerifiedAccessTrustProvider
+    DeletionPolicy: {{ verified_access_trust_provider.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ verified_access_trust_provider.update_replace_policy | default('Delete') }}
+    Properties:
+      TrustProviderType: {{ verified_access_trust_provider.trust_provider_type }}
+      PolicyReferenceName: {{ verified_access_trust_provider.policy_reference_name }}
+{%- if verified_access_trust_provider.description is defined %}
+      Description: {{ verified_access_trust_provider.description }}
+{%- endif %}
+{%- if verified_access_trust_provider.device_options is defined %}{# BEGIN if verified_access_trust_provider.device_options is defined #}
+      DeviceOptions:
+{%- if verified_access_trust_provider.device_options.public_signing_key_url is defined %}
+        PublicSigningKeyUrl: {{ verified_access_trust_provider.device_options.public_signing_key_url }}
+{%- endif %}
+{%- if verified_access_trust_provider.device_options.tenant_id is defined %}
+        TenantId: {{ verified_access_trust_provider.device_options.tenant_id }}
+{%- endif %}
+{%- endif %}{# END if verified_access_trust_provider.device_options is defined #}
+{%- if verified_access_trust_provider.device_trust_provider_type is defined %}
+      DeviceTrustProviderType: {{ verified_access_trust_provider.device_trust_provider_type }}
+{%- endif %}
+{%- if verified_access_trust_provider.native_application_oidc_options is defined %}{# BEGIN if verified_access_trust_provider.native_application_oidc_options is defined #}
+      NativeApplicationOidcOptions:
+{%- if verified_access_trust_provider.native_application_oidc_options.authorization_endpoint is defined %}
+        AuthorizationEndpoint: {{ verified_access_trust_provider.native_application_oidc_options.authorization_endpoint}}
+{%- endif %}
+{%- if verified_access_trust_provider.native_application_oidc_options.client_id is defined %}
+        ClientId: {{ verified_access_trust_provider.native_application_oidc_options.client_id }}
+{%- endif %}
+{%- if verified_access_trust_provider.native_application_oidc_options.client_secret is defined %}
+        ClientSecret: {{ verified_access_trust_provider.native_application_oidc_options.client_secret }}
+{%- endif %}
+{%- if verified_access_trust_provider.native_application_oidc_options.issuer is defined %}
+        Issuer: {{ verified_access_trust_provider.native_application_oidc_options.issuer }}
+{%- endif %}
+{%- if verified_access_trust_provider.native_application_oidc_options.public_signing_key_endpoint is defined %}
+        PublicSigningKeyEndpoint: {{ verified_access_trust_provider.native_application_oidc_options.public_signing_key_endpoint }}
+{%- endif %}
+{%- if verified_access_trust_provider.native_application_oidc_options.scope is defined %}
+        Scope: {{ verified_access_trust_provider.native_application_oidc_options.scope }}
+{%- endif %}
+{%- if verified_access_trust_provider.native_application_oidc_options.token_endpoint is defined %}
+        TokenEndpoint: {{ verified_access_trust_provider.native_application_oidc_options.token_endpoint }}
+{%- endif %}
+{%- if verified_access_trust_provider.native_application_oidc_options.user_info_endpoint is defined %}
+        UserInfoEndpoint: {{ verified_access_trust_provider.native_application_oidc_options.user_info_endpoint }}
+{%- endif %}
+{%- endif %}{# END if verified_access_trust_provider.native_application_oidc_options is defined #}
+{%- if verified_access_trust_provider.oidc_options is defined %}{# BEGIN if verified_access_trust_provider.oidc_options is defined #}
+      OidcOptions:
+{%- if verified_access_trust_provider.oidc_options.authorization_endpoint is defined %}
+        AuthorizationEndpoint: {{ verified_access_trust_provider.oidc_options.authorization_endpoint }}
+{%- endif %}
+{%- if verified_access_trust_provider.oidc_options.client_id is defined %}
+        ClientId: {{ verified_access_trust_provider.oidc_options.client_id }}
+{%- endif %}
+{%- if verified_access_trust_provider.oidc_options.client_secret is defined %}
+        ClientSecret: {{ verified_access_trust_provider.oidc_options.client_secret }}
+{%- endif %}
+{%- if verified_access_trust_provider.oidc_options.issuer is defined %}
+        Issuer: {{ verified_access_trust_provider.oidc_options.issuer }}
+{%- endif %}
+{%- if verified_access_trust_provider.oidc_options.scope is defined %}
+        Scope: {{ verified_access_trust_provider.oidc_options.scope }}
+{%- endif %}
+{%- if verified_access_trust_provider.oidc_options.token_endpoint is defined %}
+        TokenEndpoint: {{ verified_access_trust_provider.oidc_options.token_endpoint }}
+{%- endif %}
+{%- if verified_access_trust_provider.oidc_options.user_info_endpoint is defined %}
+        UserInfoEndpoint: {{ verified_access_trust_provider.oidc_options.user_info_endpoint }}
+{%- endif %}
+{%- endif %}{# END if verified_access_trust_provider.oidc_options is defined #}
+{%- if verified_access_trust_provider.sse_specification is defined %}{# BEGIN if verified_access_trust_provider.sse_specification is defined #}
+      SseSpecification:
+{%- if verified_access_trust_provider.sse_specification.customer_managed_key_enabled is defined %}
+        CustomerManagedKeyEnabled: {{ verified_access_trust_provider.sse_specification.customer_managed_key_enabled | lower }}
+{%- endif %}
+{%- if verified_access_trust_provider.sse_specification.kms_key_arn is defined %}
+        KmsKeyArn: {{ verified_access_trust_provider.sse_specification.kms_key_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if verified_access_trust_provider.sse_specification is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if verified_access_trust_provider.tags is defined %}
+{%- for key,value in verified_access_trust_provider.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if verified_access_trust_provider.user_trust_provider_type is defined %}
+      UserTrustProviderType: {{ verified_access_trust_provider.user_trust_provider_type }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for verified_access_trust_provider in sceptre_user_data.verified_access_trust_providers %}
+{%- set verified_access_trust_provider_name = verified_access_trust_provider.name %}
+  {{ verified_access_trust_provider_name }}:
+    Description: The ID of the Verified Access group {{ verified_access_trust_provider_name }}
+    Value:
+      Ref: {{ verified_access_trust_provider_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_trust_provider_name }}"
+  {{ verified_access_trust_provider_name }}CreationTime:
+    Description: The creation time of {{ verified_access_trust_provider_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_trust_provider_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_trust_provider_name }}-CreationTime"
+  {{ verified_access_trust_provider_name }}LastUpdatedTime:
+    Description: The last updated time of {{ verified_access_trust_provider_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_trust_provider_name }}
+        - LastUpdatedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_trust_provider_name }}-LastUpdatedTime"
+  {{ verified_access_trust_provider_name }}Owner:
+    Description: The AWS account ID that owns the group {{ verified_access_trust_provider_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_trust_provider_name }}
+        - Owner
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_trust_provider_name }}-Owner"
+  {{ verified_access_trust_provider_name }}VerifiedAccessGroupArn:
+    Description: The ARN of the Verified Access group of {{ verified_access_trust_provider_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_trust_provider_name }}
+        - VerifiedAccessGroupArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_trust_provider_name }}-VerifiedAccessGroupArn"
+  {{ verified_access_trust_provider_name }}VerifiedAccessGroupId:
+    Description: The ID of the Verified Access group for {{ verified_access_trust_provider_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_trust_provider_name }}
+        - VerifiedAccessGroupId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_trust_provider_name }}-VerifiedAccessGroupId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-20:
+Type: AWS::EC2::VerifiedAccessTrustProvider
+Properties:
+  Description: String
+  DeviceOptions:
+    PublicSigningKeyUrl: String
+    TenantId: String
+  DeviceTrustProviderType: String
+  NativeApplicationOidcOptions:
+    AuthorizationEndpoint: String
+    ClientId: String
+    ClientSecret: String
+    Issuer: String
+    PublicSigningKeyEndpoint: String
+    Scope: String
+    TokenEndpoint: String
+    UserInfoEndpoint: String
+  OidcOptions:
+    AuthorizationEndpoint: String
+    ClientId: String
+    ClientSecret: String
+    Issuer: String
+    Scope: String
+    TokenEndpoint: String
+    UserInfoEndpoint: String
+  PolicyReferenceName: String
+  SseSpecification:
+    CustomerManagedKeyEnabled: Boolean
+    KmsKeyArn: String
+  Tags:
+    - Key: String
+      Value: String
+  TrustProviderType: String
+  UserTrustProviderType: String
+#}

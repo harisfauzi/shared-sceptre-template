@@ -1,0 +1,63 @@
+---
+Description: {{sceptre_user_data.description|default('Subnet(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for subnet_cidr_block in sceptre_user_data.subnet_cidr_blocks %}
+{%- set subnet_cidr_block_name = subnet_cidr_block.name %}
+  {{ subnet_cidr_block_name }}:
+    Type: AWS::EC2::SubnetCidrBlock
+    DeletionPolicy: {{ subnet_cidr_block.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ subnet_cidr_block.update_replace_policy | default('Delete') }}
+    Properties:
+      SubnetId: {{ subnet_cidr_block.subnet_id | trim }}
+{%- if subnet_cidr_block.ipv6_cidr_block is defined %}
+      Ipv6CidrBlock: {{ subnet_cidr_block.ipv6_cidr_block }}
+{%- endif %}
+{%- if subnet_cidr_block.ipv6_ipam_pool_id is defined %}
+      Ipv6IpamPoolId: {{ subnet_cidr_block.ipv6_ipam_pool_id | trim}}
+{%- endif %}
+{%- if subnet_cidr_block.ipv6_netmask_length is defined %}
+      Ipv6NetmaskLength: {{ subnet_cidr_block.ipv6_netmask_length }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for subnet_cidr_block in sceptre_user_data.subnet_cidr_blocks %}
+{%- set subnet_cidr_block_name = subnet_cidr_block.name %}
+  {{ subnet_cidr_block_name }}:
+    Description: |
+      The association ID for the subnet’s IPv6 CIDR block
+      for {{ subnet_cidr_block_name }}
+    Value:
+      Ref: {{ subnet_cidr_block_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ subnet_cidr_block_name }}"
+  {{ subnet_cidr_block_name }}Id:
+    Description: The ID of the association for {{ subnet_cidr_block_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ subnet_cidr_block_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ subnet_cidr_block_name }}-Id"
+  {{ subnet_cidr_block_name }}IpSource:
+    Description: The source that allocated the IP address spacefor {{ subnet_cidr_block_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ subnet_cidr_block_name }}
+        - IpSource
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ subnet_cidr_block_name }}-IpSource"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::SubnetCidrBlock
+Properties:
+  Ipv6CidrBlock: String
+  Ipv6IpamPoolId: String
+  Ipv6NetmaskLength: Integer
+  SubnetId: String
+#}

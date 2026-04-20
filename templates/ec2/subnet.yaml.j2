@@ -82,7 +82,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
       VpcId: {{ subnet.vpc_id | trim }}
-{############ AWS::EC2::SubnetNetworkAclAssociation ############}
+{#-########### AWS::EC2::SubnetNetworkAclAssociation ############}
 {%- if subnet.network_acl_id is defined %}
   {{ subnet_name }}SubnetNetworkAclAssociation:
     Type: AWS::EC2::SubnetNetworkAclAssociation
@@ -91,7 +91,7 @@ Resources:
       SubnetId:
         Ref: {{ subnet_name }}
 {%- endif %}
-{############# AWS::EC2::SubnetRouteTableAssociation ############}
+{#-########### AWS::EC2::SubnetRouteTableAssociation ############}
 {%- if subnet.route_table_id is defined %}
   {{ subnet_name }}SubnetRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation

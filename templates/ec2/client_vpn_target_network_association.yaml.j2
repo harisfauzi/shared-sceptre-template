@@ -24,9 +24,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ client_vpn_tna_name }}"
-{%- endfor %}
-{#
-# Supported structure as of 20241027:
+{%- endfor %}{#
+# Supported structure as of 2025-03-29:
 Type: AWS::EC2::ClientVpnTargetNetworkAssociation
 Properties:
   ClientVpnEndpointId: String

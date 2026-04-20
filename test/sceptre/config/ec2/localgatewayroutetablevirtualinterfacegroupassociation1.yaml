@@ -1,0 +1,36 @@
+---
+template:
+  type: file
+  path: ec2/local_gateway_route_table_virtual_interface_group_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Local Gateway Route Table Virtual Interface Group Associations
+  local_gateway_route_table_virtual_interface_group_associations:
+    - name: VifGroupAssociation1
+      local_gateway_route_table_id: "lgw-rtb-12345678"
+      local_gateway_virtual_interface_group_id: "lgw-vif-grp-abcdef01"
+      tags:
+        Name: VifGroupAssociation1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: VifGroupAssociation2
+      local_gateway_route_table_id: "lgw-rtb-87654321"
+      local_gateway_virtual_interface_group_id: "lgw-vif-grp-ghijkl02"
+      deletion_policy: Retain
+      tags:
+        Name: VifGroupAssociation2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: VifGroupAssociation3
+      local_gateway_route_table_id: "lgw-rtb-aabbccdd"
+      local_gateway_virtual_interface_group_id: "lgw-vif-grp-mnopqr03"
+      update_replace_policy: Retain
+      tags:
+        Name: VifGroupAssociation3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-local-gateway-route-table-vif-group-association

@@ -1,0 +1,93 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Local Gateway Route Table(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for local_gateway_route_table in sceptre_user_data.local_gateway_route_tables %}
+{%- set local_gateway_route_table_name = local_gateway_route_table.name %}
+  {{ local_gateway_route_table_name }}:
+    Type: AWS::EC2::LocalGatewayRouteTable
+    DeletionPolicy: {{ local_gateway_route_table.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ local_gateway_route_table.update_replace_policy | default('Delete') }}
+    Properties:
+      LocalGatewayId: {{ local_gateway_route_table.local_gateway_id | trim }}
+{%- if local_gateway_route_table.mode is defined %}
+      Mode: {{ local_gateway_route_table.mode }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if local_gateway_route_table.tags is defined %}
+{%- for key,value in local_gateway_route_table.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for local_gateway_route_table in sceptre_user_data.local_gateway_route_tables %}
+{%- set local_gateway_route_table_name = local_gateway_route_table.name %}
+  {{ local_gateway_route_table_name }}:
+    Description: The ID of the local gateway route table for {{ local_gateway_route_table_name }}
+    Value:
+      Ref: {{ local_gateway_route_table_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_table_name }}"
+  {{ local_gateway_route_table_name }}LocalGatewayRouteTableArn:
+    Description: The ARN of the local gateway route table for {{ local_gateway_route_table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_route_table_name }}
+        - LocalGatewayRouteTableArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_table_name }}-LocalGatewayRouteTableArn"
+  {{ local_gateway_route_table_name }}LocalGatewayRouteTableId:
+    Description: The ID of the local gateway route table for {{ local_gateway_route_table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_route_table_name }}
+        - LocalGatewayRouteTableId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_table_name }}-LocalGatewayRouteTableId"
+  {{ local_gateway_route_table_name }}OutpostArn:
+    Description: The ARN of the outpost for {{ local_gateway_route_table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_route_table_name }}
+        - OutpostArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_table_name }}-OutpostArn"
+  {{ local_gateway_route_table_name }}OwnerId:
+    Description: The AWS account ID that owns the local gateway route table for {{ local_gateway_route_table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_route_table_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_table_name }}-OwnerId"
+  {{ local_gateway_route_table_name }}State:
+    Description: The state of the local gateway route table for {{ local_gateway_route_table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_route_table_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_route_table_name }}-State"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::LocalGatewayRouteTable
+Properties:
+  LocalGatewayId: String
+  Mode: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

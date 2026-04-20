@@ -1,0 +1,74 @@
+---
+template:
+  type: file
+  path: ec2/security_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Security Groups
+  security_groups:
+    - name: SecurityGroup1
+      group_description: "Basic web server security group"
+      vpc_id: "vpc-12345678 "
+      tags:
+        Name: SecurityGroup1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: SecurityGroup2
+      group_description: "Application server with ingress and egress rules"
+      group_name: "AppServerSG"
+      vpc_id: "vpc-87654321 "
+      deletion_policy: Retain
+      security_group_ingress:
+        - ip_protocol: "tcp"
+          cidr_ip: "10.0.0.0/8"
+          from_port: 443
+          to_port: 443
+          description: "Allow HTTPS from internal"
+        - ip_protocol: "tcp"
+          cidr_ipv6: "::/0"
+          from_port: 22
+          to_port: 22
+          description: "Allow SSH from anywhere IPv6"
+        - ip_protocol: "tcp"
+          source_security_group_id: "sg-11111111 "
+          from_port: 3306
+          to_port: 3306
+          source_security_group_owner_id: "123456789012 "
+          description: "Allow MySQL from app tier"
+      security_group_egress:
+        - ip_protocol: "tcp"
+          cidr_ip: "0.0.0.0/0"
+          from_port: 443
+          to_port: 443
+          description: "Allow HTTPS outbound"
+        - ip_protocol: "tcp"
+          destination_security_group_id: "sg-22222222 "
+          from_port: 3306
+          to_port: 3306
+          description: "Allow MySQL to database"
+      tags:
+        Name: SecurityGroup2
+        Project: "{{ project_code }}"
+        Environment: Staging
+        Tier: Application
+    - name: SecurityGroup3
+      group_description: "Database security group with prefix list"
+      vpc_id: "vpc-abcdef01 "
+      update_replace_policy: Retain
+      security_group_ingress:
+        - ip_protocol: "-1"
+          source_prefix_list_id: "pl-12345678 "
+          description: "Allow all from prefix list"
+      security_group_egress:
+        - ip_protocol: "-1"
+          cidr_ip: "0.0.0.0/0"
+          description: "Allow all outbound"
+      tags:
+        Name: SecurityGroup3
+        Project: "{{ project_code }}"
+        Owner: DatabaseTeam
+
+stack_tags:
+  Test: ec2-security-group

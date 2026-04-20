@@ -24,6 +24,9 @@ Resources:
 {%- if vpn_connection.outside_ip_address_type is defined %}
       OutsideIpAddressType: {{ vpn_connection.outside_ip_address_type }}
 {%- endif %}
+{%- if vpn_connection.pre_shared_key_storage is defined %}
+      PreSharedKeyStorage: {{ vpn_connection.pre_shared_key_storage }}
+{%- endif %}
 {%- if vpn_connection.remote_ipv4_network_cidr is defined %}
       RemoteIpv4NetworkCidr: {{ vpn_connection.remote_ipv4_network_cidr }}
 {%- endif %}
@@ -50,8 +53,14 @@ Resources:
 {%- if vpn_connection.transport_transit_gateway_attachment_id is defined %}
       TransportTransitGatewayAttachmentId: {{ vpn_connection.transport_transit_gateway_attachment_id | trim }}
 {%- endif %}
+{%- if vpn_connection.tunnel_bandwidth is defined %}
+      TunnelBandwidth: {{ vpn_connection.tunnel_bandwidth }}
+{%- endif %}
 {%- if vpn_connection.tunnel_inside_ip_version is defined %}
       TunnelInsideIpVersion: {{ vpn_connection.tunnel_inside_ip_version }}
+{%- endif %}
+{%- if vpn_connection.vpn_concentrator_id is defined %}
+      VpnConcentratorId: {{ vpn_connection.vpn_concentrator_id | trim }}
 {%- endif %}
 {%- if vpn_connection.vpn_tunnel_option_specifications is defined %}{# BEGIN if vpn_connection.vpn_tunnel_option_specifications is defined #}
       VpnTunnelOptionsSpecifications:
@@ -76,6 +85,15 @@ Resources:
           LogOptions:
 {%- if specification.log_options.cloudwatch_log_options is defined %}{# BEGIN if specification.log_options.cloudwatch_log_options is defined #}
             CloudwatchLogOptions:
+{%- if specification.log_options.cloudwatch_log_options.bgp_log_enabled is defined %}
+              BgpLogEnabled: {{ specification.log_options.cloudwatch_log_options.bgp_log_enabled | lower }}
+{%- endif %}
+{%- if specification.log_options.cloudwatch_log_options.bgp_log_group_arn is defined %}
+              BgpLogGroupArn: {{ specification.log_options.cloudwatch_log_options.bgp_log_group_arn | trim }}
+{%- endif %}
+{%- if specification.log_options.cloudwatch_log_options.bgp_log_output_format is defined %}
+              BgpLogOutputFormat: {{ specification.log_options.cloudwatch_log_options.bgp_log_output_format }}
+{%- endif %}
 {%- if specification.log_options.cloudwatch_log_options.log_enabled is defined %}
               LogEnabled: {{ specification.log_options.cloudwatch_log_options.log_enabled | lower }}
 {%- endif %}
@@ -177,7 +195,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpn_connection_name }}"
 {%- endfor %}{#
-# Support structure as of 2025-04-09:
+# Support structure as of 2026-04-20:
 Type: AWS::EC2::VPNConnection
 Properties:
   CustomerGatewayId: String
@@ -185,6 +203,7 @@ Properties:
   LocalIpv4NetworkCidr: String
   LocalIpv6NetworkCidr: String
   OutsideIpAddressType: String
+  PreSharedKeyStorage: String
   RemoteIpv4NetworkCidr: String
   RemoteIpv6NetworkCidr: String
   StaticRoutesOnly: Boolean
@@ -193,8 +212,10 @@ Properties:
       Value: String
   TransitGatewayId: String
   TransportTransitGatewayAttachmentId: String
+  TunnelBandwidth: String
   TunnelInsideIpVersion: String
   Type: String
+  VpnConcentratorId: String
   VpnGatewayId: String
   VpnTunnelOptionsSpecifications:
     -
@@ -205,6 +226,9 @@ Properties:
         - Value: String
       LogOptions:
         CloudwatchLogOptions:
+          BgpLogEnabled: Boolean
+          BgpLogGroupArn: String
+          BgpLogOutputFormat: String
           LogEnabled: Boolean
           LogGroupArn: String
           LogOutputFormat: String

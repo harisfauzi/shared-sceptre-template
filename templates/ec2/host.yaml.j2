@@ -32,6 +32,15 @@ Resources:
 {%- if host.outpost_arn is defined %}
       OutpostArn: {{ host.outpost_arn | trim }}
 {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if host.tags is defined %}
+{%- for key,value in host.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -45,7 +54,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ host_name }}"
 {%- endfor %}{#
-# Supported structure as of 2025-04-08:
+# Supported structure as of 2026-04-18:
 Type: AWS::EC2::Host
 Properties:
   AssetId: String
@@ -56,4 +65,8 @@ Properties:
   InstanceFamily: String
   InstanceType: String
   OutpostArn: String
+  Tags: 
+    -
+      Key: String
+      Value: String
 #}

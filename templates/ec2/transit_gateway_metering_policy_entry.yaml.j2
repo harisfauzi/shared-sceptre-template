@@ -1,0 +1,82 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Transit Gateway Metering Policy Entry(es) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for transit_gateway_metering_policy_entry in sceptre_user_data.transit_gateway_metering_policy_entries %}
+{%- set transit_gateway_metering_policy_entry_name = transit_gateway_metering_policy_entry.name %}
+  {{ transit_gateway_metering_policy_entry_name }}:
+    Type: AWS::EC2::TransitGatewayMeteringPolicyEntry
+    DeletionPolicy: {{ transit_gateway_metering_policy_entry.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_metering_policy_entry.update_replace_policy | default('Delete') }}
+    Properties:
+      MeteredAccount: {{ transit_gateway_metering_policy_entry.metered_account }}
+      PolicyRuleNumber: {{ transit_gateway_metering_policy_entry.policy_rule_number }}
+      TransitGatewayMeteringPolicyId: {{ transit_gateway_metering_policy_entry.transit_gateway_metering_policy_id }}
+{%- if transit_gateway_metering_policy_entry.destination_cidr_block is defined %}
+      DestinationCidrBlock: {{ transit_gateway_metering_policy_entry.destination_cidr_block }}
+{%- endif %}
+{%- if transit_gateway_metering_policy_entry.destination_port_range is defined %}
+      DestinationPortRange: {{ transit_gateway_metering_policy_entry.destination_port_range }}
+{%- endif %}
+{%- if transit_gateway_metering_policy_entry.destination_transit_gateway_attachment_id is defined %}
+      DestinationTransitGatewayAttachmentId: {{ transit_gateway_metering_policy_entry.destination_transit_gateway_attachment_id }}
+{%- endif %}
+{%- if transit_gateway_metering_policy_entry.destination_transit_gateway_attachment_type is defined %}
+      DestinationTransitGatewayAttachmentType: {{ transit_gateway_metering_policy_entry.destination_transit_gateway_attachment_type }}
+{%- endif %}
+{%- if transit_gateway_metering_policy_entry.protocol is defined %}
+      Protocol: {{ transit_gateway_metering_policy_entry.protocol }}
+{%- endif %}
+{%- if transit_gateway_metering_policy_entry.source_cidr_block is defined %}
+      SourceCidrBlock: {{ transit_gateway_metering_policy_entry.source_cidr_block }}
+{%- endif %}
+{%- if transit_gateway_metering_policy_entry.source_port_range is defined %}
+      SourcePortRange: {{ transit_gateway_metering_policy_entry.source_port_range }}
+{%- endif %}
+{%- if transit_gateway_metering_policy_entry.source_transit_gateway_attachment_id is defined %}
+      SourceTransitGatewayAttachmentId: {{ transit_gateway_metering_policy_entry.source_transit_gateway_attachment_id }}
+{%- endif %}
+{%- if transit_gateway_metering_policy_entry.source_transit_gateway_attachment_type is defined %}
+      SourceTransitGatewayAttachmentType: {{ transit_gateway_metering_policy_entry.source_transit_gateway_attachment_type }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for transit_gateway_metering_policy_entry in sceptre_user_data.transit_gateway_metering_policy_entries %}
+{%- set transit_gateway_metering_policy_entry_name = transit_gateway_metering_policy_entry.name %}
+  {{ transit_gateway_metering_policy_entry_name }}State:
+    Description: The state of the metering policy entry {{ transit_gateway_metering_policy_entry_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_metering_policy_entry_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_metering_policy_entry_name }}-State"
+  {{ transit_gateway_metering_policy_entry_name }}UpdateEffectiveAt:
+    Description: The date and time when the metering policy entry {{ transit_gateway_metering_policy_entry_name }} update becomes effective
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_metering_policy_entry_name }}
+        - UpdateEffectiveAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_metering_policy_entry_name }}-UpdateEffectiveAt"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::TransitGatewayMeteringPolicyEntry
+Properties:
+  DestinationCidrBlock: String
+  DestinationPortRange: String
+  DestinationTransitGatewayAttachmentId: String
+  DestinationTransitGatewayAttachmentType: String
+  MeteredAccount: String
+  PolicyRuleNumber: Integer
+  Protocol: String
+  SourceCidrBlock: String
+  SourcePortRange: String
+  SourceTransitGatewayAttachmentId: String
+  SourceTransitGatewayAttachmentType: String
+  TransitGatewayMeteringPolicyId: String
+#}

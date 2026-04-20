@@ -1,0 +1,72 @@
+---
+template:
+  type: file
+  path: ec2/network_acl_entry.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Network ACL Entries
+  network_acl_entries:
+    - name: NaclEntry1
+      network_acl_id: "acl-12345678"
+      protocol: "6"
+      rule_action: "allow"
+      rule_number: 100
+      direction: "ingress"
+      cidr_block: "0.0.0.0/0"
+      port_range:
+        from: 80
+        to: 80
+    - name: NaclEntry2
+      network_acl_id: "acl-87654321"
+      protocol: "6"
+      rule_action: "allow"
+      rule_number: 110
+      direction: "ingress"
+      ipv6_cidr_block: "::/0"
+      port_range:
+        from: 443
+        to: 443
+      deletion_policy: Retain
+    - name: NaclEntry3
+      network_acl_id: "acl-abcdef01"
+      protocol: "1"
+      rule_action: "allow"
+      rule_number: 120
+      direction: "ingress"
+      cidr_block: "10.0.0.0/8"
+      icmp:
+        type: -1
+        code: -1
+    - name: NaclEntry4
+      network_acl_id: "acl-ghijkl02"
+      protocol: "17"
+      rule_action: "allow"
+      rule_number: 130
+      direction: "ingress"
+      cidr_block: "0.0.0.0/0"
+      port_range:
+        from: 53
+        to: 53
+    - name: NaclEntry5
+      network_acl_id: "acl-mnopqr03"
+      protocol: "6"
+      rule_action: "allow"
+      rule_number: 140
+      direction: "ingress"
+      cidr_block: "10.0.0.0/16"
+      port_range:
+        from: 22
+        to: 22
+      update_replace_policy: Retain
+    - name: NaclEntry6
+      network_acl_id: "acl-stuvwx04"
+      protocol: "-1"
+      rule_action: "allow"
+      rule_number: 100
+      direction: "egress"
+      cidr_block: "0.0.0.0/0"
+
+stack_tags:
+  Test: ec2-network-acl-entry

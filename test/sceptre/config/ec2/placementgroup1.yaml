@@ -1,0 +1,35 @@
+---
+template:
+  type: file
+  path: ec2/placement_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Placement Groups
+  placement_groups:
+    - name: PlacementGroup1
+      strategy: "cluster"
+      tags:
+        Name: PlacementGroup1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: PlacementGroup2
+      strategy: "partition"
+      partition_count: 3
+      deletion_policy: Retain
+      tags:
+        Name: PlacementGroup2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: PlacementGroup3
+      strategy: "spread"
+      spread_level: "rack"
+      update_replace_policy: Retain
+      tags:
+        Name: PlacementGroup3
+        Project: "{{ project_code }}"
+        Owner: Infrastructure
+
+stack_tags:
+  Test: ec2-placement-group

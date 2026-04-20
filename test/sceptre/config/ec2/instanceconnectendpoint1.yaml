@@ -1,0 +1,40 @@
+---
+template:
+  type: file
+  path: ec2/instance_connect_endpoint.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample EC2 Instance Connect Endpoints
+  instance_connect_endpoints:
+    - name: ConnectEndpoint1
+      subnet_id: subnet-12345678
+      preserve_client_ip: true
+      tags:
+        Name: ConnectEndpoint1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: ConnectEndpoint2
+      subnet_id: subnet-87654321
+      client_token: token-abcdef123456
+      preserve_client_ip: false
+      security_group_ids:
+        - sg-11111111
+        - sg-22222222
+      deletion_policy: Retain
+      tags:
+        Name: ConnectEndpoint2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: ConnectEndpoint3
+      subnet_id: subnet-abcdef00
+      security_group_ids:
+        - sg-33333333
+      tags:
+        Name: ConnectEndpoint3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-instance-connect-endpoint

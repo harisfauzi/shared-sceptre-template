@@ -91,8 +91,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ discovery_name }}-State"
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 2025-04-09:
 Type: AWS::EC2::IPAMResourceDiscovery
 Properties:

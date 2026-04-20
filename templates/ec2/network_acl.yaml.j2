@@ -70,4 +70,12 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ nacl_name }}"
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::NetworkAcl
+Properties:
+  Tags:
+    - Key: String
+      Value: String
+  VpcId: String
+#}

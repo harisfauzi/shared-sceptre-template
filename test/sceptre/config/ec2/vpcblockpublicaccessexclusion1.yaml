@@ -1,0 +1,37 @@
+---
+template:
+  type: file
+  path: ec2/vpc_block_public_access_exclusion.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPC Block Public Access Exclusions
+  vpc_block_public_access_exclusions:
+    - name: PrimaryVpcExclusion
+      vpc_id: "vpc-12345678901234567"
+      internet_gateway_exclusion_mode: "allow-all"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Owner: SecurityTeam
+        Purpose: AllowPublicAccess
+    - name: SecondarySubnetExclusion
+      vpc_id: "vpc-87654321098765432"
+      subnet_id: "subnet-11111111111111111"
+      internet_gateway_exclusion_mode: "block-all"
+      deletion_policy: Delete
+      tags:
+        Environment: Staging
+        Owner: NetworkTeam
+    - name: TertiaryDevelopmentExclusion
+      subnet_id: "subnet-22222222222222222"
+      internet_gateway_exclusion_mode: "allow-all"
+      deletion_policy: Retain
+      tags:
+        Environment: Development
+        Owner: CloudEngineering
+
+stack_tags:
+  Test: ec2-vpc-block-public-access-exclusion
