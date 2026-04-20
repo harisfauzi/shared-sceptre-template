@@ -15,7 +15,6 @@ sceptre_user_data:
       role_arn: !stack_output "{{pwd}}/iamrole.yaml::pipelineArn"
       deletion_policy: Delete
       update_replace_policy: Delete
-      
       stages:
         - name: SourceStage
           actions:
@@ -25,7 +24,7 @@ sceptre_user_data:
                 owner: AWS
                 provider: S3
                 version: "1"
-              configuration: |
+              configuration: |-
                 S3Bucket: dummy-s3-bucket
                 S3ObjectKey: no-exist.zip
                 PollForSourceChanges: "false"
