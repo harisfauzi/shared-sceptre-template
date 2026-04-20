@@ -1,0 +1,87 @@
+---
+Description: {{sceptre_user_data.description|default('DirectConnect Connection(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for connection in sceptre_user_data.connections %}
+{%- set connection_name = connection.name %}
+  {{ connection_name }}:
+    Type: AWS::DirectConnect::Connection
+    DeletionPolicy: {{ connection.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ connection.update_replace_policy | default('Delete') }}
+    Properties:
+      Bandwidth: {{ connection.bandwidth }}
+      ConnectionName: {{ connection.connection_name }}
+      Location: {{ connection.location }}
+{%- if connection.lag_id is defined %}
+      LagId: {{ connection.lag_id }}
+{%- endif %}
+{%- if connection.provider_name is defined %}
+      ProviderName: {{ connection.provider_name }}
+{%- endif %}
+{%- if connection.request_mac_sec is defined %}
+      RequestMACSec: {{ connection.request_mac_sec }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if connection.tags is defined %}
+{%- for key,value in connection.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for connection in sceptre_user_data.connections %}
+{%- set connection_name = connection.name %}
+  {{ connection_name }}:
+    Description: The ARN of the connection {{ connection_name }}
+    Value:
+      Ref: {{ connection_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_name }}"
+  {{ connection_name }}ConnectionArn:
+    Description: The ARN of the connection {{ connection_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_name }}
+        - ConnectionArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_name }}-ConnectionArn"
+  {{ connection_name }}ConnectionId:
+    Description: The ID of the connection {{ connection_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_name }}
+        - ConnectionId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_name }}-ConnectionId"
+  {{ connection_name }}ConnectionState:
+    Description: The state of the connection {{ connection_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_name }}
+        - ConnectionState
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_name }}-ConnectionState"
+{%- endfor %}{#
+# Supported structure as of 2026-04-20
+Type: AWS::DirectConnect::Connection
+Properties:
+  Bandwidth: String
+  ConnectionName: String
+  LagId: String
+  Location: String
+  ProviderName: String
+  RequestMACSec: Boolean
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

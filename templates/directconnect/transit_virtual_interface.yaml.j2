@@ -1,0 +1,106 @@
+---
+Description: {{sceptre_user_data.description|default('DirectConnect Connection(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for transit_virtual_interface in sceptre_user_data.transit_virtual_interfaces %}
+{%- set transit_virtual_interface_name = transit_virtual_interface.name %}
+  {{ transit_virtual_interface_name }}:
+    Type: AWS::DirectConnect::TransitVirtualInterface
+    DeletionPolicy: {{ transit_virtual_interface.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_virtual_interface.update_replace_policy | default('Delete') }}
+    Properties:
+      BgpPeers:
+{%- for bgp_peer in transit_virtual_interface.bgp_peers %}{# BEGIN for bgp_peer in transit_virtual_interface.bgp_peers #}
+        -
+          AddressFamily: {{ bgp_peer.address_family }}
+          Asn: {{ bgp_peer.asn }}
+{%- if bgp_peer.amazon_address is defined %}
+          AmazonAddress: {{ bgp_peer.amazon_address }}
+{%- endif %}
+{%- if bgp_peer.auth_key is defined %}
+          AuthKey: {{ bgp_peer.auth_key }}
+{%- endif %}
+{%- if bgp_peer.bgp_peer_id is defined %}
+          BgpPeerId: {{ bgp_peer.bgp_peer_id }}
+{%- endif %}
+{%- if bgp_peer.customer_address is defined %}
+          CustomerAddress: {{ bgp_peer.customer_address }}
+{%- endif %}
+{%- endfor %}{# END for bgp_peer in transit_virtual_interface.bgp_peers #}
+      ConnectionId: {{ transit_virtual_interface.connection_id | trim }}
+      DirectConnectGatewayId: {{ transit_virtual_interface.direct_connect_gateway_id | trim }}
+      VirtualInterfaceName: {{ transit_virtual_interface.virtual_interface_name }}
+      Vlan: {{ transit_virtual_interface.vlan }}
+{%- if transit_virtual_interface.allocate_transit_virtual_interface_role_arn is defined %}
+      AllocatePublicVirtualInterfaceRoleArn: {{ transit_virtual_interface.allocate_transit_virtual_interface_role_arn | trim }}
+{%- endif %}
+{%- if transit_virtual_interface.route_filter_prefixes is defined %}{# BEGIN if transit_virtual_interface.route_filter_prefixes is defined #}
+      RouteFilterPrefixes:
+{%- for prefix in transit_virtual_interface.route_filter_prefixes %}
+        - {{ prefix }}
+{%- endfor %}
+{%- endif %}{# END if transit_virtual_interface.route_filter_prefixes is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if transit_virtual_interface.tags is defined %}
+{%- for key,value in transit_virtual_interface.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for transit_virtual_interface in sceptre_user_data.transit_virtual_interfaces %}
+{%- set transit_virtual_interface_name = transit_virtual_interface.name %}
+  {{ transit_virtual_interface_name }}:
+    Description: The ARN of the transit virtual interface {{ transit_virtual_interface_name }}
+    Value:
+      Ref: {{ transit_virtual_interface_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_virtual_interface_name }}"
+  {{ transit_virtual_interface_name }}VirtualInterfaceArn:
+    Description: The ARN of the transit virtual interface {{ transit_virtual_interface_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_virtual_interface_name }}
+        - VirtualInterfaceArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_virtual_interface_name }}-VirtualInterfaceArn"
+  {{ transit_virtual_interface_name }}VirtualInterfaceId:
+    Description: The ID of the transit virtual interface {{ transit_virtual_interface_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_virtual_interface_name }}
+        - VirtualInterfaceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_virtual_interface_name }}-VirtualInterfaceId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-20
+Type: AWS::DirectConnect::TransitVirtualInterface
+Properties:
+  AllocateTransitVirtualInterfaceRoleArn: String
+  BgpPeers:
+    -
+      AddressFamily: String
+      AmazonAddress: String
+      Asn: String
+      AuthKey: String
+      BgpPeerId: String
+      CustomerAddress: String
+  ConnectionId: String
+  DirectConnectGatewayId: String
+  EnableSiteLink: Boolean
+  Mtu: Integer
+  Tags:
+    -
+      Key: String
+      Value: String
+  VirtualInterfaceName: String
+  Vlan: Integer
+#}
