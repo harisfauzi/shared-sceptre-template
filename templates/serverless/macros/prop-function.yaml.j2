@@ -1,7 +1,7 @@
 {%- macro prep_code_uri(code_uri) %}{# BEGIN macro prep_code_uri(code_uri) #}
-{%- if code_uri is string -%}{# BEGIN if code_uri is string #}
+{%- if code_uri is string %}{# BEGIN if code_uri is string #}
 CodeUri: {{ code_uri }}
-{%- elif code_uri is mapping -%}
+{%- elif code_uri is mapping %}
 CodeUri:
   Bucket: {{ code_uri.bucket }}
   Key: {{ code_uri.key }}
