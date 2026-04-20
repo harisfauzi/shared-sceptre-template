@@ -12,7 +12,7 @@ Resources:
     UpdateReplacePolicy: {{ certificate_authority.update_replace_policy | default('Delete') }}
     Properties:
       Subject:
-        {{helper.prep_subject(certificate_authority.subject)|indent(width=8,first=false)}}
+        {{- helper.prep_subject(certificate_authority.subject)|indent(width=8,first=false) }}
       Type: {{certificate_authority.type}}
       SigningAlgorithm: {{certificate_authority.signing_algorithm}}
       KeyAlgorithm: {{certificate_authority.key_algorithm}}
@@ -20,7 +20,7 @@ Resources:
       CsrExtensions:
 {%- if certificate_authority.csr_extensions.key_usage is defined %}{# if certificate_authority.csr_extensions.key_usage is defined #}
         KeyUsage:
-          {{ helper.prep_key_usage(certificate_authority.csr_extensions.key_usage) | indent(width=10,first=false) }}
+          {{- helper.prep_key_usage(certificate_authority.csr_extensions.key_usage) | indent(width=10,first=false) }}
 {%- endif %}{# endif certificate_authority.csr_extensions.key_usage is defined #}
 {%- if certificate_authority.csr_extensions.subject_information_access is defined %}{# if certificate_authority.csr_extensions.subject_information_access is defined #}
         SubjectInformationAccess:
@@ -29,7 +29,7 @@ Resources:
             AccessLocation:
 {%- if access.access_location.directory_name is defined %}{# BEGIN if access.access_location.directory_name is defined #}
               DirectoryName:
-                {{helper.prep_subject(access.access_location.directory_name)|indent(width=16,first=false)}}
+                {{- helper.prep_subject(access.access_location.directory_name)|indent(width=16,first=false) }}
 {%- endif %}{# END if access.access_location.directory_name is defined #}
 {%- if access.access_location.dns_name is defined %}
               DnsName: {{access.access_location.dns_name}}

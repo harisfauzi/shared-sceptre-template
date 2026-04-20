@@ -4,7 +4,6 @@ Description: {{sceptre_user_data.description|default('CodeDeploy DeploymentGroup
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for deployment_group in sceptre_user_data.deployment_groups %}
 {%- set deployment_group_name = deployment_group.name %}
   {{ deployment_group_name }}:
@@ -121,14 +120,14 @@ Resources:
 {%- endif %}
 {%- if deployment_group.ec2_tag_filters is defined %}
       Ec2TagFilters:
-{{ tag_filter_macro.prep(deployment_group.ec2_tag_filters) | indent(width=8, first=True) }}
+        {{- tag_filter_macro.prep(deployment_group.ec2_tag_filters) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if deployment_group.ec2_tag_set is defined %}
       Ec2TagSet:
         Ec2TagSetList:
 {%- for ec2_tag_set_list_object in deployment_group.ec2_tag_set.ec2_tag_set_list %}
           - Ec2TagGroup:
-{{ tag_filter_macro.prep(ec2_tag_set_list_object.ec2_tag_group) | indent(width=14, first=True) }}
+              {{- tag_filter_macro.prep(ec2_tag_set_list_object.ec2_tag_group) | indent(width=14, first=false) }}
 {%- endfor %}
 {%- endif %}
 {%- if deployment_group.ecs_services is defined %}
@@ -185,14 +184,14 @@ Resources:
 {%- endif %}
 {%- if deployment_group.on_premises_instance_tag_filters is defined %}
       OnPremisesInstanceTagFilters:
-{{ tag_filter_macro.prep(deployment_group.on_premises_instance_tag_filters) | indent(width=8, first=True) }}
+        {{- tag_filter_macro.prep(deployment_group.on_premises_instance_tag_filters) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if deployment_group.on_premises_tag_set is defined %}
       OnPremisesTagSet:
         OnPremisesTagSetList:
 {%- for on_premises_tag_set in deployment_group.on_premises_tag_set.on_premises_tag_set_list %}
           - OnPremisesTagGroup:
-{{ tag_filter_macro.prep(on_premises_tag_set) | indent(width=12, first=True) }}
+              {{- tag_filter_macro.prep(on_premises_tag_set) | indent(width=14, first=false) }}
 {%- endfor %}
 {%- endif %}
 {%- if deployment_group.outdated_instances_strategy is defined %}
@@ -228,11 +227,9 @@ Resources:
 {%- endif %}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for deployment_group in sceptre_user_data.deployment_groups %}
 {%- set deployment_group_name = deployment_group.name %}
   {{ deployment_group_name }}:
@@ -242,5 +239,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ deployment_group_name }}"
-
 {%- endfor %}

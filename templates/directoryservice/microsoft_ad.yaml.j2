@@ -1,6 +1,6 @@
 ---
 {%- import 'macros/vpc_settings.yaml.j2' as vpc_settings %}
-Description: {{sceptre_user_data.description|default('DirectoryService MicrosoftAD(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('DirectoryService Microsoft AD(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 {%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
@@ -13,13 +13,11 @@ Parameters:
     Description: Password for {{ microsoft_ad_name }}
     Default: ''
     NoEcho: true
-
 {%- endif %}
 {%- endfor %}
 {%- endif %}
 
 Resources:
-
 {%- for microsoft_ad in sceptre_user_data.microsoft_ads %}
 {%- set microsoft_ad_name = microsoft_ad.name %}
   {{ microsoft_ad_name }}:
@@ -34,7 +32,7 @@ Resources:
 {%- else %}
       Password: {{ microsoft_ad.password }}
 {%- endif %}
-      {{vpc_settings.prep(microsoft_ad.vpc_settings) | indent(width=6,first=false)}}
+      {{- vpc_settings.prep(microsoft_ad.vpc_settings) | indent(width=6,first=false) }}
 {%- if microsoft_ad.create_alias is defined %}
       CreateAlias: {{ microsoft_ad.create_alias }}
 {%- endif %}
@@ -47,11 +45,9 @@ Resources:
 {%- if microsoft_ad.short_name is defined %}
       ShortName: {{ microsoft_ad.short_name }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for microsoft_ad in sceptre_user_data.microsoft_ads %}
 {%- set microsoft_ad_name = microsoft_ad.name %}
   {{ microsoft_ad_name }}:
@@ -61,7 +57,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}"
-
   {{ microsoft_ad_name }}Alias:
     Description: The Alias for {{ microsoft_ad_name }}
     Value:
@@ -71,7 +66,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}-Alias"
-
   {{ microsoft_ad_name }}DnsIpAddress1:
     Description: The first DNS IP address for {{ microsoft_ad_name }}
     Value:
@@ -83,7 +77,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}-DnsIpAddress1"
-
   {{ microsoft_ad_name }}DnsIpAddress2:
     Description: The second DNS IP address for {{ microsoft_ad_name }}
     Value:
@@ -95,5 +88,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}-DnsIpAddress2"
-
 {%- endfor %}

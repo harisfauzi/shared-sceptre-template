@@ -38,11 +38,11 @@ Resources:
         FilteringCriteria: {{ lambda_hook.stack_filters.filtering_criteria }}
 {%- if lambda_hook.stack_filters.stack_names is defined %}{# BEGIN if lambda_hook.stack_filters.stack_names is defined #}
         StackNames:
-          {{ prep_stack_filtering(lambda_hook.stack_filters.stack_names) | indent(width=10, first=false) }}
+          {{- prep_stack_filtering(lambda_hook.stack_filters.stack_names) | indent(width=10, first=false) }}
 {%- endif %}{# END if lambda_hook.stack_filters.stack_names is defined #}
 {%- if lambda_hook.stack_filters.stack_roles is defined %}{# BEGIN if lambda_hook.stack_filters.stack_roles is defined #}
         StackRoles:
-          {{ prep_stack_filtering(lambda_hook.stack_filters.stack_roles) | indent(width=10, first=false) }}
+          {{- prep_stack_filtering(lambda_hook.stack_filters.stack_roles) | indent(width=10, first=false) }}
 {%- endif %}{# END if lambda_hook.stack_filters.stack_roles is defined #}
 {%- endif %}{# END if lambda_hook.stack_filters is defined #}
 {%- if lambda_hook.target_filters is defined %}{# BEGIN if lambda_hook.target_filters is defined #}

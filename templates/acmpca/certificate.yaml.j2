@@ -68,7 +68,7 @@ Resources:
 {%- endif %}{# endif certificate.api_passthrough.extensions.extended_key_usage is defined #}
 {%- if certificate.api_passthrough.extensions.key_usage is defined %}{# if certificate.api_passthrough.extensions.key_usage is defined #}
           KeyUsage:
-            {{ helper.prep_key_usage(certificate.api_passthrough.extensions.key_usage)|indent(width=12,first=false)}}
+            {{- helper.prep_key_usage(certificate.api_passthrough.extensions.key_usage)|indent(width=12,first=false) }}
 {%- endif %}{# endif certificate.api_passthrough.extensions.key_usage is defined #}
 {%- if certificate.api_passthrough.extensions.subject_alternative_names is defined %}{# if certificate.api_passthrough.extensions.subject_alternative_names is defined #}
           SubjectAlternativeNames:
@@ -76,7 +76,7 @@ Resources:
             -
 {%- if san.directory_name is defined %}
               DirectoryName:
-                {{helper.prep_subject(san.directory_name)|indent(width=16,first=false)}}
+                {{- helper.prep_subject(san.directory_name)|indent(width=16,first=false) }}
 {%- endif %}
 {%- if san.dns_name is defined %}
               DnsName: {{san.dns_name}}
@@ -108,7 +108,7 @@ Resources:
 {%- endif %}
 {%- if certificate.api_passthrough.subject is defined %}
         Subject:
-          {{helper.prep_subject(certificate.api_passthrough.subject)|indent(width=10,first=false)}}
+          {{- helper.prep_subject(certificate.api_passthrough.subject)|indent(width=10,first=false) }}
 {%- endif %}
 {%- endif %}{# endif certificate.api_passthrough is defined #}
 {%- if certificate.template_arn is defined %}

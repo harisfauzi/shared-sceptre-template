@@ -88,7 +88,7 @@ Resources:
         LoggingLevel: {{ deployment.stage_description.logging_level }}
 {%- endif %}
 {%- if deployment.stage_description.method_settings is defined %}
-{{ macro_method_settings.prep(deployment.stage_description.method_settings) | indent(width=2, first=true) }}
+  {{- macro_method_settings.prep(deployment.stage_description.method_settings) | indent(width=2, first=false) }}
 {%- endif %}
 {%- if deployment.stage_description.metrics_enabled is defined %}
         MetricsEnabled: {{ deployment.stage_description.metrics_enabled }}

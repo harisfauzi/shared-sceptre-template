@@ -32,11 +32,11 @@ Resources:
       Configuration:
 {%- if usage_profile.configuration.job_configuration is defined %}{# BEGIN if usage_profile.configuration.job_configuration is defined #}
         JobConfiguration:
-          {{ prep_configuration_object(usage_profile.configuration.job_configuration) | indent(width=10, first=false) }}
+          {{- prep_configuration_object(usage_profile.configuration.job_configuration) | indent(width=10, first=false) }}
 {%- endif %}{# END if usage_profile.configuration.job_configuration is defined #}
 {%- if usage_profile.configuration.session_configuration is defined %}{# BEGIN if usage_profile.configuration.session_configuration is defined #}
         SessionConfiguration:
-          {{ prep_configuration_object(usage_profile.configuration.session_configuration) | indent(width=10, first=false) }}
+          {{- prep_configuration_object(usage_profile.configuration.session_configuration) | indent(width=10, first=false) }}
 {%- endif %}{# END if usage_profile.configuration.session_configuration is defined #}
 {%- endif %}{# END if usage_profile.configuration is defined #}
 {%- if usage_profile.description is defined %}

@@ -32,7 +32,7 @@ Resources:
 {%- endif %}
 {%- if patch_rule.patch_filter_group is defined %}
             PatchFilterGroup:
-{{ patch_filter_group_macro.prep(patch_rule.patch_filter_group) | indent(width=14, first=true) }}
+              {{- patch_filter_group_macro.prep(patch_rule.patch_filter_group) | indent(width=14, first=false) }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}{# END {%- if patch_baseline.approval_rules is defined %} #}
@@ -53,7 +53,7 @@ Resources:
 {%- endif %}
 {%- if patch_baseline.global_filters is defined %}
       GlobalFilters:
-{{ patch_filter_group_macro.prep(patch_baseline.global_filters) | indent(width=8, first=true) }}
+        {{- patch_filter_group_macro.prep(patch_baseline.global_filters) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if patch_baseline.operating_system is defined %}
       OperatingSystem: {{ patch_baseline.operating_system }}
@@ -113,5 +113,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ patch_baseline_name }}"
-
 {%- endfor %}

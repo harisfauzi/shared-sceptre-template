@@ -12,7 +12,7 @@ Resources:
     UpdateReplacePolicy: {{ listener_rule.update_replace_policy | default('Delete') }}
     Properties:
       Actions:
-{{ listener_action.prep(listener_rule.actions) }}
+{{- listener_action.prep(listener_rule.actions) }}
       Conditions:
 {%- for condition in listener_rule.conditions %}
         -

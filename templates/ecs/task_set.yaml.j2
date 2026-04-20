@@ -39,10 +39,10 @@ Resources:
 {%- endif %}
 {%- if task_set.load_balancers is defined %}{# BEGIN if task_set.load_balancers is defined #}
       LoadBalancers:
-{{ macro_load_balancer.prep(task_set.load_balancers) | indent(width=8, first=true) }}
+        {{- macro_load_balancer.prep(task_set.load_balancers) | indent(width=8, first=false) }}
 {%- endif %}{# END if task_set.load_balancers is defined #}
 {%- if task_set.network_configuration is defined %}{# BEGIN if task_set.network_configuration is defined #}
-{{ macro_network_configuration.prep(task_set.network_configuration) | indent(width=6, first=true) }}
+      {{- macro_network_configuration.prep(task_set.network_configuration) | indent(width=6, first=false) }}
 {%- endif %}{# END if task_set.network_configuration is defined #}
 {%- if task_set.platform_version is defined %}
       PlatformVersion: {{ task_set.platform_version }}
@@ -58,7 +58,7 @@ Resources:
 {%- endif %}{# END if task_set.scale is defined #}
 {%- if task_set.service_registries is defined %}
       ServiceRegistries:
-{{ macro_service_registry.prep(task_set.service_registries) | indent(width=8, first=true) }}
+        {{- macro_service_registry.prep(task_set.service_registries) | indent(width=8, first=false) }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL

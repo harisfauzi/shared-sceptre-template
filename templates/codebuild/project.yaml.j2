@@ -153,14 +153,14 @@ Resources:
       SecondaryArtifacts:
 {%- for secondary_artifacts in project.secondary_artifacts %}{# BEGIN for secondary_artifacts in project.secondary_artifacts #}
         -
-          {{ prop_project.prep_artifacts(secondary_artifacts) | indent(width=10, first=false) }}
+          {{- prop_project.prep_artifacts(secondary_artifacts) | indent(width=10, first=false) }}
 {%- endfor %}{# END for secondary_artifacts in project.secondary_artifacts #}
 {%- endif %}{# END if project.secondary_artifacts is defined #}
 {%- if project.secondary_sources is defined %}{# BEGIN if project.secondary_sources is defined #}
       SecondarySources:
 {%- for secondary_source in project.secondary_sources %}{# BEGIN for secondary_source in project.secondary_sources #}
         -
-          {{ prop_project.prep_source(secondary_source) | indent(width=10, first=false) }}
+          {{- prop_project.prep_source(secondary_source) | indent(width=10, first=false) }}
 {%- endfor %}{# END for secondary_source in project.secondary_sources #}
 {%- endif %}{# END if project.secondary_sources is defined #}
 {%- if project.secondary_source_versions is defined %}{# BEGIN if project.secondary_source_versions is defined #}

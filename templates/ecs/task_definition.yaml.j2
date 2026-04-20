@@ -236,7 +236,7 @@ Resources:
 {%- endif %}{# END if container_definition.log_configuration.options is defined #}
 {%- if container_definition.log_configuration.secret_options is defined %}{# BEGIN if container_definition.log_configuration.secret_options is defined #}
             SecretOptions:
-{{ macro_secrets.prep(container_definition.log_configuration.secret_options) | indent(width=14, first=true) }}
+              {{- macro_secrets.prep(container_definition.log_configuration.secret_options) | indent(width=14, first=false) }}
 {%- endif %}{# END if container_definition.log_configuration.secret_options is defined #}
 {%- endif %}{# END if container_definition.log_configuration is defined #}
 {%- if container_definition.memory is defined %}
@@ -324,7 +324,7 @@ Resources:
 {%- endif %}{# END if container_definition.restart_policy is defined #}
 {%- if container_definition.secrets is defined %}
           Secrets:
-{{ macro_secrets.prep(container_definition.secrets) | indent(width=12, first=true) }}
+            {{- macro_secrets.prep(container_definition.secrets) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if container_definition.start_timeout is defined %}
           StartTimeout: {{ container_definition.start_timeout }}

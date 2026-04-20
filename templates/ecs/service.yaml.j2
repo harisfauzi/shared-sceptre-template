@@ -130,10 +130,10 @@ Resources:
 {%- endif %}
 {%- if service.load_balancers is defined %}
       LoadBalancers:
-{{ macro_load_balancer.prep(service.load_balancers) | indent(width=8, first=true) }}
+        {{- macro_load_balancer.prep(service.load_balancers) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if service.network_configuration is defined %}
-{{ macro_network_configuration.prep(service.network_configuration) | indent(width=6, first=true) }}
+      {{- macro_network_configuration.prep(service.network_configuration) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if service.placement_constraints is defined %}{# BEGIN if service.placement_constraints is defined #}
       PlacementConstraints:
@@ -255,7 +255,7 @@ Resources:
 {%- endif %}
 {%- if service.service_registries is defined %}
       ServiceRegistries:
-{{ macro_service_registry.prep(service.service_registries) | indent(width=8, first=true) }}
+        {{- macro_service_registry.prep(service.service_registries) | indent(width=8, first=false) }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL

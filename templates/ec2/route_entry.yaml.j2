@@ -7,7 +7,7 @@ Resources:
 {%- for route_entry in sceptre_user_data.route_entries %}
 {%- set route_entry_name = route_entry.name %}
   {{ route_entry_name }}:
-{{ prop_route_entry.prep_route_entry(route_entry) }}
+{{- prop_route_entry.prep_route_entry(route_entry) }}
 {%- endfor %}
 
 Outputs:

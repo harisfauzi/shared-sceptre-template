@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('DynamoDB Table(s) for '+sc
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for table in sceptre_user_data.tables %}
 {%- set table_name = table.name %}
   {{ table_name }}:
@@ -156,7 +155,6 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
@@ -169,7 +167,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ table_name }}"
-
   {{ table_name }}Arn:
     Description: The ARN for {{ table_name }}
     Value:
@@ -179,7 +176,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ table_name }}-Arn"
-
 {%- if table.stream_specification is defined %}
   {{ table_name }}StreamArn:
     Description: The ARN of the DynamoDB stream for {{ table_name }}

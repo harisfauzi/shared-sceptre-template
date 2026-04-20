@@ -4,7 +4,6 @@ Description: {{sceptre_user_data.description|default('WAFv2 RuleGroup(s) for '+s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for rule_group in sceptre_user_data.rule_groups %}
 {%- set rule_group_name = rule_group.name %}
   {{ rule_group_name }}:
@@ -37,7 +36,7 @@ Resources:
           Name: {{ rule.name }}
           Priority: {{ rule.priority }}
           Statement:
-{{ rule_group_statement.prep(rule.statement) | indent(width=12, first=true) }}
+            {{- rule_group_statement.prep(rule.statement) | indent(width=12, first=false) }}
           VisibilityConfig:
             CloudWatchMetricsEnabled: {{ rule.visibility_config.cloud_watch_metrics_enabled }}
             MetricName: {{ rule.visibility_config.metric_name }}
@@ -79,11 +78,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for rule_group in sceptre_user_data.rule_groups %}
 {%- set rule_group_name = rule_group.name %}
   {{ rule_group_name }}:
@@ -93,7 +90,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ rule_group_name }}"
-
   {{ rule_group_name }}Arn:
     Description: The ARN of {{ rule_group_name }}
     Value:
@@ -103,7 +99,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ rule_group_name }}-Arn"
-
   {{ rule_group_name }}Id:
     Description: The ID of {{ rule_group_name }}
     Value:
@@ -113,7 +108,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ rule_group_name }}-Id"
-
   {{ rule_group_name }}LabelNamespace:
     Description: The LabelNamespace of {{ rule_group_name }}
     Value:
@@ -123,5 +117,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ rule_group_name }}-LabelNamespace"
-
 {%- endfor %}

@@ -12,7 +12,7 @@ AndStatement:
 ByteMatchStatement:
 {%- if statement.byte_match_statement.field_to_match is defined %}
   FieldToMatch:
-{{ macro_field_to_match.prep(statement.byte_match_statement.field_to_match) | indent(width=4,first=true) }}
+    {{- macro_field_to_match.prep(statement.byte_match_statement.field_to_match) | indent(width=4,first=false) }}
 {%- endif %}
 {%- if statement.byte_match_statement.positional_constraint is defined %}
   PositionalConstraint: {{ statement.byte_match_statement.positional_constraint }}
@@ -130,7 +130,7 @@ RateBasedStatement:
 {%- if statement.regex_match_statement is defined %}
 RegexMatchStatement:
   FieldToMatch:
-{{ macro_field_to_match.prep(statement.regex_match_statement.field_to_match) | indent(width=4,first=true) }}
+    {{- macro_field_to_match.prep(statement.regex_match_statement.field_to_match) | indent(width=4,first=false) }}
   RegexString:
     {{ statement.regex_match_statement.regex_string }}
   TextTransformations:
@@ -143,7 +143,7 @@ RegexMatchStatement:
 RegexPatternSetReferenceStatement:
   Arn: {{ statement.regex_pattern_set_reference_statement.arn }}
   FieldToMatch:
-{{ macro_field_to_match.prep(statement.regex_pattern_set_reference_statement.field_to_match) | indent(width=4,first=true) }}
+    {{- macro_field_to_match.prep(statement.regex_pattern_set_reference_statement.field_to_match) | indent(width=4,first=false) }}
   TextTransformations:
 {%- for text_transformation in statement.regex_pattern_set_reference_statement.text_transformations %}
     - Priority: {{ text_transformation.priority }}
@@ -154,10 +154,10 @@ RegexPatternSetReferenceStatement:
 SizeConstraintStatement:
   ComparisonOperator: {{ statement.size_constraint_statement.comparison_operator }}
   FieldToMatch:
-{{ macro_field_to_match.prep(statement.size_constraint_statement.field_to_match) | indent(width=4,first=true) }}
+    {{- macro_field_to_match.prep(statement.size_constraint_statement.field_to_match) | indent(width=4,first=false) }}
   Size: {{ statement.size_constraint_statement.size }}
   TextTransformations:
-{%- for text_transformation in statement.regex_pattern_set_reference_statement.text_transformations %}
+{%- for text_transformation in statement.size_constraint_statement.text_transformations %}
     - Priority: {{ text_transformation.priority }}
       Type: {{ text_transformation.type }}
 {%- endfor %}
@@ -165,7 +165,7 @@ SizeConstraintStatement:
 {%- if statement.sqli_match_statement is defined %}
 SqliMatchStatement:
   FieldToMatch:
-{{ macro_field_to_match.prep(statement.sqli_match_statement.field_to_match) | indent(width=4,first=true) }}
+    {{- macro_field_to_match.prep(statement.sqli_match_statement.field_to_match) | indent(width=4,first=false) }}
   TextTransformations:
 {%- for text_transformation in statement.sqli_match_statement.text_transformations %}
     - Priority: {{ text_transformation.priority }}
@@ -178,7 +178,7 @@ SqliMatchStatement:
 {%- if statement.xss_match_statement is defined %}
 XssMatchStatement:
   FieldToMatch:
-{{ macro_field_to_match.prep(statement.xss_match_statement.field_to_match) | indent(width=4,first=true) }}
+    {{- macro_field_to_match.prep(statement.xss_match_statement.field_to_match) | indent(width=4,first=false) }}
   TextTransformations:
 {%- for text_transformation in statement.xss_match_statement.text_transformations %}
     - Priority: {{ text_transformation.priority }}

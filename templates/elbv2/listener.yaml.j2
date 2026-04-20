@@ -12,7 +12,7 @@ Resources:
     UpdateReplacePolicy: {{ listener.update_replace_policy | default('Delete') }}
     Properties:
       DefaultActions:
-{{ listener_action.prep(listener.default_actions) }}
+{{- listener_action.prep(listener.default_actions) }}
       LoadBalancerArn: {{ listener.load_balancer_arn | trim }}
 {%- if listener.alpn_policy is defined %}
       AlpnPolicy:

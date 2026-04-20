@@ -37,15 +37,15 @@ Resources:
           - TargetValue: {{ metric_specification.target_value }}
 {%- if metric_specification.customized_capacity_metric_specification is defined %}
             CustomizedCapacityMetricSpecification:
-              {{ prop_scaling_policy.prep_metric_data_queries(metric_specification.customized_capacity_metric_specification.metric_data_queries) | indent(width=14, first=false) }}
+              {{- prop_scaling_policy.prep_metric_data_queries(metric_specification.customized_capacity_metric_specification.metric_data_queries) | indent(width=14, first=false) }}
 {%- endif %}
 {%- if metric_specification.customized_load_metric_specification is defined %}
             CustomizedLoadMetricSpecification:
-              {{ prop_scaling_policy.prep_metric_data_queries(metric_specification.customized_load_metric_specification.metric_data_queries) | indent(width=14, first=false) }}
+              {{- prop_scaling_policy.prep_metric_data_queries(metric_specification.customized_load_metric_specification.metric_data_queries) | indent(width=14, first=false) }}
 {%- endif %}
 {%- if metric_specification.customized_scaling_metric_specification is defined %}
             CustomizedScalingMetricSpecification:
-              {{ prop_scaling_policy.prep_metric_data_queries(metric_specification.customized_scaling_metric_specification.metric_data_queries) | indent(width=14, first=false) }}
+              {{- prop_scaling_policy.prep_metric_data_queries(metric_specification.customized_scaling_metric_specification.metric_data_queries) | indent(width=14, first=false) }}
 {%- endif %}
 {%- if metric_specification.predefined_load_metrics_specification is defined %}
             PredefinedLoadMetricSpecification:
@@ -113,7 +113,7 @@ Resources:
           MetricName: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.metric_name }}
 {%- endif %}
 {%- if scaling_policy.target_tracking_configuration.customized_metrics_specification.metrics is defined %}
-          {{ prop_scaling_policy.prep_target_tracking_metrics(scaling_policy.target_tracking_configuration.customized_metrics_specification.metrics) | indent(width=10, first=false) }}
+          {{- prop_scaling_policy.prep_target_tracking_metrics(scaling_policy.target_tracking_configuration.customized_metrics_specification.metrics) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if scaling_policy.target_tracking_configuration.customized_metrics_specification.namespace is defined %}
           Namespace: {{ scaling_policy.target_tracking_configuration.customized_metrics_specification.namespace }}
