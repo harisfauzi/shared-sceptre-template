@@ -1,0 +1,36 @@
+---
+template:
+  type: file
+  path: ec2/traffic_mirror_target.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Traffic Mirror Targets
+  traffic_mirror_targets:
+    - name: TrafficMirrorTarget1
+      network_interface_id: "eni-12345678 "
+      tags:
+        Name: TrafficMirrorTarget1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: TrafficMirrorTarget2
+      network_load_balancer_arn: "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/my-nlb/50dc6c495c0c9188 "
+      description: "Mirror target using NLB"
+      deletion_policy: Retain
+      tags:
+        Name: TrafficMirrorTarget2
+        Project: "{{ project_code }}"
+        Environment: Staging
+        Tier: Network
+    - name: TrafficMirrorTarget3
+      gateway_load_balancer_endpoint_id: "vpce-12345678 "
+      description: "Mirror target using Gateway Load Balancer endpoint"
+      update_replace_policy: Retain
+      tags:
+        Name: TrafficMirrorTarget3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-traffic-mirror-target

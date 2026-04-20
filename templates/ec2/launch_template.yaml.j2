@@ -7,7 +7,7 @@ Resources:
 {%- for launch_template in sceptre_user_data.launch_templates %}
 {%- set launch_template_name = launch_template.name %}
   {{ launch_template_name }}:
-{{ prop_launch_template.prep_launch_template(launch_template) }}
+{{- prop_launch_template.prep_launch_template(launch_template) }}
 {%- endfor %}
 
 Outputs:

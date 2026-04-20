@@ -1,0 +1,39 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 VPC Block Public Access Options for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- set option = sceptre_user_data.vpc_block_public_access_options %}
+{%- set option_name = option.name %}
+  {{ option_name }}:
+    Type: AWS::EC2::VPCBlockPublicAccessOptions
+    DeletionPolicy: {{ option.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ option.update_replace_policy | default('Delete') }}
+    Properties:
+      InternetGatewayBlockMode: {{ option.internet_gateway_block_mode }}
+
+Outputs:
+{%- set option = sceptre_user_data.vpc_block_public_access_options %}
+{%- set option_name = option.name %}
+  {{ option_name }}:
+    Description: Your AWS Account ID
+    Value:
+      Ref: {{ option_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ option_name }}"
+  {{ option_name }}AccountId:
+    Description: Your AWS Account ID
+    Value:
+      Fn::GetAtt:
+        - {{ option_name }}
+        - AccountId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ option_name }}-AccountId"
+{#
+# Support structure as of 2026-04-20:
+Type: AWS::EC2::VPCBlockPublicAccessOptions
+Properties:
+  InternetGatewayBlockMode: String
+#}

@@ -23,7 +23,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
       Type: ipsec.1
-{######### AWS::EC2::VPCGatewayAttachment ########}
+{#-######## AWS::EC2::VPCGatewayAttachment ########}
 {%- if vpn_gateway.vpc_id is defined %}
   {{ vpn_gateway_name }}VPCGatewayAttachment:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -32,7 +32,7 @@ Resources:
         Ref: {{ vpn_gateway_name }}
       VpcId: {{ vpn_gateway.vpc_id | trim }}
 {%- endif %}
-{######### AWS::EC2::VPNGatewayRoutePropagation ########}
+{#-######## AWS::EC2::VPNGatewayRoutePropagation ########}
 {%- if vpn_gateway.route_table_ids is defined %}
   {{ vpn_gateway_name }}VPNGatewayRoutePropagation:
     Type: AWS::EC2::VPNGatewayRoutePropagation

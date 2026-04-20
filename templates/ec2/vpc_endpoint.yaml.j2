@@ -19,12 +19,22 @@ Resources:
 {%- if vpc_endpoint.dns_options.private_dns_only_for_inbound_resolver_endpoint is defined %}
         PrivateDnsOnlyForInboundResolverEndpoint: {{ vpc_endpoint.dns_options.private_dns_only_for_inbound_resolver_endpoint }}
 {%- endif %}
+{%- if vpc_endpoint.dns_options.private_dns_preference is defined %}
+        PrivateDnsPreference: {{ vpc_endpoint.dns_options.private_dns_preference }}
+{%- endif %}
+{%- if vpc_endpoint.dns_options.private_dns_specified_domains is defined %}
+        PrivateDnsSpecifiedDomains:
+{%- for domain in vpc_endpoint.dns_options.private_dns_specified_domains %}
+          - {{ domain }}
+{%- endfor %}
+{%- endif %}
 {%- endif %}{# END if vpc_endpoint.dns_options is defined #}
 {%- if vpc_endpoint.ip_address_type is defined %}
       IpAddressType: {{ vpc_endpoint.ip_address_type }}
 {%- endif %}
 {%- if vpc_endpoint.policy_document_json is defined %}
-      PolicyDocument: {{ vpc_endpoint.policy_document_json }}
+      PolicyDocument: |
+        {{ vpc_endpoint.policy_document_json | indent(width=8, first=false) }}
 {%- elif vpc_endpoint.policy_document is defined %}
       PolicyDocument:
         {{ vpc_endpoint.policy_document | indent(width=8, first=false) }}
@@ -52,6 +62,9 @@ Resources:
 {%- endif %}
 {%- if vpc_endpoint.service_network_arn is defined %}
       ServiceNetworkArn: {{ vpc_endpoint.service_network_arn | trim }}
+{%- endif %}
+{%- if vpc_endpoint.service_region is defined %}
+      ServiceRegion: {{ vpc_endpoint.service_region }}
 {%- endif %}
 {%- if vpc_endpoint.subnet_ids is defined %}
       SubnetIds:
@@ -84,12 +97,15 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_endpoint_name }}-CreationTimestamp"
 {%- endfor %}{#
-# Support structure as of 2025-04-09:
+# Support structure as of 2026-04-20:
 Type: AWS::EC2::VPCEndpoint
 Properties:
   DnsOptions:
     DnsRecordIpType: String
     PrivateDnsOnlyForInboundResolverEndpoint: String
+    PrivateDnsPreference: String
+    PrivateDnsSpecifiedDomains:
+      - String
   IpAddressType: String
   PolicyDocument: Json
   PrivateDnsEnabled: Boolean
@@ -100,6 +116,7 @@ Properties:
     - String
   ServiceName: String
   ServiceNetworkArn: String
+  ServiceRegion: String
   SubnetIds:
     - String
   Tags:

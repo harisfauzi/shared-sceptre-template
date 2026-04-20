@@ -1,0 +1,107 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Local Gateway Virtual Interface(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for local_gateway_virtual_interface in sceptre_user_data.local_gateway_virtual_interfaces %}
+{%- set local_gateway_virtual_interface_name = local_gateway_virtual_interface.name %}
+  {{ local_gateway_virtual_interface_name }}:
+    Type: AWS::EC2::LocalGatewayVirtualInterface
+    DeletionPolicy: {{ local_gateway_virtual_interface.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ local_gateway_virtual_interface.update_replace_policy | default('Delete') }}
+    Properties:
+      LocalAddress: {{ local_gateway_virtual_interface.local_address }}
+      LocalGatewayVirtualInterfaceGroupId: {{ local_gateway_virtual_interface.local_gateway_virtual_interface_group_id }}
+      OutpostLagId: {{ local_gateway_virtual_interface.outpost_lag_id }}
+      PeerAddress: {{ local_gateway_virtual_interface.peer_address }}
+      Vlan: {{ local_gateway_virtual_interface.vlan }}
+{%- if local_gateway_virtual_interface.peer_bgp_asn is defined %}
+      PeerBgpAsn: {{ local_gateway_virtual_interface.peer_bgp_asn }}
+{%- endif %}
+{%- if local_gateway_virtual_interface.peer_bgp_asn_extended is defined %}
+      PeerBgpAsnExtended: {{ local_gateway_virtual_interface.peer_bgp_asn_extended }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if local_gateway_virtual_interface.tags is defined %}
+{%- for key,value in local_gateway_virtual_interface.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for local_gateway_virtual_interface in sceptre_user_data.local_gateway_virtual_interfaces %}
+{%- set local_gateway_virtual_interface_name = local_gateway_virtual_interface.name %}
+  {{ local_gateway_virtual_interface_name }}:
+    Description: The ID of the local gateway virtual interface for {{ local_gateway_virtual_interface_name }}
+    Value:
+      Ref: {{ local_gateway_virtual_interface_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_virtual_interface_name }}"
+  {{ local_gateway_virtual_interface_name }}ConfigurationState:
+    Description: The current state of the local gateway virtual interface {{ local_gateway_virtual_interface_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_virtual_interface_name }}
+        - ConfigurationState
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_virtual_interface_name }}-ConfigurationState"
+{%- if local_gateway_virtual_interface.peer_bgp_asn is defined or local_gateway_virtual_interface.peer_bgp_asn_extended is defined %}
+  {{ local_gateway_virtual_interface_name }}LocalBgpAsn:
+    Description: The BGP ASN of the local gateway {{ local_gateway_virtual_interface_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_virtual_interface_name }}
+        - LocalBgpAsn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_virtual_interface_name }}-LocalBgpAsn"
+{%- endif %}
+  {{ local_gateway_virtual_interface_name }}LocalGatewayId:
+    Description: The ID of the local gateway for {{ local_gateway_virtual_interface_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_virtual_interface_name }}
+        - LocalGatewayId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_virtual_interface_name }}-LocalGatewayId"
+  {{ local_gateway_virtual_interface_name }}LocalGatewayVirtualInterfaceId:
+    Description: The ID of virtual interface for {{ local_gateway_virtual_interface_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_virtual_interface_name }}
+        - LocalGatewayVirtualInterfaceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_virtual_interface_name }}-LocalGatewayVirtualInterfaceId"
+  {{ local_gateway_virtual_interface_name }}OwnerId:
+    Description: The AWS account ID that owns the local gateway virtual interface {{ local_gateway_virtual_interface_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_virtual_interface_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_virtual_interface_name }}-OwnerId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::LocalGatewayVirtualInterface
+Properties:
+  LocalAddress: String
+  LocalGatewayVirtualInterfaceGroupId: String
+  OutpostLagId: String
+  PeerAddress: String
+  PeerBgpAsn: Integer
+  PeerBgpAsnExtended: Integer
+  Tags:
+    -
+      Key: String
+      Value: String
+  Vlan: Integer
+#}

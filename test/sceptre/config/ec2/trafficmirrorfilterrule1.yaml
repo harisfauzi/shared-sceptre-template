@@ -1,0 +1,49 @@
+---
+template:
+  type: file
+  path: ec2/traffic_mirror_filter_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Traffic Mirror Filter Rules
+  traffic_mirror_filter_rules:
+    - name: TrafficMirrorFilterRule1
+      destination_cidr_block: "0.0.0.0/0"
+      source_cidr_block: "10.0.0.0/8"
+      rule_action: "accept"
+      rule_number: 1
+      traffic_direction: "ingress"
+      traffic_mirror_filter_id: "tmf-12345678 "
+    - name: TrafficMirrorFilterRule2
+      destination_cidr_block: "192.168.0.0/16"
+      source_cidr_block: "172.16.0.0/12"
+      rule_action: "reject"
+      rule_number: 2
+      traffic_direction: "egress"
+      traffic_mirror_filter_id: "tmf-87654321 "
+      protocol: 6
+      description: "Mirror TCP traffic"
+      destination_port_range:
+        from_port: 443
+        to_port: 443
+      source_port_range:
+        from_port: 1024
+        to_port: 65535
+      deletion_policy: Retain
+    - name: TrafficMirrorFilterRule3
+      destination_cidr_block: "10.0.0.0/16"
+      source_cidr_block: "10.1.0.0/16"
+      rule_action: "accept"
+      rule_number: 100
+      traffic_direction: "ingress"
+      traffic_mirror_filter_id: "tmf-abcdef01 "
+      protocol: 17
+      description: "Mirror UDP traffic for DNS"
+      source_port_range:
+        from_port: 53
+        to_port: 53
+      update_replace_policy: Retain
+
+stack_tags:
+  Test: ec2-traffic-mirror-filter-rule

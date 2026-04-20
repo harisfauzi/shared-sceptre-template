@@ -174,6 +174,9 @@ InstanceRequirements:
 {%- if instance_requirements_request.on_demand_max_price_percentage_over_lowest_price is defined %}
   OnDemandMaxPricePercentageOverLowestPrice: {{ instance_requirements_request.on_demand_max_price_percentage_over_lowest_price }}
 {%- endif %}
+{%- if instance_requirements_request.require_encryption_in_transit is defined %}
+  RequireEncryptionInTransit: {{ instance_requirements_request.require_encryption_in_transit | lower }}
+{%- endif %}
 {%- if instance_requirements_request.require_hibernate_support is defined %}
   RequireHibernateSupport: {{ instance_requirements_request.require_hibernate_support | lower }}
 {%- endif %}
@@ -247,6 +250,7 @@ InstanceRequirements:
     Max: Integer
     Min: Integer
   OnDemandMaxPricePercentageOverLowestPrice: Integer
+  RequireEncryptionInTransit: Boolean
   RequireHibernateSupport: Boolean
   SpotMaxPricePercentageOverLowestPrice: Integer
   TotalLocalStorageGB:
@@ -343,6 +347,9 @@ Placement:
 {%- if launch_specification.placement.availability_zone is defined %}
   AvailabilityZone: {{ launch_specification.placement.availability_zone }}
 {%- endif %}
+{%- if launch_specification.placement.availability_zone_id is defined %}
+  AvailabilityZoneId: {{ launch_specification.placement.availability_zone_id }}
+{%- endif %}
 {%- if launch_specification.placement.group_name is defined %}
   GroupName: {{ launch_specification.placement.group_name }}
 {%- endif %}
@@ -380,7 +387,7 @@ WeightedCapacity: {{ launch_specification.weighted_capacity }}
 BlockDeviceMappings:
   -
     DeviceName: String
-    Ebs: 
+    Ebs:
       DeleteOnTermination: Boolean
       Encrypted: Boolean
       Iops: Integer
@@ -419,7 +426,10 @@ NetworkInterfaces:
     SecondaryPrivateIpAddressCount: Integer
     SubnetId: String
 Placement:
-  SpotPlacement
+  AvailabilityZone: String
+  AvailabilityZoneId: String
+  GroupName: String
+  Tenancy: String
 RamdiskId: String
 SecurityGroups:
   - GroupIdentifier

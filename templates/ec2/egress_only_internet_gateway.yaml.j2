@@ -11,6 +11,15 @@ Resources:
     UpdateReplacePolicy: {{ egress_only_internet_gateway.update_replace_policy | default('Delete') }}
     Properties:
       VpcId: {{ egress_only_internet_gateway.vpc_id | trim }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if egress_only_internet_gateway.tags is defined %}
+{%- for key,value in egress_only_internet_gateway.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -24,8 +33,11 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ egress_only_internet_gateway_name }}"
 {%- endfor %}{#
-# Supported structure as of 2025-04-08:
+# Supported structure as of 2026-03-29:
 Type: AWS::EC2::EgressOnlyInternetGateway
 Properties:
+  Tags:
+    - Key: String
+      Value: String
   VpcId: String
 #}

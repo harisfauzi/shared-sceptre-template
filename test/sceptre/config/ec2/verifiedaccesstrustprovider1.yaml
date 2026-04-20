@@ -1,0 +1,67 @@
+---
+template:
+  type: file
+  path: ec2/verified_access_trust_provider.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 Verified Access Trust Providers
+  verified_access_trust_providers:
+    - name: PrimaryDeviceTrustProvider
+      trust_provider_type: "device"
+      device_trust_provider_type: "crowdstrike"
+      policy_reference_name: "device-policy-primary"
+      description: "Primary CrowdStrike device trust provider"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      device_options:
+        public_signing_key_url: "https://crowdstrike.example.com/keys/public"
+        tenant_id: "crowdstrike-tenant-12345"
+      sse_specification:
+        customer_managed_key_enabled: true
+        kms_key_arn: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+      tags:
+        Environment: Production
+        Owner: SecurityTeam
+        Provider: CrowdStrike
+    - name: SecondaryUserTrustProvider
+      trust_provider_type: "user"
+      user_trust_provider_type: "oidc"
+      policy_reference_name: "user-policy-secondary"
+      description: "Secondary OIDC user authentication provider"
+      deletion_policy: Delete
+      oidc_options:
+        client_id: "client-id-staging-123456"
+        client_secret: "client-secret-staging-xyz789"
+        issuer: "https://okta.example.com"
+        authorization_endpoint: "https://okta.example.com/oauth2/v1/authorize"
+        token_endpoint: "https://okta.example.com/oauth2/v1/token"
+        user_info_endpoint: "https://okta.example.com/oauth2/v1/userinfo"
+        scope: "openid profile email"
+      tags:
+        Environment: Staging
+        Owner: IdentityTeam
+        Provider: Okta
+    - name: TertiaryNativeAppProvider
+      trust_provider_type: "user"
+      user_trust_provider_type: "oidc"
+      policy_reference_name: "native-app-policy-dev"
+      description: "Development native application OIDC provider"
+      deletion_policy: Retain
+      native_application_oidc_options:
+        client_id: "native-app-dev-client-id"
+        client_secret: "native-app-dev-secret"
+        issuer: "https://auth.example.dev"
+        authorization_endpoint: "https://auth.example.dev/authorize"
+        token_endpoint: "https://auth.example.dev/token"
+        user_info_endpoint: "https://auth.example.dev/userinfo"
+        public_signing_key_endpoint: "https://auth.example.dev/keys"
+        scope: "openid profile email offline_access"
+      tags:
+        Environment: Development
+        Owner: CloudEngineering
+        AppType: NativeClient
+
+stack_tags:
+  Test: ec2-verified-access-trust-provider

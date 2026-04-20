@@ -79,8 +79,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ ipam_name }}-PublicDefaultScopeId"
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 2025-04-09:
 Type: AWS::EC2::IPAM
 Properties:

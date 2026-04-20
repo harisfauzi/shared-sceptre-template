@@ -11,9 +11,9 @@ Resources:
     UpdateReplacePolicy: {{ ec2_fleet.update_replace_policy | default('Delete') }}
     Properties:
       LaunchTemplateConfigs:
-{%- for launch_template_config in ec2_fleet.launch_template_configs %}{# BEGIN {%- for launch_template_config in ec2_fleet.launch_template_configs %} #}
+{%- for launch_template_config in ec2_fleet.launch_template_configs %}{# BEGIN for launch_template_config in ec2_fleet.launch_template_configs #}
         -
-{%- if launch_template_config.launch_template_specification is defined %}{# BEGIN {%- if launch_template_config.launch_template_specification is defined %} #}
+{%- if launch_template_config.launch_template_specification is defined %}{# BEGIN if launch_template_config.launch_template_specification is defined #}
           LaunchTemplateSpecification:
 {%- if launch_template_config.launch_template_specification.launch_template_id is defined %}
             LaunchTemplateId: {{ launch_template_config.launch_template_specification.launch_template_id | trim }}
@@ -24,15 +24,57 @@ Resources:
 {%- if launch_template_config.launch_template_specification.version is defined %}
             Version: {{ launch_template_config.launch_template_specification.version }}
 {%- endif %}
-{%- endif %}{# END {%- if launch_template_config.launch_template_specification is defined %}#}
-{%- if launch_template_config.overrides is defined %}{# BEGIN {%- if launch_template_config.overrides is defined %} #}
+{%- endif %}{# END if launch_template_config.launch_template_specification is defined %}#}
+{%- if launch_template_config.overrides is defined %}{# BEGIN if launch_template_config.overrides is defined #}
           Overrides:
-{%- for override in launch_template_config.overrides %}{# BEGIN {%- for override in launch_template_config.overrides %} #}
+{%- for override in launch_template_config.overrides %}{# BEGIN for override in launch_template_config.overrides #}
             -
 {%- if override.availability_zone is defined %}
               AvailabilityZone: {{ override.availability_zone }}
 {%- endif %}
-{%- if override.instance_requirements is defined %}{# BEGIN {%- if override.instance_requirements is defined %} #}
+{%- if override.availability_zone_id is defined %}
+              AvailabilityZoneId: {{ override.availability_zone_id }}
+{%- endif %}
+{%- if override.block_device_mappings is defined %}{# BEGIN if override.block_device_mappings is defined #}
+              BlockDeviceMappings:
+{%- for mapping in override.block_device_mappings %}{# BEGIN for mapping in override.block_device_mappings #}
+                -
+{%- if mapping.device_name is defined %}
+                  DeviceName: {{ mapping.device_name }}
+{%- endif %}
+{%- if mapping.ebs is defined %}{# BEGIN if mapping.ebs is defined #}
+                  Ebs:
+{%- if mapping.ebs.delete_on_termination is defined %}
+                    DeleteOnTermination: {{ mapping.ebs.delete_on_termination }}
+{%- endif %}
+{%- if mapping.ebs.encrypted is defined %}
+                    Encrypted: {{ mapping.ebs.encrypted }}
+{%- endif %}
+{%- if mapping.ebs.iops is defined %}
+                    Iops: {{ mapping.ebs.iops }}
+{%- endif %}
+{%- if mapping.ebs.kms_key_id is defined %}
+                    KmsKeyId: {{ mapping.ebs.kms_key_id }}
+{%- endif %}
+{%- if mapping.ebs.snapshot_id is defined %}
+                    SnapshotId: {{ mapping.ebs.snapshot_id }}
+{%- endif %}
+{%- if mapping.ebs.volume_size is defined %}
+                    VolumeSize: {{ mapping.ebs.volume_size }}
+{%- endif %}
+{%- if mapping.ebs.volume_type is defined %}
+                    VolumeType: {{ mapping.ebs.volume_type }}
+{%- endif %}
+{%- endif %}{# END if mapping.ebs is defined #}
+{%- if mapping.no_device is defined %}
+                  NoDevice: {{ mapping.no_device }}
+{%- endif %}
+{%- if mapping.virtual_name is defined %}
+                  VirtualName: {{ mapping.virtual_name }}
+{%- endif %}
+{%- endfor %}{# END for mapping in override.block_device_mappings #}
+{%- endif %}{# END if override.block_device_mappings is defined #}
+{%- if override.instance_requirements is defined %}{# BEGIN if override.instance_requirements is defined #}
               InstanceRequirements:
 {%- if override.instance_requirements.accelerator_count is defined %}
                 AcceleratorCount:
@@ -172,8 +214,11 @@ Resources:
 {%- if override.instance_requirements.on_demand_max_price_percentage_over_lowest_price is defined %}
                 OnDemandMaxPricePercentageOverLowestPrice: {{ override.instance_requirements.on_demand_max_price_percentage_over_lowest_price }}
 {%- endif %}
+{%- if override.instance_requirements.require_encryption_in_transit is defined %}
+                RequireEncryptionInTransit: {{ override.instance_requirements.require_encryption_in_transit | lower }}
+{%- endif %}
 {%- if override.instance_requirements.require_hibernate_support is defined %}
-                RequireHibernateSupport: {{ override.instance_requirements.require_hibernate_support }}
+                RequireHibernateSupport: {{ override.instance_requirements.require_hibernate_support | lower }}
 {%- endif %}
 {%- if override.instance_requirements.spot_max_price_percentage_over_lowest_price is defined %}
                 SpotMaxPricePercentageOverLowestPrice: {{ override.instance_requirements.spot_max_price_percentage_over_lowest_price }}
@@ -196,14 +241,14 @@ Resources:
                   Min: {{ override.instance_requirements.vcpu_count.min }}
 {%- endif %}
 {%- endif %}
-{%- endif %}{# END {%- if override.instance_requirements is defined %} #}
+{%- endif %}{# END if override.instance_requirements is defined #}
 {%- if override.instance_type is defined %}
               InstanceType: {{ override.instance_type }}
 {%- endif %}
 {%- if override.max_price is defined %}
               MaxPrice: {{ override.max_price }}
 {%- endif %}
-{%- if override.placement is defined %}{# BEGIN {%- if override.placement is defined %} #}
+{%- if override.placement is defined %}{# BEGIN if override.placement is defined #}
               Placement:
 {%- if override.placement.affinity is defined %}
                 Affinity: {{ override.placement.affinity }}
@@ -229,7 +274,7 @@ Resources:
 {%- if override.placement.tenancy is defined %}
                 Tenancy: {{ override.placement.tenancy }}
 {%- endif %}
-{%- endif %}{# END {%- if override.placement is defined %} #}
+{%- endif %}{# END if override.placement is defined #}
 {%- if override.priority is defined %}
               Priority: {{ override.priority }}
 {%- endif %}
@@ -239,9 +284,9 @@ Resources:
 {%- if override.weighted_capacity is defined %}
               WeightedCapacity: {{ override.weighted_capacity }}
 {%- endif %}
-{%- endfor %}{# END {%- for override in launch_template_config.overrides %} #}
-{%- endif %}{# END {%- if launch_template_config.overrides is defined %}#}
-{%- endfor %}{# END {%- for launch_template_config in ec2_fleet.launch_template_configs %} #}
+{%- endfor %}{# END for override in launch_template_config.overrides #}
+{%- endif %}{# END if launch_template_config.overrides is defined %}#}
+{%- endfor %}{# END for launch_template_config in ec2_fleet.launch_template_configs #}
       TargetCapacitySpecification:
         TotalTargetCapacity: {{ ec2_fleet.target_capacity_specification.total_target_capacity }}
 {%- if ec2_fleet.target_capacity_specification.default_target_capacity_type is defined %}
@@ -262,7 +307,7 @@ Resources:
 {%- if ec2_fleet.excess_capacity_termination_policy is defined %}
       ExcessCapacityTerminationPolicy: {{ ec2_fleet.excess_capacity_termination_policy }}
 {%- endif %}
-{%- if ec2_fleet.on_demand_options is defined %}{# BEGIN {%- if ec2_fleet.on_demand_options is defined %} #}
+{%- if ec2_fleet.on_demand_options is defined %}{# BEGIN if ec2_fleet.on_demand_options is defined #}
       OnDemandOptions:
 {%- if ec2_fleet.on_demand_options.allocation_strategy is defined %}
         AllocationStrategy: {{ ec2_fleet.on_demand_options.allocation_strategy }}
@@ -283,11 +328,20 @@ Resources:
 {%- if ec2_fleet.on_demand_options.single_instance_type is defined %}
         SingleInstanceType: {{ ec2_fleet.on_demand_options.single_instance_type }}
 {%- endif %}
-{%- endif %}{# END {%- if ec2_fleet.on_demand_options is defined %} #}
+{%- endif %}{# END if ec2_fleet.on_demand_options is defined #}
 {%- if ec2_fleet.replace_unhealthy_instances is defined %}
       ReplaceUnhealthyInstances: {{ ec2_fleet.replace_unhealthy_instances }}
 {%- endif %}
-{%- if ec2_fleet.spot_options is defined %}{# BEGIN {%- if ec2_fleet.spot_options is defined %} #}
+{%- if ec2_fleet.reserved_capacity_options is defined %}{# BEGIN if ec2_fleet.reserved_capacity_options is defined #}
+      ReservedCapacityOptions:
+{%- if ec2_fleet.reserved_capacity_options.reservation_types is defined %}{# BEGIN if ec2_fleet.reserved_capacity_options.reservation_types is defined #}
+        ReservationTypes:
+{%- for type in ec2_fleet.reserved_capacity_options.reservation_types %}
+          - {{ type }}
+{%- endfor %}
+{%- endif %}{# END if ec2_fleet.reserved_capacity_options.reservation_types is defined #}
+{%- endif %}{# END if ec2_fleet.reserved_capacity_options is defined#}
+{%- if ec2_fleet.spot_options is defined %}{# BEGIN if ec2_fleet.spot_options is defined #}
       SpotOptions:
 {%- if ec2_fleet.spot_options.allocation_strategy is defined %}}
         AllocationStrategy: {{ ec2_fleet.spot_options.allocation_strategy }}
@@ -320,8 +374,8 @@ Resources:
 {%- if ec2_fleet.spot_options.single_instance_type is defined %}}
         SingleInstanceType: {{ ec2_fleet.spot_options.single_instance_type }}
 {%- endif %}
-{%- endif %}{# END {%- if ec2_fleet.spot_options is defined %} #}
-{%- if ec2_fleet.tag_specifications is defined %}{# BEGIN {%- if ec2_fleet.tag_specifications is defined %} #}
+{%- endif %}{# END if ec2_fleet.spot_options is defined #}
+{%- if ec2_fleet.tag_specifications is defined %}{# BEGIN if ec2_fleet.tag_specifications is defined #}
       TagSpecifications:
 {%- for tag_specification in ec2_fleet.tag_specifications %}
         -
@@ -336,7 +390,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- endfor %}
-{%- endif %}{# END {%- if ec2_fleet.tag_specifications is defined %} #}
+{%- endif %}{# END if ec2_fleet.tag_specifications is defined #}
 {%- if ec2_fleet.terminate_instances_with_expiration is defined %}
       TerminateInstancesWithExpiration: {{ ec2_fleet.terminate_instances_with_expiration }}
 {%- endif %}
@@ -371,7 +425,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ ec2_fleet_name }}-FleetId"
 {%- endfor %}{#
-# Supported structure as of 20241027:
+# Supported structure as of 2025-03-29:
 Type: AWS::EC2::EC2Fleet
 Properties:
   Context: String
@@ -385,6 +439,20 @@ Properties:
       Overrides:
         -
           AvailabilityZone: String
+          AvailabilityZoneId: String
+          BlockDeviceMappings:
+            -
+              DeviceName: String
+              Ebs:
+                DeleteOnTermination: Boolean
+                Encrypted: Boolean
+                Iops: Integer
+                KmsKeyId: String
+                SnapshotId: String
+                VolumeSize: Integer
+                VolumeType: String
+              NoDevice: String
+              VirtualName: String
           InstanceRequirements:
             AcceleratorCount:
               Max: Integer
@@ -404,6 +472,10 @@ Properties:
             BaselineEbsBandwidthMbps:
               Max: Integer
               Min: Integer
+            BaselinePerformanceFactors:
+              Cpu:
+                References:
+                  - InstanceFamily: String
             BurstablePerformance: String
             CpuManufacturers:
               - String
@@ -428,6 +500,7 @@ Properties:
               Max: Integer
               Min: Integer
             OnDemandMaxPricePercentageOverLowestPrice: Integer
+            RequireEncryptionInTransit: Boolean
             RequireHibernateSupport: Boolean
             SpotMaxPricePercentageOverLowestPrice: Integer
             TotalLocalStorageGB:
@@ -459,6 +532,9 @@ Properties:
     SingleAvailabilityZone: Boolean
     SingleInstanceType: Boolean
   ReplaceUnhealthyInstances: Boolean
+  ReservedCapacityOptions:
+    ReservationTypes:
+      - String
   SpotOptions:
     AllocationStrategy: String
     InstanceInterruptionBehavior: String

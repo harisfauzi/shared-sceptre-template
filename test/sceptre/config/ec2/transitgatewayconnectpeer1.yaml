@@ -1,0 +1,60 @@
+---
+template:
+  type: file
+  path: ec2/transit_gateway_connect_peer.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Transit Gateway Connect Peers
+  transit_gateway_connect_peers:
+    - name: TransitGatewayConnectPeer1
+      transit_gateway_attachment_id: "tgw-attach-12345678 "
+      connect_peer_configuration:
+        inside_cidr_blocks:
+          - "169.254.10.0/29"
+        peer_address: "10.0.1.10"
+      tags:
+        Name: TransitGatewayConnectPeer1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: TransitGatewayConnectPeer2
+      transit_gateway_attachment_id: "tgw-attach-87654321 "
+      connect_peer_configuration:
+        inside_cidr_blocks:
+          - "169.254.11.0/29"
+          - "169.254.12.0/29"
+        peer_address: "10.0.2.10"
+        protocol: "gre"
+        transit_gateway_address: "192.168.1.1"
+        bgp_configurations:
+          - bgp_status: "up"
+            peer_address: "169.254.11.1"
+            peer_asn: 65001
+            transit_gateway_address: "169.254.11.2"
+            transit_gateway_asn: 64512
+          - bgp_status: "down"
+            peer_address: "169.254.12.1"
+            peer_asn: 65002
+            transit_gateway_address: "169.254.12.2"
+      deletion_policy: Retain
+      tags:
+        Name: TransitGatewayConnectPeer2
+        Project: "{{ project_code }}"
+        Environment: Staging
+        Tier: Network
+    - name: TransitGatewayConnectPeer3
+      transit_gateway_attachment_id: "tgw-attach-abcdef01 "
+      connect_peer_configuration:
+        inside_cidr_blocks:
+          - "169.254.13.0/29"
+        peer_address: "10.0.3.10"
+        protocol: "gre"
+      update_replace_policy: Retain
+      tags:
+        Name: TransitGatewayConnectPeer3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-transit-gateway-connect-peer

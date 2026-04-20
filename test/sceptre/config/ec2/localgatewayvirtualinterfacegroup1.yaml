@@ -1,0 +1,36 @@
+---
+template:
+  type: file
+  path: ec2/local_gateway_virtual_interface_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Local Gateway Virtual Interface Groups
+  local_gateway_virtual_interface_groups:
+    - name: VirtualInterfaceGroup1
+      local_gateway_id: "lgw-12345678"
+      local_bgp_asn: 65000
+      tags:
+        Name: VirtualInterfaceGroup1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: VirtualInterfaceGroup2
+      local_gateway_id: "lgw-87654321"
+      local_bgp_asn_extended: 4200000001
+      deletion_policy: Retain
+      tags:
+        Name: VirtualInterfaceGroup2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: VirtualInterfaceGroup3
+      local_gateway_id: "lgw-aabbccdd"
+      local_bgp_asn: 65001
+      update_replace_policy: Retain
+      tags:
+        Name: VirtualInterfaceGroup3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-local-gateway-virtual-interface-group

@@ -1,0 +1,61 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Capacity Manager Data Export(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for capacity_manager_data_export in sceptre_user_data.capacity_manager_data_exports %}
+{%- set capacity_manager_data_export_name = capacity_manager_data_export.name %}
+  {{ capacity_manager_data_export_name }}:
+    Type: AWS::EC2::CapacityManagerDataExport
+    DeletionPolicy: {{ capacity_manager_data_export.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ capacity_manager_data_export.update_replace_policy | default('Delete') }}
+    Properties:
+      OutputFormat: {{ capacity_manager_data_export.output_format }}
+      S3BucketName: {{ capacity_manager_data_export.s3_bucket_name }}
+      Schedule: {{ capacity_manager_data_export.schedule }}
+{%- if capacity_manager_data_export.s3_bucket_prefix is defined %}
+      S3BucketPrefix: {{ capacity_manager_data_export.s3_bucket_prefix }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if capacity_manager_data_export.tags is defined %}
+{%- for key,value in capacity_manager_data_export.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for capacity_manager_data_export in sceptre_user_data.capacity_manager_data_exports %}
+{%- set capacity_manager_data_export_name = capacity_manager_data_export.name %}
+  {{ capacity_manager_data_export_name }}:
+    Description: Export ID for {{ capacity_manager_data_export_name }}
+    Value:
+      Ref: {{ capacity_manager_data_export_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_manager_data_export_name }}"
+  {{ capacity_manager_data_export_name }}CapacityManagerDataExportId:
+    Description: Export ID for {{ capacity_manager_data_export_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_manager_data_export_name }}
+        - CapacityManagerDataExportId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_manager_data_export_name }}-CapacityManagerDataExportId"
+{%- endfor %}{#
+# Supported structure as of 2026-03-29
+Type: AWS::EC2::CapacityManagerDataExport
+Properties:
+  OutputFormat: String
+  S3BucketName: String
+  S3BucketPrefix: String
+  Schedule: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

@@ -1,0 +1,107 @@
+---
+template:
+  type: file
+  path: ec2/vpn_connection.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPN Connections
+  vpn_connections:
+    - name: PrimaryCorpVpnConnection
+      customer_gateway_id: "cgw-12345678901234567"
+      transit_gateway_id: "tgw-12345678901234567"
+      enable_acceleration: true
+      local_ipv4_network_cidr: "10.0.0.0/8"
+      remote_ipv4_network_cidr: "192.168.0.0/16"
+      outside_ip_address_type: "PublicIpv4"
+      static_routes_only: false
+      tunnel_inside_ip_version: "ipv4"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Location: UsEast1
+        Department: Infrastructure
+      vpn_tunnel_option_specifications:
+        - dpd_timeout_action: "restart"
+          dpd_timeout_seconds: 30
+          enable_tunnel_lifecycle_control: true
+          startup_action: "start"
+          pre_shared_key: "ExamplePreSharedKey123456789"
+          replay_window_size: 32
+          rekey_margin_time_seconds: 540
+          rekey_fuzz_percentage: 100
+          phase1_lifetime_seconds: 28800
+          phase2_lifetime_seconds: 3600
+          tunnel_inside_cidr: "169.254.10.0/30"
+          ike_versions:
+            - value: "ikev2"
+          phase1_dh_group_numbers:
+            - value: 2
+            - value: 14
+          phase1_encryption_algorithms:
+            - value: "AES128"
+            - value: "AES256"
+          phase1_integrity_algorithms:
+            - value: "SHA1"
+            - value: "SHA2-256"
+          phase2_dh_group_numbers:
+            - value: 2
+            - value: 5
+          phase2_encryption_algorithms:
+            - value: "AES128"
+            - value: "AES256"
+          phase2_integrity_algorithms:
+            - value: "SHA1"
+            - value: "SHA2-256"
+          log_options:
+            cloudwatch_log_options:
+              log_enabled: true
+              log_group_arn: "arn:aws:logs:us-east-1:123456789012:log-group:/aws/vpn/Primary:*"
+              log_output_format: "json"
+              bgp_log_enabled: true
+              bgp_log_group_arn: "arn:aws:logs:us-east-1:123456789012:log-group:/aws/vpn/Primary-BGP:*"
+              bgp_log_output_format: "json"
+      connection_routes:
+        - name: "CorpHeadquarters"
+          destination_cidr_block: "192.168.1.0/24"
+        - name: "CorpDatacenter"
+          destination_cidr_block: "192.168.2.0/24"
+    - name: SecondaryRemoteVpnConnection
+      customer_gateway_id: "cgw-87654321098765432"
+      vpn_gateway_id: "vgw-87654321098765432"
+      enable_acceleration: false
+      local_ipv4_network_cidr: "10.1.0.0/16"
+      remote_ipv4_network_cidr: "172.16.0.0/12"
+      outside_ip_address_type: "PublicIpv4"
+      static_routes_only: true
+      deletion_policy: Delete
+      tags:
+        Environment: Staging
+        Location: UsWest2
+      vpn_tunnel_option_specifications:
+        - startup_action: "start"
+          pre_shared_key: "SecondaryPreSharedKey987654321"
+          phase1_lifetime_seconds: 28800
+          phase2_lifetime_seconds: 3600
+          tunnel_inside_cidr: "169.254.11.0/30"
+          ike_versions:
+            - value: "ikev1"
+    - name: TertiaryBackupVpnConnection
+      customer_gateway_id: "cgw-abcdef1234567890ab"
+      vpn_gateway_id: "vgw-abcdef1234567890ab"
+      enable_acceleration: false
+      local_ipv4_network_cidr: "10.2.0.0/16"
+      remote_ipv4_network_cidr: "10.3.0.0/16"
+      tunnel_bandwidth: "150"
+      deletion_policy: Retain
+      tags:
+        Environment: Development
+        Location: EuWest1
+      connection_routes:
+        - name: "BackupNetwork"
+          destination_cidr_block: "10.3.0.0/24"
+
+stack_tags:
+  Test: ec2-vpn-connection

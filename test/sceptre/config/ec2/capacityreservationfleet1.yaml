@@ -1,0 +1,59 @@
+---
+template:
+  type: file
+  path: ec2/capacity_reservation_fleet.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  capacity_reservation_fleets:
+    - name: ProdCapacityFleet
+      allocation_strategy: prioritized
+      total_target_capacity: 20
+      tenancy: default
+      instance_match_criteria: open
+      instance_type_specification:
+        - instance_type: m6i.2xlarge
+          instance_platform: Linux/UNIX
+          availability_zone: "!Sub ${AWS::Region}a"
+          weight: 5
+          priority: 1
+        - instance_type: m6i.4xlarge
+          instance_platform: Linux/UNIX
+          availability_zone: "!Sub ${AWS::Region}b"
+          weight: 8
+          priority: 2
+        - instance_type: m6in.2xlarge
+          instance_platform: Linux/UNIX
+          availability_zone: "!Sub ${AWS::Region}a"
+          ebs_optimized: true
+          weight: 5
+          priority: 3
+      tag_specifications:
+        - resource_type: capacity-reservation-fleet
+          tags:
+            Name: ProdCapacityFleet
+            Environment: production
+            Team: infrastructure
+    - name: DevCapacityFleet
+      allocation_strategy: lowestPrice
+      total_target_capacity: 10
+      tenancy: default
+      instance_match_criteria: targeted
+      end_date: "2026-12-31T23:59:59Z"
+      instance_type_specification:
+        - instance_type: t3.large
+          instance_platform: Linux/UNIX
+          availability_zone: "!Sub ${AWS::Region}c"
+          weight: 10
+          priority: 1
+      tag_specifications:
+        - resource_type: capacity-reservation-fleet
+          tags:
+            Name: DevCapacityFleet
+            Environment: development
+            CostCenter: "12345"
+      deletion_policy: Retain
+
+stack_tags:
+  Test: ec2-capacityreservationfleet

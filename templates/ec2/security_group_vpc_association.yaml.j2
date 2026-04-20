@@ -1,0 +1,60 @@
+---
+Description: {{sceptre_user_data.description|default('Security Group VPC Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for security_group_vpc_association in sceptre_user_data.security_group_vpc_associations %}
+{%- set security_group_vpc_association_name = security_group_vpc_association.name %}
+  {{ security_group_vpc_association_name }}:
+    Type: AWS::EC2::SecurityGroupVpcAssociation
+    DeletionPolicy: {{ security_group_vpc_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ security_group_vpc_association.update_replace_policy | default('Delete') }}
+    Properties:
+      GroupId: {{ security_group_vpc_association.group_id | trim }}
+      VpcId: {{ security_group_vpc_association.vpc_id | trim }}
+{%- endfor %}
+
+Outputs:
+{%- for security_group_vpc_association in sceptre_user_data.security_group_vpc_associations %}
+{%- set security_group_vpc_association_name = security_group_vpc_association.name %}
+  {{ security_group_vpc_association_name }}:
+    Description: The concatenation of the security group ID and VPC ID in the format sg-id|vpc-id for {{ security_group_vpc_association_name }}
+    Value:
+      Ref: {{ security_group_vpc_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_group_vpc_association_name }}"
+  {{ security_group_vpc_association_name }}State:
+    Description: The association state for {{ security_group_vpc_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ security_group_vpc_association_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_group_vpc_association_name }}-State"
+  {{ security_group_vpc_association_name }}StateReason:
+    Description: The reason for the association state for {{ security_group_vpc_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ security_group_vpc_association_name }}
+        - StateReason
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_group_vpc_association_name }}-StateReason"
+  {{ security_group_vpc_association_name }}VpcOwnerId:
+    Description: The AWS account ID of the owner of the VPC for {{ security_group_vpc_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ security_group_vpc_association_name }}
+        - VpcOwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_group_vpc_association_name }}-VpcOwnerId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::SecurityGroupVpcAssociation
+Properties:
+  GroupId: String
+  VpcId: String
+#}

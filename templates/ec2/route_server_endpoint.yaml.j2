@@ -1,0 +1,90 @@
+---
+Description: {{sceptre_user_data.description|default('Route Server Endpoint(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for route_server_endpoint in sceptre_user_data.route_server_endpoints %}
+{%- set route_server_endpoint_name = route_server_endpoint.name %}
+  {{ route_server_endpoint_name }}:
+    Type: AWS::EC2::RouteServerEndpoint
+    DeletionPolicy: {{ route_server_endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ route_server_endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      RouteServerId: {{ route_server_endpoint.route_server_id | trim }}
+      SubnetId: {{ route_server_endpoint.subnet_id | trim }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if route_server_endpoint.tags is defined %}
+{%- for key,value in route_server_endpoint.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for route_server_endpoint in sceptre_user_data.route_server_endpoints %}
+{%- set route_server_endpoint_name = route_server_endpoint.name %}
+  {{ route_server_endpoint_name }}:
+    Description: The endpoint ID for {{ route_server_endpoint_name }}
+    Value:
+      Ref: {{ route_server_endpoint_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_endpoint_name }}"
+  {{ route_server_endpoint_name }}Arn:
+    Description: The ARN for the endpoint {{ route_server_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_endpoint_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_endpoint_name }}-Arn"
+  {{ route_server_endpoint_name }}EniAddress:
+    Description: The IP address of the Elastic network interface for the endpoint {{ route_server_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_endpoint_name }}
+        - EniAddress
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_endpoint_name }}-EniAddress"
+  {{ route_server_endpoint_name }}EniId:
+    Description: The ID of the Elastic network interface for the endpoint {{ route_server_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_endpoint_name }}
+        - EniId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_endpoint_name }}-EniId"
+  {{ route_server_endpoint_name }}Id:
+    Description: The unique identifier of the route server endpoint {{ route_server_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_endpoint_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_endpoint_name }}-Id"
+  {{ route_server_endpoint_name }}VpcId:
+    Description: The VPC ID containing the endpoint {{ route_server_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_endpoint_name }}
+        - VpcId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_endpoint_name }}-VpcId"
+{%- endfor %}{#
+# Supported structure as of 2025-04-09:
+Type: AWS::EC2::RouteServerEndpoint
+Properties:
+  RouteServerId: String
+  SubnetId: String
+  Tags:
+    - Key: String
+      Value: String
+#}

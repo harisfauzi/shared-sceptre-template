@@ -1,0 +1,62 @@
+---
+template:
+  type: file
+  path: ec2/launch_template.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample EC2 Launch Templates
+  launch_templates:
+    - name: LaunchTemplate1
+      launch_template_data:
+        image_id: ami-0c55b159cbfafe1f0
+        instance_type: t3.medium
+        key_name: my-key-pair
+        security_group_ids:
+          - sg-12345678
+          - sg-87654321
+        monitoring:
+          enabled: true
+      tag_specifications:
+        - resource_type: instance
+          tags:
+            Name: LaunchTemplate1-Instance
+            Environment: Production
+            Project: "{{ project_code }}"
+    - name: LaunchTemplate2
+      launch_template_data:
+        image_id: ami-0a887e401a7ce7329
+        instance_type: t3.large
+        key_name: prod-key
+        security_group_ids:
+          - sg-11111111
+      iam_instance_profile:
+        arn: "arn:aws:iam::123456789012:instance-profile/my-profile"
+      user_data: "IyEvYmluL2Jhc2gKZWNobyAnSGVsbG8gV29ybGQn"
+      deletion_policy: Retain
+      tag_specifications:
+        - resource_type: instance
+          tags:
+            Name: LaunchTemplate2-Instance
+            Environment: Staging
+            Project: "{{ project_code }}"
+    - name: LaunchTemplate3
+      launch_template_data:
+        image_id: ami-0bcc094591f354be2
+        instance_type: m5.xlarge
+        security_group_ids:
+          - sg-22222222
+        credit_specification:
+          cpu_credits: unlimited
+      monitoring:
+        enabled: false
+      tag_specifications:
+        - resource_type: instance
+          tags:
+            Name: LaunchTemplate3-Instance
+            Environment: Development
+            Project: "{{ project_code }}"
+
+stack_tags:
+  Test: ec2-launch-template

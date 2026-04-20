@@ -1,0 +1,26 @@
+---
+template:
+  type: file
+  path: ec2/vpc_dhcp_options_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPC DHCP Options Associations
+  associations:
+    - name: PrimaryDhcpAssociation
+      vpc_id: "vpc-12345678901234567"
+      dhcp_options_id: "dopt-12345678"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondaryDhcpAssociation
+      vpc_id: "vpc-87654321098765432"
+      dhcp_options_id: "dopt-87654321"
+      deletion_policy: Delete
+    - name: TertiaryDhcpAssociation
+      vpc_id: "vpc-abcdef1234567890ab"
+      dhcp_options_id: "dopt-abcdef01"
+      deletion_policy: Retain
+
+stack_tags:
+  Test: ec2-vpc-dhcp-options-association

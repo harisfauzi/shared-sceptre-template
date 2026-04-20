@@ -1,0 +1,48 @@
+---
+template:
+  type: file
+  path: ec2/transit_gateway_route_table.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Transit Gateway Route Tables
+  transit_gateway_route_tables:
+    - name: PrimaryRouteTable
+      transit_gateway_id: "tgw-12345678901234567"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Owner: NetworkTeam
+        Tier: Core
+      routes:
+        - name: ProductionRoute
+          destination_cidr_block: "10.0.0.0/8"
+          transit_gateway_attachment_id: "tgw-attach-11111111111111111"
+          deletion_policy: Delete
+        - name: BlockedRoute
+          destination_cidr_block: "192.168.0.0/16"
+          blackhole: true
+          deletion_policy: Delete
+    - name: SecondaryRouteTable
+      transit_gateway_id: "tgw-87654321098765432"
+      tags:
+        Environment: Staging
+        Owner: DevOpsTeam
+      routes:
+        - name: StagingRoute
+          destination_cidr_block: "172.16.0.0/12"
+          transit_gateway_attachment_id: "tgw-attach-22222222222222222"
+        - name: DisabledRoute
+          destination_cidr_block: "10.255.0.0/16"
+          blackhole: true
+    - name: TertiaryRouteTable
+      transit_gateway_id: "tgw-abcdef1234567890ab"
+      deletion_policy: Retain
+      tags:
+        Environment: Development
+        Owner: CloudEngineering
+
+stack_tags:
+  Test: ec2-transit-gateway-route-table

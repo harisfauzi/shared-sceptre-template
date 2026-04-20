@@ -1,0 +1,38 @@
+---
+template:
+  type: file
+  path: ec2/vpn_concentrator.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: VPN Concentrators
+  vpc_concentrators:
+    - name: PrimaryVpnConcentrator
+      transit_gateway_id: "tgw-12345678901234567"
+      type: "ipsec.1"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Location: UsEast1
+        Purpose: RemoteOfficePeering
+    - name: SecondaryVpnConcentrator
+      transit_gateway_id: "tgw-87654321098765432"
+      type: "ipsec.1"
+      deletion_policy: Delete
+      tags:
+        Environment: Staging
+        Location: UsWest2
+        Purpose: BackupPeering
+    - name: TertiaryVpnConcentrator
+      transit_gateway_id: "tgw-abcdef1234567890ab"
+      type: "ipsec.1"
+      deletion_policy: Retain
+      tags:
+        Environment: Development
+        Location: EuWest1
+        Purpose: TestingPeering
+
+stack_tags:
+  Test: ec2-vpn-concentrator

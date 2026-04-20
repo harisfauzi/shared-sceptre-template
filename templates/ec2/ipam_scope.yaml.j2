@@ -15,6 +15,11 @@ Resources:
 {%- if scope.description is defined %}
       Description: {{ scope.description }}
 {%- endif %}
+{%- if scope.external_authority_configuration is defined %}
+      ExternalAuthorityConfiguration:
+        ExternalResourceIdentifier: {{ scope.external_authority_configuration.external_resource_identifier }}
+        IpamScopeExternalAuthorityType: {{ scope.external_authority_configuration.ipam_scope_external_authority_type }}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -72,12 +77,14 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ scope_name }}-IpamScopeType"
-{%- endfor %}
-{#
-# Supported structure as of 20250107:
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
 Type: AWS::EC2::IPAMScope
 Properties:
   Description: String
+  ExternalAuthorityConfiguration:
+    ExternalResourceIdentifier: String
+    IpamScopeExternalAuthorityType: String
   IpamId: String  # Required
   Tags:
     - Key: String

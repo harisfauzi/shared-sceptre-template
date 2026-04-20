@@ -1,0 +1,102 @@
+---
+template:
+  type: file
+  path: ec2/network_insights_access_scope.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Network Insights Access Scopes
+  network_insights_access_scopes:
+    - name: AccessScope1
+      match_paths:
+        - source:
+            packet_header_statement:
+              source_addresses:
+                - "10.0.0.0/16"
+              source_ports:
+                - "80"
+              protocols:
+                - "tcp"
+          destination:
+            packet_header_statement:
+              destination_addresses:
+                - "10.1.0.0/16"
+              destination_ports:
+                - "8080"
+              protocols:
+                - "tcp"
+      tags:
+        Name: AccessScope1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: AccessScope2
+      match_paths:
+        - source:
+            resource_statement:
+              resources:
+                - "vpc-12345678"
+              resource_types:
+                - "VPC"
+          destination:
+            resource_statement:
+              resources:
+                - "subnet-abcdef01"
+              resource_types:
+                - "Subnet"
+      exclude_paths:
+        - source:
+            packet_header_statement:
+              source_addresses:
+                - "192.168.0.0/16"
+          destination:
+            packet_header_statement:
+              destination_addresses:
+                - "172.16.0.0/12"
+          through_resources:
+            - resource_statement:
+                resources:
+                  - "igw-12345678"
+                resource_types:
+                  - "InternetGateway"
+      deletion_policy: Retain
+      tags:
+        Name: AccessScope2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: AccessScope3
+      exclude_paths:
+        - source:
+            packet_header_statement:
+              source_addresses:
+                - "0.0.0.0/0"
+              protocols:
+                - "udp"
+          destination:
+            packet_header_statement:
+              destination_ports:
+                - "53"
+      match_paths:
+        - source:
+            resource_statement:
+              resource_types:
+                - "Instance"
+          destination:
+            resource_statement:
+              resource_types:
+                - "NetworkInterface"
+          through_resources:
+            - resource_statement:
+                resources:
+                  - "rtb-87654321"
+                  - "rtb-ghijkl02"
+                resource_types:
+                  - "RouteTable"
+      update_replace_policy: Retain
+      tags:
+        Name: AccessScope3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-network-insights-access-scope

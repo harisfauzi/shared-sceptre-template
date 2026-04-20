@@ -1,0 +1,61 @@
+---
+template:
+  type: file
+  path: ec2/vpc_endpoint_service.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPC Endpoint Services
+  vpc_endpoint_services:
+    - name: PrimaryNetworkService
+      network_load_balancer_arns:
+        - "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/primary-nlb/1234567890abcdef"
+        - "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/secondary-nlb/fedcba0987654321"
+      acceptance_required: true
+      contributor_insights_enabled: true
+      payer_responsibility: "ServiceOwner"
+      supported_ip_address_type:
+        - "ipv4"
+        - "ipv6"
+      supported_regions:
+        - "us-east-1"
+        - "us-west-2"
+        - "eu-west-1"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Owner: NetworkTeam
+        ServiceType: NLB
+    - name: SecondaryGatewayService
+      gateway_load_balancer_arns:
+        - "arn:aws:elasticloadbalancing:us-east-1:210987654321:loadbalancer/gateway/appliance-glb/abcdef1234567890"
+      acceptance_required: false
+      contributor_insights_enabled: false
+      payer_responsibility: "Consumer"
+      supported_ip_address_type:
+        - "ipv4"
+      supported_regions:
+        - "us-east-1"
+      deletion_policy: Delete
+      tags:
+        Environment: Staging
+        Owner: SecurityTeam
+    - name: TertiaryHybridService
+      network_load_balancer_arns:
+        - "arn:aws:elasticloadbalancing:eu-west-1:345678901234:loadbalancer/net/hybrid-nlb/0987654321fedcba"
+      gateway_load_balancer_arns:
+        - "arn:aws:elasticloadbalancing:eu-west-1:345678901234:loadbalancer/gateway/hybrid-glb/1234567890abcdef"
+      acceptance_required: true
+      supported_ip_address_type:
+        - "ipv4"
+        - "ipv6"
+      deletion_policy: Retain
+      tags:
+        Environment: Development
+        Owner: CloudEngineering
+        ServiceType: Hybrid
+
+stack_tags:
+  Test: ec2-vpc-endpoint-service

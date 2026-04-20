@@ -1,0 +1,60 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 VPC Block Public Access Exclusion(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for vpc_block_public_access_exclusion in sceptre_user_data.vpc_block_public_access_exclusions %}
+{%- set vpc_block_public_access_exclusion_name = vpc_block_public_access_exclusion.name %}
+  {{ vpc_block_public_access_exclusion_name }}:
+    Type: AWS::EC2::VPCBlockPublicAccessExclusion
+    DeletionPolicy: {{ vpc_block_public_access_exclusion.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_block_public_access_exclusion.update_replace_policy | default('Delete') }}
+    Properties:
+      InternetGatewayExclusionMode: {{ vpc_block_public_access_exclusion.internet_gateway_exclusion_mode }}
+{%- if vpc_block_public_access_exclusion.subnet_id is defined %}
+      SubnetId: {{ vpc_block_public_access_exclusion.subnet_id }}
+{%- endif %}
+{%- if vpc_block_public_access_exclusion.vpc_id is defined %}
+      VpcId: {{ vpc_block_public_access_exclusion.vpc_id }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if vpc_block_public_access_exclusion.tags is defined %}
+{%- for key,value in vpc_block_public_access_exclusion.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for vpc_block_public_access_exclusion in sceptre_user_data.vpc_block_public_access_exclusions %}
+{%- set vpc_block_public_access_exclusion_name = vpc_block_public_access_exclusion.name %}
+  {{ vpc_block_public_access_exclusion_name }}:
+    Description: The ID of the exclusion {{ vpc_block_public_access_exclusion_name }}
+    Value:
+      Ref: {{ vpc_block_public_access_exclusion_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_block_public_access_exclusion_name }}"
+  {{ vpc_block_public_access_exclusion_name }}ExclusionId:
+    Description: The ID of the exclusion {{ vpc_block_public_access_exclusion_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vpc_block_public_access_exclusion_name }}
+        - ExclusionId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_block_public_access_exclusion_name }}-ExclusionId"
+{%- endfor %}{#
+# Support structure as of 2026-04-20:
+Type: AWS::EC2::VPCBlockPublicAccessExclusion
+Properties:
+  InternetGatewayExclusionMode: String
+  SubnetId: String
+  Tags:
+    - Key: String
+      Value: String
+  VpcId: String
+#}

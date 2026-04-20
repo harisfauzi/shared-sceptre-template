@@ -1,0 +1,55 @@
+---
+Description: {{sceptre_user_data.description|default('Sql HA Standby Detected Instance(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for sql_ha_standby_detected_instance in sceptre_user_data.sql_ha_standby_detected_instances %}
+{%- set sql_ha_standby_detected_instance_name = sql_ha_standby_detected_instance.name %}
+  {{ sql_ha_standby_detected_instance_name }}:
+    Type: AWS::EC2::SqlHaStandbyDetectedInstance
+    DeletionPolicy: {{ sql_ha_standby_detected_instance.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ sql_ha_standby_detected_instance.update_replace_policy | default('Delete') }}
+    Properties:
+      InstanceId: {{ sql_ha_standby_detected_instance.instance_id | trim }}
+{%- if sql_ha_standby_detected_instance.sql_server_credentials is defined %}      
+      SqlServerCredentials: {{ sql_ha_standby_detected_instance.sql_server_credentials | trim }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for sql_ha_standby_detected_instance in sceptre_user_data.sql_ha_standby_detected_instances %}
+{%- set sql_ha_standby_detected_instance_name = sql_ha_standby_detected_instance.name %}
+  {{ sql_ha_standby_detected_instance_name }}:
+    Description: SQL Server High Availability instance for {{ sql_ha_standby_detected_instance_name }}
+    Value:
+      Ref: {{ sql_ha_standby_detected_instance_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ sql_ha_standby_detected_instance_name }}"
+  {{ sql_ha_standby_detected_instance_name }}LastUpdatedTime:
+    Description: |
+      The date and time when the instance's SQL Server High Availability status
+      was last updated for {{ sql_ha_standby_detected_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ sql_ha_standby_detected_instance_name }}
+        - LastUpdatedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ sql_ha_standby_detected_instance_name }}-LastUpdatedTime"
+  {{ sql_ha_standby_detected_instance_name }}SqlServerLicenseUsage:
+    Description: The license type for the SQL Server license for {{ sql_ha_standby_detected_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ sql_ha_standby_detected_instance_name }}
+        - SqlServerLicenseUsage
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ sql_ha_standby_detected_instance_name }}-SqlServerLicenseUsage"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::SqlHaStandbyDetectedInstance
+Properties:
+  InstanceId: String
+  SqlServerCredentials: String
+#}

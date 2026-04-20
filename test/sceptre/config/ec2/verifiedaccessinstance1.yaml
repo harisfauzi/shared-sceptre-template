@@ -1,0 +1,83 @@
+---
+template:
+  type: file
+  path: ec2/verified_access_instance.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 Verified Access Instances
+  verified_access_instances:
+    - name: PrimaryProductionInstance
+      description: "Primary Verified Access instance for production"
+      fips_enabled: true
+      cidr_endpoints_custom_sub_domain: "prod-access"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      logging_configurations:
+        log_version: "2"
+        include_trust_context: true
+        cloud_watch_logs:
+          enabled: true
+          log_group: "/aws/verified-access/production"
+        kinesis_data_firehose:
+          enabled: true
+          delivery_stream: "verified-access-prod-stream"
+        s3:
+          enabled: true
+          bucket_name: "my-verified-access-logs"
+          bucket_owner: "123456789012"
+          prefix: "production/"
+      verified_access_trust_provider_ids:
+        - "vatp-1234567890abcdef0"
+        - "vatp-0987654321fedcba0"
+      verified_access_trust_providers:
+        - verified_access_trust_provider_id: "vatp-1234567890abcdef0"
+          trust_provider_type: "device"
+          device_trust_provider_type: "crowdstrike"
+          description: "CrowdStrike device trust provider"
+        - verified_access_trust_provider_id: "vatp-0987654321fedcba0"
+          trust_provider_type: "user"
+          user_trust_provider_type: "oidc"
+          description: "OIDC user authentication provider"
+      tags:
+        Environment: Production
+        Owner: SecurityTeam
+        CostCenter: "1001"
+    - name: SecondaryStatingInstance
+      description: "Secondary Verified Access instance for staging"
+      fips_enabled: false
+      deletion_policy: Delete
+      logging_configurations:
+        log_version: "2"
+        include_trust_context: false
+        cloud_watch_logs:
+          enabled: true
+          log_group: "/aws/verified-access/staging"
+        s3:
+          enabled: false
+      verified_access_trust_provider_ids:
+        - "vatp-staging123456789ab"
+      tags:
+        Environment: Staging
+        Owner: NetworkTeam
+    - name: TertiaryDevelopmentInstance
+      description: "Development Verified Access instance"
+      deletion_policy: Retain
+      logging_configurations:
+        log_version: "1"
+        include_trust_context: true
+        cloud_watch_logs:
+          enabled: true
+          log_group: "/aws/verified-access/development"
+      verified_access_trust_providers:
+        - verified_access_trust_provider_id: "vatp-dev1234567890abcde"
+          trust_provider_type: "device"
+          description: "Development device provider"
+      tags:
+        Environment: Development
+        Owner: CloudEngineering
+        Tier: Testing
+
+stack_tags:
+  Test: ec2-verified-access-instance

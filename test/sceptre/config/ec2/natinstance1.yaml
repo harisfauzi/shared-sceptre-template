@@ -1,0 +1,63 @@
+---
+template:
+  type: file
+  path: ec2/nat_instance.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample NAT Instances
+  nat_instances:
+    - name: NatInstance1
+      availability_zone: us-east-1a
+      instance_profile_name: "NAT-Instance-Profile"
+      image_id: "ami-0c55b159cbfafe1f0"
+      security_group_ids:
+        - "sg-12345678"
+      subnet_id: "subnet-abcdef01"
+      tags:
+        Name: NatInstance1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: NatInstance2
+      availability_zone: us-east-1b
+      instance_profile_name: "NAT-Instance-Profile"
+      image_id: "ami-0a887e401a7ce7329"
+      security_group_ids:
+        - "sg-87654321"
+        - "sg-11111111"
+      subnet_id: "subnet-ghijkl02"
+      ec2_key_pair: "nat-key-pair"
+      use_ipv6: true
+      deletion_policy: Retain
+      default_route_tables:
+        - name: PrivateRouteTable1
+          route_table_id: "rtb-private-01"
+        - name: PrivateRouteTable2
+          route_table_id: "rtb-private-02"
+      tags:
+        Name: NatInstance2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: NatInstance3
+      availability_zone: us-east-1c
+      instance_profile_name: "NAT-Instance-Profile"
+      image_id: "ami-0bcc094591f354be2"
+      security_group_ids:
+        - "sg-22222222"
+      subnet_id: "subnet-mnopqr03"
+      ec2_key_pair: "nat-key-pair"
+      block_device_mappings:
+        - device_name: "/dev/xvda"
+          ebs:
+            volume_size: 50
+            volume_type: gp3
+            delete_on_termination: true
+      update_replace_policy: Retain
+      tags:
+        Name: NatInstance3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-nat-instance

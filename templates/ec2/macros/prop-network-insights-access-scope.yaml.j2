@@ -1,0 +1,176 @@
+{# BEGIN macro prep_resource_statement(statement) #}
+{# statement structure is:
+        Resources:
+          - String
+        ResourceTypes:
+          - String
+#}
+{%- macro prep_resource_statement(statement) %}
+{%- if statement.resources is defined %}{# BEGIN if statement.resources is defined #}
+Resources:
+{%- for item in statement.resources %}
+  - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if statement.resources is defined #}
+{%- if statement.resource_types is defined %}{# BEGIN if statement.resource_types is defined #}
+ResourceTypes:
+{%- for item in statement.resource_types %}
+  - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if statement.resource_types is defined #}
+{%- endmacro %}
+{# END macro prep_resource_statement(statement) #}
+
+{# BEGIN macro prep_path_statement_request(request) #}
+{# request structure is:
+        PacketHeaderStatement:
+            DestinationAddresses:
+              - String
+            DestinationPorts:
+              - String
+            DestinationPrefixLists:
+              - String
+            Protocols:
+              - String
+            SourceAddresses:
+              - String
+            SourcePorts:
+              - String
+            SourcePrefixLists:
+              - String
+        ResourceStatement:
+          Resources:
+            - String
+          ResourceTypes:
+            - String
+#}
+{%- macro prep_path_statement_request(request) %}
+{%- if request.packet_header_statement is defined %}{# BEGIN if request.packet_header_statement is defined #}
+PacketHeaderStatement:
+{%- if request.packet_header_statement.destination_addresses is defined %}
+    DestinationAddresses:
+{%- for item in request.packet_header_statement.destination_addresses %}
+      - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if request.packet_header_statement.destination_ports is defined %}
+    DestinationPorts:
+{%- for item in request.packet_header_statement.destination_ports %}
+      - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if request.packet_header_statement.destination_prefix_lists is defined %}
+    DestinationPrefixLists:
+{%- for item in request.packet_header_statement.destination_prefix_lists %}
+      - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if request.packet_header_statement.protocols is defined %}
+    Protocols:
+{%- for item in request.packet_header_statement.protocols %}
+      - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if request.packet_header_statement.source_addresses is defined %}
+    SourceAddresses:
+{%- for item in request.packet_header_statement.source_addresses %}
+      - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if request.packet_header_statement.source_ports is defined %}
+    SourcePorts:
+{%- for item in request.packet_header_statement.source_ports %}
+      - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if request.packet_header_statement.source_prefix_lists is defined %}
+    SourcePrefixLists:
+{%- for item in request.packet_header_statement.source_prefix_lists %}
+      - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END if request.packet_header_statement is defined #}
+{%- if request.resource_statement is defined %}{# BEGIN if request.resource_statement is defined #}
+ResourceStatement:
+  {{- prep_resource_statement(request.resource_statement) | indent(width=2, first=false) }}
+{%- endif %}{# END if request.resource_statement is defined #}
+{%- endmacro %}
+{# END macro prep_path_statement_request(request) #}
+
+{# BEGIN macro prep_access_scope_path_request(paths) #}
+{# paths structure is
+    -
+      Destination:
+        PacketHeaderStatement:
+            DestinationAddresses:
+              - String
+            DestinationPorts:
+              - String
+            DestinationPrefixLists:
+              - String
+            Protocols:
+              - String
+            SourceAddresses:
+              - String
+            SourcePorts:
+              - String
+            SourcePrefixLists:
+              - String
+        ResourceStatement:
+          Resources:
+            - String
+          ResourceTypes:
+            - String
+      Source:
+        PacketHeaderStatement:
+            DestinationAddresses:
+              - String
+            DestinationPorts:
+              - String
+            DestinationPrefixLists:
+              - String
+            Protocols:
+              - String
+            SourceAddresses:
+              - String
+            SourcePorts:
+              - String
+            SourcePrefixLists:
+              - String
+        ResourceStatement:
+          Resources:
+            - String
+          ResourceTypes:
+            - String
+      ThroughResources:
+        -
+          ResourceStatement:
+            Resources:
+              - String
+            ResourceTypes:
+              - String
+#}
+{%- macro prep_access_scope_path_request(paths) %}
+{%- for path in paths %}
+-
+{%- if path.destination is defined %}{# BEGIN if path.destination is defined #}
+  Destination:
+    {{- prep_path_statement_request(path.destination) | indent(width=4, first=false) }}
+{%- endif %}{# END if path.destination is defined #}
+{%- if path.source is defined %}{# BEGIN if path.source is defined #}
+  Source:
+    {{- prep_path_statement_request(path.source) | indent(width=4, first=false) }}
+{%- endif %}{# END if path.source is defined #}
+{%- if path.through_resources is defined %}{# BEGIN if path.through_resources is defined #}
+  ThroughResources:
+{%- for through_resource in path.through_resources %}{# BEGIN for through_resource in path.through_resources #}
+    -
+{%- if through_resource.resource_statement is defined %}{# BEGIN if through_resource.resource_statement is defined #}
+      ResourceStatement:
+        {{- prep_resource_statement(through_resource.resource_statement) | indent(width=8, first=false) }}
+{%- endif %}{# END if through_resource.resource_statement is defined #}
+{%- endfor %}{# END for through_resource in path.through_resources #}
+{%- endif %}{# END if path.through_resources is defined #}
+{%- endfor %}
+{%- endmacro %}
+{# END macro prep_access_scope_path_request(paths) #}

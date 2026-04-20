@@ -1,0 +1,37 @@
+---
+template:
+  type: file
+  path: ec2/vpc_endpoint_connection_notification.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPC Endpoint Connection Notifications
+  vpc_endpoint_connection_notifications:
+    - name: PrimaryServiceNotification
+      connection_notification_arn: "arn:aws:sns:us-east-1:123456789012:vpc-endpoint-notifications"
+      service_id: "vpce-svc-12345678901234567"
+      connection_events:
+        - "Accept"
+        - "Reject"
+        - "Connect"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondaryEndpointNotification
+      connection_notification_arn: "arn:aws:sns:us-east-1:123456789012:endpoint-alerts"
+      vpc_endpoint_id: "vpce-87654321098765432"
+      connection_events:
+        - "Connect"
+        - "Disconnect"
+      deletion_policy: Delete
+    - name: TertiaryManagementNotification
+      connection_notification_arn: "arn:aws:sns:us-east-1:123456789012:management-notifications"
+      service_id: "vpce-svc-abcdef1234567890ab"
+      vpc_endpoint_id: "vpce-abcdef1234567890ab"
+      connection_events:
+        - "Accept"
+        - "Reject"
+      deletion_policy: Retain
+
+stack_tags:
+  Test: ec2-vpc-endpoint-connection-notification

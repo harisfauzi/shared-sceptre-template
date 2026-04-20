@@ -1,0 +1,70 @@
+---
+template:
+  type: file
+  path: ec2/network_interface.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Network Interfaces
+  network_interfaces:
+    - name: NetworkInterface1
+      subnet_id: "subnet-12345678"
+      description: "Primary network interface"
+      group_set:
+        - "sg-12345678"
+      private_ip_address: "10.0.1.10"
+      tags:
+        Name: NetworkInterface1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: NetworkInterface2
+      subnet_id: "subnet-87654321"
+      description: "Multi-IP network interface with IPv4 prefixes"
+      group_set:
+        - "sg-87654321"
+        - "sg-11111111"
+      private_ip_address: "10.0.2.10"
+      private_ip_addresses:
+        - primary: true
+          private_ip_address: "10.0.2.10"
+        - primary: false
+          private_ip_address: "10.0.2.11"
+        - primary: false
+          private_ip_address: "10.0.2.12"
+      ipv4_prefixes:
+        - ipv4_prefix: "10.0.2.0/28"
+        - ipv4_prefix: "10.0.2.16/28"
+      secondary_private_ip_address_count: 2
+      interface_type: "interface"
+      source_dest_check: false
+      deletion_policy: Retain
+      tags:
+        Name: NetworkInterface2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: NetworkInterface3
+      subnet_id: "subnet-abcdef01"
+      description: "IPv6-enabled interface with connection tracking"
+      group_set:
+        - "sg-22222222"
+      enable_primary_ipv6: true
+      ipv6_address_count: 1
+      ipv6_addresses:
+        - ipv6_address: "2001:db8::1"
+      ipv6_prefix_count: 1
+      ipv6_prefixes:
+        - ipv6_prefix: "2001:db8::/64"
+      connection_tracking_specification:
+        tcp_established_timeout: 300
+        udp_stream_timeout: 180
+        udp_timeout: 60
+      source_dest_check: true
+      update_replace_policy: Retain
+      tags:
+        Name: NetworkInterface3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-network-interface

@@ -1,0 +1,44 @@
+---
+template:
+  type: file
+  path: ec2/vpc_peering_connection.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPC Peering Connections
+  vpc_peering_connections:
+    - name: PrimaryInterdepartmentPeering
+      vpc_id: "vpc-12345678901234567"
+      peer_vpc_id: "vpc-87654321098765432"
+      peer_owner_id: "210987654321"
+      peer_region: "us-west-2"
+      peer_role_arn: "arn:aws:iam::210987654321:role/VpcPeeringRole"
+      assume_role_region: "us-west-2"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Department: Engineering
+        Environment: Production
+        PeerAccount: "210987654321"
+    - name: SecondaryProvisionalPeering
+      vpc_id: "vpc-12345678901234567"
+      peer_vpc_id: "vpc-abcdef1234567890ab"
+      peer_region: "eu-west-1"
+      deletion_policy: Delete
+      tags:
+        Department: Infrastructure
+        Environment: Staging
+    - name: TertiaryPartnerPeering
+      vpc_id: "vpc-87654321098765432"
+      peer_vpc_id: "vpc-fedcba0987654321fe"
+      peer_owner_id: "345678901234"
+      peer_role_arn: "arn:aws:iam::345678901234:role/ExternalVpcPeeringRole"
+      deletion_policy: Retain
+      tags:
+        Department: Partnerships
+        Environment: Production
+        PeerAccount: "345678901234"
+
+stack_tags:
+  Test: ec2-vpc-peering-connection

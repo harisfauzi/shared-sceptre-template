@@ -1,0 +1,40 @@
+---
+template:
+  type: file
+  path: ec2/transit_gateway_connect.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Transit Gateway Connects
+  transit_gateway_connects:
+    - name: TransitGatewayConnect1
+      transport_transit_gateway_attachment_id: "tgw-attach-12345678 "
+      options:
+        protocol: "gre"
+      tags:
+        Name: TransitGatewayConnect1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: TransitGatewayConnect2
+      transport_transit_gateway_attachment_id: "tgw-attach-87654321 "
+      options:
+        protocol: "gre"
+      deletion_policy: Retain
+      tags:
+        Name: TransitGatewayConnect2
+        Project: "{{ project_code }}"
+        Environment: Staging
+        Tier: Network
+    - name: TransitGatewayConnect3
+      transport_transit_gateway_attachment_id: "tgw-attach-abcdef01 "
+      options:
+        protocol: "gre"
+      update_replace_policy: Retain
+      tags:
+        Name: TransitGatewayConnect3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-transit-gateway-connect

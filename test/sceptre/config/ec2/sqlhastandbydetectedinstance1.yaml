@@ -1,0 +1,23 @@
+---
+template:
+  type: file
+  path: ec2/sql_ha_standby_detected_instance.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample SQL HA Standby Detected Instances
+  sql_ha_standby_detected_instances:
+    - name: SqlHaStandbyDetectedInstance1
+      instance_id: "i-1234567890abcdef0 "
+    - name: SqlHaStandbyDetectedInstance2
+      instance_id: "i-0987654321fedcba0 "
+      sql_server_credentials: "arn:aws:secretsmanager:us-east-1:123456789012:secret:sql-creds "
+      deletion_policy: Retain
+    - name: SqlHaStandbyDetectedInstance3
+      instance_id: "i-abcdef1234567890 "
+      sql_server_credentials: "arn:aws:secretsmanager:us-west-2:123456789012:secret:sql-password "
+      update_replace_policy: Retain
+
+stack_tags:
+  Test: ec2-sql-ha-standby-detected-instance

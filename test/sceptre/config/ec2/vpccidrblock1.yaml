@@ -1,0 +1,32 @@
+---
+template:
+  type: file
+  path: ec2/vpc_cidr_block.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPC CIDR Blocks
+  vpc_cidr_blocks:
+    - name: PrimaryProductionCidr
+      vpc_id: "vpc-12345678901234567"
+      cidr_block: "10.0.0.0/16"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondaryPrivateCidr
+      vpc_id: "vpc-87654321098765432"
+      cidr_block: "172.16.0.0/12"
+      deletion_policy: Delete
+    - name: TertiaryIpv6CidrBlock
+      vpc_id: "vpc-abcdef1234567890ab"
+      amazon_provided_ipv6_cidr_block: true
+      ipv6_pool: "Amazon"
+      deletion_policy: Delete
+    - name: QuaternaryIpamManagedCidr
+      vpc_id: "vpc-fedcba9876543210ba"
+      ipv4_ipam_pool_id: "ipam-pool-12345678"
+      ipv4_netmask_length: 24
+      deletion_policy: Retain
+
+stack_tags:
+  Test: ec2-vpc-cidr-block

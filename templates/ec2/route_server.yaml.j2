@@ -1,0 +1,73 @@
+---
+Description: {{sceptre_user_data.description|default('Route Server(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for route_server in sceptre_user_data.route_servers %}
+{%- set route_server_name = route_server.name %}
+  {{ route_server_name }}:
+    Type: AWS::EC2::RouteServer
+    DeletionPolicy: {{ route_server.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ route_server.update_replace_policy | default('Delete') }}
+    Properties:
+      AmazonSideAsn: {{ route_server.amazon_side_asn }}
+{%- if route_server.persist_routes is defined %}
+      PersistRoutes: {{ route_server.persist_routes }}
+{%- endif %}
+{%- if route_server.persist_routes_duration is defined %}
+      PersistRoutesDuration: {{ route_server.persist_routes_duration }}
+{%- endif %}
+{%- if route_server.sns_notifications_enabled is defined %}
+      SnsNotificationsEnabled: {{ route_server.sns_notifications_enabled | lower}}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if route_server.tags is defined %}
+{%- for key,value in route_server.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for route_server in sceptre_user_data.route_servers %}
+{%- set route_server_name = route_server.name %}
+  {{ route_server_name }}:
+    Description: Route Server ID for {{ route_server_name }}
+    Value:
+      Ref: {{ route_server_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_name }}"
+  {{ route_server_name }}Arn:
+    Description: ARN of route server {{ route_server_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_name }}-Arn"
+  {{ route_server_name }}Id:
+    Description: ID of Route Server  {{ route_server_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::RouteServer
+Properties:
+  AmazonSideAsn: Integer
+  PersistRoutes: String
+  PersistRoutesDuration: Integer
+  SnsNotificationsEnabled: Boolean
+  Tags:
+    - Key: String
+      Value: String
+#}

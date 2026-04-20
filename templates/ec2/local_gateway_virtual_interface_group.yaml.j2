@@ -1,0 +1,88 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Local Gateway Virtual Interface Group(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for local_gateway_virtual_interface_group in sceptre_user_data.local_gateway_virtual_interface_groups %}
+{%- set local_gateway_virtual_interface_group_name = local_gateway_virtual_interface_group.name %}
+  {{ local_gateway_virtual_interface_group_name }}:
+    Type: AWS::EC2::LocalGatewayVirtualInterfaceGroup
+    DeletionPolicy: {{ local_gateway_virtual_interface_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ local_gateway_virtual_interface_group.update_replace_policy | default('Delete') }}
+    Properties:
+      LocalGatewayId: {{ local_gateway_virtual_interface_group.local_gateway_id | trim }}
+{%- if local_gateway_virtual_interface_group.local_bgp_asn is defined %}
+      LocalBgpAsn: {{ local_gateway_virtual_interface_group.local_bgp_asn }}
+{%- endif %}
+{%- if local_gateway_virtual_interface_group.local_bgp_asn_extended is defined %}
+      LocalBgpAsnExtended: {{ local_gateway_virtual_interface_group.local_bgp_asn_extended }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if local_gateway_virtual_interface_group.tags is defined %}
+{%- for key,value in local_gateway_virtual_interface_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for local_gateway_virtual_interface_group in sceptre_user_data.local_gateway_virtual_interface_groups %}
+{%- set local_gateway_virtual_interface_group_name = local_gateway_virtual_interface_group.name %}
+  {{ local_gateway_virtual_interface_group_name }}:
+    Description: The ID of the local gateway virtual interface group for {{ local_gateway_virtual_interface_group_name }}
+    Value:
+      Ref: {{ local_gateway_virtual_interface_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_virtual_interface_group_name }}"
+  {{ local_gateway_virtual_interface_group_name }}ConfigurationState:
+    Description: The state of the local gateway virtual interface group for {{ local_gateway_virtual_interface_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_virtual_interface_group_name }}
+        - ConfigurationState
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_virtual_interface_group_name }}-ConfigurationState"
+  {{ local_gateway_virtual_interface_group_name }}LocalGatewayVirtualInterfaceGroupArn:
+    Description: The ARN of the local gateway virtual interface group for {{ local_gateway_virtual_interface_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_virtual_interface_group_name }}
+        - LocalGatewayVirtualInterfaceGroupArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_virtual_interface_group_name }}-LocalGatewayVirtualInterfaceGroupArn"
+  {{ local_gateway_virtual_interface_group_name }}LocalGatewayVirtualInterfaceGroupId:
+    Description: The ID of the local gateway virtual interface group for {{ local_gateway_virtual_interface_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_virtual_interface_group_name }}
+        - LocalGatewayVirtualInterfaceGroupId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_virtual_interface_group_name }}-LocalGatewayVirtualInterfaceGroupId"
+  {{ local_gateway_virtual_interface_group_name }}OwnerId:
+    Description: The AWS account ID that owns the local gateway virtual interface group for {{ local_gateway_virtual_interface_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ local_gateway_virtual_interface_group_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ local_gateway_virtual_interface_group_name }}-OwnerId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::LocalGatewayVirtualInterfaceGroup
+Properties:
+  LocalBgpAsn: Integer
+  LocalBgpAsnExtended: Integer
+  LocalGatewayId: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

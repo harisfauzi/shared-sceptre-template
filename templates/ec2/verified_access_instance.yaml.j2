@@ -1,0 +1,172 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Verified Access Instance(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for verified_access_instance in sceptre_user_data.verified_access_instances %}
+{%- set verified_access_instance_name = verified_access_instance.name %}
+  {{ verified_access_instance_name }}:
+    Type: AWS::EC2::VerifiedAccessInstance
+    DeletionPolicy: {{ verified_access_instance.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ verified_access_instance.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if verified_access_instance.cidr_endpoints_custom_sub_domain is defined %}
+      CidrEndpointsCustomSubDomain: {{ verified_access_instance.cidr_endpoints_custom_sub_domain }}
+{%- endif %}
+{%- if verified_access_instance.description is defined %}
+      Description: {{ verified_access_instance.description }}
+{%- endif %}
+{%- if verified_access_instance.fips_enabled is defined %}
+      FipsEnabled: {{ verified_access_instance.fips_enabled | lower }}
+{%- endif %}
+{%- if verified_access_instance.logging_configurations is defined %}{# BEGIN if verified_access_instance.logging_configurations is defined #}
+      LoggingConfigurations:
+{%- if verified_access_instance.logging_configurations.cloud_watch_logs is defined %}{# BEGIN if verified_access_instance.logging_configurations.cloud_watch_logs is defined #}
+        CloudWatchLogs:
+{%- if verified_access_instance.logging_configurations.cloud_watch_logs.enabled is defined %}
+          Enabled: {{ verified_access_instance.logging_configurations.cloud_watch_logs.enabled | lower }}
+{%- endif %}
+{%- if verified_access_instance.logging_configurations.cloud_watch_logs.log_group is defined %}
+          LogGroup: {{ verified_access_instance.logging_configurations.cloud_watch_logs.log_group }}
+{%- endif %}
+{%- endif %}{# END if verified_access_instance.logging_configurations.cloud_watch_logs is defined #}
+{%- if verified_access_instance.logging_configurations.include_trust_context is defined %}
+        IncludeTrustContext: {{ verified_access_instance.logging_configurations.include_trust_context | lower }}
+{%- endif %}
+{%- if verified_access_instance.logging_configurations.kinesis_data_firehose is defined %}{# BEGIN if verified_access_instance.logging_configurations.kinesis_data_firehose is defined #}
+        KinesisDataFirehose:
+{%- if verified_access_instance.logging_configurations.kinesis_data_firehose.delivery_stream is defined %}
+          DeliveryStream: {{ verified_access_instance.logging_configurations.kinesis_data_firehose.delivery_stream }}
+{%- endif %}
+{%- if verified_access_instance.logging_configurations.kinesis_data_firehose.enabled is defined %}
+          Enabled: {{ verified_access_instance.logging_configurations.kinesis_data_firehose.enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if verified_access_instance.logging_configurations.kinesis_data_firehose is defined #}
+{%- if verified_access_instance.logging_configurations.log_version is defined %}
+        LogVersion: {{ verified_access_instance.logging_configurations.log_version }}
+{%- endif %}
+{%- if verified_access_instance.logging_configurations.s3 is defined %}{# BEGIN if verified_access_instance.logging_configurations.s3 is defined #}
+        S3:
+{%- if verified_access_instance.logging_configurations.s3.bucket_name is defined %}
+          BucketName: {{ verified_access_instance.logging_configurations.s3.bucket_name }}
+{%- endif %}
+{%- if verified_access_instance.logging_configurations.s3.bucket_owner is defined %}
+          BucketOwner: {{ verified_access_instance.logging_configurations.s3.bucket_owner }}
+{%- endif %}
+{%- if verified_access_instance.logging_configurations.s3.enabled is defined %}
+          Enabled: {{ verified_access_instance.logging_configurations.s3.enabled | lower }}
+{%- endif %}
+{%- if verified_access_instance.logging_configurations.s3.prefix is defined %}
+          Prefix: {{ verified_access_instance.logging_configurations.s3.prefix }}
+{%- endif %}
+{%- endif %}{# END if verified_access_instance.logging_configurations.s3 is defined #}
+{%- endif %}{# END if verified_access_instance.logging_configurations is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if verified_access_instance.tags is defined %}
+{%- for key,value in verified_access_instance.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if verified_access_instance.verified_access_trust_provider_ids is defined %}{# BEGIN if verified_access_instance.verified_access_trust_provider_ids is defined #}
+      VerifiedAccessTrustProviderIds:
+{%- for id in verified_access_instance.verified_access_trust_provider_ids %}
+        - {{ id }}
+{%- endfor %}
+{%- endif %}{# END if verified_access_instance.verified_access_trust_provider_ids is defined #}
+{%- if verified_access_instance.verified_access_trust_providers is defined %}{# BEGIN if verified_access_instance.verified_access_trust_providers is defined #}
+      VerifiedAccessTrustProviders:
+{%- for provider in verified_access_instance.verified_access_trust_providers %}{# BEGIN for provider in verified_access_instance.verified_access_trust_providers #}
+        -
+{%- if provider.description is defined %}
+          Description: {{ provider.description }}
+{%- endif %}
+{%- if provider.device_trust_provider_type is defined %}
+          DeviceTrustProviderType: {{ provider.device_trust_provider_type }}
+{%- endif %}
+{%- if provider.trust_provider_type is defined %}
+          TrustProviderType: {{ provider.trust_provider_type }}
+{%- endif %}
+{%- if provider.user_trust_provider_type is defined %}
+          UserTrustProviderType: {{ provider.user_trust_provider_type }}
+{%- endif %}
+{%- if provider.verified_access_trust_provider_id is defined %}
+          VerifiedAccessTrustProviderId: {{ provider.verified_access_trust_provider_id }}
+{%- endif %}
+{%- endfor %}{# END for provider in verified_access_instance.verified_access_trust_providers #}
+{%- endif %}{# END if verified_access_instance.verified_access_trust_providers is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for verified_access_instance in sceptre_user_data.verified_access_instances %}
+{%- set verified_access_instance_name = verified_access_instance.name %}
+  {{ verified_access_instance_name }}:
+    Description: The ID of the Verified Access instance {{ verified_access_instance_name }}
+    Value:
+      Ref: {{ verified_access_instance_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_instance_name }}"
+  {{ verified_access_instance_name }}CreationTime:
+    Description: The creation time of {{ verified_access_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_instance_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_instance_name }}-CreationTime"
+  {{ verified_access_instance_name }}LastUpdatedTime:
+    Description: The last updated time of {{ verified_access_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_instance_name }}
+        - LastUpdatedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_instance_name }}-LastUpdatedTime"
+  {{ verified_access_instance_name }}VerifiedAccessInstanceId:
+    Description: The ID of the Verified Access instance for {{ verified_access_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_instance_name }}
+        - VerifiedAccessInstanceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_instance_name }}-VerifiedAccessInstanceId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-20:
+Type: AWS::EC2::VerifiedAccessInstance
+Properties:
+  CidrEndpointsCustomSubDomain: String
+  Description: String
+  FipsEnabled: Boolean
+  LoggingConfigurations:
+    CloudWatchLogs:
+      Enabled: Boolean
+      LogGroup: String
+    IncludeTrustContext: Boolean
+    KinesisDataFirehose:
+      DeliveryStream: String
+      Enabled: Boolean
+    LogVersion: String
+    S3:
+      BucketName: String
+      BucketOwner: String
+      Enabled: Boolean
+      Prefix: String
+  Tags:
+    - Key: String
+      Value: String
+  VerifiedAccessTrustProviderIds:
+    - String
+  VerifiedAccessTrustProviders:
+    -
+      Description: String
+      DeviceTrustProviderType: String
+      TrustProviderType: String
+      UserTrustProviderType: String
+      VerifiedAccessTrustProviderId: String
+#}
