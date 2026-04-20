@@ -1,0 +1,113 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Verified Access Group(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for verified_access_group in sceptre_user_data.verified_access_groups %}
+{%- set verified_access_group_name = verified_access_group.name %}
+  {{ verified_access_group_name }}:
+    Type: AWS::EC2::VerifiedAccessGroup
+    DeletionPolicy: {{ verified_access_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ verified_access_group.update_replace_policy | default('Delete') }}
+    Properties:
+      VerifiedAccessInstanceId: {{ verified_access_group.verified_access_instance_id | trim }}
+{%- if verified_access_group.description is defined %}
+      Description: {{ verified_access_group.description }}
+{%- endif %}
+{%- if verified_access_group.policy_document is defined %}
+      PolicyDocument: |
+        {{ verified_access_group.policy_document | indent(width=8, first=false) }}
+{%- endif %}
+{%- if verified_access_group.policy_enabled is defined %}
+      PolicyEnabled: {{ verified_access_group.policy_enabled }}
+{%- endif %}
+{%- if verified_access_group.sse_specification is defined %}{# BEGIN if verified_access_group.sse_specification is defined #}
+      SseSpecification:
+{%- if verified_access_group.sse_specification.customer_managed_key_enabled is defined %}
+        CustomerManagedKeyEnabled: {{ verified_access_group.sse_specification.customer_managed_key_enabled | lower }}
+{%- endif %}
+{%- if verified_access_group.sse_specification.kms_key_arn is defined %}
+        KmsKeyArn: {{ verified_access_group.sse_specification.kms_key_arn }}
+{%- endif %}
+{%- endif %}{# END if verified_access_group.sse_specification is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if verified_access_group.tags is defined %}
+{%- for key,value in verified_access_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for verified_access_group in sceptre_user_data.verified_access_groups %}
+{%- set verified_access_group_name = verified_access_group.name %}
+  {{ verified_access_group_name }}:
+    Description: The ID of the Verified Access group {{ verified_access_group_name }}
+    Value:
+      Ref: {{ verified_access_group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_group_name }}"
+  {{ verified_access_group_name }}CreationTime:
+    Description: The creation time of {{ verified_access_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_group_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_group_name }}-CreationTime"
+  {{ verified_access_group_name }}LastUpdatedTime:
+    Description: The last updated time of {{ verified_access_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_group_name }}
+        - LastUpdatedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_group_name }}-LastUpdatedTime"
+  {{ verified_access_group_name }}Owner:
+    Description: The AWS account ID that owns the group {{ verified_access_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_group_name }}
+        - Owner
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_group_name }}-Owner"
+  {{ verified_access_group_name }}VerifiedAccessGroupArn:
+    Description: The ARN of the Verified Access group of {{ verified_access_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_group_name }}
+        - VerifiedAccessGroupArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_group_name }}-VerifiedAccessGroupArn"
+  {{ verified_access_group_name }}VerifiedAccessGroupId:
+    Description: The ID of the Verified Access group for {{ verified_access_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ verified_access_group_name }}
+        - VerifiedAccessGroupId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ verified_access_group_name }}-VerifiedAccessGroupId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::VerifiedAccessGroup
+Properties:
+  Description: String
+  PolicyDocument: String
+  PolicyEnabled: Boolean
+  SseSpecification:
+    CustomerManagedKeyEnabled: Boolean
+    KmsKeyArn: String
+  Tags:
+    - Key: String
+      Value: String
+  VerifiedAccessInstanceId: String
+#}

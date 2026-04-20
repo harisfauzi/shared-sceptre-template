@@ -1,0 +1,30 @@
+---
+template:
+  type: file
+  path: ec2/vpc_endpoint_service_permissions.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPC Endpoint Service Permissions
+  vpc_endpoint_service_permissionss:
+    - name: PrimaryConsumerAccess
+      service_id: "vpce-svc-12345678901234567"
+      allowed_principals:
+        - "arn:aws:iam::210987654321:root"
+        - "arn:aws:iam::345678901234:root"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondaryPartnerAccess
+      service_id: "vpce-svc-87654321098765432"
+      allowed_principals:
+        - "arn:aws:iam::567890123456:user/partner-user"
+      deletion_policy: Delete
+    - name: TertiaryPublicAccess
+      service_id: "vpce-svc-abcdef1234567890ab"
+      allowed_principals:
+        - "'*'"
+      deletion_policy: Retain
+
+stack_tags:
+  Test: ec2-vpc-endpoint-service-permissions

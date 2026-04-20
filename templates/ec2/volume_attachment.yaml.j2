@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('EC2 VolumeAttachment(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('EC2 Volume Attachment(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -10,14 +10,20 @@ Resources:
     DeletionPolicy: {{ volume_attachment.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ volume_attachment.update_replace_policy | default('Delete') }}
     Properties:
-      Device: {{ volume_attachment.device }}
       InstanceId: {{ volume_attachment.instance_id | trim }}
       VolumeId: {{ volume_attachment.volume_id | trim }}
+{%- if volume_attachment.device is defined %}
+      Device: {{ volume_attachment.device }}
+{%- endif %}
+{%- if volume_attachment.ebs_card_index is defined %}
+      EbsCardIndex: {{ volume_attachment.ebs_card_index }}
+{%- endif %}
 {%- endfor %}{#
-# Support structure as of 2025-04-09:
+# Support structure as of 2026-04-20:
 Type: AWS::EC2::VolumeAttachment
 Properties:
   Device: String
+  EbsCardIndex: Integer
   InstanceId: String
   VolumeId: String
 #}

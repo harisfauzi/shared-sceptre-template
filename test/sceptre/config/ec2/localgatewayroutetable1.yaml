@@ -1,0 +1,35 @@
+---
+template:
+  type: file
+  path: ec2/local_gateway_route_table.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Local Gateway Route Tables
+  local_gateway_route_tables:
+    - name: LocalGatewayRouteTable1
+      local_gateway_id: "lgw-12345678"
+      mode: direct
+      tags:
+        Name: LocalGatewayRouteTable1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: LocalGatewayRouteTable2
+      local_gateway_id: "lgw-87654321"
+      mode: standard
+      deletion_policy: Retain
+      tags:
+        Name: LocalGatewayRouteTable2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: LocalGatewayRouteTable3
+      local_gateway_id: "lgw-aabbccdd"
+      update_replace_policy: Retain
+      tags:
+        Name: LocalGatewayRouteTable3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-local-gateway-route-table

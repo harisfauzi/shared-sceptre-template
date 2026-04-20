@@ -1,0 +1,24 @@
+---
+template:
+  type: file
+  path: ec2/ip_route_table_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample IP Pool Route Table Associations
+  ip_pool_route_table_associations:
+    - name: PoolAssociation1
+      public_ipv4_pool: amazon
+      route_table_id: rtb-12345678
+    - name: PoolAssociation2
+      public_ipv4_pool: "001858d9-12ab-34cd-56ef-0123456789ab"
+      route_table_id: rtb-87654321
+      deletion_policy: Retain
+    - name: PoolAssociation3
+      public_ipv4_pool: "123456789012-pool"
+      route_table_id: rtb-aabbccddee
+      update_replace_policy: Retain
+
+stack_tags:
+  Test: ec2-ip-pool-route-table-association

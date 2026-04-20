@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: ec2/traffic_mirror_session.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Traffic Mirror Sessions
+  traffic_mirror_sessions:
+    - name: TrafficMirrorSession1
+      network_interface_id: "eni-12345678 "
+      session_number: 1
+      traffic_mirror_filter_id: "tmf-12345678 "
+      traffic_mirror_target_id: "tmt-12345678 "
+      tags:
+        Name: TrafficMirrorSession1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: TrafficMirrorSession2
+      network_interface_id: "eni-87654321 "
+      session_number: 2
+      traffic_mirror_filter_id: "tmf-87654321 "
+      traffic_mirror_target_id: "tmt-87654321 "
+      description: "Mirror session with packet length limit"
+      packet_length: 1500
+      owner_id: "123456789012 "
+      deletion_policy: Retain
+      tags:
+        Name: TrafficMirrorSession2
+        Project: "{{ project_code }}"
+        Environment: Staging
+        Tier: Network
+    - name: TrafficMirrorSession3
+      network_interface_id: "eni-abcdef01 "
+      session_number: 100
+      traffic_mirror_filter_id: "tmf-abcdef01 "
+      traffic_mirror_target_id: "tmt-abcdef01 "
+      description: "Mirror session with VLAN tagging"
+      virtual_network_id: 4094
+      packet_length: 9000
+      owner_id: "987654321098 "
+      update_replace_policy: Retain
+      tags:
+        Name: TrafficMirrorSession3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-traffic-mirror-session

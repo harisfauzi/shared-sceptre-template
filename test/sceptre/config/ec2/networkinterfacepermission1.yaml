@@ -1,0 +1,27 @@
+---
+template:
+  type: file
+  path: ec2/network_interface_permission.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Network Interface Permissions
+  network_interface_permissions:
+    - name: NetworkInterfacePermission1
+      aws_account_id: "123456789012"
+      network_interface_id: "eni-12345678"
+      permission: "ASSOCIATE"
+    - name: NetworkInterfacePermission2
+      aws_account_id: "987654321098"
+      network_interface_id: "eni-87654321"
+      permission: "DESCRIBE"
+      deletion_policy: Retain
+    - name: NetworkInterfacePermission3
+      aws_account_id: "111111111111"
+      network_interface_id: "eni-abcdef01"
+      permission: "ASSOCIATE"
+      update_replace_policy: Retain
+
+stack_tags:
+  Test: ec2-network-interface-permission

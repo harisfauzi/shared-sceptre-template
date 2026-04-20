@@ -1,0 +1,33 @@
+---
+Description: {{sceptre_user_data.description|default('Route Server Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for route_server_association in sceptre_user_data.route_server_associations %}
+{%- set route_server_association_name = route_server_association.name %}
+  {{ route_server_association_name }}:
+    Type: AWS::EC2::RouteServerAssociation
+    DeletionPolicy: {{ route_server_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ route_server_association.update_replace_policy | default('Delete') }}
+    Properties:
+      RouteServerId: {{ route_server_association.route_server_id | trim }}
+      VpcId: {{ route_server_association.vpc_id | trim }}
+{%- endfor %}
+
+Outputs:
+{%- for route_server_association in sceptre_user_data.route_server_associations %}
+{%- set route_server_association_name = route_server_association.name %}
+  {{ route_server_association_name }}:
+    Description: Route server ID and VPC ID separated by the pipe symbol (|) for {{ route_server_association_name }}
+    Value:
+      Ref: {{ route_server_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_association_name }}"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::RouteServerAssociation
+Properties:
+  RouteServerId: String
+  VpcId: String
+#}

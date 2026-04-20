@@ -1,0 +1,116 @@
+---
+{%- import 'macros/prop-network-insights-access-scope.yaml.j2' as prop_helper %}
+Description: {{sceptre_user_data.description|default('Network Insights Access Scope Analysis(es) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for network_insights_access_scope_analysis in sceptre_user_data.network_insights_access_scope_analysises %}
+{%- set network_insights_access_scope_analysis_name = network_insights_access_scope_analysis.name %}
+  {{ network_insights_access_scope_analysis_name }}:
+    Type: AWS::EC2::NetworkInsightsAccessScopeAnalysis
+    DeletionPolicy: {{ network_insights_access_scope_analysis.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ network_insights_access_scope_analysis.update_replace_policy | default('Delete') }}
+    Properties:
+      NetworkInsightsAccessScopeId: {{ network_insights_access_scope_analysis.network_insights_access_scope_id }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if network_insights_access_scope_analysis.tags is defined %}
+{%- for key,value in network_insights_access_scope_analysis.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for network_insights_access_scope_analysis in sceptre_user_data.network_insights_access_scope_analysises %}
+{%- set network_insights_access_scope_analysis_name = network_insights_access_scope_analysis.name %}
+  {{ network_insights_access_scope_analysis_name }}:
+    Description: The ID of the network insights analysis {{ network_insights_access_scope_analysis_name }}
+    Value:
+      Ref: {{ network_insights_access_scope_analysis_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_access_scope_analysis_name }}"
+  {{ network_insights_access_scope_analysis_name }}AnalyzedEniCount:
+    Description: The number of network interfaces analyzed for {{ network_insights_access_scope_analysis_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_access_scope_analysis_name }}
+        - AnalyzedEniCount
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_access_scope_analysis_name }}-AnalyzedEniCount"
+  {{ network_insights_access_scope_analysis_name }}EndDate:
+    Description: The end date of the analysis {{ network_insights_access_scope_analysis_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_access_scope_analysis_name }}
+        - EndDate
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_access_scope_analysis_name }}-EndDate"
+  {{ network_insights_access_scope_analysis_name }}FindingsFound:
+    Description: Indicates whether there are findings for {{ network_insights_access_scope_analysis_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_access_scope_analysis_name }}
+        - FindingsFound
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_access_scope_analysis_name }}-FindingsFound"
+  {{ network_insights_access_scope_analysis_name }}NetworkInsightsAccessScopeAnalysisArn:
+    Description: The ARN of the Network Access Scope analysis for {{ network_insights_access_scope_analysis_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_access_scope_analysis_name }}
+        - NetworkInsightsAccessScopeAnalysisArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_access_scope_analysis_name }}-NetworkInsightsAccessScopeAnalysisArn"
+  {{ network_insights_access_scope_analysis_name }}NetworkInsightsAccessScopeAnalysisId:
+    Description: The ID of the Network Access Scope analysis {{ network_insights_access_scope_analysis_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_access_scope_analysis_name }}
+        - NetworkInsightsAccessScopeAnalysisId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_access_scope_analysis_name }}-NetworkInsightsAccessScopeAnalysisId"
+  {{ network_insights_access_scope_analysis_name }}StartDate:
+    Description: The start date of the analysis {{ network_insights_access_scope_analysis_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_access_scope_analysis_name }}
+        - StartDate
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_access_scope_analysis_name }}-StartDate"
+  {{ network_insights_access_scope_analysis_name }}Status:
+    Description: The status of the analysis {{ network_insights_access_scope_analysis_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_access_scope_analysis_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_access_scope_analysis_name }}-Status"
+  {{ network_insights_access_scope_analysis_name }}StatusMessage:
+    Description: The status message for {{ network_insights_access_scope_analysis_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_access_scope_analysis_name }}
+        - StatusMessage
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_access_scope_analysis_name }}-StatusMessage"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::NetworkInsightsAccessScopeAnalysis
+Properties:
+  NetworkInsightsAccessScopeId: String
+  Tags:
+    - Key: String
+      Value: String
+#}

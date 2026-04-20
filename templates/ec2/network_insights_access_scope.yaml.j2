@@ -1,0 +1,161 @@
+---
+{%- import 'macros/prop-network-insights-access-scope.yaml.j2' as prop_helper %}
+Description: {{sceptre_user_data.description|default('Network Insights Access Scope(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for network_insights_access_scope in sceptre_user_data.network_insights_access_scopes %}
+{%- set network_insights_access_scope_name = network_insights_access_scope.name %}
+  {{ network_insights_access_scope_name }}:
+    Type: AWS::EC2::NetworkInsightsAccessScope
+    DeletionPolicy: {{ network_insights_access_scope.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ network_insights_access_scope.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if network_insights_access_scope.exclude_paths is defined %}
+      ExcludePaths:
+        {{- prop_helper.prep_access_scope_path_request(network_insights_access_scope.exclude_paths) | indent(width=8, first=false) }}
+{%- endif %}  
+{%- if network_insights_access_scope.match_paths is defined %}
+      MatchPaths:
+        {{- prop_helper.prep_access_scope_path_request(network_insights_access_scope.match_paths) | indent(width=8, first=false) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if network_insights_access_scope.tags is defined %}
+{%- for key,value in network_insights_access_scope.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for network_insights_access_scope in sceptre_user_data.network_insights_access_scopes %}
+{%- set network_insights_access_scope_name = network_insights_access_scope.name %}
+  {{ network_insights_access_scope_name }}:
+    Description: The ID of the network insights access scope {{ network_insights_access_scope_name }}
+    Value:
+      Ref: {{ network_insights_access_scope_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_access_scope_name }}"
+  {{ network_insights_access_scope_name }}NetworkInsightsAccessScopeArn:
+    Description: The ARN of the Network Insights Access Scope {{ network_insights_access_scope_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_insights_access_scope_name }}
+        - NetworkInsightsAccessScopeArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_insights_access_scope_name }}-NetworkInsightsAccessScopeArn"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::NetworkInsightsAccessScope
+Properties:
+  ExcludePaths:
+    -
+      Destination:
+        PacketHeaderStatement:
+            DestinationAddresses:
+              - String
+            DestinationPorts:
+              - String
+            DestinationPrefixLists:
+              - String
+            Protocols:
+              - String
+            SourceAddresses:
+              - String
+            SourcePorts:
+              - String
+            SourcePrefixLists:
+              - String
+        ResourceStatement:
+          Resources:
+            - String
+          ResourceTypes:
+            - String
+      Source:
+        PacketHeaderStatement:
+            DestinationAddresses:
+              - String
+            DestinationPorts:
+              - String
+            DestinationPrefixLists:
+              - String
+            Protocols:
+              - String
+            SourceAddresses:
+              - String
+            SourcePorts:
+              - String
+            SourcePrefixLists:
+              - String
+        ResourceStatement:
+          Resources:
+            - String
+          ResourceTypes:
+            - String
+      ThroughResources:
+        -
+          ResourceStatement:
+            Resources:
+              - String
+            ResourceTypes:
+              - String
+  MatchPaths:
+    -
+      Destination:
+        PacketHeaderStatement:
+            DestinationAddresses:
+              - String
+            DestinationPorts:
+              - String
+            DestinationPrefixLists:
+              - String
+            Protocols:
+              - String
+            SourceAddresses:
+              - String
+            SourcePorts:
+              - String
+            SourcePrefixLists:
+              - String
+        ResourceStatement:
+          Resources:
+            - String
+          ResourceTypes:
+            - String
+      Source:
+        PacketHeaderStatement:
+            DestinationAddresses:
+              - String
+            DestinationPorts:
+              - String
+            DestinationPrefixLists:
+              - String
+            Protocols:
+              - String
+            SourceAddresses:
+              - String
+            SourcePorts:
+              - String
+            SourcePrefixLists:
+              - String
+        ResourceStatement:
+          Resources:
+            - String
+          ResourceTypes:
+            - String
+      ThroughResources:
+        -
+          ResourceStatement:
+            Resources:
+              - String
+            ResourceTypes:
+              - String
+  Tags:
+    - Key: String
+      Value: String
+#}

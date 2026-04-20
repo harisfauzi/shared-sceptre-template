@@ -1,0 +1,42 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 IP Pool Route Table Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for ip_pool_route_table_association in sceptre_user_data.ip_pool_route_table_associations %}
+{%- set ip_pool_route_table_association_name = ip_pool_route_table_association.name %}
+  {{ ip_pool_route_table_association_name }}:
+    Type: AWS::EC2::IpPoolRouteTableAssociation
+    DeletionPolicy: {{ ip_pool_route_table_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ ip_pool_route_table_association.update_replace_policy | default('Delete') }}
+    Properties:
+      PublicIpv4Pool: {{ ip_pool_route_table_association.public_ipv4_pool }}
+      RouteTableId: {{ ip_pool_route_table_association.route_table_id |trim }}
+{%- endfor %}
+
+Outputs:
+{%- for ip_pool_route_table_association in sceptre_user_data.ip_pool_route_table_associations %}
+{%- set ip_pool_route_table_association_name = ip_pool_route_table_association.name %}
+  {{ ip_pool_route_table_association_name }}:
+    Description: The route table association ID for {{ ip_pool_route_table_association_name }}
+    Value:
+      Ref: {{ ip_pool_route_table_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ip_pool_route_table_association_name }}"
+  {{ ip_pool_route_table_association_name }}AssociationId:
+    Description: The route table association ID for {{ ip_pool_route_table_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ ip_pool_route_table_association_name }}
+        - AssociationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ ip_pool_route_table_association_name }}-AssociationId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::IpPoolRouteTableAssociation
+Properties:
+  PublicIpv4Pool: String
+  RouteTableId: String
+#}

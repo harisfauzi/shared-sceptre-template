@@ -1,0 +1,55 @@
+---
+template:
+  type: file
+  path: ec2/subnet.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Subnets
+  subnets:
+    - name: Subnet1
+      vpc_id: "vpc-12345678 "
+      cidr_block: "10.0.1.0/24"
+      availability_zone: "us-east-1a"
+      map_public_ip_on_launch: false
+      tags:
+        Name: Subnet1
+        Project: "{{ project_code }}"
+        Environment: Production
+        Tier: Public
+    - name: Subnet2
+      vpc_id: "vpc-87654321 "
+      cidr_block: "10.0.2.0/24"
+      availability_zone: "us-east-1b"
+      assign_ipv6_on_creation: true
+      enable_dns_64: false
+      map_public_ip_on_launch: true
+      route_table_id: "rtb-12345678 "
+      deletion_policy: Retain
+      tags:
+        Name: Subnet2
+        Project: "{{ project_code }}"
+        Environment: Staging
+        Tier: Private
+    - name: Subnet3
+      vpc_id: "vpc-abcdef01 "
+      ipv6_cidr_block_str: "2001:db8::/64"
+      availability_zone_id: "use1-az2"
+      ipv6_native: true
+      ipv6_netmask_length: 64
+      enable_lni_at_device_index: 1
+      network_acl_id: "acl-87654321 "
+      private_dns_name_options_on_launch:
+        enable_resource_name_dns_a_record: true
+        enable_resource_name_dns_aaaa_record: true
+        hostname_type: "resource-name"
+      update_replace_policy: Retain
+      tags:
+        Name: Subnet3
+        Project: "{{ project_code }}"
+        Environment: Development
+        Owner: Infrastructure
+
+stack_tags:
+  Test: ec2-subnet

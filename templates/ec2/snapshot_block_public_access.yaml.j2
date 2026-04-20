@@ -1,0 +1,39 @@
+---
+Description: {{sceptre_user_data.description|default('Snapshot Block Public Access for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- set snapshot_block_public_access = sceptre_user_data.snapshot_block_public_access %}
+{%- set snapshot_block_public_access_name = snapshot_block_public_access.name %}
+  {{ snapshot_block_public_access_name }}:
+    Type: AWS::EC2::SnapshotBlockPublicAccess
+    DeletionPolicy: {{ snapshot_block_public_access.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ snapshot_block_public_access.update_replace_policy | default('Delete') }}
+    Properties:
+      State: {{ snapshot_block_public_access.state }}
+
+Outputs:
+{%- set snapshot_block_public_access = sceptre_user_data.snapshot_block_public_access %}
+{%- set snapshot_block_public_access_name = snapshot_block_public_access.name %}
+  {{ snapshot_block_public_access_name }}:
+    Description: AWS Account ID
+    Value:
+      Ref: {{ snapshot_block_public_access_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ snapshot_block_public_access_name }}"
+  {{ snapshot_block_public_access_name }}AccountId:
+    Description: AWS Account ID
+    Value:
+      Fn::GetAtt:
+        - {{ snapshot_block_public_access_name }}
+        - AccountId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ snapshot_block_public_access_name }}-AccountId"
+{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::SnapshotBlockPublicAccess
+Properties:
+  State: String
+#}

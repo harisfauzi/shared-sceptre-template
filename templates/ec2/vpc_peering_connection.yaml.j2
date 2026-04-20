@@ -21,6 +21,9 @@ Resources:
 {%- if vpc_peering_connection.peer_role_arn is defined %}
       PeerRoleArn: {{ vpc_peering_connection.peer_role_arn | trim }}
 {%- endif %}
+{%- if vpc_peering_connection.assume_role_region is defined %}
+      AssumeRoleRegion: {{ vpc_peering_connection.assume_role_region }}
+{%- endif %}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -43,9 +46,10 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ vpc_peering_connection_name }}"
 {%- endfor %}{#
-# Support structure as of 2025-04-09:
+# Support structure as of 2026-04-20:
 Type: AWS::EC2::VPCPeeringConnection
 Properties:
+  AssumeRoleRegion: String
   PeerOwnerId: String
   PeerRegion: String
   PeerRoleArn: String

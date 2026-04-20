@@ -1,0 +1,35 @@
+---
+template:
+  type: file
+  path: ec2/transit_gateway_metering_policy_entry.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  transit_gateway_metering_policy_entries:
+    - name: PrimaryNetworkPolicy
+      metered_account: "123456789012"
+      policy_rule_number: 1
+      transit_gateway_metering_policy_id: "tgw-metering-policy-12345678"
+      source_cidr_block: "10.0.0.0/8"
+      destination_cidr_block: "172.16.0.0/12"
+      protocol: "6"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondaryNetworkPolicy
+      metered_account: "210987654321"
+      policy_rule_number: 2
+      transit_gateway_metering_policy_id: "tgw-metering-policy-87654321"
+      source_transit_gateway_attachment_id: "tgw-attach-11111111"
+      destination_transit_gateway_attachment_id: "tgw-attach-22222222"
+      source_transit_gateway_attachment_type: vpc
+      destination_transit_gateway_attachment_type: vpc
+    - name: VpnTrafficPolicy
+      metered_account: "345678901234"
+      policy_rule_number: 3
+      transit_gateway_metering_policy_id: "tgw-metering-policy-34567890"
+      source_cidr_block: "192.168.0.0/16"
+      destination_port_range: "443"
+      source_port_range: "1024-65535"
+stack_tags:
+  Test: ec2-transitgateway

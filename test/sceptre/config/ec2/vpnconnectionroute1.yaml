@@ -1,0 +1,26 @@
+---
+template:
+  type: file
+  path: ec2/vpn_connection_route.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 VPN Connection Routes
+  vpn_connection_routes:
+    - name: PrimaryCorpNetworkRoute
+      vpn_connection_id: "vpn-12345678901234567 "
+      destination_cidr_block: "10.0.0.0/8"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondaryRemoteOfficeRoute
+      vpn_connection_id: "vpn-87654321098765432 "
+      destination_cidr_block: "192.168.0.0/16"
+      deletion_policy: Delete
+    - name: TertiaryDatacenterRoute
+      vpn_connection_id: "vpn-abcdef1234567890ab "
+      destination_cidr_block: "172.16.0.0/12"
+      deletion_policy: Retain
+
+stack_tags:
+  Test: ec2-vpn-connection-route

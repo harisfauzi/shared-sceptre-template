@@ -1,0 +1,63 @@
+---
+Description: {{sceptre_user_data.description|default('VPN Connection(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for vpc_concentrator in sceptre_user_data.vpc_concentrators %}
+{%- set vpc_concentrator_name = vpc_concentrator.name %}
+  {{ vpc_concentrator_name }}:
+    Type: AWS::EC2::VPNConcentrator
+    DeletionPolicy: {{ vpc_concentrator.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vpc_concentrator.update_replace_policy | default('Delete') }}
+    Properties:
+      TransitGatewayId: {{ vpc_concentrator.transit_gateway_id | trim }}
+      Type: {{ vpc_concentrator.type }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url }}
+{%- if vpc_concentrator.tags is defined %}
+{%- for key,value in vpc_concentrator.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for vpc_concentrator in sceptre_user_data.vpc_concentrators %}
+{%- set vpc_concentrator_name = vpc_concentrator.name %}
+  {{ vpc_concentrator_name }}:
+    Description: The ID of the VPN concentrator {{ vpc_concentrator_name }}
+    Value:
+      Ref: {{ vpc_concentrator_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_concentrator_name }}"
+  {{ vpc_concentrator_name }}TransitGatewayAttachmentId:
+    Description: The ID of the transit gateway attachment for the VPN concentrator {{ vpc_concentrator_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vpc_concentrator_name }}
+        - TransitGatewayAttachmentId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_concentrator_name }}-TransitGatewayAttachmentId"
+  {{ vpc_concentrator_name }}VpnConcentratorId:
+    Description: The ID of the VPN concentrator {{ vpc_concentrator_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vpc_concentrator_name }}
+        - VpnConcentratorId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_concentrator_name }}-VpnConcentratorId"
+{%- endfor %}{#
+# Support structure as of 2026-04-20:
+Type: AWS::EC2::VPNConcentrator
+Properties:
+  TransitGatewayId: String
+  Type: String
+  Tags:
+    - Key: String
+      Value: String
+#}

@@ -44,7 +44,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ traffic_mirror_target_name }}"
 {%- endfor %}{#
-# Supported structure as of 2025-04-09:
+# Supported structure as of 2026-04-19:
 Type: AWS::EC2::TrafficMirrorTarget
 Properties:
   Description: String
@@ -52,5 +52,6 @@ Properties:
   NetworkInterfaceId: String
   NetworkLoadBalancerArn: String
   Tags:
-    - Tag
+    - Key: String
+      Value: String
 #}

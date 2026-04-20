@@ -1,0 +1,36 @@
+---
+template:
+  type: file
+  path: ec2/route_server_endpoint.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Route Server Endpoints
+  route_server_endpoints:
+    - name: RouteServerEndpoint1
+      route_server_id: "rsb-12345678 "
+      subnet_id: "subnet-12345678 "
+      tags:
+        Name: RouteServerEndpoint1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: RouteServerEndpoint2
+      route_server_id: "rsb-87654321 "
+      subnet_id: "subnet-87654321 "
+      deletion_policy: Retain
+      tags:
+        Name: RouteServerEndpoint2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: RouteServerEndpoint3
+      route_server_id: "rsb-abcdef01 "
+      subnet_id: "subnet-abcdef01 "
+      update_replace_policy: Retain
+      tags:
+        Name: RouteServerEndpoint3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-route-server-endpoint

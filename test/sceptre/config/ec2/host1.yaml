@@ -1,0 +1,40 @@
+---
+template:
+  type: file
+  path: ec2/host.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample EC2 Hosts
+  hosts:
+    - name: HostServer1
+      availability_zone: us-east-1a
+      instance_type: m5.large
+      auto_placement: "on"
+      host_recovery: "off"
+      tags:
+        Name: HostServer1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: HostServer2
+      availability_zone: us-east-1b
+      instance_family: m5
+      host_maintenance: "off"
+      deletion_policy: Retain
+      tags:
+        Name: HostServer2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: HostServer3
+      availability_zone: us-east-1c
+      instance_type: c5.xlarge
+      asset_id: asset-12345678
+      host_recovery: "on"
+      tags:
+        Name: HostServer3
+        Project: "{{ project_code }}"
+        Owner: TeamA
+
+stack_tags:
+  Test: ec2-eip

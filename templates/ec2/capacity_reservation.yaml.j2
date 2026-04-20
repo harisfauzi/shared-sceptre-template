@@ -10,10 +10,15 @@ Resources:
     DeletionPolicy: {{ capacity_reservation.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ capacity_reservation.update_replace_policy | default('Delete') }}
     Properties:
-      AvailabilityZone: {{ capacity_reservation.availability_zone }}
       InstanceCount: {{ capacity_reservation.instance_count }}
       InstancePlatform: {{ capacity_reservation.instance_platform }}
       InstanceType: {{ capacity_reservation.instance_type }}
+{%- if capacity_reservation.availability_zone is defined %}
+      AvailabilityZone: {{ capacity_reservation.availability_zone }}
+{%- endif %}
+{%- if capacity_reservation.availability_zone_id is defined %}
+      AvailabilityZoneId: {{ capacity_reservation.availability_zone_id }}
+{%- endif %}
 {%- if capacity_reservation.ebs_optimized is defined %}
       EbsOptimized: {{ capacity_reservation.ebs_optimized }}
 {%- endif %}
@@ -114,12 +119,12 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ capacity_reservation_name }}-TotalInstanceCount"
-{%- endfor %}
-{#
-# Supported structure as of 20241026:
+{%- endfor %}{#
+# Supported structure as of 2025-03-29:
 Type: AWS::EC2::CapacityReservation
 Properties:
   AvailabilityZone: String
+  AvailabilityZoneId: String
   EbsOptimized: Boolean
   EndDate: String
   EndDateType: String

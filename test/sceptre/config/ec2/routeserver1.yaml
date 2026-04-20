@@ -1,0 +1,36 @@
+---
+template:
+  type: file
+  path: ec2/route_server.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Route Servers
+  route_servers:
+    - name: RouteServer1
+      amazon_side_asn: 64512
+      tags:
+        Name: RouteServer1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: RouteServer2
+      amazon_side_asn: 64513
+      persist_routes: "enable"
+      persist_routes_duration: 300
+      deletion_policy: Retain
+      tags:
+        Name: RouteServer2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: RouteServer3
+      amazon_side_asn: 64514
+      sns_notifications_enabled: true
+      update_replace_policy: Retain
+      tags:
+        Name: RouteServer3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-route-server

@@ -66,6 +66,9 @@ Resources:
 {%- if override.availability_zone is defined %}
                 AvailabilityZone: {{ override.availability_zone }}
 {%- endif %}
+{%- if override.availability_zone_id is defined %}
+                AvailabilityZoneId: {{ override.availability_zone_id }}
+{%- endif %}
 {%- if override.instance_requirements is defined %}
                 {{ prop_spot_fleet.prep_instance_requirements_request(override.instance_requirements) | indent(width=16, first=false) }}
 {%- endif %}
@@ -157,6 +160,15 @@ Resources:
 {%- if spot_fleet.spot_fleet_request_config_data.valid_until is defined %}
         ValidUntil: {{ spot_fleet.spot_fleet_request_config_data.valid_until }}
 {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if spot_fleet.tags is defined %}
+{%- for key,value in spot_fleet.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
@@ -179,7 +191,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ spot_fleet_name }}-Id"
 {%- endfor %}{#
-# Supported structure as of 2025-04-09:
+# Supported structure as of 2026-04-19:
 Type: AWS::EC2::SpotFleet
 Properties:
   SpotFleetRequestConfigData:
@@ -254,6 +266,7 @@ Properties:
             Max: Integer
             Min: Integer
           OnDemandMaxPricePercentageOverLowestPrice: Integer
+          RequireEncryptionInTransit: Boolean
           RequireHibernateSupport: Boolean
           SpotMaxPricePercentageOverLowestPrice: Integer
           TotalLocalStorageGB:
@@ -287,6 +300,7 @@ Properties:
             SubnetId: String
         Placement:
           AvailabilityZone: String
+          AvailabilityZoneId: String
           GroupName: String
           Tenancy: String
         RamdiskId: String
@@ -312,6 +326,7 @@ Properties:
         Overrides:
           -
             AvailabilityZone: String
+            AvailabilityZoneId: String
             InstanceRequirements:
               AcceleratorCount:
                 Max: Integer
@@ -402,4 +417,7 @@ Properties:
     Type: String
     ValidFrom: String
     ValidUntil: String
+  Tags:
+    - Key: String
+      Value: String
 #}

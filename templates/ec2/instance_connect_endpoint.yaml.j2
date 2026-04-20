@@ -1,0 +1,123 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Instance Connect Endpoint(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for instance_connect_endpoint in sceptre_user_data.instance_connect_endpoints %}
+{%- set instance_connect_endpoint_name = instance_connect_endpoint.name %}
+  {{ instance_connect_endpoint_name }}:
+    Type: AWS::EC2::InstanceConnectEndpoint
+    DeletionPolicy: {{ instance_connect_endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ instance_connect_endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      SubnetId: {{ instance_connect_endpoint.subnet_id | trim }}
+{%- if instance_connect_endpoint.client_token is defined %}
+      ClientToken: {{ instance_connect_endpoint.client_token }}
+{%- endif %}
+{%- if instance_connect_endpoint.preserve_client_ip is defined %}
+      PreserveClientIp: {{ instance_connect_endpoint.preserve_client_ip | lower }}
+{%- endif %}
+{%- if instance_connect_endpoint.security_group_ids is defined %}
+      SecurityGroupIds:
+{%- for sg_id in instance_connect_endpoint.security_group_ids %}
+        - {{ sg_id }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if instance_connect_endpoint.tags is defined %}
+{%- for key,value in instance_connect_endpoint.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for instance_connect_endpoint in sceptre_user_data.instance_connect_endpoints %}
+{%- set instance_connect_endpoint_name = instance_connect_endpoint.name %}
+  {{ instance_connect_endpoint_name }}:
+    Description: The ID for {{ instance_connect_endpoint_name }}
+    Value:
+      Ref: {{ instance_connect_endpoint_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_connect_endpoint_name }}"
+  {{ instance_connect_endpoint_name }}AvailabilityZone:
+    Description: The Availability Zone for {{ instance_connect_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_connect_endpoint_name }}
+        - AvailabilityZone
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_connect_endpoint_name }}-AvailabilityZone"
+  {{ instance_connect_endpoint_name }}AvailabilityZoneId:
+    Description: The Availability Zone ID for {{ instance_connect_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_connect_endpoint_name }}
+        - AvailabilityZoneId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_connect_endpoint_name }}-AvailabilityZoneId"
+  {{ instance_connect_endpoint_name }}Id:
+    Description: The ID for {{ instance_connect_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_connect_endpoint_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_connect_endpoint_name }}-Id"
+  {{ instance_connect_endpoint_name }}InstanceConnectEndpointArn:
+    Description: The ARN for {{ instance_connect_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_connect_endpoint_name }}
+        - InstanceConnectEndpointArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_connect_endpoint_name }}-InstanceConnectEndpointArn"
+  {{ instance_connect_endpoint_name }}OwnerId:
+    Description: The ID of the AWS account that created the EC2 Instance Connect Endpoint {{ instance_connect_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_connect_endpoint_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_connect_endpoint_name }}-OwnerId"
+  {{ instance_connect_endpoint_name }}State:
+    Description: The state of the EC2 Instance Connect Endpoint {{ instance_connect_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_connect_endpoint_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_connect_endpoint_name }}-State"
+  {{ instance_connect_endpoint_name }}VpcId:
+    Description: The VPC ID for {{ instance_connect_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_connect_endpoint_name }}
+        - VpcId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_connect_endpoint_name }}-VpcId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::InstanceConnectEndpoint
+Properties:
+  ClientToken: String
+  PreserveClientIp: Boolean
+  SecurityGroupIds:
+    - String
+  SubnetId: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

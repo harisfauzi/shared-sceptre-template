@@ -19,7 +19,7 @@ Resources:
       VpcId: {{ transit_gateway_vpc_attachment.vpc_id | trim }}
 {%- if transit_gateway_vpc_attachment.add_subnet_ids is defined %}{# BEGIN if transit_gateway_vpc_attachment.add_subnet_ids is defined #}
       AddSubnetIds:
-{%- for subnet_id intransit_gateway_vpc_attachment.add_subnet_ids %}
+{%- for subnet_id in transit_gateway_vpc_attachment.add_subnet_ids %}
         - {{ subnet_id | trim }}
 {%- endfor %}
 {%- endif %}{# END if transit_gateway_vpc_attachment.add_subnet_ids is defined #}

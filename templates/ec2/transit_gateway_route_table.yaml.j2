@@ -20,7 +20,7 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-{######### AWS::EC2::TransitGatewayRoute #########}
+{#-######## AWS::EC2::TransitGatewayRoute #########}
 {%- if transit_gateway_route_table.routes is defined %}
 {%- for route in transit_gateway_route_table.routes %}
   {{ transit_gateway_route_table_name }}{{ route.name }}:
@@ -58,6 +58,7 @@ Outputs:
 Type: AWS::EC2::TransitGatewayRouteTable
 Properties:
   Tags:
-    - Tag
+    - Key: String
+      Value: String
   TransitGatewayId: String
 #}

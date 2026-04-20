@@ -1,0 +1,28 @@
+---
+template:
+  type: file
+  path: ec2/transit_gateway_multicast_group_member.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: EC2 Transit Gateway Multicast Group Members
+  transit_gateway_multicast_group_members:
+    - name: PrimaryStreamReceiver
+      group_ip_address: "224.0.0.1"
+      network_interface_id: "eni-12345678901234567"
+      transit_gateway_multicast_domain_id: "tgw-mcast-domain-111111111111111"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondaryStreamReceiver
+      group_ip_address: "224.0.0.5"
+      network_interface_id: "eni-87654321098765432"
+      transit_gateway_multicast_domain_id: "tgw-mcast-domain-222222222222222"
+    - name: TertiaryVideoMulticast
+      group_ip_address: "224.0.1.100"
+      network_interface_id: "eni-abcdefg1234567890"
+      transit_gateway_multicast_domain_id: "tgw-mcast-domain-333333333333333"
+      deletion_policy: Retain
+
+stack_tags:
+  Test: ec2-transit-gateway-multicast-group-member

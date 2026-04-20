@@ -1,0 +1,71 @@
+---
+Description: {{sceptre_user_data.description|default('EC2 Transit Gateway Metering Policy(es) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for transit_gateway_metering_policy in sceptre_user_data.transit_gateway_metering_policies %}
+{%- set transit_gateway_metering_policy_name = transit_gateway_metering_policy.name %}
+  {{ transit_gateway_metering_policy_name }}:
+    Type: AWS::EC2::TransitGatewayMeteringPolicy
+    DeletionPolicy: {{ transit_gateway_metering_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transit_gateway_metering_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      TransitGatewayId: {{ transit_gateway_metering_policy.transit_gateway_id | trim }}
+{%- if transit_gateway_metering_policy.middlebox_attachment_ids is defined %}
+      MiddleboxAttachmentIds:
+{%- for middlebox_attachment_id in transit_gateway_metering_policy.middlebox_attachment_ids %}
+        - {{ middlebox_attachment_id | trim }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if transit_gateway_metering_policy.tags is defined %}
+{%- for key,value in transit_gateway_metering_policy.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for transit_gateway_metering_policy in sceptre_user_data.transit_gateway_metering_policies %}
+{%- set transit_gateway_metering_policy_name = transit_gateway_metering_policy.name %}
+  {{ transit_gateway_metering_policy_name }}Arn:
+    Description: The ARN of {{ transit_gateway_metering_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_metering_policy_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_metering_policy_name }}-Arn"
+  {{ transit_gateway_metering_policy_name }}TransitGatewayMeteringPolicyId:
+    Description: The ID of the transit gateway metering policy {{ transit_gateway_metering_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_metering_policy_name }}
+        - TransitGatewayMeteringPolicyId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_metering_policy_name }}-TransitGatewayMeteringPolicyId"
+  {{ transit_gateway_metering_policy_name }}UpdateEffectiveAt:
+    Description: The date and time when the metering policy {{ transit_gateway_metering_policy_name }} update becomes effective
+    Value:
+      Fn::GetAtt:
+        - {{ transit_gateway_metering_policy_name }}
+        - UpdateEffectiveAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transit_gateway_metering_policy_name }}-UpdateEffectiveAt"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::TransitGatewayMeteringPolicy
+Properties:
+  MiddleboxAttachmentIds:
+    - String
+  Tags:
+    - Key: String
+      Value: String
+  TransitGatewayId: String
+#}

@@ -1,0 +1,43 @@
+---
+template:
+  type: file
+  path: ec2/route_server_peer.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Route Server Peers
+  route_server_peers:
+    - name: RouteServerPeer1
+      peer_address: "10.0.1.100"
+      route_server_endpoint_id: "rse-12345678"
+      bgp_options:
+        peer_asn: 65000
+      tags:
+        Name: RouteServerPeer1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: RouteServerPeer2
+      peer_address: "10.0.2.100"
+      route_server_endpoint_id: "rse-87654321"
+      bgp_options:
+        peer_asn: 65001
+        peer_liveness_detection: "enable"
+      deletion_policy: Retain
+      tags:
+        Name: RouteServerPeer2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: RouteServerPeer3
+      peer_address: "10.0.3.100"
+      route_server_endpoint_id: "rse-abcdef01"
+      bgp_options:
+        peer_liveness_detection: "disable"
+      update_replace_policy: Retain
+      tags:
+        Name: RouteServerPeer3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-route-server-peer

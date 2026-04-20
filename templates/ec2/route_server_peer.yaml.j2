@@ -1,0 +1,118 @@
+---
+Description: {{sceptre_user_data.description|default('Route Server Peer(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for route_server_peer in sceptre_user_data.route_server_peers %}
+{%- set route_server_peer_name = route_server_peer.name %}
+  {{ route_server_peer_name }}:
+    Type: AWS::EC2::RouteServerPeer
+    DeletionPolicy: {{ route_server_peer.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ route_server_peer.update_replace_policy | default('Delete') }}
+    Properties:
+      BgpOptions:
+{%- if route_server_peer.bgp_options.peer_asn is defined %}
+        PeerAsn: {{ route_server_peer.bgp_options.peer_asn }}
+{%- endif %}
+{%- if route_server_peer.bgp_options.peer_liveness_detection is defined %}
+        PeerLivenessDetection: {{ route_server_peer.bgp_options.peer_liveness_detection }}
+{%- endif %}
+      PeerAddress: {{ route_server_peer.peer_address }}
+      RouteServerEndpointId: {{ route_server_peer.route_server_endpoint_id }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if route_server_peer.tags is defined %}
+{%- for key,value in route_server_peer.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for route_server_peer in sceptre_user_data.route_server_peers %}
+{%- set route_server_peer_name = route_server_peer.name %}
+  {{ route_server_peer_name }}:
+    Description: The peer ID for {{ route_server_peer_name }}
+    Value:
+      Ref: {{ route_server_peer_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_peer_name }}"
+  {{ route_server_peer_name }}Arn:
+    Description: The ARN of the route server peer {{ route_server_peer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_peer_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_peer_name }}-Arn"
+  {{ route_server_peer_name }}EndpointEniAddress:
+    Description: The IP address of the ENI for the route server endpoint {{ route_server_peer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_peer_name }}
+        - EndpointEniAddress
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_peer_name }}-EndpointEniAddress"
+  {{ route_server_peer_name }}Id:
+    Description: The ID of the route server peer {{ route_server_peer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_peer_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_peer_name }}-Id"
+  {{ route_server_peer_name }}RouteServerId:
+    Description: The ID of the route server associated with the peer {{ route_server_peer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_peer_name }}
+        - RouteServerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_peer_name }}-RouteServerId"
+  {{ route_server_peer_name }}SubnetId:
+    Description: The ID of the subnet containing the route server peer {{ route_server_peer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_peer_name }}
+        - SubnetId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_peer_name }}-SubnetId"
+  {{ route_server_peer_name }}VpcId:
+    Description: The ID of the VPC containing the route server peer {{ route_server_peer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_peer_name }}
+        - VpcId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_peer_name }}-VpcId"
+  {{ route_server_peer_name }}EndpointEniId:
+    Description: The ENI ID for the route server endpoint {{ route_server_peer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ route_server_peer_name }}
+        - EndpointEniId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ route_server_peer_name }}-EndpointEniId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-19:
+Type: AWS::EC2::RouteServerPeer
+Properties:
+  BgpOptions:
+    PeerAsn: Integer
+    PeerLivenessDetection: String
+  PeerAddress: String
+  RouteServerEndpointId: String
+  Tags:
+    - Key: String
+      Value: String
+#}

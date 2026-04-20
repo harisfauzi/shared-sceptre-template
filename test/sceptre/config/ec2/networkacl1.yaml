@@ -1,0 +1,112 @@
+---
+template:
+  type: file
+  path: ec2/network_acl.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Network ACLs
+  nacls:
+    - name: NetworkAcl1
+      vpc_id: "vpc-12345678"
+      nacl_entries:
+        - rule_number: 100
+          protocol: "6"
+          rule_action: "allow"
+          direction: "ingress"
+          cidr_block: "0.0.0.0/0"
+          port_range:
+            from: 80
+            to: 80
+        - rule_number: 110
+          protocol: "6"
+          rule_action: "allow"
+          direction: "ingress"
+          cidr_block: "0.0.0.0/0"
+          port_range:
+            from: 443
+            to: 443
+        - rule_number: 120
+          protocol: "6"
+          rule_action: "allow"
+          direction: "ingress"
+          cidr_block: "10.0.0.0/16"
+          port_range:
+            from: 22
+            to: 22
+        - rule_number: 10000
+          protocol: "-1"
+          rule_action: "allow"
+          direction: "egress"
+          cidr_block: "0.0.0.0/0"
+      tags:
+        Name: NetworkAcl1
+        Project: "{{ project_code }}"
+        Environment: Production
+    - name: NetworkAcl2
+      vpc_id: "vpc-87654321"
+      nacl_entries:
+        - rule_number: 100
+          protocol: "6"
+          rule_action: "allow"
+          direction: "ingress"
+          ipv6_cidr_block: "::/0"
+          port_range:
+            from: 443
+            to: 443
+        - rule_number: 110
+          protocol: "1"
+          rule_action: "allow"
+          direction: "ingress"
+          cidr_block: "10.0.0.0/8"
+          icmp:
+            type: -1
+            code: -1
+        - rule_number: 120
+          protocol: "17"
+          rule_action: "allow"
+          direction: "ingress"
+          cidr_block: "0.0.0.0/0"
+          port_range:
+            from: 53
+            to: 53
+        - rule_number: 10000
+          protocol: "-1"
+          rule_action: "allow"
+          direction: "egress"
+          ipv6_cidr_block: "::/0"
+      deletion_policy: Retain
+      tags:
+        Name: NetworkAcl2
+        Project: "{{ project_code }}"
+        Environment: Staging
+    - name: NetworkAcl3
+      vpc_id: "vpc-aabbccdd"
+      nacl_entries:
+        - rule_number: 100
+          protocol: "6"
+          rule_action: "deny"
+          direction: "ingress"
+          cidr_block: "192.168.0.0/16"
+          port_range:
+            from: 3306
+            to: 3306
+        - rule_number: 110
+          protocol: "-1"
+          rule_action: "allow"
+          direction: "ingress"
+          cidr_block: "0.0.0.0/0"
+        - rule_number: 10000
+          protocol: "-1"
+          rule_action: "allow"
+          direction: "egress"
+          cidr_block: "0.0.0.0/0"
+      update_replace_policy: Retain
+      tags:
+        Name: NetworkAcl3
+        Project: "{{ project_code }}"
+        Owner: NetworkOps
+
+stack_tags:
+  Test: ec2-network-acl
