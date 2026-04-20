@@ -59,7 +59,7 @@ Resources:
       DocumentationVersion: {{ stage.documentation_version | trim }}
 {%- endif %}
 {%- if stage.method_settings is defined %}
-{{ macro_method_settings.prep(stage.method_settings) }}
+{{- macro_method_settings.prep(stage.method_settings) }}
 {%- endif %}
 {%- if stage.stage_name is defined %}
       StageName: {{ stage.stage_name }}

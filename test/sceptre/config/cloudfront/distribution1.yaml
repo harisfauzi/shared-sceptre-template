@@ -1,0 +1,210 @@
+---
+template:
+  type: file
+  path: cloudfront/distribution.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS CloudFront Distributions
+  distributions:
+    - name: PrimaryProductionDistribution
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      distribution_config:
+        enabled: true
+        comment: "Production CloudFront distribution with S3 origin and full caching"
+        default_root_object: "index.html"
+        http_version: "http2and3"
+        ipv6_enabled: true
+        price_class: "PriceClass_100"
+        aliases:
+          - "cdn.example.com"
+          - "static.example.com"
+        origins:
+          - id: "S3-primary-bucket"
+            domain_name: "my-bucket.s3.amazonaws.com"
+            origin_path: "/production"
+            s3_origin_config:
+              origin_access_identity: "origin-access-identity/cloudfront/ABCDEFG1234567 "
+            connection_attempts: 3
+            connection_timeout: 10
+          - id: "API-backend"
+            domain_name: "api.example.com"
+            origin_path: "/v1"
+            custom_origin_config:
+              origin_protocol_policy: "https-only"
+              http_port: 80
+              https_port: 443
+              origin_ssl_protocols:
+                - "TLSv1.2"
+              origin_keepalive_timeout: 5
+              origin_read_timeout: 30
+            origin_custom_headers:
+              - header_name: "X-Origin-Verify"
+                header_value: "prod-secret-token "
+            origin_shield:
+              enabled: true
+              origin_shield_region: "us-east-1"
+        default_cache_behavior:
+          target_origin_id: "S3-primary-bucket"
+          viewer_protocol_policy: "redirect-to-https"
+          allowed_methods:
+            - "GET"
+            - "HEAD"
+          cached_methods:
+            - "GET"
+            - "HEAD"
+          compress: true
+          cache_policy_id: "658327ea-f89d-4fab-a63d-7e88639e58f6"
+          origin_request_policy_id: "216adef5-5c7f-47e4-b989-5492eafa07d3"
+        cache_behaviors:
+          - path_pattern: "/api/*"
+            target_origin_id: "API-backend"
+            viewer_protocol_policy: "https-only"
+            allowed_methods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+              - "PUT"
+              - "POST"
+              - "PATCH"
+              - "DELETE"
+            cached_methods:
+              - "GET"
+              - "HEAD"
+            compress: true
+            cache_policy_id: "4135ea3d-c35d-46eb-81d7-rewrite00efe"
+            origin_request_policy_id: "216adef5-5c7f-47e4-b989-5492eafa07d3"
+          - path_pattern: "/admin/*"
+            target_origin_id: "S3-primary-bucket"
+            viewer_protocol_policy: "https-only"
+            allowed_methods:
+              - "GET"
+              - "HEAD"
+            cached_methods:
+              - "GET"
+            cache_policy_id: "7ee334ec-08b8-4b8b-8de7-e45f4c9aee3f"
+            compress: false
+        logging:
+          bucket: "my-logging-bucket.s3.amazonaws.com"
+          include_cookies: false
+          prefix: "cloudfront-logs/"
+        viewer_certificate:
+          acm_certificate_arn: "arn:aws:acm:us-east-1:123456789012:certificate/abcdef12-3456-7890-abcd-ef1234567890 "
+          ssl_support_method: "sni-only"
+          minimum_protocol_version: "TLSv1.2_2021"
+        restrictions:
+          geo_restriction:
+            restriction_type: "whitelist"
+            locations:
+              - "US"
+              - "CA"
+              - "GB"
+              - "DE"
+              - "FR"
+        custom_error_response:
+          - error_code: 404
+            response_code: 404
+            response_page_path: "/404.html"
+            error_caching_min_ttl: 300
+          - error_code: 403
+            response_code: 403
+            response_page_path: "/403.html"
+            error_caching_min_ttl: 60
+        web_acl_id: "arn:aws:wafv2:us-east-1:123456789012:global/webacl/prod/a1b2c3d4-5678-90ab-cdef-example00001 "
+      tags:
+        Environment: Production
+        Team: Platform
+        CostCenter: "1001"
+        Application: "WebPortal"
+    - name: SecondaryProductionDistribution
+      deletion_policy: Delete
+      distribution_config:
+        enabled: true
+        comment: "Secondary production distribution for API content"
+        http_version: "http2"
+        ipv6_enabled: false
+        origins:
+          - id: "S3-api-bucket"
+            domain_name: "api-content.s3.us-west-2.amazonaws.com"
+            s3_origin_config:
+              origin_access_identity: "origin-access-identity/cloudfront/HIJKLMN7890123 "
+          - id: "CustomBackend"
+            domain_name: "backend.internal.example.com"
+            custom_origin_config:
+              origin_protocol_policy: "https-only"
+              https_port: 443
+              origin_ssl_protocols:
+                - "TLSv1.2"
+                - "TLSv1.3"
+              origin_keepalive_timeout: 5
+              origin_read_timeout: 30
+        default_cache_behavior:
+          target_origin_id: "S3-api-bucket"
+          viewer_protocol_policy: "redirect-to-https"
+          allowed_methods:
+            - "GET"
+            - "HEAD"
+          cached_methods:
+            - "GET"
+          compress: true
+          cache_policy_id: "658327ea-f89d-4fab-a63d-7e88639e58f6"
+        cache_behaviors:
+          - path_pattern: "/graphql"
+            target_origin_id: "CustomBackend"
+            viewer_protocol_policy: "https-only"
+            allowed_methods:
+              - "GET"
+              - "HEAD"
+              - "OPTIONS"
+              - "POST"
+            cached_methods:
+              - "GET"
+            compress: true
+            cache_policy_id: "4135ea3d-c35d-46eb-81d7-rewrite00efe"
+        viewer_certificate:
+          acm_certificate_arn: "arn:aws:acm:us-east-1:123456789012:certificate/xyz12345-6789-0abc-def0-1234567890ab "
+          ssl_support_method: "sni-only"
+          minimum_protocol_version: "TLSv1.2_2021"
+        restrictions:
+          geo_restriction:
+            restriction_type: "none"
+        custom_error_response:
+          - error_code: 500
+            response_code: 502
+            response_page_path: "/error.html"
+            error_caching_min_ttl: 0
+      tags:
+        Environment: Production
+        Team: Backend
+        CostCenter: "1002"
+    - name: TertiaryDevelopmentDistribution
+      deletion_policy: Retain
+      distribution_config:
+        enabled: true
+        comment: "Development distribution"
+        default_root_object: "index.html"
+        origins:
+          - id: "S3-dev-bucket"
+            domain_name: "dev-content.s3.amazonaws.com"
+            s3_origin_config:
+              origin_access_identity: "origin-access-identity/cloudfront/QRS12345TUV6789 "
+        default_cache_behavior:
+          target_origin_id: "S3-dev-bucket"
+          viewer_protocol_policy: "allow-all"
+          allowed_methods:
+            - "GET"
+            - "HEAD"
+          cached_methods:
+            - "GET"
+          compress: false
+          cache_policy_id: "658327ea-f89d-4fab-a63d-7e88639e58f6"
+        viewer_certificate:
+          cloud_front_default_certificate: true
+      tags:
+        Environment: Development
+        Team: Engineering
+
+stack_tags:
+  Test: cloudfront-distribution

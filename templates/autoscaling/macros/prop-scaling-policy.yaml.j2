@@ -32,7 +32,7 @@ MetricDataQueries:
     Label: {{ query.label }}
 {%- endif %}
 {%- if query.metric_stat is defined %}
-    {{ prep_metric_stat(query.metric_stat) | indent(width=4, first=false) }}
+    {{- prep_metric_stat(query.metric_stat) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if query.return_data is defined %}
     ReturnData: {{ query.return_data | lower }}

@@ -20,24 +20,24 @@ Resources:
 {%- for additional_item in graphqlapi.auth.additional %}
           - Type: {{ additional_item.type }}
 {%- if additional_item.lambda_authorizer is defined %}{## BEGIN if additional_item.lambda_authorizer is defined #}
-            {{ prop_graphqlapi.prep_lambda_authorizer_config(additional_item.lambda_authorizer) | indent(width=14, first=false) }}
+            {{- prop_graphqlapi.prep_lambda_authorizer_config(additional_item.lambda_authorizer) | indent(width=14, first=false) }}
 {%- endif %}{## END if additional_item.lambda_authorizer is defined #}
 {%- if additional_item.open_id_connect is defined %}{## BEGIN if additional_item.open_id_connect is defined #}
-            {{ prop_graphqlapi.prep_openid_connect_config(additional_item.open_id_connect) | indent(width=12, first=false) }}
+            {{- prop_graphqlapi.prep_openid_connect_config(additional_item.open_id_connect) | indent(width=12, first=false) }}
 {%- endif %}{## END if additional_item.open_id_connect is defined #}
 {%- if additional_item.user_pool is defined %}{## BEGIN if additional_item.user_pool is defined #}
-            {{ prop_graphqlapi.prep_user_pool(additional_item.user_pool) | indent(width=12, first=false) }}
+            {{- prop_graphqlapi.prep_user_pool(additional_item.user_pool) | indent(width=12, first=false) }}
 {%- endif %}{## END if additional_item.user_pool is defined #}
 {%- endfor %}
 {%- endif %}{#- END if graphqlapi.auth.additional is defined #}
 {%- if graphqlapi.auth.lambda_authorizer is defined %}
-        {{ prop_graphqlapi.prep_lambda_authorizer_config(graphqlapi.auth.lambda_authorizer) | indent(width=10, first=false) }}
+        {{- prop_graphqlapi.prep_lambda_authorizer_config(graphqlapi.auth.lambda_authorizer) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if graphqlapi.auth.open_id_connect is defined %}
-        {{ prop_graphqlapi.prep_openid_connect_config(graphqlapi.auth.open_id_connect) | indent(width=8, first=false) }}
+        {{- prop_graphqlapi.prep_openid_connect_config(graphqlapi.auth.open_id_connect) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if graphqlapi.auth.user_pool is defined %}
-        {{ prop_graphqlapi.prep_user_pool(graphqlapi.auth.user_pool) | indent(width=8, first=false) }}
+        {{- prop_graphqlapi.prep_user_pool(graphqlapi.auth.user_pool) | indent(width=8, first=false) }}
 {%- endif %}
       {#- END Auth: #}
       {#- BEGIN DataSources: #}

@@ -5,7 +5,7 @@ Description: {{sceptre_user_data.description|default('Serverless StateMachine(s)
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 {%- if sceptre_user_data.globals is defined %}
-{{ globals.prep(sceptre_user_data.globals) }}
+{{- globals.prep(sceptre_user_data.globals) }}
 {%- endif %}
 
 Resources:
@@ -168,7 +168,7 @@ Resources:
             # Schedule
             Schedule: {{ event.properties.schedule }}
 {%- if event.properties.dead_letter_config is defined %}{# BEGIN if event.properties.dead_letter_config is defined #}
-            {{ prop_state_machine.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+            {{- prop_state_machine.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
 {%- endif %}{# END if event.properties.dead_letter_config is defined #}
 {%- if event.properties.description is defined %}
             Description: {{ event.properties.description }}
@@ -183,7 +183,7 @@ Resources:
             Name: {{ event.properties.name }}
 {%- endif %}
 {%- if event.properties.retry_policy is defined %}{# BEGIN if event.properties.retry_policy is defined #}
-            {{ prop_state_machine.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+            {{- prop_state_machine.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
 {%- endif %}{# END if event.properties.retry_policy is defined #}
 {%- if event.properties.role_arn is defined %}
             RoleArn: {{ event.properties.role_arn | trim }}
@@ -198,7 +198,7 @@ Resources:
             # ScheduleV2
             ScheduleExpression: {{ event.properties.schedule_expression }}
 {%- if event.properties.dead_letter_config is defined %}
-            {{ prop_state_machine.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+            {{- prop_state_machine.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.description is defined %}
             Description: {{ event.properties.description }}
@@ -232,7 +232,7 @@ Resources:
             PermissionsBoundary: {{ event.properties.permissions_boundary }}
 {%- endif %}
 {%- if event.properties.retry_policy is defined %}
-            {{ prop_state_machine.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+            {{- prop_state_machine.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.role_arn is defined %}
             RoleArn: {{ event.properties.role_arn }}
@@ -272,7 +272,7 @@ Resources:
               {{ event.properties.pattern | indent(width=14, first=false) }}
 {%- endif %}
 {%- if event.properties.dead_letter_config is defined %}
-            {{ prop_state_machine.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+            {{- prop_state_machine.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.event_bus_name is defined %}
             EventBusName: {{ event.properties.event_bus_name }}
@@ -294,7 +294,7 @@ Resources:
 {%- endif %}
 {%- endif %}{# END if event.properties.input_transformer is defined #}
 {%- if event.properties.retry_policy is defined %}
-            {{ prop_state_machine.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+            {{- prop_state_machine.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.rule_name is defined %}
             RuleName: {{ event.properties.rule_name }}

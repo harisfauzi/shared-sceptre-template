@@ -7,15 +7,15 @@ Description: {{sceptre_user_data.description|default('Serverless Function(s) for
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 {%- if sceptre_user_data.globals is defined %}
-{{ globals.prep(sceptre_user_data.globals) }}
+{{- globals.prep(sceptre_user_data.globals) }}
 {%- endif %}
 
 Resources:
 {%- if sceptre_user_data.apis is defined %}
-{{ embedded_api.prep_api_resources(sceptre_user_data.apis, sceptre_user_data.source_repo_url) }}
+{{- embedded_api.prep_api_resources(sceptre_user_data.apis, sceptre_user_data.source_repo_url) }}
 {%- endif %}
 {%- if sceptre_user_data.http_apis is defined %}
-{{ embedded_http_api.prep_http_api_resources(sceptre_user_data.http_apis, sceptre_user_data.source_repo_url) }}
+{{- embedded_http_api.prep_http_api_resources(sceptre_user_data.http_apis, sceptre_user_data.source_repo_url) }}
 {%- endif %}
 {%- for function in sceptre_user_data.functions %}
 {%- set function_name = function.name %}
@@ -47,7 +47,7 @@ Resources:
       CodeSigningConfigArn: {{ function.code_signing_config_arn | trim }}
 {%- endif %}
 {%- if function.code_uri is defined %}
-      {{ prop_function.prep_code_uri(function.code_uri) | indent(width=6, first=false) }}
+      {{- prop_function.prep_code_uri(function.code_uri) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if function.dead_letter_queue is defined %}
       DeadLetterQueue:
@@ -56,20 +56,20 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if function.deployment_preference is defined %}
-      {{ prop_function.prep_deployment_preference(function.deployment_preference) | indent(width=6, first=false) }}
+      {{- prop_function.prep_deployment_preference(function.deployment_preference) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if function.description is defined %}
       Description: {{ function.description }}
 {%- endif %}
 {%- if function.environment is defined %}
-      {{ prop_function.prep_environment(function.environment) | indent(width=6, first=false) }}
+      {{- prop_function.prep_environment(function.environment) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if function.ephemeral_storage is defined %}
       EphemeralStorage:
         Size: {{ function.ephemeral_storage.size }}
 {%- endif %}
 {%- if function.event_invoke_configuration is defined %}
-      {{ prop_function.prep_event_invoke_configuration(function.event_invoke_configuration) | indent(width=6, first=false) }}
+      {{- prop_function.prep_event_invoke_configuration(function.event_invoke_configuration) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if function.events is defined %}{# BEGIN if function.events is defined #}
       Events:
@@ -252,7 +252,7 @@ Resources:
 {# BEGIN event.type == 'DocumentDB' #}
             Cluster: {{ event.properties.cluster }}
             DatabaseName: {{ event.properties.database_name }}
-            {{ prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
+            {{- prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
             StartingPosition: {{ event.properties.starting_position }}
 {%- if event.properties.batch_size is defined %}
             BatchSize: {{ event.properties.batch_size }}
@@ -264,7 +264,7 @@ Resources:
             Enabled: {{ event.properties.enabled | lower }}
 {%- endif %}
 {%- if event.properties.filter_criteria is defined %}
-            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+            {{- prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.full_document is defined %}
             FullDocument: {{ event.properties.full_document }}
@@ -293,7 +293,7 @@ Resources:
             BisectBatchOnFunctionError: {{ event.properties.bisect_batch_on_function_error | lower }}
 {%- endif %}
 {%- if event.properties.destination_config is defined %}{# BEGIN if event.properties.destination_config is defined #}
-            {{ prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
 {%- endif %}{# END if event.properties.destination_config is defined #}
 {%- if event.properties.enabled is defined %}
             Enabled: {{ event.properties.enabled | lower }}
@@ -320,7 +320,7 @@ Resources:
             MaximumRetryAttempts: {{ event.properties.maximum_retry_attempts }}
 {%- endif %}
 {%- if event.properties.metrics_config is defined %}
-            {{ prop_function.prep_metrics_config(event.properties.metrics_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_metrics_config(event.properties.metrics_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.parallelization_factor is defined %}
             ParallelizationFactor: {{ event.properties.parallelization_factor }}
@@ -337,7 +337,7 @@ Resources:
             Pattern: EventPattern
               {{ event.properties.pattern | indent(width=14, first=false) }}
 {%- if event.properties.dead_letter_config is defined %}
-            {{ prop_function.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.event_bus_name is defined %}
             EventBusName: {{ event.properties.event_bus_name }}
@@ -359,7 +359,7 @@ Resources:
 {%- endif %}
 {%- endif %}{# END if event.properties.input_transformer is defined #}
 {%- if event.properties.retry_policy is defined %}
-            {{ prop_function.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+            {{- prop_function.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.rule_name is defined %}
             RuleName: {{ event.properties.rule_name }}
@@ -424,13 +424,13 @@ Resources:
             BisectBatchOnFunctionError: {{ event.properties.bisect_batch_on_function_error | lower}}
 {%- endif %}
 {%- if event.properties.destination_config is defined %}
-            {{ prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.enabled is defined %}
             Enabled: {{ event.properties.enabled | lower}}
 {%- endif %}
 {%- if event.properties.filter_criteria is defined %}
-            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+            {{- prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.function_response_types is defined %}
             FunctionResponseTypes:
@@ -451,7 +451,7 @@ Resources:
             MaximumRetryAttempts: {{ event.properties.maximum_retry_attempts }}
 {%- endif %}
 {%- if event.properties.metrics_config is defined %}
-            {{ prop_function.prep_metrics_config(event.properties.metrics_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_metrics_config(event.properties.metrics_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.parallelization_factor is defined %}
             ParallelizationFactor: {{ event.properties.parallelization_factor }}
@@ -470,7 +470,7 @@ Resources:
 {%- for item in event.properties.queues %}
               - {{ item }}
 {%- endfor %}
-            {{ prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
+            {{- prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
 {%- if event.properties.batch_size is defined %}
             BatchSize: {{ event.properties.batch_size }}
 {%- endif %}
@@ -481,7 +481,7 @@ Resources:
             Enabled: {{ event.properties.enabled | lower }}
 {%- endif %}
 {%- if event.properties.filter_criteria is defined %}
-            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+            {{- prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.kms_key_arn is defined %}
             KmsKeyArn: {{ event.properties.kms_key_arn }}
@@ -504,10 +504,10 @@ Resources:
             ConsumerGroupId: {{event.properties.consumer_group_id }}
 {%- endif %}
 {%- if event.properties.destination_config is defined %}
-            {{ prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.filter_criteria is defined %}
-            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+            {{- prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.kms_key_arn is defined %}
             KmsKeyArn: {{ event.properties.kms_key_arn | trim }}
@@ -516,10 +516,10 @@ Resources:
             MaximumBatchingWindowInSeconds: {{ event.properties.maximum_batching_window_in_seconds }}
 {%- endif %}
 {%- if event.properties.provisioned_poller_config is defined %}
-            {{ prop_function.prep_provisioned_poller_config(event.properties.provisioned_poller_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_provisioned_poller_config(event.properties.provisioned_poller_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.source_access_configurations is defined %}
-            {{ prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
+            {{- prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.starting_position is defined %}
             StartingPosition: {{ event.properties.starting_position }}
@@ -553,7 +553,7 @@ Resources:
 {# BEGIN event.type == 'Schedule' #}
             Schedule: {{ event.properties.schedule }}
 {%- if event.properties.dead_letter_config is defined %}
-            {{ prop_function.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.description is defined %}
             Description: {{ event.properties.description }}
@@ -568,7 +568,7 @@ Resources:
             Name: {{ event.properties.name }}
 {%- endif %}
 {%- if event.properties.retry_policy is defined %}
-            {{ prop_function.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+            {{- prop_function.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.state is defined %}
             State: {{ event.properties.state }}
@@ -578,7 +578,7 @@ Resources:
 {# BEGIN event.type == 'ScheduleV2' #}
             ScheduleExpression: {{ event.properties.schedule_expression }}
 {%- if event.properties.dead_letter_config is defined %}
-            {{ prop_function.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_dead_letter_config(event.properties.dead_letter_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.description is defined %}
             Description: {{ event.properties.description }}
@@ -612,7 +612,7 @@ Resources:
             PermissionsBoundary: {{ event.properties.permissions_boundary }}
 {%- endif %}
 {%- if event.properties.retry_policy is defined %}
-            {{ prop_function.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
+            {{- prop_function.prep_retry_policy(event.properties.retry_policy) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.role_arn is defined %}
             RoleArn: {{ event.properties.role_arn }}
@@ -629,7 +629,7 @@ Resources:
 {# END event.type == 'ScheduleV2' #}
 {%- elif event.type == 'SelfManagedKafka' %}
 {# BEGIN event.type == 'SelfManagedKafka' #}
-            {{ prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
+            {{- prop_function.prep_source_access_configurations(event.properties.source_access_configurations) | indent(width=12, first=false) }}
             Topics:
 {%- for item in event.properties.topics %}
               - {{ item }}
@@ -641,13 +641,13 @@ Resources:
             ConsumerGroupId: {{ event.properties.consumer_group_id }}
 {%- endif %}
 {%- if event.properties.destination_config is defined %}
-            {{ prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_destination_config(event.properties.destination_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.enabled is defined %}
             Enabled: {{ event.properties.enabled | lower }}
 {%- endif %}
 {%- if event.properties.filter_criteria is defined %}
-            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+            {{- prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.kafka_bootstrap_servers is defined %}
             KafkaBootstrapServers:
@@ -659,7 +659,7 @@ Resources:
             KmsKeyArn: {{ event.properties.kms_key_arn | trim}}
 {%- endif %}
 {%- if event.properties.provisioned_poller_config is defined %}
-            {{ prop_function.prep_provisioned_poller_config(event.properties.provisioned_poller_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_provisioned_poller_config(event.properties.provisioned_poller_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.starting_position is defined %}
             StartingPosition: {{ event.properties.starting_position }}
@@ -714,7 +714,7 @@ Resources:
             Enabled: {{ event.properties.enabled | lower }}
 {%- endif %}
 {%- if event.properties.filter_criteria is defined %}
-            {{ prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
+            {{- prop_function.prep_filter_criteria(event.properties.filter_criteria) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.function_response_types is defined %}
             FunctionResponseTypes:
@@ -729,17 +729,17 @@ Resources:
             MaximumBatchingWindowInSeconds: {{ event.properties.maximum_batching_window_in_seconds }}
 {%- endif %}
 {%- if event.properties.metrics_config is defined %}
-            {{ prop_function.prep_metrics_config(event.properties.metrics_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_metrics_config(event.properties.metrics_config) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if event.properties.scaling_config is defined %}
-            {{ prop_function.prep_scaling_config(event.properties.scaling_config) | indent(width=12, first=false) }}
+            {{- prop_function.prep_scaling_config(event.properties.scaling_config) | indent(width=12, first=false) }}
 {%- endif %}
 {# END event.type == 'SQS' #}
 {%- endif %}{# END if event.type == 'AlexaSkill'/'Api'/'CloudWatchEvent'/'CloudWatchLogs'/'Cognito'/'DocumentDB'/'DynamoDB'/'EventBridgeRule'/'HttpApi'/'IoTRule'/'Kinesis'/'MQ'/'MSK'/'S3'/'Schedule'/'ScheduleV2'/'SelfManagedKafka'/'SNS'/'SQS' #}
 {%- endfor %}{# END for event_label, event in function.events.items() #}
 {%- endif %}{# END if function.events is defined #}
 {%- if function.file_system_configs is defined %}
-      {{ prop_function.prep_file_system_configs(function.file_system_configs) | indent(width=6, first=false) }}
+      {{- prop_function.prep_file_system_configs(function.file_system_configs) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if function.function_name is defined %}
       FunctionName: {{ function.function_name }}
@@ -785,7 +785,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if function.logging_config is defined %}
-      {{ prop_function.prep_logging_config(function.logging_config) | indent(width=6, first=false) }}
+      {{- prop_function.prep_logging_config(function.logging_config) | indent(width=6, first=false) }}
 {%- endif %}
 {%- if function.memory_size is defined %}
       MemorySize: {{ function.memory_size }}
@@ -840,7 +840,7 @@ Resources:
       Runtime: {{function.runtime }}
 {%- endif %}
 {%- if function.runtime_management_config is defined %}
-      {{ prop_function.prep_runtime_management_config(function.runtime_management_config) | indent(width=6, first=false) }}
+      {{- prop_function.prep_runtime_management_config(function.runtime_management_config) | indent(width=6, first=false) }}
       RuntimeManagementConfig: RuntimeManagementConfig
 {%- endif %}
 {%- if function.snap_start is defined %}
@@ -867,16 +867,16 @@ Resources:
       VersionDescription: {{ function.version_description }}
 {%- endif %}
 {%- if function.vpc_config is defined %}
-      {{ prop_function.prep_vpc_config(function.vpc_config) | indent(width=6, first=false) }}
+      {{- prop_function.prep_vpc_config(function.vpc_config) | indent(width=6, first=false) }}
 {%- endif %}
 {%- endfor %}
 
 Outputs:
 {%- if sceptre_user_data.apis is defined %}
-{{ embedded_api.prep_api_outputs(sceptre_user_data.apis) }}
+{{- embedded_api.prep_api_outputs(sceptre_user_data.apis) }}
 {%- endif %}
 {%- if sceptre_user_data.http_apis is defined %}
-{{ embedded_http_api.prep_http_api_outputs(sceptre_user_data.http_apis) }}
+{{- embedded_http_api.prep_http_api_outputs(sceptre_user_data.http_apis) }}
 {%- endif %}
 {%- for function in sceptre_user_data.functions %}
 {%- set function_name = function.name %}

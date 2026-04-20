@@ -116,7 +116,7 @@ Resources:
 {%- endif %}
           SubnetId: {{ nat_instance.subnet_id | trim }}
 {%- if nat_instance.block_device_mappings is defined %}
-      {{ prop_instance.prep_block_device_mappings(nat_instance.block_device_mappings) | indent(width=6, first=false) }}
+      {{- prop_instance.prep_block_device_mappings(nat_instance.block_device_mappings) | indent(width=6, first=false) }}
 {%- endif %}
       SourceDestCheck: False
       Tags:

@@ -8,10 +8,10 @@
     UpdateReplacePolicy: {{ http_api.update_replace_policy | default('Delete') }}
     Properties:
 {%- if http_api.access_log_settings is defined %}{# BEGIN if http_api.access_log_settings is defined #}
-      {{ prop_http_api.prep_access_log_settings(http_api.access_log_settings) | indent(width=6, first=false) }}
+      {{- prop_http_api.prep_access_log_settings(http_api.access_log_settings) | indent(width=6, first=false) }}
 {%- endif %}{# END if http_api.access_log_settings is defined #}
 {%- if http_api.auth is defined %}{# BEGIN if http_api.auth is defined #}
-      {{ prop_http_api.prep_auth(http_api.auth) | indent(width=6, first=false) }}
+      {{- prop_http_api.prep_auth(http_api.auth) | indent(width=6, first=false) }}
 {%- endif %}{# END if http_api.auth is defined #}
 {%- if http_api.cors_configuration is defined %}{# BEGIN if http_api.cors_configuration is defined #}
 {%- if http_api.cors_configuration is string %}{## BEGIN if http_api.cors_configuration is string #}

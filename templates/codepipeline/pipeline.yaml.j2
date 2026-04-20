@@ -79,7 +79,7 @@ Resources:
 {%- if stage.before_entry is defined %}{# BEGIN if stage.before_entry is defined #}
           BeforeEntry:
 {%- if stage.before_entry.conditions is defined %}
-            {{ prop_pipeline.prep_conditions(stage.before_entry.conditions) | indent(width=12, first=false) }}
+            {{- prop_pipeline.prep_conditions(stage.before_entry.conditions) | indent(width=12, first=false) }}
 {%- endif %}
 {%- endif %}{# END if stage.before_entry is defined #}
 {%- if stage.blockers is defined %}{# BEGIN if stage.blockers is defined #}
@@ -92,7 +92,7 @@ Resources:
 {%- if stage.on_failure is defined %}{# BEGIN if stage.on_failure is defined #}
           OnFailure:
 {%- if stage.on_failure.conditions is defined %}
-            {{ prop_pipeline.prep_conditions(stage.on_failure.conditions) | indent(width=12, first=false) }}
+            {{- prop_pipeline.prep_conditions(stage.on_failure.conditions) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if stage.on_failure.result is defined %}
             Result: {{ stage.on_failure.result }}
@@ -105,19 +105,19 @@ Resources:
 {%- if stage.on_success is defined %}{# BEGIN if stage.on_success is defined #}
           OnSuccess:
 {%- if stage.on_success.conditions is defined %}
-            {{ prop_pipeline.prep_conditions(stage.on_success.conditions) | indent(width=12, first=false) }}
+            {{- prop_pipeline.prep_conditions(stage.on_success.conditions) | indent(width=12, first=false) }}
 {%- endif %}
 {%- endif %}{# END if stage.on_success is defined #}
 {%- endfor %}{# END for stage in pipeline.stages #}
 {%- if pipeline.artifact_store is defined %}{# BEGIN if pipeline.artifact_store is defined #}
-      {{ prop_pipeline.prep_artifact_store(pipeline.artifact_store) | indent(width=6, first=false) }}
+      {{- prop_pipeline.prep_artifact_store(pipeline.artifact_store) | indent(width=6, first=false) }}
 {# {%- endif %}  END if pipeline.artifact_store is defined #}
 {%- elif pipeline.artifact_stores is defined %}{# BEGIN if pipeline.artifact_stores is defined #}
       ArtifactStores:
 {%- for artifact_store_map in pipeline.artifact_stores %}{# BEGIN for artifact_store_map in pipeline.artifact_stores #}
         - Region: {{ artifact_store_map.region }}
 {%- if artifact_store_map.artifact_store is defined %}
-          {{ prop_pipeline.prep_artifact_store(artifact_store_map.artifact_store) | indent(width=10, first=false) }}
+          {{- prop_pipeline.prep_artifact_store(artifact_store_map.artifact_store) | indent(width=10, first=false) }}
 {%- endif %}
 {%- endfor %}{# END for artifact_store_map in pipeline.artifact_stores #}
 {%- endif %}{# END if pipeline.artifact_stores is defined #}
@@ -162,7 +162,7 @@ Resources:
               -
 {%- if pull_request.branches is defined %}{# BEGIN if pull_request.branches is defined #}
                 Branches:
-                  {{ prop_pipeline.prep_filter_criteria(pull_request.branches) | indent(width=18, first=false) }}
+                  {{- prop_pipeline.prep_filter_criteria(pull_request.branches) | indent(width=18, first=false) }}
 {%- endif %}{# END if pull_request.branches is defined #}
 {%- if pull_request.events is defined %}
                 Events:
@@ -172,7 +172,7 @@ Resources:
 {%- endif %}
 {%- if pull_request.file_paths is defined %}
                 FilePaths:
-                  {{ prop_pipeline.prep_filter_criteria(pull_request.file_paths) | indent(width=18, first=false) }}
+                  {{- prop_pipeline.prep_filter_criteria(pull_request.file_paths) | indent(width=18, first=false) }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}{# END if trigger.git_configuration.pull_request is defined #}
@@ -182,15 +182,15 @@ Resources:
               -
 {%- if git_push_filter.branches is defined %}
                 Branches:
-                  {{ prop_pipeline.prep_filter_criteria(git_push_filter.branches) | indent(width=18, first=false) }}
+                  {{- prop_pipeline.prep_filter_criteria(git_push_filter.branches) | indent(width=18, first=false) }}
 {%- endif %}
 {%- if git_push_filter.file_paths is defined %}
                 FilePaths:
-                  {{ prop_pipeline.prep_filter_criteria(git_push_filter.file_paths) | indent(width=18, first=false) }}
+                  {{- prop_pipeline.prep_filter_criteria(git_push_filter.file_paths) | indent(width=18, first=false) }}
 {%- endif %}
 {%- if git_push_filter.tags is defined %}
                 Tags:
-                  {{ prop_pipeline.prep_filter_criteria(git_push_filter.tags) | indent(width=18, first=false) }}
+                  {{- prop_pipeline.prep_filter_criteria(git_push_filter.tags) | indent(width=18, first=false) }}
 {%- endif %}
 {%- endfor %}{# END for git_push_filter in trigger.git_configuration.push #}
 {%- endif %}{# END if trigger.git_configuration.push is defined #}

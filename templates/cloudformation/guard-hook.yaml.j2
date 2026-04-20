@@ -35,7 +35,7 @@ Resources:
       FailureMode: {{ guard_hook.failure_mode | default('FAIL') }}
       HookStatus: {{ guard_hook.hook_status | default('ENABLED') }}
       RuleLocation:
-        {{ prep_location(guard_hook.rule_location) | indent(width=8, first=false) }}
+        {{- prep_location(guard_hook.rule_location) | indent(width=8, first=false) }}
       TargetOperations:
 {%- for item in guard_hook.target_operations %}
         - {{ item }}
@@ -47,7 +47,7 @@ Resources:
       Options:
 {%- if guard_hook.options.input_params is defined %}
         InputParams:
-          {{ prep_location(guard_hook.options.input_params) | indent(width=10, first=false) }}
+          {{- prep_location(guard_hook.options.input_params) | indent(width=10, first=false) }}
 {%- endif %}
 {%- endif %}{# END if guard_hook.options is defined #}
 {%- if guard_hook.stack_filters is defined %}{# BEGIN if guard_hook.stack_filters is defined #}
@@ -55,11 +55,11 @@ Resources:
         FilteringCriteria: {{ guard_hook.stack_filters.filtering_criteria}}
 {%- if guard_hook.stack_filters.stack_names is defined %}{# BEGIN if guard_hook.stack_filters.stack_names is defined #}
         StackNames:
-          {{ prep_stack_filtering(guard_hook.stack_filters.stack_names) | indent(width=10, first=false) }}
+          {{- prep_stack_filtering(guard_hook.stack_filters.stack_names) | indent(width=10, first=false) }}
 {%- endif %}{# END if guard_hook.stack_filters.stack_names is defined #}
 {%- if guard_hook.stack_filters.stack_roles is defined %}{# BEGIN if guard_hook.stack_filters.stack_roles is defined #}
         StackRoles:
-          {{ prep_stack_filtering(guard_hook.stack_filters.stack_roles) | indent(width=10, first=false) }}
+          {{- prep_stack_filtering(guard_hook.stack_filters.stack_roles) | indent(width=10, first=false) }}
 {%- endif %}{# END if guard_hook.stack_filters.stack_roles is defined #}
 {%- endif %}{# END if guard_hook.stack_filters is defined #}
 {%- if guard_hook.target_filters is defined %}{# BEGIN if guard_hook.target_filters is defined #}

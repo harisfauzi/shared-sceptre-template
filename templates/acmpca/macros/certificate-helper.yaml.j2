@@ -16,7 +16,8 @@
   Surname: String
   Title: String
 #}
-{% macro prep_subject(subject) -%}{%- if subject.common_name is defined -%}
+{% macro prep_subject(subject) %}
+{%- if subject.common_name is defined %}
 CommonName: {{subject.common_name}}
 {%- endif %}
 {%- if subject.country is defined %}
@@ -78,7 +79,8 @@ Title: {{subject.title}}
   KeyCertSign: Boolean
   KeyEncipherment: Boolean
   NonRepudiation: Boolean
-#}{% macro prep_key_usage(key_usage) -%}{%- if key_usage.crl_sign is defined -%}
+#}{% macro prep_key_usage(key_usage) %}
+{%- if key_usage.crl_sign is defined %}
 CRLSign: {{key_usage.crl_sign | lower}}
 {%- endif %}
 {%- if key_usage.data_encipherment is defined %}
