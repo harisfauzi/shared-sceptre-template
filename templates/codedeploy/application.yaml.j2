@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CodeDeploy Application(s) 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for application in sceptre_user_data.applications %}
 {%- set application_name = application.name %}
   {{ application_name }}:
@@ -26,11 +25,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for application in sceptre_user_data.applications %}
 {%- set application_name = application.name %}
   {{ application_name }}:
@@ -40,5 +37,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ application_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-04-21:
+Type: AWS::CodeDeploy::Application
+Properties:
+  ApplicationName: String
+  ComputePlatform: String
+  Tags:
+    - Key: String
+      Value: String
+#}
