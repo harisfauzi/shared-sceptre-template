@@ -1,6 +1,6 @@
 ---
 {%- import 'macros/tag_filter.yaml.j2' as tag_filter_macro %}
-Description: {{sceptre_user_data.description|default('CodeDeploy DeploymentGroup(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('CodeDeploy Deployment Group(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -239,4 +239,105 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ deployment_group_name }}"
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-04-21:
+Type: AWS::CodeDeploy::DeploymentGroup
+Properties:
+  AlarmConfiguration:
+    Alarms:
+      - Name: String
+    Enabled: Boolean
+    IgnorePollAlarmFailure: Boolean
+  ApplicationName: String
+  AutoRollbackConfiguration:
+    Enabled: Boolean
+    Events:
+      - String
+  AutoScalingGroups:
+    - String
+  BlueGreenDeploymentConfiguration:
+    DeploymentReadyOption:
+      ActionOnTimeout: String
+      WaitTimeInMinutes: Integer
+    GreenFleetProvisioningOption:
+      Action: String
+    TerminateBlueInstancesOnDeploymentSuccess:
+      Action: String
+      TerminationWaitTimeInMinutes: Integer
+  Deployment:
+    Description: String
+    IgnoreApplicationStopFailures: Boolean
+    Revision:
+      GitHubLocation:
+        CommitId: String
+        Repository: String
+      RevisionType: String
+      S3Location:
+        Bucket: String
+        BundleType: String
+        ETag: String
+        Key: String
+        Version: String
+  DeploymentConfigName: String
+  DeploymentGroupName: String
+  DeploymentStyle:
+    DeploymentOption: String
+    DeploymentType: String
+  Ec2TagFilters:
+    -
+      Key: String
+      Type: String
+      Value: String
+  Ec2TagSet:
+    Ec2TagSetList:
+      -
+        Ec2TagGroup:
+          -
+            Key: String
+            Type: String
+            Value: String
+  ECSServices:
+    -
+      ClusterName: String
+      ServiceName: String
+  LoadBalancerInfo:
+    ElbInfoList:
+      - Name: String
+    TargetGroupInfoList:
+      - Name: String
+    TargetGroupPairInfoList:
+      -
+        ProdTrafficRoute:
+          ListenerArns:
+            - String
+        TargetGroups:
+          - Name: String
+        TestTrafficRoute:
+          ListenerArns:
+            - String
+  OnPremisesInstanceTagFilters:
+    -
+      Key: String
+      Type: String
+      Value: String
+  OnPremisesTagSet:
+    OnPremisesTagSetList:
+      -
+        OnPremisesTagGroup:
+          -
+            Key: String
+            Type: String
+            Value: String
+  OutdatedInstancesStrategy: String
+  ServiceRoleArn: String
+  Tags:
+    - Key: String
+      Value: String
+  TerminationHookEnabled: Boolean
+  TriggerConfigurations:
+    -
+      TriggerEvents:
+        - String
+      TriggerName: String
+      TriggerTargetArn: String
+#}

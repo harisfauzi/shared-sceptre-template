@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('CodeDeploy DeploymentConfig(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('CodeDeploy Deployment Config(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for deployment_config in sceptre_user_data.deployment_configs %}
 {%- set deployment_config_name = deployment_config.name %}
   {{ deployment_config_name }}:
@@ -50,11 +49,9 @@ Resources:
         MonitorDurationInSeconds: {{ deployment_config.zonal_config.monitor_duration_in_seconds }}
 {%- endif %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for deployment_config in sceptre_user_data.deployment_configs %}
 {%- set deployment_config_name = deployment_config.name %}
   {{ deployment_config_name }}:
@@ -64,5 +61,27 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ deployment_config_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-04-21:
+Type: AWS::CodeDeploy::DeploymentConfig
+Properties:
+  ComputePlatform: String
+  DeploymentConfigName: String
+  MinimumHealthyHosts:
+    Type: String
+    Value: Integer
+  TrafficRoutingConfig:
+    TimeBasedCanary:
+      CanaryInterval: Integer
+      CanaryPercentage: Integer
+    TimeBasedLinear:
+      LinearInterval: Integer
+      LinearPercentage: Integer
+    Type: String
+  ZonalConfig:
+    FirstZoneMonitorDurationInSeconds: Integer
+    MinimumHealthyHostsPerZone:
+      Type: String
+      Value: Integer
+    MonitorDurationInSeconds: Integer
+#}
