@@ -1,0 +1,43 @@
+---
+template:
+  type: file
+  path: directconnect/connection.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DirectConnect Connections
+  connections:
+    - name: PrimaryCorpConnection
+      bandwidth: "10Gbps"
+      connection_name: "Corporate-Primary-Connection"
+      location: "US East (N. Virginia) DC2"
+      provider_name: "AT&T"
+      request_mac_sec: true
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Department: Infrastructure
+        Bandwidth: "10Gbps"
+    - name: SecondaryRemoteConnection
+      bandwidth: "1Gbps"
+      connection_name: "Remote-Office-Secondary-Connection"
+      location: "US West (Oregon) DC2"
+      lag_id: "dxlag-12345678901234567"
+      deletion_policy: Delete
+      tags:
+        Environment: Staging
+        Department: Operations
+        Bandwidth: "1Gbps"
+    - name: TertiaryBackupConnection
+      bandwidth: "100Mbps"
+      connection_name: "Backup-Tertiary-Connection"
+      location: "EU (Ireland) DC1"
+      deletion_policy: Retain
+      tags:
+        Environment: Development
+        Department: Testing
+
+stack_tags:
+  Test: directconnect-connection

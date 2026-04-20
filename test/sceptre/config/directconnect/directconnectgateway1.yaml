@@ -1,0 +1,37 @@
+---
+template:
+  type: file
+  path: directconnect/direct_connect_gateway.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DirectConnect Direct Connect Gateways
+  direct_connect_gateways:
+    - name: PrimaryCorpGateway
+      direct_connect_gateway_name: "corporate-primary-gateway"
+      amazon_side_asn: 64512
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Department: Infrastructure
+        Gateway: Primary
+    - name: SecondaryRemoteGateway
+      direct_connect_gateway_name: "remote-office-secondary-gateway"
+      amazon_side_asn: 64513
+      deletion_policy: Delete
+      tags:
+        Environment: Staging
+        Department: Operations
+        Gateway: Secondary
+    - name: TertiaryBackupGateway
+      direct_connect_gateway_name: "backup-tertiary-gateway"
+      deletion_policy: Retain
+      tags:
+        Environment: Development
+        Department: Testing
+        Gateway: Backup
+
+stack_tags:
+  Test: directconnect-direct-connect-gateway

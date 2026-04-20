@@ -1,0 +1,68 @@
+---
+template:
+  type: file
+  path: directconnect/private_virtual_interface.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DirectConnect Private Virtual Interfaces
+  private_virtual_interfaces:
+    - name: PrimaryCorpPrivateInterface
+      connection_id: "dxcon-12345678901234567 "
+      virtual_interface_name: "corporate-primary-pvi"
+      vlan: 100
+      virtual_gateway_id: "vgw-12345678901234567 "
+      mtu: 1500
+      enable_site_link: true
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Department: Infrastructure
+        Interface: Primary
+      bgp_peers:
+        - address_family: "ipv4"
+          asn: 65000
+          amazon_address: "169.254.10.1/30"
+          customer_address: "169.254.10.2/30"
+          auth_key: "SecureAuthKey12345"
+        - address_family: "ipv6"
+          asn: 65000
+          amazon_address: "fe80::1/64"
+          customer_address: "fe80::2/64"
+    - name: SecondaryRemotePrivateInterface
+      connection_id: "dxcon-87654321098765432 "
+      virtual_interface_name: "remote-office-secondary-pvi"
+      vlan: 200
+      direct_connect_gateway_id: "dcgw-87654321098765432 "
+      mtu: 9000
+      deletion_policy: Delete
+      tags:
+        Environment: Staging
+        Department: Operations
+        Interface: Secondary
+      bgp_peers:
+        - address_family: "ipv4"
+          asn: 65001
+          amazon_address: "169.254.11.1/30"
+          customer_address: "169.254.11.2/30"
+          bgp_peer_id: "bgp-peer-secondary"
+    - name: TertiaryBackupPrivateInterface
+      connection_id: "dxcon-abcdef1234567890ab "
+      virtual_interface_name: "backup-tertiary-pvi"
+      vlan: 300
+      allocate_private_virtual_interface_role_arn: "arn:aws:iam::210987654321:role/DirectConnectAllocationRole "
+      deletion_policy: Retain
+      tags:
+        Environment: Development
+        Department: Testing
+        Interface: Backup
+      bgp_peers:
+        - address_family: "ipv4"
+          asn: 65002
+          amazon_address: "169.254.12.1/30"
+          customer_address: "169.254.12.2/30"
+
+stack_tags:
+  Test: directconnect-private-virtual-interface

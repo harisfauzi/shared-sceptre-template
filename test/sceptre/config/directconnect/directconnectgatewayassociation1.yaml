@@ -1,0 +1,31 @@
+---
+template:
+  type: file
+  path: directconnect/direct_connect_gateway_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DirectConnect Direct Connect Gateway Associations
+  direct_connect_gateway_associations:
+    - name: PrimaryCorpAssociation
+      associated_gateway_id: "vpgw-12345678901234567"
+      direct_connect_gateway_id: "dcgw-12345678901234567"
+      allowed_prefixes_to_direct_connect_gateway:
+        - "10.0.0.0/8"
+        - "192.168.0.0/16"
+        - "172.16.0.0/12"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondaryRemoteAssociation
+      associated_gateway_id: "tgw-87654321098765432"
+      direct_connect_gateway_id: "dcgw-87654321098765432"
+      accept_direct_connect_gateway_association_proposal_role_arn: "arn:aws:iam::210987654321:role/DirectConnectGatewayAssociationRole"
+      deletion_policy: Delete
+    - name: TertiaryBackupAssociation
+      associated_gateway_id: "vpgw-abcdef1234567890ab"
+      direct_connect_gateway_id: "dcgw-abcdef1234567890ab"
+      deletion_policy: Retain
+
+stack_tags:
+  Test: directconnect-direct-connect-gateway-association

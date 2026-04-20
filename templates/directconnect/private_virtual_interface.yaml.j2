@@ -1,0 +1,112 @@
+---
+Description: {{sceptre_user_data.description|default('DirectConnect Private Virtual Interface(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for private_virtual_interface in sceptre_user_data.private_virtual_interfaces %}
+{%- set private_virtual_interface_name = private_virtual_interface.name %}
+  {{ private_virtual_interface_name }}:
+    Type: AWS::DirectConnect::PrivateVirtualInterface
+    DeletionPolicy: {{ private_virtual_interface.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ private_virtual_interface.update_replace_policy | default('Delete') }}
+    Properties:
+      BgpPeers:
+{%- for bgp_peer in private_virtual_interface.bgp_peers %}{# BEGIN for bgp_peer in private_virtual_interface.bgp_peers #}
+        -
+          AddressFamily: {{ bgp_peer.address_family }}
+          Asn: {{ bgp_peer.asn }}
+{%- if bgp_peer.amazon_address is defined %}
+          AmazonAddress: {{ bgp_peer.amazon_address }}
+{%- endif %}
+{%- if bgp_peer.auth_key is defined %}
+          AuthKey: {{ bgp_peer.auth_key }}
+{%- endif %}
+{%- if bgp_peer.bgp_peer_id is defined %}
+          BgpPeerId: {{ bgp_peer.bgp_peer_id }}
+{%- endif %}
+{%- if bgp_peer.customer_address is defined %}
+          CustomerAddress: {{ bgp_peer.customer_address }}
+{%- endif %}
+{%- endfor %}{# END for bgp_peer in private_virtual_interface.bgp_peers #}
+      ConnectionId: {{ private_virtual_interface.connection_id | trim }}
+      VirtualInterfaceName: {{ private_virtual_interface.virtual_interface_name }}
+      Vlan: {{ private_virtual_interface.vlan }}
+{%- if private_virtual_interface.allocate_private_virtual_interface_role_arn is defined %}
+      AllocatePrivateVirtualInterfaceRoleArn: {{ private_virtual_interface.allocate_private_virtual_interface_role_arn | trim }}
+{%- endif %}
+{%- if private_virtual_interface.direct_connect_gateway_id is defined %}
+      DirectConnectGatewayId: {{ private_virtual_interface.direct_connect_gateway_id | trim }}
+{%- endif %}
+{%- if private_virtual_interface.enable_site_link is defined %}
+      EnableSiteLink: {{ private_virtual_interface.enable_site_link }}
+{%- endif %}
+{%- if private_virtual_interface.mtu is defined %}
+      Mtu: {{ private_virtual_interface.mtu }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if private_virtual_interface.tags is defined %}
+{%- for key,value in private_virtual_interface.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if private_virtual_interface.virtual_gateway_id is defined %}
+      VirtualGatewayId: {{ private_virtual_interface.virtual_gateway_id | trim }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for private_virtual_interface in sceptre_user_data.private_virtual_interfaces %}
+{%- set private_virtual_interface_name = private_virtual_interface.name %}
+  {{ private_virtual_interface_name }}:
+    Description: The ARN of the private virtual interface {{ private_virtual_interface_name }}
+    Value:
+      Ref: {{ private_virtual_interface_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ private_virtual_interface_name }}"
+  {{ private_virtual_interface_name }}VirtualInterfaceArn:
+    Description: The ARN of the private virtual interface {{ private_virtual_interface_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ private_virtual_interface_name }}
+        - VirtualInterfaceArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ private_virtual_interface_name }}-VirtualInterfaceArn"
+  {{ private_virtual_interface_name }}VirtualInterfaceId:
+    Description: The ID of the private virtual interface {{ private_virtual_interface_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ private_virtual_interface_name }}
+        - VirtualInterfaceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ private_virtual_interface_name }}-VirtualInterfaceId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-20
+Type: AWS::DirectConnect::PrivateVirtualInterface
+Properties:
+  AllocatePrivateVirtualInterfaceRoleArn: String
+  BgpPeers:
+    -
+      AddressFamily: String
+      AmazonAddress: String
+      Asn: String
+      AuthKey: String
+      BgpPeerId: String
+      CustomerAddress: String
+  ConnectionId: String
+  DirectConnectGatewayId: String
+  EnableSiteLink: Boolean
+  Mtu: Integer
+  Tags:
+    -
+      Key: String
+      Value: String
+  VirtualGatewayId: String
+  VirtualInterfaceName: String
+  Vlan: Integer
+#}

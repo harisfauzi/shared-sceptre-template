@@ -1,0 +1,54 @@
+---
+Description: {{sceptre_user_data.description|default('DirectConnect Direct Connect Gateway Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for direct_connect_gateway_association in sceptre_user_data.direct_connect_gateway_associations %}
+{%- set direct_connect_gateway_association_name = direct_connect_gateway_association.name %}
+  {{ direct_connect_gateway_association_name }}:
+    Type: AWS::DirectConnect::DirectConnectGatewayAssociation
+    DeletionPolicy: {{ direct_connect_gateway_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ direct_connect_gateway_association.update_replace_policy | default('Delete') }}
+    Properties:
+      AssociatedGatewayId: {{ direct_connect_gateway_association.associated_gateway_id }}
+      DirectConnectGatewayId: {{ direct_connect_gateway_association.direct_connect_gateway_id }}
+{%- if direct_connect_gateway_association.accept_direct_connect_gateway_association_proposal_role_arn is defined %}
+      AcceptDirectConnectGatewayAssociationProposalRoleArn: {{ direct_connect_gateway_association.accept_direct_connect_gateway_association_proposal_role_arn }}
+{%- endif %}
+{%- if direct_connect_gateway_association.allowed_prefixes_to_direct_connect_gateway is defined %}{# BEGIN if direct_connect_gateway_association.allowed_prefixes_to_direct_connect_gateway is defined #}
+      AllowedPrefixesToDirectConnectGateway:
+{%- for prefix in direct_connect_gateway_association.allowed_prefixes_to_direct_connect_gateway %}
+        - {{ prefix }}
+{%- endfor %}
+{%- endif %}{# END if direct_connect_gateway_association.allowed_prefixes_to_direct_connect_gateway is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for direct_connect_gateway_association in sceptre_user_data.direct_connect_gateway_associations %}
+{%- set direct_connect_gateway_association_name = direct_connect_gateway_association.name %}
+  {{ direct_connect_gateway_association_name }}:
+    Description: The ID of the Direct Connect gateway association {{ direct_connect_gateway_association_name }}
+    Value:
+      Ref: {{ direct_connect_gateway_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ direct_connect_gateway_association_name }}"
+  {{ direct_connect_gateway_association_name }}AssociationId:
+    Description: The ID of the Direct Connect gateway association {{ direct_connect_gateway_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ direct_connect_gateway_association_name }}
+        - AssociationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ direct_connect_gateway_association_name }}-AssociationId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-20
+Type: AWS::DirectConnect::DirectConnectGatewayAssociation
+Properties:
+  AcceptDirectConnectGatewayAssociationProposalRoleArn: String
+  AllowedPrefixesToDirectConnectGateway:
+    - String
+  AssociatedGatewayId: String
+  DirectConnectGatewayId: String
+#}

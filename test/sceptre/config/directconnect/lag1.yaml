@@ -1,0 +1,46 @@
+---
+template:
+  type: file
+  path: directconnect/lag.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DirectConnect Link Aggregation Groups
+  lags:
+    - name: PrimaryCorpLag
+      connections_bandwidth: "10Gbps"
+      lag_name: "corporate-primary-lag"
+      location: "US East (N. Virginia) DC2"
+      minimum_links: 2
+      provider_name: "AT&T"
+      request_mac_sec: true
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Department: Infrastructure
+        Bandwidth: "10Gbps"
+    - name: SecondaryRemoteLag
+      connections_bandwidth: "1Gbps"
+      lag_name: "remote-office-secondary-lag"
+      location: "US West (Oregon) DC2"
+      minimum_links: 1
+      deletion_policy: Delete
+      tags:
+        Environment: Staging
+        Department: Operations
+        Bandwidth: "1Gbps"
+    - name: TertiaryBackupLag
+      connections_bandwidth: "100Mbps"
+      lag_name: "backup-tertiary-lag"
+      location: "EU (Ireland) DC1"
+      request_mac_sec: false
+      deletion_policy: Retain
+      tags:
+        Environment: Development
+        Department: Testing
+        Bandwidth: "100Mbps"
+
+stack_tags:
+  Test: directconnect-lag
