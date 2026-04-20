@@ -267,9 +267,9 @@ Cors:
 {%- endmacro %}{# END macro prep_cors(cors) #}
 
 {%- macro prep_definition_uri(definition_uri) %}{# BEGIN macro prep_definition_uri(definition_uri) #}
-{%- if definition_uri is string -%}{# BEGIN if definition_uri is string #}
+{%- if definition_uri is string %}{# BEGIN if definition_uri is string #}
 DefinitionUri: {{ definition_uri }}
-{%- else -%}
+{%- else %}
 DefinitionUri:
   Bucket: {{ definition_uri.bucket }}
   Key: {{ definition_uri.key }}

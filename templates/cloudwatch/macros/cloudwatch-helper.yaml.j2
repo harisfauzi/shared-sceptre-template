@@ -4,7 +4,7 @@ and https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-p
   Name: String
   Value: String
 #}
-{%- macro prep_dimensions(dimensions) -%}
+{%- macro prep_dimensions(dimensions) %}
 {%- for name, value in dimensions.items() %}
 - Name: {{ name }}
   Value: {{ value }}
@@ -22,7 +22,7 @@ and https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-p
   Period: Integer
   ReturnData: Boolean
 #}
-{% macro prep_metric_data_query(metric_data_query) -%}
+{% macro prep_metric_data_query(metric_data_query) %}
 {%- for metric in metric_data_query %}{# BEGIN for metric in metric_data_query #}
 - Id: {{ metric.id }}
 {%- if metric.account_id is defined %}
@@ -68,7 +68,7 @@ and https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-p
     - String
   Namespace: String
 #}
-{% macro prep_metric_stream_filter(metric_stream_filter) -%}
+{% macro prep_metric_stream_filter(metric_stream_filter) %}
 {%- for metric_filter in metric_stream_filter %}{# BEGIN for metric_filter in metric_stream_filter #}
 -
   Namespace: {{ metric_filter.namespace }}
