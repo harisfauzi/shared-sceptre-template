@@ -36,6 +36,15 @@ Resources:
               Configuration: |
                 {{ action_declaration.configuration_json | indent(width=16, first=false) }}
 {%- endif %}{# END if action_declaration.configuration is defined #}
+{%- if action_declaration.environment_variables is defined %}{# BEGIN if action_declaration.environment_variables is defined #}
+              EnvironmentVariables:
+{%- for env_var in action_declaration.environment_variables %}
+                -
+                  Name: {{ env_var.name }}
+                  Value: {{ env_var.value }}
+                  Type: {{ env_var.type | default('PLAINTEXT') }}
+{%- endfor %}
+{%- endif %}{# END if action_declaration.environment_variables is defined #}
 {%- if action_declaration.input_artifacts is defined %}{# BEGIN if action_declaration.input_artifacts is defined #}
               InputArtifacts:
 {%- for artifact in action_declaration.input_artifacts %}{# BEGIN for artifact in action_declaration.input_artifacts #}
@@ -241,9 +250,31 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ pipeline_name }}-Arn"
 {%- endfor %}{#
-# Supported structure as of 2026-03-12:
+# Supported structure as of 2026-04-20:
 Type: AWS::CodePipeline::Pipeline
 Properties:
+  ArtifactStore:
+    EncryptionKey:
+      Id: String
+      Type: String
+    Location: String
+    Type: String
+  ArtifactStores:
+    -
+      ArtifactStore:
+        EncryptionKey:
+          Id: String
+          Type: String
+        Location: String
+        Type: String
+      Region: String
+  DisableInboundStageTransitions:
+    - Reason: String
+      StageName: String
+  ExecutionMode: String
+  Name: String
+  PipelineType: String
+  RestartExecutionOnUpdate: Boolean
   RoleArn: String
   Stages:
     -
@@ -254,24 +285,29 @@ Properties:
             Owner: String
             Provider: String
             Version: String
-          Name: String
           Commands:
             - String
           Configuration: Json
+          EnvironmentVariables:
+            -
+              Name: String
+              Type: String
+              Value: String
           InputArtifacts:
             - Name: String
+          Name: String
           Namespace: String
           OutputArtifacts:
-            - Name: String
+            -
               Files:
                 - String
+              Name: String
           OutputVariables:
             - String
           Region: String
           RoleArn: String
           RunOrder: Integer
           TimeoutInMinutes: Integer
-      Name: String
       BeforeEntry:
         Conditions:
           -
@@ -294,9 +330,10 @@ Properties:
       Blockers:
         - Name: String
           Type: String
+      Name: String
       OnFailure:
         Conditions:
-          - Condition
+          -
             Result: String
             Rules:
               -
@@ -318,7 +355,7 @@ Properties:
           RetryMode: String
       OnSuccess:
         Conditions:
-          - Condition
+          -
             Result: String
             Rules:
               -
@@ -335,34 +372,12 @@ Properties:
                   Owner: String
                   Provider: String
                   Version: String
-  ArtifactStore:
-    Location: String
-    Type: String
-    EncryptionKey:
-      Id: String
-      Type: String
-  ArtifactStores:
-    - Region: String
-      ArtifactStore:
-        Location: String
-        Type: String
-        EncryptionKey:
-          Id: String
-          Type: String
-  DisableInboundStageTransitions:
-    - Reason: String
-      StageName: String
-  ExecutionMode: String
-  Name: String
-  PipelineType: String
-  RestartExecutionOnUpdate: Boolean
   Tags:
     - Key: String
       Value: String
   Triggers:
-    - ProviderType: String
+    -
       GitConfiguration:
-        SourceActionName: String
         PullRequest:
           -
             Branches:
@@ -394,6 +409,8 @@ Properties:
                 - String
               Includes:
                 - String
+        SourceActionName: String
+      ProviderType: String
   Variables:
     - Name: String
       DefaultValue: String
