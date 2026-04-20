@@ -39,6 +39,25 @@ Resources:
 {%- if alarm.evaluate_low_sample_count_percentile is defined %}
       EvaluateLowSampleCountPercentile: {{ alarm.evaluate_low_sample_count_percentile }}
 {%- endif %}
+{%- if alarm.evaluation_criteria is defined %}{# BEGIN if alarm.evaluation_criteria is defined #}
+      EvaluationCriteria:
+{%- if alarm.evaluation_criteria.promql_criteria is defined %}{# BEGIN if alarm.evaluation_criteria.promql_criteria is defined #}
+        PromQLCriteria:
+{%- if alarm.evaluation_criteria.promql_criteria.pending_period is defined %}
+          PendingPeriod: {{ alarm.evaluation_criteria.promql_criteria.pending_period }}
+{%- endif %}
+{%- if alarm.evaluation_criteria.promql_criteria.query is defined %}
+          Query: |
+            {{ alarm.evaluation_criteria.promql_criteria.query | indent(width=12, first=false) }}
+{%- endif %}
+{%- if alarm.evaluation_criteria.promql_criteria.recovery_period is defined %}
+          RecoveryPeriod: {{ alarm.evaluation_criteria.promql_criteria.recovery_period }}
+{%- endif %}
+{%- endif %}
+{%- endif %}{# END if alarm.evaluation_criteria is defined #}
+{%- if alarm.evaluation_interval is defined %}
+      EvaluationInterval: {{ alarm.evaluation_interval }}
+{%- endif %}
 {%- if alarm.extended_statistic is defined %}
       ExtendedStatistic: {{ alarm.extended_statistic }}
 {%- endif %}
@@ -131,6 +150,12 @@ Properties:
       Name: String
       Value: String
   EvaluateLowSampleCountPercentile: String
+  EvaluationCriteria:
+    PromQLCriteria:
+      PendingPeriod: Integer
+      Query: String
+      RecoveryPeriod: Integer
+  EvaluationInterval: Integer
   EvaluationPeriods: Integer
   ExtendedStatistic: String
   InsufficientDataActions:
