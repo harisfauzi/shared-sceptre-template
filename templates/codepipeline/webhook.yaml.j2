@@ -57,7 +57,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ webhook_name }}-Url"
 {%- endfor %}{#
-# Supported structure as of 2026-03-12:
+# Supported structure as of 2026-04-20:
 Type: AWS::CodePipeline::Webhook
 Properties:
   Authentication: String
@@ -68,9 +68,9 @@ Properties:
     -
       JsonPath: String
       MatchEquals: String
+  Name: String
+  RegisterWithThirdParty: Boolean
   TargetAction: String
   TargetPipeline: String
   TargetPipelineVersion: Integer
-  Name: String
-  RegisterWithThirdParty: Boolean
 #}

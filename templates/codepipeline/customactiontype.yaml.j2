@@ -61,7 +61,6 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
@@ -74,12 +73,20 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ custom_action_type_name }}"
-
 {%- endfor %}{#
-# Supported structure as of 20250325:
+# Supported structure as of 2026-04-20:
 Type: AWS::CodePipeline::CustomActionType
 Properties:
   Category: String
+  ConfigurationProperties:
+    -
+      Description: String
+      Key: Boolean
+      Name: String
+      Queryable: Boolean
+      Required: Boolean
+      Secret: Boolean
+      Type: String
   InputArtifactDetails:
     MaximumCount: Integer
     MinimumCount: Integer
@@ -87,15 +94,6 @@ Properties:
     MaximumCount: Integer
     MinimumCount: Integer
   Provider: String
-  Version: String
-  ConfigurationProperties:
-    - Key: Boolean
-      Name: String
-      Required: Boolean
-      Secret: Boolean
-      Description: String
-      Queryable: Boolean
-      Type: String
   Settings:
     EntityUrlTemplate: String
     ExecutionUrlTemplate: String
@@ -104,4 +102,5 @@ Properties:
   Tags:
     - Key: String
       Value: String
+  Version: String
 #}
