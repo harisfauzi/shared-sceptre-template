@@ -1,0 +1,37 @@
+---
+template:
+  type: file
+  path: s3files/mount_target.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  description: CloudFormation template to test S3Files MountTarget with comprehensive Jinja2 template coverage.
+  mount_targets:
+    - name: BasicMountTarget
+      file_system_id: "fs-0123456789abcdef0"
+      subnet_id: "subnet-0abcdef1234567890"
+
+    - name: Ipv4MountTarget
+      file_system_id: "fs-abcdef0123456789a"
+      subnet_id: "subnet-1bcdef2345678901a"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      ip_address_type: ipv4
+      ipv4_address: "10.0.1.50"
+      security_groups:
+        - "sg-0123456789abcdef0"
+        - "sg-1234567890abcdef1"
+
+    - name: FullFeaturedMountTarget
+      file_system_id: "fs-9876543210fedcba9"
+      subnet_id: "subnet-9cdef8765432109bc"
+      ip_address_type: ipv6
+      ipv6_address: "2600:1f13:fe4:ca00::1"
+      security_groups:
+        - "sg-abcdef0123456789a"
+        - "sg-bcdef1234567890ab"
+        - "sg-cdef12345678901bc"
+
+stack_tags:
+  Test: s3files-mount-target

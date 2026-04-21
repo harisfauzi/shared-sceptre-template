@@ -1,0 +1,165 @@
+---
+Description: {{sceptre_user_data.description|default('S3Files File System(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for file_system in sceptre_user_data.file_systems %}
+{%- set file_system_name = file_system.name %}
+  {{ file_system_name }}:
+    Type: AWS::S3Files::FileSystem
+    DeletionPolicy: {{ file_system.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ file_system.update_replace_policy | default('Delete') }}
+    Properties:
+      Bucket: {{ file_system.bucket | trim }}
+      RoleArn: {{ file_system.role_arn | trim }}
+{%- if file_system.accept_bucket_warning is defined %}
+      AcceptBucketWarning: {{ file_system.accept_bucket_warning | lower }}
+{%- endif %}
+{%- if file_system.client_token is defined %}
+      ClientToken: {{ file_system.client_token | trim }}
+{%- endif %}
+{%- if file_system.kms_key_id is defined %}
+      KmsKeyId: {{ file_system.kms_key_id | trim }}
+{%- endif %}
+{%- if file_system.prefix is defined %}
+      Prefix: {{ file_system.prefix }}
+{%- endif %}
+{%- if file_system.synchronization_configuration is defined %}{# BEGIN if file_system.synchronization_configuration is defined #}
+      SynchronizationConfiguration:
+        ExpirationDataRules:
+{%- for rule in file_system.synchronization_configuration.expiration_data_rules %}
+          -
+            DaysAfterLastAccess: {{ rule.days_after_last_access }}
+{%- endfor %}
+        ImportDataRules:
+{%- for rule in file_system.synchronization_configuration.import_data_rules %}
+          -
+            Prefix: {{ rule.prefix }}
+            SizeLessThan: {{ rule.size_less_than }}
+            Trigger: {{ rule.trigger }}
+{%- endfor %}
+{%- if file_system.synchronization_configuration.latest_version_number is defined %}
+        LatestVersionNumber: {{ file_system.synchronization_configuration.latest_version_number }}
+{%- endif %}
+{%- endif %}{# END if file_system.synchronization_configuration is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if file_system.tags is defined %}
+{%- for key,value in file_system.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if file_system.file_system_policy is defined %}{# BEGIN if file_system.file_system_policy is defined #}
+  {{ file_system_name }}Policy:
+    Type: AWS::S3Files::FileSystemPolicy
+    DeletionPolicy: {{ file_system.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ file_system.update_replace_policy | default('Delete') }}
+    Properties:
+      FileSystemId:
+        Ref: {{ file_system_name }}
+{%- if file_system.file_system_policy.policy_json is defined %}
+      Policy: |
+        {{ file_system.file_system_policy.policy_json | indent(width=8, first=false) }}
+{%- else %}
+      Policy:
+        {{ file_system.file_system_policy.policy | indent(width=8, first=false) }}
+{%- endif %}
+{%- endif %}{# END if file_system.file_system_policy is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for file_system in sceptre_user_data.file_systems %}
+{%- set file_system_name = file_system.name %}
+  {{ file_system_name }}:
+    Description: The ARN for {{ file_system_name }}
+    Value:
+      Ref: {{ file_system_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}"
+  {{ file_system_name }}CreationTime:
+    Description: The creation time for {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-CreationTime"
+  {{ file_system_name }}FileSystemArn:
+    Description: The ARN for {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - FileSystemArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-FileSystemArn"
+  {{ file_system_name }}FileSystemId:
+    Description: The file system ID for {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - FileSystemId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-FileSystemId"
+  {{ file_system_name }}OwnerId:
+    Description: The AWS account ID of the file system owner for {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-OwnerId"
+  {{ file_system_name }}Status:
+    Description: The status of {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-Status"
+  {{ file_system_name }}StatusMessage:
+    Description: Additional information about the file system status for {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - StatusMessage
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-StatusMessage"
+{%- endfor %}{#
+# Supported structure as of 2026-04-21:
+Type: AWS::S3Files::FileSystem
+Properties:
+  AcceptBucketWarning: Boolean
+  Bucket: String
+  ClientToken: String
+  KmsKeyId: String
+  Prefix: String
+  RoleArn: String
+  SynchronizationConfiguration:
+    ExpirationDataRules:
+      -
+        DaysAfterLastAccess: Integer
+    ImportDataRules:
+      - ImportDataRule
+        Prefix: String
+        SizeLessThan: Integer
+        Trigger: String
+    LatestVersionNumber: Integer
+  Tags:
+    -
+      Key: String
+      Value: String
+
+Type: AWS::S3Files::FileSystemPolicy
+Properties:
+  FileSystemId: String
+  Policy: Json
+#}

@@ -1,0 +1,81 @@
+---
+template:
+  type: file
+  path: s3files/file_system.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  description: CloudFormation template to test S3Files FileSystem with comprehensive Jinja2 template coverage.
+  file_systems:
+    - name: BasicFileSystem
+      bucket: "basic-s3files-bucket"
+      role_arn: "arn:aws:iam::123456789012:role/S3FilesServiceRole"
+      accept_bucket_warning: true
+      tags:
+        Environment: Development
+        Purpose: BasicTesting
+
+    - name: EncryptedFileSystem
+      bucket: "encrypted-s3files-bucket"
+      role_arn: "arn:aws:iam::123456789012:role/S3FilesServiceRole"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      kms_key_id: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+      prefix: "/data"
+      client_token: "s3files-fs-encrypted-20260421"
+      tags:
+        Environment: Production
+        DataClassification: Sensitive
+        Team: DataEngineering
+
+    - name: FullFeaturedFileSystem
+      bucket: "full-featured-s3files-bucket"
+      role_arn: "arn:aws:iam::123456789012:role/S3FilesServiceRole"
+      accept_bucket_warning: true
+      kms_key_id: "arn:aws:kms:us-east-1:123456789012:key/87654321-4321-4321-4321-210987654321"
+      prefix: "/analytics"
+      synchronization_configuration:
+        expiration_data_rules:
+          - days_after_last_access: 30
+          - days_after_last_access: 90
+        import_data_rules:
+          - prefix: "/data/incoming/"
+            size_less_than: "1099511627776"
+            trigger: NEW_OBJECT
+          - prefix: "/data/archive/"
+            size_less_than: "5497558138880"
+            trigger: UPDATED
+        latest_version_number: 1
+      file_system_policy:
+        policy: |-
+          Version: "2012-10-17"
+          Statement:
+            - Sid: AllowS3FilesAccess
+              Effect: Allow
+              Principal:
+                Service: s3files.amazonaws.com
+              Action:
+                - "s3:GetObject"
+                - "s3:PutObject"
+                - "s3:ListBucket"
+              Resource:
+                - "arn:aws:s3:::full-featured-s3files-bucket"
+                - "arn:aws:s3:::full-featured-s3files-bucket/analytics/*"
+            - Sid: DenyUnencryptedObjectUploads
+              Effect: Deny
+              Principal: "*"
+              Action: "s3:PutObject"
+              Resource: "arn:aws:s3:::full-featured-s3files-bucket/*"
+              Condition:
+                StringNotEquals:
+                  "s3:x-amz-server-side-encryption": "aws:kms"
+      tags:
+        Environment: Production
+        Application: Analytics
+        CostCenter: DataTeam
+        Owner: CloudEngineering
+        DataClassification: Confidential
+
+stack_tags:
+  Test: s3files-file-system
