@@ -25,7 +25,7 @@ Resources:
 {%- for route_entry in route_table.route_entries %}{# BEGIN for route_entry in route_table.route_entries #}
 {%- set route_entry_name = route_table_name ~ route_entry.name %}
   {{ route_entry_name }}:
-{{ prop_route_entry.prep_route_entry(route_entry, route_table_name) }}
+{{- prop_route_entry.prep_route_entry(route_entry, route_table_name) }}
 {%- endfor %}{# END for route_entry in route_table.route_entries #}
 {%- endif %}{# END if route_table.route_entries is defined #}
 {%- endfor %}

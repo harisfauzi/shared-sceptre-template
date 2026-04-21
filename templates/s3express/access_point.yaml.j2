@@ -1,0 +1,119 @@
+---
+Description: {{sceptre_user_data.description|default('S3Express Access Point(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for access_point in sceptre_user_data.access_points %}
+{%- set access_point_name = access_point.name %}
+  {{ access_point_name }}:
+    Type: AWS::S3Express::AccessPoint
+    DeletionPolicy: {{ access_point.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ access_point.update_replace_policy | default('Delete') }}
+    Properties:
+      Bucket: {{ access_point.bucket }}
+{%- if access_point.bucket_account_id is defined %}
+      BucketAccountId: {{ access_point.bucket_account_id }}
+{%- endif %}
+{%- if access_point.name is defined %}
+      Name: {{ access_point.name }}
+{%- endif %}
+{%- if access_point.policy is defined %}
+      Policy:
+        {{ access_point.policy | indent(width=8, first=false) }}
+{%- elif access_point.policy_json is defined %}
+      Policy: |
+        {{ access_point.policy_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if access_point.public_access_block_configuration is defined %}{# BEGIN if access_point.public_access_block_configuration is defined #}
+      PublicAccessBlockConfiguration:
+{%- if access_point.public_access_block_configuration.block_public_acls is defined %}
+        BlockPublicAcls: {{ access_point.public_access_block_configuration.block_public_acls | lower }}
+{%- endif %}
+{%- if access_point.public_access_block_configuration.block_public_policy is defined %}
+        BlockPublicPolicy: {{ access_point.public_access_block_configuration.block_public_policy | lower }}
+{%- endif %}
+{%- if access_point.public_access_block_configuration.ignore_public_acls is defined %}
+        IgnorePublicAcls: {{ access_point.public_access_block_configuration.ignore_public_acls | lower }}
+{%- endif %}
+{%- if access_point.public_access_block_configuration.restrict_public_buckets is defined %}
+        RestrictPublicBuckets: {{ access_point.public_access_block_configuration.restrict_public_buckets | lower }}
+{%- endif %}
+{%- endif %}{# END if access_point.public_access_block_configuration is defined #}
+{%- if access_point.scope is defined %}{# BEGIN if access_point.scope is defined #}
+      Scope:
+{%- if access_point.scope.permissions is defined %}
+        Permissions:
+{%- for permission in access_point.scope.permissions %}
+          - {{ permission }}
+{%- endfor %}
+{%- endif %}
+{%- if access_point.scope.prefixes is defined %}
+        Prefixes:
+{%- for prefix in access_point.scope.prefixes %}
+          - {{ prefix }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END if access_point.scope is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if access_point.tags is defined %}
+{%- for key,value in access_point.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if access_point.vpc_configuration is defined %}{# BEGIN if access_point.vpc_configuration is defined #}
+      VpcConfiguration:
+{%- if access_point.vpc_configuration.vpc_id is defined %}
+        VpcId: {{ access_point.vpc_configuration.vpc_id }}
+{%- endif %}
+{%- endif %}{# END if access_point.vpc_configuration is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for access_point in sceptre_user_data.access_points %}
+{%- set access_point_name = access_point.name %}
+  {{ access_point_name }}Arn:
+    Description: The ARN for {{ access_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_point_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-Arn"
+  {{ access_point_name }}NetworkOrigin:
+    Description: The network configuration of {{ access_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_point_name }}
+        - NetworkOrigin
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-NetworkOrigin"
+{%- endfor %}{#
+# Supported structure as of 2026-04-21:
+Type: AWS::S3Express::AccessPoint
+Properties:
+  Bucket: String
+  BucketAccountId: String
+  Name: String
+  Policy: Json
+  PublicAccessBlockConfiguration:
+    BlockPublicAcls: Boolean
+    BlockPublicPolicy: Boolean
+    IgnorePublicAcls: Boolean
+    RestrictPublicBuckets: Boolean
+  Scope:
+    Permissions:
+      - String
+    Prefixes:
+      - String
+  Tags:
+    -
+      Key: String
+      Value: String
+  VpcConfiguration:
+    VpcId: String
+#}

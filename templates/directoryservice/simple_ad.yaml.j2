@@ -13,13 +13,11 @@ Parameters:
     Description: Password for {{ simple_ad_name }}
     Default: ''
     NoEcho: true
-
 {%- endif %}
 {%- endfor %}
 {%- endif %}
 
 Resources:
-
 {%- for simple_ad in sceptre_user_data.simple_ads %}
 {%- set simple_ad_name = simple_ad.name %}
   {{ simple_ad_name }}:
@@ -35,7 +33,7 @@ Resources:
       Password: {{ simple_ad.password }}
 {%- endif %}
       Size: {{ simple_ad.size }}
-      {{vpc_settings.prep(simple_ad.vpc_settings) | indent(width=6,first=false)}}
+      {{- vpc_settings.prep(simple_ad.vpc_settings) | indent(width=6,first=false) }}
 {%- if simple_ad.create_alias is defined %}
       CreateAlias: {{ simple_ad.create_alias }}
 {%- endif %}
@@ -48,11 +46,9 @@ Resources:
 {%- if simple_ad.short_name is defined %}
       ShortName: {{ simple_ad.short_name }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for simple_ad in sceptre_user_data.simple_ads %}
 {%- set simple_ad_name = simple_ad.name %}
   {{ simple_ad_name }}:
@@ -62,7 +58,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ simple_ad_name }}"
-
   {{ simple_ad_name }}Alias:
     Description: The Alias for {{ simple_ad_name }}
     Value:
@@ -72,7 +67,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ simple_ad_name }}-Alias"
-
   {{ simple_ad_name }}DnsIpAddress1:
     Description: The first DNS IP address for {{ simple_ad_name }}
     Value:
@@ -84,7 +78,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ simple_ad_name }}-DnsIpAddress1"
-
   {{ simple_ad_name }}DnsIpAddress2:
     Description: The second DNS IP address for {{ simple_ad_name }}
     Value:
@@ -96,5 +89,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ simple_ad_name }}-DnsIpAddress2"
-
 {%- endfor %}

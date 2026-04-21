@@ -1,0 +1,87 @@
+---
+Description: {{sceptre_user_data.description|default('DirectConnect LAG(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for lag in sceptre_user_data.lags %}
+{%- set lag_name = lag.name %}
+  {{ lag_name }}:
+    Type: AWS::DirectConnect::Lag
+    DeletionPolicy: {{ lag.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ lag.update_replace_policy | default('Delete') }}
+    Properties:
+      ConnectionsBandwidth: {{ lag.connections_bandwidth }}
+      LagName: {{ lag.lag_name }}
+      Location: {{ lag.location }}
+{%- if lag.minimum_links is defined %}
+      MinimumLinks: {{ lag.minimum_links }}
+{%- endif %}
+{%- if lag.provider_name is defined %}
+      ProviderName: {{ lag.provider_name }}
+{%- endif %}
+{%- if lag.request_mac_sec is defined %}
+      RequestMACSec: {{ lag.request_mac_sec | lower }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if lag.tags is defined %}
+{%- for key,value in lag.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for lag in sceptre_user_data.lags %}
+{%- set lag_name = lag.name %}
+  {{ lag_name }}:
+    Description: The ARN of the LAG {{ lag_name }}
+    Value:
+      Ref: {{ lag_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ lag_name }}"
+  {{ lag_name }}LagArn:
+    Description: The ARN of the LAG {{ lag_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ lag_name }}
+        - LagArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ lag_name }}-LagArn"
+  {{ lag_name }}LagId:
+    Description: The ID of the LAG {{ lag_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ lag_name }}
+        - LagId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ lag_name }}-LagId"
+  {{ lag_name }}LagState:
+    Description: The state of the LAG {{ lag_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ lag_name }}
+        - LagState
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ lag_name }}-LagState"
+{%- endfor %}{#
+# Supported structure as of 2026-04-20
+Type: AWS::DirectConnect::Lag
+Properties:
+  ConnectionsBandwidth: String
+  LagName: String
+  Location: String
+  MinimumLinks: Integer
+  ProviderName: String
+  RequestMACSec: Boolean
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

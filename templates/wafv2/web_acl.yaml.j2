@@ -4,7 +4,6 @@ Description: {{sceptre_user_data.description|default('WAFv2 WebACL(s) for '+scep
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for web_acl in sceptre_user_data.web_acls %}
 {%- set web_acl_name = web_acl.name %}
   {{ web_acl_name }}:
@@ -74,7 +73,7 @@ Resources:
           Name: {{ rule.name }}
           Priority: {{ rule.priority }}
           Statement:
-{{ web_acl_statement.prep(rule.statement) | indent(width=12, first=true) }}
+            {{- web_acl_statement.prep(rule.statement) | indent(width=12, first=false) }}
           VisibilityConfig:
             CloudWatchMetricsEnabled: {{ rule.visibility_config.cloud_watch_metrics_enabled}}
             MetricName: {{ rule.visibility_config.metric_name }}
@@ -159,11 +158,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for web_acl in sceptre_user_data.web_acls %}
 {%- set web_acl_name = web_acl.name %}
   {{ web_acl_name }}:
@@ -173,7 +170,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}"
-
   {{ web_acl_name }}Arn:
     Description: The ARN of {{ web_acl_name }}
     Value:
@@ -183,7 +179,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}-Arn"
-
   {{ web_acl_name }}Id:
     Description: The ID of {{ web_acl_name }}
     Value:
@@ -193,5 +188,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}-Id"
-
 {%- endfor %}

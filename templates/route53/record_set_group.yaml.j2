@@ -4,8 +4,7 @@ Description: {{sceptre_user_data.description|default('Route53 Record Set Group(s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
-{%- for record_set_group in sceptre_user_data.record_set_groups %}{# BEGIN {%- for record_set_group in sceptre_user_data.record_set_groups %} #}
+{%- for record_set_group in sceptre_user_data.record_set_groups %}{# BEGIN for record_set_group in sceptre_user_data.record_set_groups #}
 {%- set record_set_group_name = record_set_group.name %}
   {{ record_set_group_name }}:
     Type: AWS::Route53::RecordSetGroup
@@ -24,10 +23,10 @@ Resources:
       RecordSets:
 {%- for record_set in record_set_group.record_sets %}
       -
-{{ record_set_macro.prep(record_set) | indent(width=8, first=true) }}
+        {{- record_set_macro.prep(record_set) | indent(width=8, first=false) }}
 {%- endfor %}
 {%- endif %}
-{%- endfor %}{# END {%- for record_set_group in sceptre_user_data.record_set_groups %} #}
+{%- endfor %}{# END for record_set_group in sceptre_user_data.record_set_groups #}
 
 Outputs:
 {%- for record_set_group in sceptre_user_data.record_set_groups %}
@@ -39,5 +38,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ record_set_group_name }}"
-
 {%- endfor %}

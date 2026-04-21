@@ -1,0 +1,171 @@
+---
+Description: {{sceptre_user_data.description|default('S3Express Directory Bucket(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for directory_bucket in sceptre_user_data.directory_buckets %}
+{%- set directory_bucket_name = directory_bucket.name %}
+  {{ directory_bucket_name }}:
+    Type: AWS::S3Express::DirectoryBucket
+    DeletionPolicy: {{ directory_bucket.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ directory_bucket.update_replace_policy | default('Delete') }}
+    Properties:
+      DataRedundancy: {{ directory_bucket.data_redundancy }}
+      LocationName: {{ directory_bucket.location_name }}
+{%- if directory_bucket.bucket_name is defined %}
+      BucketName: {{ directory_bucket.bucket_name }}
+{%- endif %}
+{%- if directory_bucket.bucket_encryption is defined %}{# BEGIN if directory_bucket.bucket_encryption is defined #}
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+{%- for config in directory_bucket.bucket_encryption.server_side_encryption_configuration %}{# BEGIN for config in directory_bucket.bucket_encryption.server_side_encryption_configuration #}
+          -
+{%- if config.bucket_key_enabled is defined %}
+            BucketKeyEnabled: {{ config.bucket_key_enabled }}
+{%- endif %}
+{%- if config.server_side_encryption_by_default is defined %}{# BEGIN if config.server_side_encryption_by_default is defined #}
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: {{ config.server_side_encryption_by_default.sse_algorithm }}
+{%- if config.server_side_encryption_by_default.kms_master_key_id is defined %}
+              KMSMasterKeyID: {{ config.server_side_encryption_by_default.kms_master_key_id }}
+{%- endif %}
+{%- endif %}{# END if config.server_side_encryption_by_default is defined #}
+{%- endfor %}{# END for config in directory_bucket.bucket_encryption.server_side_encryption_configuration #}
+{%- endif %}{# END if directory_bucket.bucket_encryption is defined #}
+{%- if directory_bucket.lifecycle_configuration is defined %}{# BEGIN if directory_bucket.lifecycle_configuration is defined #}
+      LifecycleConfiguration:
+        Rules:
+{%- for rule in directory_bucket.lifecycle_configuration.rules %}{# BEGIN for rule in directory_bucket.lifecycle_configuration.rules #}
+          -
+            Status: {{ rule.status }}
+{%- if rule.abort_incomplete_multipart_upload is defined %}
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: {{ rule.abort_incomplete_multipart_upload.days_after_initiation }}
+{%- endif %}
+{%- if rule.expiration_in_days is defined %}
+            ExpirationInDays: {{ rule.expiration_in_days }}
+{%- endif %}
+{%- if rule.id is defined %}
+            Id: {{ rule.id }}
+{%- endif %}
+{%- if rule.object_size_greater_than is defined %}
+            ObjectSizeGreaterThan: {{ rule.object_size_greater_than }}
+{%- endif %}
+{%- if rule.object_size_less_than is defined %}
+            ObjectSizeLessThan: {{ rule.object_size_less_than }}
+{%- endif %}
+{%- if rule.prefix is defined %}
+            Prefix: {{ rule.prefix }}
+{%- endif %}
+{%- endfor %}{# END for rule in directory_bucket.lifecycle_configuration.rules #}
+{%- endif %}{# END if directory_bucket.lifecycle_configuration is defined #}
+{%- if directory_bucket.metrics_configurations is defined %}{# BEGIN if directory_bucket.metrics_configurations is defined #}
+      MetricsConfigurations:
+{%- for metrics_configuration in directory_bucket.metrics_configurations %}{# BEGIN for metrics_configuration in directory_bucket.metrics_configurations #}
+        -
+{%- if metrics_configuration.access_point_arn is defined %}
+          AccessPointArn: {{ metrics_configuration.access_point_arn }}
+{%- endif %}
+{%- if metrics_configuration.id is defined %}
+          Id: {{ metrics_configuration.id }}
+{%- endif %}
+{%- if metrics_configuration.prefix is defined %}
+          Prefix: {{ metrics_configuration.prefix }}
+{%- endif %}
+{%- endfor %}{# END for metrics_configuration in directory_bucket.metrics_configurations #}
+{%- endif %}{# END if directory_bucket.metrics_configurations is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if directory_bucket.tags is defined %}
+{%- for key,value in directory_bucket.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if directory_bucket.bucket_policy is defined %}{# BEGIN if directory_bucket.bucket_policy is defined #}
+  {{ directory_bucket_name }}Policy:
+    Type: AWS::S3::BucketPolicy
+    DeletionPolicy: {{ directory_bucket.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ directory_bucket.update_replace_policy | default('Delete') }}
+    Properties:
+      Bucket:
+        Ref: {{ directory_bucket_name }}
+{%- if directory_bucket.bucket_policy.policy_document_json is defined %}
+      PolicyDocument: |
+        {{ directory_bucket.bucket_policy.policy_document_json | indent(width=8, first=false) }}
+{%- else %}
+      PolicyDocument:
+        {{ directory_bucket.bucket_policy.policy_document | indent(width=8, first=false) }}
+{%- endif %}  
+{%- endif %}{# END if directory_bucket.bucket_policy is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for directory_bucket in sceptre_user_data.directory_buckets %}
+{%- set directory_bucket_name = directory_bucket.name %}
+  {{ directory_bucket_name }}:
+    Description: The bucket name for {{ directory_bucket_name }}
+    Value:
+      Ref: {{ directory_bucket_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ directory_bucket_name }}"
+  {{ directory_bucket_name }}Arn:
+    Description: The ARN for {{ directory_bucket_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ directory_bucket_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ directory_bucket_name }}-Arn"
+  {{ directory_bucket_name }}AvailabilityZoneName:
+    Description: The Availability Zone where the directory bucket {{ directory_bucket_name }} was created
+    Value:
+      Fn::GetAtt:
+        - {{ directory_bucket_name }}
+        - AvailabilityZoneName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ directory_bucket_name }}-AvailabilityZoneName"
+{%- endfor %}{#
+# Supported structure as of 2026-04-21:
+Type: AWS::S3Express::DirectoryBucket
+Properties:
+  BucketEncryption:
+    ServerSideEncryptionConfiguration:
+      -
+        BucketKeyEnabled: Boolean
+        ServerSideEncryptionByDefault:
+          KMSMasterKeyID: String
+          SSEAlgorithm: String
+  BucketName: String
+  DataRedundancy: String
+  LifecycleConfiguration:
+    Rules:
+      -
+        AbortIncompleteMultipartUpload:
+          DaysAfterInitiation: Integer
+        ExpirationInDays: Integer
+        Id: String
+        ObjectSizeGreaterThan: String
+        ObjectSizeLessThan: String
+        Prefix: String
+        Status: String
+  LocationName: String
+  MetricsConfigurations:
+    -
+      AccessPointArn: String
+      Id: String
+      Prefix: String
+  Tags:
+    -
+      Key: String
+      Value: String
+
+Type: AWS::S3Express::BucketPolicy
+Properties:
+  Bucket: String
+  PolicyDocument: Json
+#}

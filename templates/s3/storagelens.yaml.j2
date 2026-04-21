@@ -106,9 +106,12 @@ Resources:
               SSEKMS:
                 KeyId: {{ storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption.sse_kms.key_id }}
 {%- endif %}
-{%- if storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption.sse_s3 is defined %}
+{%- if storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption.sse_s3_json is defined %}
+              SSES3: |
+                {{ storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption.sse_s3_json | indent(width=16, first=false)}}
+{%- elif storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption.sse_s3 is defined %}
               SSES3:
-{{ storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption.sse_s3 | indent(width=16, first=true)}}
+                {{ storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.encryption.sse_s3 | indent(width=16, first=false)}}
 {%- endif %}
 {%- endif %}
 {%- if storage_lens.storage_lens_configuration.data_export.s3_bucket_destination.prefix is defined %}

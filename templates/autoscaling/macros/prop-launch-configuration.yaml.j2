@@ -1,5 +1,5 @@
 {######### BEGIN MACRO prep_block_device_mappings #########}
-{%- macro prep_block_device_mappings(block_device_mappings) -%}
+{%- macro prep_block_device_mappings(block_device_mappings) %}
 BlockDeviceMappings:
 {%- for mapping in block_device_mappings %}
   - DeviceName: {{ mapping.device_name }}
@@ -36,7 +36,7 @@ BlockDeviceMappings:
 {######### END MACRO prep_block_device_mappings #########}
 
 {######### BEGIN MACRO prep_launch_configuration #########}
-{%- macro prep_launch_configuration(launch_configuration) -%}
+{%- macro prep_launch_configuration(launch_configuration) %}
 Type: AWS::AutoScaling::LaunchConfiguration
 {%- if launch_configuration.metadata is defined %}
 Metadata:
@@ -49,7 +49,7 @@ Properties:
   AssociatePublicIpAddress: {{ launch_configuration.associate_public_ip_address | lower }}
 {%- endif %}
 {%- if launch_configuration.block_device_mappings is defined %}{# BEGIN if launch_configuration.block_device_mappings is defined #}
-  {{ prep_block_device_mappings(launch_configuration.block_device_mappings) | indent(width=2, first=false) }}
+  {{- prep_block_device_mappings(launch_configuration.block_device_mappings) | indent(width=2, first=false) }}
 {%- endif %}{# END if launch_configuration.block_device_mappings is defined #}
 {%- if launch_configuration.classic_link_vpc_id is defined %}
   ClassicLinkVPCId: {{ launch_configuration.classic_link_vpc_id | trim }}

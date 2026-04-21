@@ -79,7 +79,7 @@ Resources:
 {%- endif %}{# END if work_group.work_group_configuration.engine_configuration is defined #}
 {%- if work_group.work_group_configuration.engine_version is defined %}
         EngineVersion:
-{{ macro_engine_version.prep(work_group.work_group_configuration.engine_version) | indent(width=10, first=true)}}
+          {{- macro_engine_version.prep(work_group.work_group_configuration.engine_version) | indent(width=10, first=false)}}
 {%- endif %}
 {%- if work_group.work_group_configuration.execution_role is defined %}
         ExecutionRole: {{ work_group.work_group_configuration.execution_role }}
@@ -146,7 +146,7 @@ Resources:
 {%- endif %}
 {%- if work_group.work_group_configuration.result_configuration.encryption_configuration is defined %}
           EncryptionConfiguration:
-{{ macro_encryption_configuration.prep(work_group.work_group_configuration.result_configuration.encryption_configuration) | indent(width=12, first=true) }}
+            {{- macro_encryption_configuration.prep(work_group.work_group_configuration.result_configuration.encryption_configuration) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if work_group.work_group_configuration.result_configuration.expected_bucket_owner is defined %}
           ExpectedBucketOwner: {{ work_group.work_group_configuration.result_configuration.expected_bucket_owner }}
@@ -166,7 +166,7 @@ Resources:
 {%- endif %}
 {%- if work_group.work_group_configuration_updates.engine_version is defined %}
         EngineVersion:
-{{ macro_engine_version.prep(work_group.work_group_configuration_updates.engine_version) | indent(width=10, first=true) }}
+          {{- macro_engine_version.prep(work_group.work_group_configuration_updates.engine_version) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if work_group.work_group_configuration_updates.publish_cloud_watch_metrics_enabled is defined %}
         PublishCloudWatchMetricsEnabled: {{ work_group.work_group_configuration_updates.publish_cloud_watch_metrics_enabled }}
@@ -181,7 +181,7 @@ Resources:
         ResultConfigurationUpdates:
 {%- if work_group.work_group_configuration_updates.result_configuration_updates.encryption_configuration is defined %}
           EncryptionConfiguration:
-{{ macro_encryption_configuration.prep(work_group.work_group_configuration_updates.result_configuration_updates.encryption_configuration) | indent(width=12, first=true) }}
+            {{- macro_encryption_configuration.prep(work_group.work_group_configuration_updates.result_configuration_updates.encryption_configuration) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if work_group.work_group_configuration_updates.result_configuration_updates.output_location is defined %}
           OutputLocation: {{ work_group.work_group_configuration_updates.result_configuration_updates.output_location }}

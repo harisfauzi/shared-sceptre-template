@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ApiGateway Account(s) for 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for account in sceptre_user_data.accounts %}
 {%- set account_name = account.name %}
   {{ account_name }}:
@@ -11,12 +10,10 @@ Resources:
     DeletionPolicy: {{ account.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ account.update_replace_policy | default('Delete') }}
     Properties:
-      CloudWatchRoleArn: {{ account_name.cloud_watch_role_arn }}
-
+      CloudWatchRoleArn: {{ account.cloud_watch_role_arn }}
 {%- endfor %}
 
 Outputs:
-
 {%- for account in sceptre_user_data.accounts %}
 {%- set account_name = account.name %}
   {{ account_name }}:
@@ -26,5 +23,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ account_name }}"
-
 {%- endfor %}

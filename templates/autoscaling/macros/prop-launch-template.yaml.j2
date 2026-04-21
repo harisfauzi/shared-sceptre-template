@@ -1,5 +1,5 @@
 {######### BEGIN MACRO prep_block_device_mappings #########}
-{%- macro prep_block_device_mappings(block_device_mappings) -%}
+{%- macro prep_block_device_mappings(block_device_mappings) %}
 BlockDeviceMappings:
 {%- for mapping in block_device_mappings %}
   - DeviceName: {{ mapping.device_name }}
@@ -39,7 +39,7 @@ BlockDeviceMappings:
 {######### END MACRO prep_block_device_mappings #########}
 
 {######### BEGIN MACRO prep_network_interfaces #########}
-{%- macro prep_network_interfaces(network_interfaces) -%}
+{%- macro prep_network_interfaces(network_interfaces) %}
 NetworkInterfaces:
 {%- for networkinterface in network_interfaces %}{# BEGIN for networkinterface in network_interfaces #}
   -
@@ -153,7 +153,7 @@ NetworkInterfaces:
 {######### END MACRO prep_network_interfaces #########}
 
 {######### BEGIN MACRO prep_launch_template #########}
-{%- macro prep_launch_template(launch_template) -%}
+{%- macro prep_launch_template(launch_template) %}
 Type: AWS::EC2::LaunchTemplate
 {%- if launch_template.metadata is defined %}
 Metadata:
@@ -165,7 +165,7 @@ Properties:
 {%- if launch_template.launch_template_data is defined %}{# BEGIN if launch_template.launch_template_data is defined #}
   LaunchTemplateData:
 {%- if launch_template.launch_template_data.block_device_mappings is defined %}{# BEGIN if launch_template.launch_template_data.block_device_mappings is defined #}
-    {{ prep_block_device_mappings(launch_template.launch_template_data.block_device_mappings) | indent(width=4, first=false) }}
+    {{- prep_block_device_mappings(launch_template.launch_template_data.block_device_mappings) | indent(width=4, first=false) }}
 {%- endif %}{# END if launch_template.launch_template_data.block_device_mappings is defined #}
 {%- if launch_template.launch_template_data.capacity_reservation_specification is defined %}{# BEGIN if launch_template.launch_template_data.capacity_reservation_specification is defined #}
     CapacityReservationSpecification:
@@ -488,7 +488,7 @@ Properties:
 {%- endif %}
 {%- endif %}{# END if launch_template.launch_template_data.monitoring is defined #}
 {%- if launch_template.launch_template_data.network_interfaces is defined %}
-    {{ prep_network_interfaces(launch_template.launch_template_data.network_interfaces) | indent(width=4, first=false) }}
+    {{- prep_network_interfaces(launch_template.launch_template_data.network_interfaces) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if launch_template.launch_template_data.placement is defined %}{## BEGIN {%- if launch_template.launch_template_data.placement is defined %} ##}
     Placement:

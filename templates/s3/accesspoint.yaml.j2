@@ -18,10 +18,11 @@ Resources:
       BucketAccountId: {{ access_point.bucket_account_id }}
 {%- endif %}
 {%- if access_point.policy_json is defined %}
-      Policy: '{{ access_point.policy_json }}'
+      Policy: |
+        {{ access_point.policy_json | indent(width=8, first=false) }}
 {%- elif access_point.policy is defined %}
       Policy:
-{{ access_point.policy | indent(width=8, first=True) }}
+        {{ access_point.policy | indent(width=8, first=false) }}
 {%- endif %}
 {%- if access_point.public_access_block_configuration is defined %}
       PublicAccessBlockConfiguration:

@@ -16,12 +16,11 @@ Parameters:
     Description: Redshift Destination Password for {{ delivery_stream_name }}
     Default: ''
     NoEcho: true
-
+{%- endif %}
 {%- endfor %}
 {%- endif %}
 
 Resources:
-
 {%- for delivery_stream in sceptre_user_data.delivery_streams %}
 {%- set delivery_stream_name = delivery_stream.name %}
   {{ delivery_stream_name }}:
@@ -34,7 +33,7 @@ Resources:
         IndexName: {{ delivery_stream.amazonopensearchservice_destination_configuration.index_name }}
         RoleARN: {{ delivery_stream.amazonopensearchservice_destination_configuration.role_arn | trim }}
         S3Configuration:
-{{ macro_s3_configuration.prep(delivery_stream.amazonopensearchservice_destination_configuration.s3_configuration) | indent(width=10, first=True) }}
+          {{- macro_s3_configuration.prep(delivery_stream.amazonopensearchservice_destination_configuration.s3_configuration) | indent(width=10, first=false) }}
 {%- if delivery_stream.amazonopensearchservice_destination_configuration.buffering_hints is defined %}
         BufferingHints:
 {%- if delivery_stream.amazonopensearchservice_destination_configuration.buffering_hints.interval_in_seconds is defined %}
@@ -46,7 +45,7 @@ Resources:
 {%- endif %}
 {%- if delivery_stream.amazonopensearchservice_destination_configuration.cloud_watch_logging_options is defined %}
         CloudWatchLoggingOptions:
-{{ macro_cloud_watch_logging_options.prep(delivery_stream.amazonopensearchservice_destination_configuration.cloud_watch_logging_options) | indent(width=10, first=True) }}
+          {{- macro_cloud_watch_logging_options.prep(delivery_stream.amazonopensearchservice_destination_configuration.cloud_watch_logging_options) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.amazonopensearchservice_destination_configuration.cluster_endpoint is defined %}
         ClusterEndpoint: {{ delivery_stream.amazonopensearchservice_destination_configuration.cluster_endpoint }}
@@ -59,7 +58,7 @@ Resources:
 {%- endif %}
 {%- if delivery_stream.amazonopensearchservice_destination_configuration.processing_configuration is defined %}
         ProcessingConfiguration:
-{{ macro_processing_configuration.prep(delivery_stream.amazonopensearchservice_destination_configuration.processing_configuration) | indent(width=10, first=True) }}
+          {{- macro_processing_configuration.prep(delivery_stream.amazonopensearchservice_destination_configuration.processing_configuration) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.amazonopensearchservice_destination_configuration.retry_options is defined %}
         RetryOptions:
@@ -73,7 +72,7 @@ Resources:
 {%- endif %}
 {%- if delivery_stream.amazonopensearchservice_destination_configuration.vpc_configuration is defined %}
         VpcConfiguration:
-{{ macro_vpc_configuration.prep(delivery_stream.amazonopensearchservice_destination_configuration.vpc_configuration) | indent(width=10, first=True) }}
+          {{- macro_vpc_configuration.prep(delivery_stream.amazonopensearchservice_destination_configuration.vpc_configuration) | indent(width=10, first=false) }}
 {%- endif %}
 {%- endif %}{# END {%- if delivery_stream.amazonopensearchservice_destination_configuration is defined %} #}
 {%- if delivery_stream.delivery_stream_encryption_configuration_input is defined %}{# BEGIN {%- if delivery_stream.delivery_stream_encryption_configuration_input is defined %} #}
@@ -94,7 +93,7 @@ Resources:
         IndexName: {{ delivery_stream.elastic_search_destination_configuration.index_name }}
         RoleARN: {{ delivery_stream.elastic_search_destination_configuration.role_arn | trim }}
         S3Configuration:
-{{ macro_s3_configuration.prep(delivery_stream.elastic_search_destination_configuration.s3_configuration) | indent(width=10, first=True) }}
+          {{- macro_s3_configuration.prep(delivery_stream.elastic_search_destination_configuration.s3_configuration) | indent(width=10, first=false) }}
 {%- if delivery_stream.elastic_search_destination_configuration.buffering_hints is defined %}
         BufferingHints:
 {%- if delivery_stream.elastic_search_destination_configuration.buffering_hints.interval_in_seconds is defined %}
@@ -106,7 +105,7 @@ Resources:
 {%- endif %}
 {%- if delivery_stream.elastic_search_destination_configuration.cloud_watch_logging_options is defined %}
         CloudWatchLoggingOptions:
-{{ macro_cloud_watch_logging_options.prep(delivery_stream.elastic_search_destination_configuration.cloud_watch_logging_options) | indent(width=10, first=True) }}
+          {{- macro_cloud_watch_logging_options.prep(delivery_stream.elastic_search_destination_configuration.cloud_watch_logging_options) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.elastic_search_destination_configuration.cluster_endpoint is defined %}
         ClusterEndpoint: {{ delivery_stream.elastic_search_destination_configuration.cluster_endpoint }}
@@ -119,7 +118,7 @@ Resources:
 {%- endif %}
 {%- if delivery_stream.elastic_search_destination_configuration.processing_configuration is defined %}
         ProcessingConfiguration:
-{{ macro_processing_configuration.prep(delivery_stream.elastic_search_destination_configuration.processing_configuration) | indent(width=10, first=True) }}
+          {{- macro_processing_configuration.prep(delivery_stream.elastic_search_destination_configuration.processing_configuration) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.elastic_search_destination_configuration.retry_options is defined %}
         RetryOptions:
@@ -133,7 +132,7 @@ Resources:
 {%- endif %}
 {%- if delivery_stream.elastic_search_destination_configuration.vpc_configuration is defined %}
         VpcConfiguration:
-{{ macro_vpc_configuration.prep(delivery_stream.elastic_search_destination_configuration.vpc_configuration) | indent(width=10, first=True) }}
+          {{- macro_vpc_configuration.prep(delivery_stream.elastic_search_destination_configuration.vpc_configuration) | indent(width=10, first=false) }}
 {%- endif %}
 {%- endif %}{# END {%- if delivery_stream.elastic_search_destination_configuration is defined %} #}
 {%- if delivery_stream.extended_s3_destination_configuration is defined %}{# BEGIN {%- if delivery_stream.extended_s3_destination_configuration is defined %} #}
@@ -151,7 +150,7 @@ Resources:
 {%- endif %}
 {%- if delivery_stream.extended_s3_destination_configuration.cloud_watch_logging_options is defined %}
         CloudWatchLoggingOptions:
-{{ macro_cloud_watch_logging_options.prep(delivery_stream.extended_s3_destination_configuration.cloud_watch_logging_options) | indent(width=10, first=True) }}
+          {{- macro_cloud_watch_logging_options.prep(delivery_stream.extended_s3_destination_configuration.cloud_watch_logging_options) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.extended_s3_destination_configuration.compression_format is defined %}
         CompressionFormat: {{ delivery_stream.extended_s3_destination_configuration.compression_format }}
@@ -298,11 +297,11 @@ Resources:
 {%- endif %}
 {%- if delivery_stream.extended_s3_destination_configuration.processing_configuration is defined %}
         ProcessingConfiguration:
-{{ macro_processing_configuration.prep(delivery_stream.extended_s3_destination_configuration.processing_configuration) | indent(width=10, first=True) }}
+          {{- macro_processing_configuration.prep(delivery_stream.extended_s3_destination_configuration.processing_configuration) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.extended_s3_destination_configuration.s3_backup_configuration is defined %}
         S3BackupConfiguration:
-{{ macro_s3_configuration.prep(delivery_stream.extended_s3_destination_configuration.s3_backup_configuration) | indent(width=10, first=True) }}
+          {{- macro_s3_configuration.prep(delivery_stream.extended_s3_destination_configuration.s3_backup_configuration) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.extended_s3_destination_configuration.s3_backup_mode is defined %}
         S3BackupMode: {{ delivery_stream.extended_s3_destination_configuration.s3_backup_mode }}
@@ -319,7 +318,7 @@ Resources:
           Name: {{ delivery_stream.http_endpoint_destination_configuration.endpoint_configuration.name }}
 {%- endif %}
         S3Configuration:
-{{ macro_s3_configuration.prep(delivery_stream.http_endpoint_destination_configuration.s3_configuration) | indent(width=10, first=True) }}
+          {{- macro_s3_configuration.prep(delivery_stream.http_endpoint_destination_configuration.s3_configuration) | indent(width=10, first=false) }}
 {%- if delivery_stream.http_endpoint_destination_configuration.buffering_hints is defined %}
         BufferingHints:
 {%- if delivery_stream.http_endpoint_destination_configuration.buffering_hints.interval_in_seconds is defined %}
@@ -331,11 +330,11 @@ Resources:
 {%- endif %}
 {%- if delivery_stream.http_endpoint_destination_configuration.cloud_watch_logging_options is defined %}
         CloudWatchLoggingOptions:
-{{ macro_cloud_watch_logging_options.prep(delivery_stream.http_endpoint_destination_configuration.cloud_watch_logging_options) | indent(width=10, first=True) }}
+          {{- macro_cloud_watch_logging_options.prep(delivery_stream.http_endpoint_destination_configuration.cloud_watch_logging_options) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.http_endpoint_destination_configuration.processing_configuration is defined %}
         ProcessingConfiguration:
-{{ macro_processing_configuration.prep(delivery_stream.http_endpoint_destination_configuration.processing_configuration) | indent(width=10, first=True) }}
+          {{- macro_processing_configuration.prep(delivery_stream.http_endpoint_destination_configuration.processing_configuration) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.http_endpoint_destination_configuration.request_configuration is defined %}
         RequestConfiguration:
@@ -383,15 +382,15 @@ Resources:
           Ref: {{ delivery_stream_name }}RedshiftDestinationPassword
         RoleARN: {{ delivery_stream.redshift_destination_configuration.role_arn | trim }}
         S3Configuration:
-{{ macro_s3_configuration.prep(delivery_stream.redshift_destination_configuration.s3_configuration) | indent(width=10, first=True) }}
+          {{- macro_s3_configuration.prep(delivery_stream.redshift_destination_configuration.s3_configuration) | indent(width=10, first=false) }}
         Username: {{ delivery_stream.redshift_destination_configuration.username }}
 {%- if delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.cloud_watch_logging_options is defined %}
         CloudWatchLoggingOptions:
-{{ macro_cloud_watch_logging_options.prep(delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.cloud_watch_logging_options) | indent(width=10, first=True) }}
+          {{- macro_cloud_watch_logging_options.prep(delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.cloud_watch_logging_options) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.processing_configuration is defined %}
         ProcessingConfiguration:
-{{ macro_processing_configuration.prep(delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.processing_configuration) | indent(width=10, first=True) }}
+          {{- macro_processing_configuration.prep(delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.processing_configuration) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.retry_options is defined %}
         RetryOptions:
@@ -399,7 +398,7 @@ Resources:
 {%- endif %}
 {%- if delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.s3_backup_configuration is defined %}
         S3BackupConfiguration:
-{{ macro_s3_configuration.prep(delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.s3_backup_configuration) | indent(width=10, first=True) }}
+          {{- macro_s3_configuration.prep(delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.s3_backup_configuration) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.s3_backup_mode is defined %}
         S3BackupMode: {{ delivery_stream.redshift_destination_configuration.copy_command.data_table_columns.s3_backup_mode }}
@@ -407,7 +406,7 @@ Resources:
 {%- endif %}{# END {%- if delivery_stream.redshift_destination_configuration is defined %} #}
 {%- if delivery_stream.s3_destination_configuration is defined %}{# BEGIN {%- if delivery_stream.s3_destination_configuration is defined %} #}
       S3DestinationConfiguration:
-{{ macro_s3_configuration.prep(delivery_stream.s3_destination_configuration) | indent(width=8, first=True) }}
+        {{- macro_s3_configuration.prep(delivery_stream.s3_destination_configuration) | indent(width=8, first=false) }}
 {%- endif %}{# END {%- if delivery_stream.s3_destination_configuration is defined %} #}
 {%- if delivery_stream.splunk_destination_configuration is defined %}{# BEGIN {%- if delivery_stream.splunk_destination_configuration is defined %} #}
       SplunkDestinationConfiguration:
@@ -415,17 +414,17 @@ Resources:
         HECEndpointType: {{ delivery_stream.splunk_destination_configuration.hec_endpoint_type }}
         HECToken: {{ delivery_stream.splunk_destination_configuration.hec_token }}
         S3Configuration:
-{{ macro_s3_configuration.prep(delivery_stream.splunk_destination_configuration.s3_configuration) | indent(width=10, first=True) }}
+          {{- macro_s3_configuration.prep(delivery_stream.splunk_destination_configuration.s3_configuration) | indent(width=10, first=false) }}
 {%- if delivery_stream.splunk_destination_configuration.cloud_watch_logging_options is defined %}
         CloudWatchLoggingOptions:
-{{ macro_cloud_watch_logging_options.prep(delivery_stream.splunk_destination_configuration.cloud_watch_logging_options) | indent(width=10, first=True) }}
+          {{- macro_cloud_watch_logging_options.prep(delivery_stream.splunk_destination_configuration.cloud_watch_logging_options) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.splunk_destination_configuration.hec_acknowledgement_timeout_in_seconds is defined %}
         HECAcknowledgmentTimeoutInSeconds: {{ delivery_stream.splunk_destination_configuration.hec_acknowledgement_timeout_in_seconds }}
 {%- endif %}
 {%- if delivery_stream.splunk_destination_configuration.processing_configuration is defined %}
         ProcessingConfiguration:
-{{ macro_processing_configuration.prep(delivery_stream.splunk_destination_configuration.processing_configuration) | indent(width=10, first=True) }}
+          {{- macro_processing_configuration.prep(delivery_stream.splunk_destination_configuration.processing_configuration) | indent(width=10, first=false) }}
 {%- endif %}
 {%- if delivery_stream.splunk_destination_configuration.retry_options is defined %}
         RetryOptions:
@@ -444,11 +443,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for delivery_stream in sceptre_user_data.delivery_streams %}
 {%- set delivery_stream_name = delivery_stream.name %}
   {{ delivery_stream_name }}:
@@ -458,7 +455,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ delivery_stream_name }}"
-
   {{ delivery_stream_name }}Arn:
     Description: The ARN for {{ delivery_stream_name }}
     Value:
@@ -468,5 +464,4 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ delivery_stream_name }}-Arn"
-
 {%- endfor %}

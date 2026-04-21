@@ -1,10 +1,9 @@
 ---
 {%- import 'macros/tag_filter.yaml.j2' as tag_filter_macro %}
-Description: {{sceptre_user_data.description|default('CodeDeploy DeploymentGroup(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('CodeDeploy Deployment Group(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for deployment_group in sceptre_user_data.deployment_groups %}
 {%- set deployment_group_name = deployment_group.name %}
   {{ deployment_group_name }}:
@@ -121,14 +120,14 @@ Resources:
 {%- endif %}
 {%- if deployment_group.ec2_tag_filters is defined %}
       Ec2TagFilters:
-{{ tag_filter_macro.prep(deployment_group.ec2_tag_filters) | indent(width=8, first=True) }}
+        {{- tag_filter_macro.prep(deployment_group.ec2_tag_filters) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if deployment_group.ec2_tag_set is defined %}
       Ec2TagSet:
         Ec2TagSetList:
 {%- for ec2_tag_set_list_object in deployment_group.ec2_tag_set.ec2_tag_set_list %}
           - Ec2TagGroup:
-{{ tag_filter_macro.prep(ec2_tag_set_list_object.ec2_tag_group) | indent(width=14, first=True) }}
+              {{- tag_filter_macro.prep(ec2_tag_set_list_object.ec2_tag_group) | indent(width=14, first=false) }}
 {%- endfor %}
 {%- endif %}
 {%- if deployment_group.ecs_services is defined %}
@@ -185,14 +184,14 @@ Resources:
 {%- endif %}
 {%- if deployment_group.on_premises_instance_tag_filters is defined %}
       OnPremisesInstanceTagFilters:
-{{ tag_filter_macro.prep(deployment_group.on_premises_instance_tag_filters) | indent(width=8, first=True) }}
+        {{- tag_filter_macro.prep(deployment_group.on_premises_instance_tag_filters) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if deployment_group.on_premises_tag_set is defined %}
       OnPremisesTagSet:
         OnPremisesTagSetList:
 {%- for on_premises_tag_set in deployment_group.on_premises_tag_set.on_premises_tag_set_list %}
           - OnPremisesTagGroup:
-{{ tag_filter_macro.prep(on_premises_tag_set) | indent(width=12, first=True) }}
+              {{- tag_filter_macro.prep(on_premises_tag_set) | indent(width=14, first=false) }}
 {%- endfor %}
 {%- endif %}
 {%- if deployment_group.outdated_instances_strategy is defined %}
@@ -228,11 +227,9 @@ Resources:
 {%- endif %}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for deployment_group in sceptre_user_data.deployment_groups %}
 {%- set deployment_group_name = deployment_group.name %}
   {{ deployment_group_name }}:
@@ -242,5 +239,105 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ deployment_group_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-04-21:
+Type: AWS::CodeDeploy::DeploymentGroup
+Properties:
+  AlarmConfiguration:
+    Alarms:
+      - Name: String
+    Enabled: Boolean
+    IgnorePollAlarmFailure: Boolean
+  ApplicationName: String
+  AutoRollbackConfiguration:
+    Enabled: Boolean
+    Events:
+      - String
+  AutoScalingGroups:
+    - String
+  BlueGreenDeploymentConfiguration:
+    DeploymentReadyOption:
+      ActionOnTimeout: String
+      WaitTimeInMinutes: Integer
+    GreenFleetProvisioningOption:
+      Action: String
+    TerminateBlueInstancesOnDeploymentSuccess:
+      Action: String
+      TerminationWaitTimeInMinutes: Integer
+  Deployment:
+    Description: String
+    IgnoreApplicationStopFailures: Boolean
+    Revision:
+      GitHubLocation:
+        CommitId: String
+        Repository: String
+      RevisionType: String
+      S3Location:
+        Bucket: String
+        BundleType: String
+        ETag: String
+        Key: String
+        Version: String
+  DeploymentConfigName: String
+  DeploymentGroupName: String
+  DeploymentStyle:
+    DeploymentOption: String
+    DeploymentType: String
+  Ec2TagFilters:
+    -
+      Key: String
+      Type: String
+      Value: String
+  Ec2TagSet:
+    Ec2TagSetList:
+      -
+        Ec2TagGroup:
+          -
+            Key: String
+            Type: String
+            Value: String
+  ECSServices:
+    -
+      ClusterName: String
+      ServiceName: String
+  LoadBalancerInfo:
+    ElbInfoList:
+      - Name: String
+    TargetGroupInfoList:
+      - Name: String
+    TargetGroupPairInfoList:
+      -
+        ProdTrafficRoute:
+          ListenerArns:
+            - String
+        TargetGroups:
+          - Name: String
+        TestTrafficRoute:
+          ListenerArns:
+            - String
+  OnPremisesInstanceTagFilters:
+    -
+      Key: String
+      Type: String
+      Value: String
+  OnPremisesTagSet:
+    OnPremisesTagSetList:
+      -
+        OnPremisesTagGroup:
+          -
+            Key: String
+            Type: String
+            Value: String
+  OutdatedInstancesStrategy: String
+  ServiceRoleArn: String
+  Tags:
+    - Key: String
+      Value: String
+  TerminationHookEnabled: Boolean
+  TriggerConfigurations:
+    -
+      TriggerEvents:
+        - String
+      TriggerName: String
+      TriggerTargetArn: String
+#}

@@ -1,0 +1,66 @@
+---
+Description: {{sceptre_user_data.description|default('DirectConnect Direct Connect Gateway(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for direct_connect_gateway in sceptre_user_data.direct_connect_gateways %}
+{%- set direct_connect_gateway_name = direct_connect_gateway.name %}
+  {{ direct_connect_gateway_name }}:
+    Type: AWS::DirectConnect::DirectConnectGateway
+    DeletionPolicy: {{ direct_connect_gateway.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ direct_connect_gateway.update_replace_policy | default('Delete') }}
+    Properties:
+      DirectConnectGatewayName: {{ direct_connect_gateway.direct_connect_gateway_name }}
+{%- if direct_connect_gateway.amazon_side_asn is defined %}
+      AmazonSideAsn: {{ direct_connect_gateway.amazon_side_asn }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if direct_connect_gateway.tags is defined %}
+{%- for key,value in direct_connect_gateway.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for direct_connect_gateway in sceptre_user_data.direct_connect_gateways %}
+{%- set direct_connect_gateway_name = direct_connect_gateway.name %}
+  {{ direct_connect_gateway_name }}:
+    Description: The ARN of the Direct Connect Gateway {{ direct_connect_gateway_name }}
+    Value:
+      Ref: {{ direct_connect_gateway_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ direct_connect_gateway_name }}"
+  {{ direct_connect_gateway_name }}DirectConnectGatewayArn:
+    Description: The ARN of the Direct Connect Gateway {{ direct_connect_gateway_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ direct_connect_gateway_name }}
+        - DirectConnectGatewayArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ direct_connect_gateway_name }}-DirectConnectGatewayArn"
+  {{ direct_connect_gateway_name }}DirectConnectGatewayId:
+    Description: The ID of the Direct Connect Gateway {{ direct_connect_gateway_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ direct_connect_gateway_name }}
+        - DirectConnectGatewayId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ direct_connect_gateway_name }}-DirectConnectGatewayId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-20
+Type: AWS::DirectConnect::DirectConnectGateway
+Properties:
+  AmazonSideAsn: String
+  DirectConnectGatewayName: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

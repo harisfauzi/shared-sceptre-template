@@ -11,7 +11,7 @@ Resources:
 {%- set launch_template = spot_fleet.launch_template_spec %}
 {%- set launch_template_name = spot_fleet_name ~ 'LaunchTemplate' %}
   {{ launch_template_name }}:
-{{ prop_launch_template.prep_launch_template(launch_template) }}
+{{- prop_launch_template.prep_launch_template(launch_template) }}
 {%- endif %}{# END if spot_fleet.launch_template_spec is defined #}
   {{ spot_fleet_name }}:
     Type: AWS::EC2::SpotFleet
@@ -44,7 +44,7 @@ Resources:
         LaunchSpecifications:
 {%- for launch_specification in spot_fleet.spot_fleet_request_config_data.launch_specifications %}
           -
-            {{ prop_spot_fleet.prep_spot_fleet_launch_specification(launch_specification) | indent(width=12, first=True)}}
+            {{- prop_spot_fleet.prep_spot_fleet_launch_specification(launch_specification) | indent(width=12, first=True)}}
 {%- endfor %}
 {%- elif spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined %}{# ELSE if spot_fleet.spot_fleet_request_config_data.launch_specifications/spot_fleet.spot_fleet_request_config_data.launch_template_configs is defined #}
         LaunchTemplateConfigs:
@@ -70,7 +70,7 @@ Resources:
                 AvailabilityZoneId: {{ override.availability_zone_id }}
 {%- endif %}
 {%- if override.instance_requirements is defined %}
-                {{ prop_spot_fleet.prep_instance_requirements_request(override.instance_requirements) | indent(width=16, first=false) }}
+                {{- prop_spot_fleet.prep_instance_requirements_request(override.instance_requirements) | indent(width=16, first=false) }}
 {%- endif %}
 {%- if override.instance_type is defined %}
                 InstanceType: {{ override.instance_type }}
@@ -143,7 +143,7 @@ Resources:
         SpotPrice: {{ spot_fleet.spot_fleet_request_config_data.spot_price }}
 {%- endif %}
 {%- if spot_fleet.spot_fleet_request_config_data.tag_specifications is defined %}
-        {{ prop_spot_fleet.prep_tag_specifications(spot_fleet.spot_fleet_request_config_data.tag_specifications) | indent(width=8, first=false) }}
+        {{- prop_spot_fleet.prep_tag_specifications(spot_fleet.spot_fleet_request_config_data.tag_specifications) | indent(width=8, first=false) }}
 {%- endif %}
 {%- if spot_fleet.spot_fleet_request_config_data.target_capacity_unit_type is defined %}
         TargetCapacityUnitType: {{ spot_fleet.spot_fleet_request_config_data.target_capacity_unit_type }}

@@ -12,14 +12,14 @@ Resources:
 {%- set launch_configuration = auto_scaling_group.launch_configuration %}
 {%- set launch_configuration_name = auto_scaling_group_name ~ 'LaunchConfiguration' %}
   {{ launch_configuration_name }}:
-    {{ prop_launch_configuration.prep_launch_configuration(launch_configuration) | indent(width=4, first=false)}}
+    {{- prop_launch_configuration.prep_launch_configuration(launch_configuration) | indent(width=4, first=false)}}
 {%- endif %}{# END if auto_scaling_group.launch_configuration is defined #}
 
 {%- if auto_scaling_group.launch_template_spec is defined %}{# BEGIN if auto_scaling_group.launch_template_spec is defined #}
 {%- set launch_template = auto_scaling_group.launch_template_spec %}
 {%- set launch_template_name = auto_scaling_group_name ~ 'LaunchTemplate' %}
   {{ launch_template_name }}:
-    {{ prop_launch_template.prep_launch_template(launch_template) | indent(width=4, first=false)}}
+    {{- prop_launch_template.prep_launch_template(launch_template) | indent(width=4, first=false)}}
 {%- endif %}{# END if auto_scaling_group.launch_template_spec is defined #}
   {{ auto_scaling_group_name }}:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -171,7 +171,7 @@ Resources:
 {%- if auto_scaling_group.launch_template is defined %}{# BEGIN if auto_scaling_group.launch_template is defined #}
       LaunchTemplate:
 {%- if auto_scaling_group.launch_template.launch_template_specification is defined %}{# BEGIN if auto_scaling_group.launch_template is defined/auto_scaling_group.launch_template_spec is defined #}
-        {{ launch_template_specification.prep(auto_scaling_group.launch_template) | indent(width=8, first=false) }}
+        {{- launch_template_specification.prep(auto_scaling_group.launch_template) | indent(width=8, first=false) }}
 {%- elif auto_scaling_group.launch_template_spec is defined %}{# ELIF if auto_scaling_group.launch_template is defined/auto_scaling_group.launch_template_spec is defined #}
 {%- set launch_template_name = auto_scaling_group_name ~ 'LaunchTemplate' %}
         LaunchTemplateId:
@@ -232,7 +232,7 @@ Resources:
         LaunchTemplate:
           LaunchTemplateSpecification:
 {%- if auto_scaling_group.mixed_instances_policy.launch_template.launch_template_specification is defined %}{# BEGIN if auto_scaling_group.launch_template_spec/auto_scaling_group.mixed_instances_policy.launch_template.launch_template_specification is defined #}
-            {{ launch_template_specification.prep(auto_scaling_group.mixed_instances_policy.launch_template.launch_template_specification) | indent(width=12, first=false) }}
+            {{- launch_template_specification.prep(auto_scaling_group.mixed_instances_policy.launch_template.launch_template_specification) | indent(width=12, first=false) }}
 {%- elif auto_scaling_group.launch_template_spec is defined %}{# ELIF if auto_scaling_group.launch_template_spec/auto_scaling_group.mixed_instances_policy.launch_template.launch_template_specification is defined #}
 {%- set launch_template_name = auto_scaling_group_name ~ 'LaunchTemplate' %}
             LaunchTemplateId:
@@ -414,7 +414,7 @@ Resources:
 {%- endif %}
 {%- if override.launch_template_specification is defined %}
               LaunchTemplateSpecification:
-                {{ launch_template_specification.prep(override.launch_template_specification) | indent(width=16, first=false) }}
+                {{- launch_template_specification.prep(override.launch_template_specification) | indent(width=16, first=false) }}
 {%- endif %}
 {%- if override.wieghted_capacity is defined %}
               WeightedCapacity: {{ override.wieghted_capacity }}

@@ -1,13 +1,13 @@
 ---
-name: GitHub Actions Push
+name: Parsing test
 on:
-  push:
-    branches-ignore:
+  pull_request:
+    branches:
       - main
-      - next
+      - dev
 
 jobs:
-  unit-tests:
+  parsing-tests:
     runs-on: ubuntu-latest
     container:
       image: harisfauzi/hf-sceptre:4.5.2-02
@@ -20,7 +20,7 @@ jobs:
       options: --entrypoint sceptre --cpus 1
     steps:
       - name: Checkout this repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       - name: Link templates directory
         run: |
           CURRENT_DIR=$(pwd)
@@ -62,7 +62,7 @@ jobs:
         with:
           entrypoint: /usr/bin/yamllint
           args: test/sceptre/cfn-output/
-      - name: Validate CloudFormatoin
+      - name: Validate CloudFormation
         run: |
           cd test/sceptre;
           for CFNTEST_B64 in $(cat unittest.json | jq -r '.cfntests[] | @base64'); do

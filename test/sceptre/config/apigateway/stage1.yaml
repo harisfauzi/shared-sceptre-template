@@ -1,0 +1,97 @@
+---
+template:
+  type: file
+  path: apigateway/stage.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS API Gateway Stages
+  stages:
+    - name: PrimaryProductionStage
+      rest_api_id: "a1b2c3d4e5"
+      deployment_id: "dep12345678 "
+      stage_name: "prod"
+      description: "Production stage with full monitoring and caching"
+      documentation_version: "v1.0 "
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      cache_cluster_enabled: true
+      cache_cluster_size: "1.6"
+      client_certificate_id: "cc123456789abcdef "
+      tracing_enabled: true
+      access_log_setting:
+        detination_arn: "arn:aws:logs:us-east-1:123456789012:log-group:/aws/apigateway/production "
+        format: "$context.requestId $context.extendedRequestId $context.identity.sourceIp $context.requestTime $context.routeKey $context.status"
+      canary_setting:
+        deployment_id: "dep87654321 "
+        percent_traffic: 5
+        use_stage_cache: true
+        stage_variable_overrides:
+          canary_version: "v1.0.1-canary"
+          feature_flag: "enabled"
+      variables:
+        environment: "production"
+        database_endpoint: "prod-db.example.com"
+        api_version: "v1"
+        cache_enabled: "true"
+      tags:
+        Environment: Production
+        Team: Platform
+        Monitoring: Enabled
+      method_settings:
+        - resource_path: "/*"
+          http_method: "ANY"
+          logging_level: "INFO"
+          data_trace_enabled: true
+          metrics_enabled: true
+          throttling_burst_limit: 5000
+          throttling_rate_limit: 2000
+        - resource_path: "/critical"
+          http_method: "POST"
+          logging_level: "ERROR"
+          data_trace_enabled: true
+          metrics_enabled: true
+          throttling_burst_limit: 10000
+          throttling_rate_limit: 5000
+    - name: SecondaryTestingStage
+      rest_api_id: "f5e4d3c2b1"
+      deployment_id: "dep09876543 "
+      stage_name: "test"
+      description: "Testing stage with basic monitoring"
+      deletion_policy: Delete
+      cache_cluster_enabled: false
+      tracing_enabled: false
+      access_log_setting:
+        detination_arn: "arn:aws:logs:us-east-1:123456789012:log-group:/aws/apigateway/testing "
+        format: "$context.requestId $context.status"
+      variables:
+        environment: "testing"
+        database_endpoint: "test-db.example.com"
+        api_version: "v1"
+      tags:
+        Environment: Testing
+        Team: QA
+      method_settings:
+        - resource_path: "/*"
+          http_method: "ANY"
+          logging_level: "ERROR"
+          metrics_enabled: true
+          throttling_burst_limit: 2000
+          throttling_rate_limit: 1000
+    - name: TertiaryDevelopmentStage
+      rest_api_id: "a9b8c7d6e5"
+      deployment_id: "dep11223344 "
+      stage_name: "dev"
+      description: "Development stage"
+      deletion_policy: Retain
+      tracing_enabled: true
+      variables:
+        environment: "development"
+        database_endpoint: "dev-db.example.com"
+      tags:
+        Environment: Development
+        Team: Engineering
+
+stack_tags:
+  Test: apigateway-stage

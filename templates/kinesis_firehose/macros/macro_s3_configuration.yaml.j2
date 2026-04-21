@@ -13,7 +13,7 @@ BufferingHints:
 {%- endif %}
 {%- if s3_destination_configuration.cloud_watch_logging_options is defined %}
 CloudWatchLoggingOptions:
-{{ macro_cloud_watch_logging_options1.prep(s3_destination_configuration.cloud_watch_logging_options) | indent(width=2, first=True) }}
+  {{- macro_cloud_watch_logging_options1.prep(s3_destination_configuration.cloud_watch_logging_options) | indent(width=2, first=false) }}
 {%- endif %}
 {%- if s3_destination_configuration.compression_format is defined %}
 CompressionFormat: {{ s3_destination_configuration.compression_format }}
