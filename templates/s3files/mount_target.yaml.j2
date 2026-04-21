@@ -1,0 +1,116 @@
+---
+Description: {{sceptre_user_data.description|default('S3Files Mount Target(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for mount_target in sceptre_user_data.mount_targets %}
+{%- set mount_target_name = mount_target.name %}
+  {{ mount_target_name }}:
+    Type: AWS::S3Files::MountTarget
+    DeletionPolicy: {{ mount_target.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ mount_target.update_replace_policy | default('Delete') }}
+    Properties:
+      FileSystemId: {{ mount_target.file_system_id | trim }}
+      SubnetId: {{ mount_target.subnet_id | trim }}
+{%- if mount_target.ip_address_type is defined %}
+      IpAddressType: {{ mount_target.ip_address_type }}
+{%- endif %}
+{%- if mount_target.ipv4_address is defined %}
+      Ipv4Address: {{ mount_target.ipv4_address }}
+{%- endif %}
+{%- if mount_target.ipv6_address is defined %}
+      Ipv6Address: {{ mount_target.ipv6_address }}
+{%- endif %}
+{%- if mount_target.security_groups is defined %}{# BEGIN if mount_target.security_groups is defined #}
+      SecurityGroups:
+{%- for sg in mount_target.security_groups %}
+        - {{ sg }}
+{%- endfor %}
+{%- endif %}{# END if mount_target.security_groups is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for mount_target in sceptre_user_data.mount_targets %}
+{%- set mount_target_name = mount_target.name %}
+  {{ mount_target_name }}:
+    Description: The mount target ID for {{ mount_target_name }}
+    Value:
+      Ref: {{ mount_target_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}"
+  {{ mount_target_name }}AvailabilityZoneId:
+    Description: The Availability Zone ID in which the mount target {{ mount_target_name }} is located
+    Value:
+      Fn::GetAtt:
+        - {{ mount_target_name }}
+        - AvailabilityZoneId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}-AvailabilityZoneId"
+  {{ mount_target_name }}MountTargetId:
+    Description: The mount target ID for {{ mount_target_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mount_target_name }}
+        - MountTargetId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}-MountTargetId"
+  {{ mount_target_name }}NetworkInterfaceId:
+    Description: The ID of the network interface that Amazon S3 Files created when it created the mount target {{ mount_target_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mount_target_name }}
+        - NetworkInterfaceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}-NetworkInterfaceId"
+  {{ mount_target_name }}OwnerId:
+    Description: The AWS account ID of the mount target owner for {{ mount_target_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mount_target_name }}
+        - OwnerId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}-OwnerId"
+  {{ mount_target_name }}Status:
+    Description: The status of the mount target {{ mount_target_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mount_target_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}-Status"
+  {{ mount_target_name }}StatusMessage:
+    Description: Additional information about the mount target status for {{ mount_target_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mount_target_name }}
+        - StatusMessage
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}-StatusMessage"
+  {{ mount_target_name }}VpcId:
+    Description: The VPC ID of the mount target {{ mount_target_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mount_target_name }}
+        - VpcId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mount_target_name }}-VpcId"
+{%- endfor %}{#
+# Supported structure as of 2026-04-21:
+Type: AWS::S3Files::MountTarget
+Properties:
+  FileSystemId: String
+  IpAddressType: String
+  Ipv4Address: String
+  Ipv6Address: String
+  SecurityGroups:
+    - String
+  SubnetId: String
+#}

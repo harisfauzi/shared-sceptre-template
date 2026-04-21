@@ -1,0 +1,109 @@
+---
+Description: {{sceptre_user_data.description|default('S3Files Access Point(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for access_point in sceptre_user_data.access_points %}
+{%- set access_point_name = access_point.name %}
+  {{ access_point_name }}:
+    Type: AWS::S3Files::AccessPoint
+    DeletionPolicy: {{ access_point.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ access_point.update_replace_policy | default('Delete') }}
+    Properties:
+      FileSystemId: {{ access_point.file_system_id | trim }}
+{%- if access_point.client_token is defined %}
+      ClientToken: {{ access_point.client_token }}
+{%- endif %}
+{%- if access_point.posix_user is defined %}{# BEGIN if access_point.posix_user is defined #}
+      PosixUser:
+        Gid: {{ access_point.posix_user.gid }}
+        Uid: {{ access_point.posix_user.uid }}
+{%- if access_point.posix_user.secondary_gids is defined %}{# BEGIN if access_point.posix_user.secondary_gids is defined #}
+        SecondaryGids:
+{%- for gid in access_point.posix_user.secondary_gids %}
+          - {{ gid }}
+{%- endfor %}
+{%- endif %}{# END if access_point.posix_user.secondary_gids is defined #}
+{%- endif %}{# END if access_point.posix_user is defined #}
+{%- if access_point.root_directory is defined %}{# BEGIN if access_point.root_directory is defined #}
+      RootDirectory:
+{%- if access_point.root_directory.creation_permissions is defined %}{# BEGIN if access_point.root_directory.creation_permissions is defined #}
+        CreationPermissions:
+          OwnerGid: {{ access_point.root_directory.creation_permissions.owner_gid }}
+          OwnerUid: {{ access_point.root_directory.creation_permissions.owner_uid }}
+          Permissions: {{ access_point.root_directory.creation_permissions.permissions }}
+{%- endif %}{# END if access_point.root_directory.creation_permissions is defined #}
+{%- if access_point.root_directory.path is defined %}
+        Path: String
+{%- endif %}
+{%- endif %}{# END if access_point.root_directory is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if access_point.tags is defined %}
+{%- for key,value in access_point.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for access_point in sceptre_user_data.access_points %}
+{%- set access_point_name = access_point.name %}
+  {{ access_point_name }}:
+    Description: The access point ID for {{ access_point_name }}
+    Value:
+      Ref: {{ access_point_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}"
+  {{ access_point_name }}AccessPointArn:
+    Description: The ARN for {{ access_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_point_name }}
+        - AccessPointArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-AccessPointArn"
+  {{ access_point_name }}AccessPointId:
+    Description: The access point ID for {{ access_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_point_name }}
+        - AccessPointId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-AccessPointId"
+  {{ access_point_name }}Status:
+    Description: The current status of the access point {{ access_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_point_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-Status"
+{%- endfor %}{#
+# Supported structure as of 2026-04-21:
+Type: AWS::S3Files::AccessPoint
+Properties:
+  ClientToken: String
+  FileSystemId: String
+  PosixUser:
+    Gid: String
+    SecondaryGids:
+      - String
+    Uid: String
+  RootDirectory:
+    CreationPermissions:
+      OwnerGid: String
+      OwnerUid: String
+      Permissions: String
+    Path: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

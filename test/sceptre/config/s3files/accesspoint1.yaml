@@ -1,0 +1,56 @@
+---
+template:
+  type: file
+  path: s3files/access_point.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  description: CloudFormation template to test S3Files AccessPoint with comprehensive Jinja2 template coverage.
+  access_points:
+    - name: BasicAccessPoint
+      file_system_id: "fs-0123456789abcdef0"
+      tags:
+        Environment: Development
+        Purpose: BasicTesting
+
+    - name: PosixUserAccessPoint
+      file_system_id: "fs-abcdef0123456789a"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      posix_user:
+        uid: "1001"
+        gid: "1001"
+        secondary_gids:
+          - "1002"
+          - "1003"
+          - "1004"
+      tags:
+        Environment: Production
+        Application: DataProcessing
+        Owner: DataTeam
+
+    - name: FullFeaturedAccessPoint
+      file_system_id: "fs-9876543210fedcba9"
+      posix_user:
+        uid: "2000"
+        gid: "2000"
+        secondary_gids:
+          - "2001"
+          - "2002"
+      root_directory:
+        path: /mnt/efs/shared
+        creation_permissions:
+          owner_uid: "2000"
+          owner_gid: "2000"
+          permissions: "0755"
+      client_token: "s3files-ap-full-featured-20260421"
+      tags:
+        Environment: Production
+        Application: Analytics
+        CostCenter: Engineering
+        DataClassification: Sensitive
+        Owner: CloudEngineering
+
+stack_tags:
+  Test: s3files-accesspoint
