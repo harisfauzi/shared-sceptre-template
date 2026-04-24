@@ -48,6 +48,12 @@ Resources:
 {%- if patch_baseline.approved_patches_enable_non_security is defined %}
       ApprovedPatchesEnableNonSecurity: {{ patch_baseline.approved_patches_enable_non_security }}
 {%- endif %}
+{%- if patch_baseline.available_security_updates_compliance_status is defined %}
+      AvailableSecurityUpdatesComplianceStatus: {{ patch_baseline.available_security_updates_compliance_status }}
+{%- endif %}
+{%- if patch_baseline.default_baseline is defined %}
+      DefaultBaseline: {{ patch_baseline.default_baseline | lower }}
+{%- endif %}
 {%- if patch_baseline.description is defined %}
       Description: {{ patch_baseline.description }}
 {%- endif %}
@@ -79,7 +85,7 @@ Resources:
         -
 {%- if source.configuration is defined %}
           Configuration: |
-{{ source.configuration | indent(width=12, first=true) }}
+            {{ source.configuration | indent(width=12, first=false) }}
 {%- endif %}
 {%- if source.name is defined %}
           Name: {{ source.name }}
@@ -113,4 +119,50 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ patch_baseline_name }}"
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-04-24:
+Type: AWS::SSM::PatchBaseline
+Properties:
+  ApprovalRules:
+    PatchRules:
+      -
+        ApproveAfterDays: Integer
+        ApproveUntilDate: String
+        ComplianceLevel: String
+        EnableNonSecurity: Boolean
+        PatchFilterGroup:
+          PatchFilters:
+            -
+              Key: String
+              Values:
+                - String
+  ApprovedPatches:
+    - String
+  ApprovedPatchesComplianceLevel: String
+  ApprovedPatchesEnableNonSecurity: Boolean
+  AvailableSecurityUpdatesComplianceStatus: String
+  DefaultBaseline: Boolean
+  Description: String
+  GlobalFilters:
+    PatchFilters:
+      -
+        Key: String
+        Values:
+          - String
+  Name: String
+  OperatingSystem: String
+  PatchGroups:
+    - String
+  RejectedPatches:
+    - String
+  RejectedPatchesAction: String
+  Sources:
+    -
+      Configuration: String
+      Name: String
+      Products:
+        - String
+  Tags:
+    - Key: String
+      Value: String
+#}

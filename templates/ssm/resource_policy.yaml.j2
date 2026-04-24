@@ -11,7 +11,8 @@ Resources:
     UpdateReplacePolicy: {{ resource_policy.update_replace_policy | default('Delete') }}
     Properties:
 {%- if resource_policy.policy_json is defined %}
-      Policy: {{ resource_policy.policy_json }}
+      Policy: |
+        {{ resource_policy.policy_json | indent(width=8, first=false) }}
 {%- else %}
       Policy:
         {{ resource_policy.policy | indent(width=8, first=false) }}
