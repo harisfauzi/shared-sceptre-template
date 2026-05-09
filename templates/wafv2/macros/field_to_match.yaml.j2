@@ -1,6 +1,57 @@
+{# FieldToMatch structure as of 2026-05-08
+Reference: https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-wafv2-webacl-fieldtomatch.html
+            AllQueryArguments: Json
+            Body:
+              OversizeHandling: String
+            Cookies:
+              MatchPattern:
+                All: Json
+                ExcludedCookies:
+                  - String
+                IncludedCookies:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            HeaderOrder:
+              OversizeHandling: String
+            Headers:
+              MatchPattern:
+                All: Json
+                ExcludedHeaders:
+                  - String
+                IncludedHeaders:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            JA3Fingerprint:
+              FallbackBehavior: String
+            JA4Fingerprint:
+              FallbackBehavior: String
+            JsonBody:
+              InvalidFallbackBehavior: String
+              MatchPattern:
+                All: Json
+                IncludedPaths:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            Method: Json
+            QueryString: Json
+            SingleHeader:
+              Name: String
+            SingleQueryArgument:
+              Name: String
+            UriFragment:
+              FallbackBehavior: String
+            UriPath: Json
+#}
 {%- macro prep(field_to_match) %}
 {%- if field_to_match.all_query_arguments is defined %}
-AllQueryArguments: {{ field_to_match.all_query_arguments }}
+AllQueryArguments:
+  {{ field_to_match.all_query_arguments | indent(width=2, first=false) }}
+{%- elif field_to_match.all_query_arguments_json is defined %}
+AllQueryArguments: |-
+  {{ field_to_match.all_query_arguments_json | indent(width=2, first=false) }}
 {%- endif %}
 {%- if field_to_match.body is defined %}
 Body:
@@ -10,20 +61,24 @@ Body:
 Cookies:
   MatchPattern:
 {%- if field_to_match.cookies.match_pattern.all is defined %}
-    All: {{ field_to_match.cookies.match_pattern.all }}
+    All:
+      {{ field_to_match.cookies.match_pattern.all | indent(width=6, first=false) }}
+{%- elif field_to_match.cookies.match_pattern.all_json is defined %}
+    All: |-
+      {{ field_to_match.cookies.match_pattern.all_json | indent(width=6, first=false) }}
 {%- endif %}
-{%- if field_to_match.cookies.match_pattern.excluded_cookies is defined %}
+{%- if field_to_match.cookies.match_pattern.excluded_cookies is defined %}{# BEGIN if field_to_match.cookies.match_pattern.excluded_cookies is defined #}
     ExcludedCookies:
 {%- for cookie in field_to_match.cookies.match_pattern.excluded_cookies %}
       - {{ cookie }}
 {%- endfor %}
-{%- endif %}
-{%- if field_to_match.cookies.match_pattern.included_cookies is defined %}
+{%- endif %}{# END if field_to_match.cookies.match_pattern.excluded_cookies is defined #}
+{%- if field_to_match.cookies.match_pattern.included_cookies is defined %}{# BEGIN if field_to_match.cookies.match_pattern.included_cookies is defined #}
     IncludedCookies:
 {%- for cookie in field_to_match.cookies.match_pattern.included_cookies %}
       - {{ cookie }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if field_to_match.cookies.match_pattern.included_cookies is defined #}
   MatchScope: {{ field_to_match.cookies.match_scope }}
   OversizeHandling: {{ field_to_match.cookies.oversize_handling }}
 {%- endif %}
@@ -61,7 +116,7 @@ JsonBody:
 {%- endfor %}
 {%- endif %}
   MatchScope: {{ field_to_match.json_body.match_scope }}
-  InvalidFallbackBehavior: {{ field_to_match.json_body.invaid_fallback_behavior }}
+  InvalidFallbackBehavior: {{ field_to_match.json_body.invalid_fallback_behavior }}
   OversizeHandling: {{ field_to_match.json_body.oversize_handling }}
 {%- endif %}
 {%- if field_to_match.method is defined %}
@@ -79,5 +134,4 @@ SingleQueryArgument: {{ field_to_match.single_query_argument }}
 {%- if field_to_match.url_path is defined %}
 UriPath: {{ field_to_match.url_path }}
 {%- endif %}
-
 {%- endmacro %}

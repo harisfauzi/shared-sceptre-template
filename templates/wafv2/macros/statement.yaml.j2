@@ -1,13 +1,334 @@
+{# Statement structure as of 2025-05-08
+Reference: https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-wafv2-webacl-statement.html
+        AndStatement:
+          Statements:
+            - Statement
+        AsnMatchStatement:
+          AsnList:
+            - Integer
+          ForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+        ByteMatchStatement:
+          FieldToMatch:
+            FieldToMatch
+          PositionalConstraint: String
+          SearchString:
+            String
+          SearchStringBase64:
+            String
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        GeoMatchStatement:
+          CountryCodes:
+            - String
+          ForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+        IPSetReferenceStatement:
+          Arn: String
+          IPSetForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+            Position: String
+        LabelMatchStatement:
+          Key: String
+          Scope: String
+        ManagedRuleGroupStatement:
+          ExcludedRules:
+            - Name: String
+          ManagedRuleGroupConfigs:
+            -
+              AWSManagedRulesACFPRuleSet:
+                CreationPath: String
+                EnableRegexInPath: Boolean
+                RegistrationPagePath: String
+                RequestInspection:
+                  AddressFields:
+                    - Identifier: String
+                  EmailField:
+                    Identifier: String
+                  PasswordField:
+                    Identifier: String
+                  PayloadType: String
+                  PhoneNumberFields:
+                    - Identifier: String
+                  UsernameField:
+                    Identifier: String
+                ResponseInspection:
+                  BodyContains:
+                    FailureStrings:
+                      - String
+                    SuccessStrings:
+                      - String
+                  Header:
+                    FailureValues:
+                      - String
+                    Name: String
+                    SuccessValues:
+                      - String
+                  Json:
+                    FailureValues:
+                      - String
+                    Identifier: String
+                    SuccessValues:
+                      - String
+                  StatusCode:
+                    FailureCodes:
+                      - Integer
+                    SuccessCodes:
+                      - Integer
+              AWSManagedRulesAntiDDoSRuleSet:
+                ClientSideActionConfig:
+                  Challenge:
+                    ExemptUriRegularExpressions:
+                      -
+                        RegexString:
+                          String
+                    Sensitivity: String
+                    UsageOfAction: String
+                SensitivityToBlock: String
+              AWSManagedRulesATPRuleSet:
+                EnableRegexInPath: Boolean
+                LoginPath: String
+                RequestInspection:
+                  PasswordField:
+                    Identifier: String
+                  PayloadType: String
+                  UsernameField:
+                    Identifier: String
+                ResponseInspection:
+                  BodyContains:
+                    FailureStrings:
+                      - String
+                    SuccessStrings:
+                      - String
+                  Header:
+                    FailureValues:
+                      - String
+                    Name: String
+                    SuccessValues:
+                      - String
+                  Json:
+                    FailureValues:
+                      - String
+                    Identifier: String
+                    SuccessValues:
+                      - String
+                  StatusCode:
+                    FailureCodes:
+                      - Integer
+                    SuccessCodes:
+                      - Integer
+              AWSManagedRulesBotControlRuleSet:
+                EnableMachineLearning: Boolean
+                InspectionLevel: String
+              LoginPath: String
+              PasswordField:
+                Identifier: String
+              PayloadType: String
+              UsernameField:
+                Identifier: String
+          Name: String
+          RuleActionOverrides:
+            -
+              ActionToUse:
+                Allow:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Block:
+                  CustomResponse:
+                    CustomResponseBodyKey: String
+                    ResponseCode: Integer
+                    ResponseHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Captcha:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Challenge:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Count:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+              Name: String
+          ScopeDownStatement:
+            Statement
+          VendorName: String
+          Version: String
+        NotStatement:
+          Statement:
+            Statement
+        OrStatement:
+          Statements:
+            - Statement
+        RateBasedStatement:
+          AggregateKeyType: String
+          CustomKeys:
+            -
+              ASN: Json
+              Cookie:
+                Name: String
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+              ForwardedIP: Json
+              Header:
+                RateLimitHeader
+              HTTPMethod: Json
+              IP: Json
+              JA3Fingerprint:
+                FallbackBehavior: String
+              JA4Fingerprint:
+                FallbackBehavior: String
+              LabelNamespace:
+                Namespace: String
+              QueryArgument:
+                Name: String
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+              QueryString:
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+              UriPath:
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+          EvaluationWindowSec: Integer
+          ForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+          Limit: Integer
+          ScopeDownStatement:
+            Statement
+        RegexMatchStatement:
+          FieldToMatch:
+            FieldToMatch
+          RegexString:
+            String
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        RegexPatternSetReferenceStatement:
+          Arn: String
+          FieldToMatch:
+            FieldToMatch
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        RuleGroupReferenceStatement:
+          Arn: String
+          ExcludedRules:
+            - Name: String
+          RuleActionOverrides:
+            -
+              ActionToUse:
+                Allow:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Block:
+                  CustomResponse:
+                    CustomResponseBodyKey: String
+                    ResponseCode: Integer
+                    ResponseHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Captcha:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Challenge:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Count:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+              Name: String
+        SizeConstraintStatement:
+          ComparisonOperator: String
+          FieldToMatch:
+            FieldToMatch
+          Size: Number
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        SqliMatchStatement:
+          FieldToMatch:
+            FieldToMatch
+          SensitivityLevel: String
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        XssMatchStatement:
+          FieldToMatch:
+            FieldToMatch
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+#}
 {%- import 'macros/field_to_match.yaml.j2' as macro_field_to_match %}
 {%- macro prep(statement) %}
-{%- if statement.and_statement is defined %}
+{%- if statement.and_statement is defined %}{# BEGIN if statement.and_statement is defined #}
 AndStatement:
   Statements:
 {%- for sub_statement in statement.and_statement.statements %}
     -
-{{ prep(sub_statement) | indent(width=6, first=true) }}
+      {{- prep(sub_statement) | indent(width=6, first=false) }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if statement.and_statement is defined #}
+{%- if statement.asn_match_statement is defined %}{# BEGIN if statement.asn_match_statement is defined #}
+AsnMatchStatement:
+{%- if statement.asn_match_statement.asn_list is defined %}{# BEGIN if statement.asn_match_statement.asn_list is defined #}
+  AsnList:
+{%- for asn in statement.asn_match_statement.asn_list %}
+    - {{ asn }}
+{%- endfor %}
+{%- endif %}{# END if statement.asn_match_statement.asn_list is defined #}
+{%- if statement.asn_match_statement.forwarded_ip_config is defined %}{# BEGIN if statement.asn_match_statement.forwarded_ip_config is defined #}
+  ForwardedIPConfig:
+    FallbackBehavior: {{ statement.asn_match_statement.forwarded_ip_config.fallback_behavior }}
+    HeaderName: {{ statement.asn_match_statement.forwarded_ip_config.header_name }}
+{%- endif %}{# END if statement.asn_match_statement.forwarded_ip_config is defined #}
+{%- endif %}{# END if statement.asn_match_statement is defined #}
 {%- if statement.byte_match_statement is defined %}
 ByteMatchStatement:
 {%- if statement.byte_match_statement.field_to_match is defined %}
@@ -94,7 +415,7 @@ ManagedRuleGroupStatement:
 {%- endif %}
 {%- if  statement.managed_rule_group_statement.scope_down_statement is defined %}
   ScopeDownStatement:
-{{ prep(statement.managed_rule_group_statement.scope_down_statement) | indent(width=6, first=true) }}
+    {{- prep(statement.managed_rule_group_statement.scope_down_statement) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if  statement.managed_rule_group_statement.version is defined %}
   Version: {{ statement.managed_rule_group_statement.version }}
@@ -103,28 +424,28 @@ ManagedRuleGroupStatement:
 {%- if statement.not_statement is defined %}
 NotStatement:
   Statement:
-{{ prep(statement.not_statement.statement) | indent(width=4, first=true) }}
+    {{- prep(statement.not_statement.statement) | indent(width=4, first=false) }}
 {%- endif %}
 {%- if statement.or_statement is defined %}
 OrStatement:
   Statements:
 {%- for sub_statement in statement.or_statement.statements %}
     -
-{{ prep(sub_statement) | indent(width=6, first=true) }}
+      {{- prep(sub_statement) | indent(width=6, first=false) }}
 {%- endfor %}
 {%- endif %}
 {%- if statement.rate_based_statement is defined %}
 RateBasedStatement:
   AggregateKeyType: {{ statement.rate_based_statement.aggregate_key_type }}
   Limit: {{ statement.rate_based_statement.limit }}
-{%- if statement.rate_based_statement.forwarded_ip_config %}
+{%- if statement.rate_based_statement.forwarded_ip_config is defined %}
   ForwardedIPConfig:
     FallbackBehavior: {{ statement.rate_based_statement.forwarded_ip_config.fallback_behavior }}
     HeaderName: {{ statement.rate_based_statement.forwarded_ip_config.header_name }}
 {%- endif %}
-{%- if statement.rate_based_statement.scope_down_statement %}
+{%- if statement.rate_based_statement.scope_down_statement is defined %}
   ScopeDownStatement:
-{{ prep(statement.rate_based_statement.scope_down_statement) | indent(width=4, first=true) }}
+    {{- prep(statement.rate_based_statement.scope_down_statement) | indent(width=4, first=false) }}
 {%- endif %}
 {%- endif %}
 {%- if statement.regex_match_statement is defined %}
