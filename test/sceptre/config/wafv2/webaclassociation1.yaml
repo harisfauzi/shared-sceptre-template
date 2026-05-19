@@ -1,0 +1,28 @@
+---
+template:
+  type: file
+  path: wafv2/web_acl_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFv2 Web ACL Association(s) configuration"
+  web_acl_associations:
+    - name: AlbWebAclAssociation
+      resource_arn: "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/my-alb/1234567890abcdef"
+      web_acl_arn: "arn:aws:wafv2:us-east-1:123456789012:regional/webacl/my-web-acl/a1b2c3d4-5678-90ab-cdef-1234567890ab"
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+
+    - name: ApiGatewayWebAclAssociation
+      resource_arn: "arn:aws:apigateway:us-east-1::/restapis/a1b2c3d4e5"
+      web_acl_arn: "arn:aws:wafv2:us-east-1:123456789012:regional/webacl/api-web-acl/f1g2h3i4-5678-90ab-cdef-9876543210yz"
+
+    - name: CloudfrontWebAclAssociation
+      resource_arn: "arn:aws:cloudfront::123456789012:distribution/E1234ABCD"
+      web_acl_arn: "arn:aws:wafv2:us-east-1:123456789012:global/webacl/cf-web-acl/b2c3d4e5-6789-01ab-cdef-234567890abc"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+stack_tags:
+  Test: wafv2-web-acl-association

@@ -1,0 +1,982 @@
+{# BEGIN VisibilityConfig structure as of 2026-05-18
+Reference: https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-wafv2-rulegroup-visibilityconfig.html
+  CloudWatchMetricsEnabled: Boolean
+  MetricName: String
+  SampledRequestsEnabled: Boolean
+#}
+{%- macro prep_visibility_config(visibility_config) %}
+CloudWatchMetricsEnabled: {{ visibility_config.cloud_watch_metrics_enabled | lower }}
+MetricName: {{ visibility_config.metric_name }}
+SampledRequestsEnabled: {{ visibility_config.sampled_requests_enabled | lower }}
+{%- endmacro %}
+{# END VisibilityConfig structure #}
+
+
+{# BEGIN CustomHTTPHeader structure as of 2026-05-18
+Reference: https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-wafv2-rulegroup-customhttpheader.html
+  Name: String
+  Value: String
+#}
+{%- macro prep_custom_http_header(custom_http_header) %}
+Name: {{ custom_http_header.name }}
+Value: {{ custom_http_header.value }}
+{%- endmacro %}
+{# END CustomHTTPHeader structure #}
+
+
+{# BEGIN CustomRequestHandling structure as of 2026-05-18
+Reference: https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-wafv2-rulegroup-customrequesthandling.html
+  InsertHeaders:
+    - CustomHTTPHeader
+#}
+{%- macro prep_custom_request_handling(custom_request_handling) %}
+InsertHeaders:
+{%- for header in custom_request_handling.insert_headers %}
+  -
+    {{ prep_custom_http_header(header) | indent(width=4, first=false) }}
+{%- endfor %}
+{%- endmacro %}
+{# END CustomRequestHandling structure #}
+
+
+{# BEGIN RuleAction structure as of 2026-05-18
+Reference: https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-wafv2-rulegroup-ruleaction.html
+  Allow:
+    CustomRequestHandling:
+      InsertHeaders:
+        - CustomHTTPHeader
+  Block:
+    CustomResponse:
+      ResponseCode: Integer
+      CustomResponseBodyKey: String
+      ResponseHeaders:
+        - CustomHTTPHeader
+  Captcha:
+    CustomRequestHandling:
+      InsertHeaders:
+        - CustomHTTPHeader
+  Challenge:
+    CustomRequestHandling:
+      InsertHeaders:
+        - CustomHTTPHeader
+  Count:
+    CustomRequestHandling:
+      InsertHeaders:
+        - CustomHTTPHeader
+#}
+{%- macro prep_rule_action(rule_action) %}
+{%- if rule_action.allow is defined %}{# BEGIN if rule_action.allow is defined #}
+{%- if rule_action.allow|length == 0 %}
+Allow: {}
+{%- else %}
+Allow:
+{%- endif %}
+{%- if rule_action.allow.custom_request_handling is defined %}{# BEGIN if rule_action.allow.custom_request_handling is defined #}
+  CustomRequestHandling:
+    {{- prep_custom_request_handling(rule_action.allow.custom_request_handling) | indent(width=12, first=false) }}
+{%- endif %}{# END if rule_action.allow.custom_request_handling is defined #}
+{%- endif %}{# END if rule_action.allow is defined #}
+{%- if rule_action.block is defined %}{# BEGIN if rule_action.block is defined #}
+{%- if rule_action.block|length == 0 %}
+Block: {}
+{%- else %}
+Block:
+{%- endif %}
+{%- if rule_action.block.custom_response is defined %}{# BEGIN if rule_action.block.custom_response is defined #}
+  CustomResponse:
+    ResponseCode: {{ rule_action.block.custom_response.response_code }}
+{%- if rule_action.block.custom_response.custom_response_body_key is defined %}
+    CustomResponseBodyKey: {{ rule_action.block.custom_response.custom_response_body_key }}
+{%- endif %}
+{%- if rule_action.block.custom_response.response_headers is defined %}{# BEGIN if rule_action.block.custom_response.response_headers is defined #}
+    ResponseHeaders:
+{%- for header in rule_action.block.custom_response.response_headers %}
+      -
+        {{- prep_custom_http_header(header) | indent(width=16, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if rule_action.block.custom_response.response_headers is defined #}
+{%- endif %}{# END if rule_action.block.custom_response is defined #}
+{%- endif %}{# END if rule_action.block is defined #}
+{%- if rule_action.captcha is defined %}{# BEGIN if rule_action.captcha is defined #}
+{%- if rule_action.captcha|length == 0 %}
+Captcha: {}
+{%- else %}
+Captcha:
+{%- endif %}
+{%- if rule_action.captcha.custom_request_handling is defined %}{# BEGIN if rule_action.captcha.custom_request_handling is defined #}
+  CustomRequestHandling:
+    {{- prep_custom_request_handling(rule_action.captcha.custom_request_handling) | indent(width=12, first=false) }}
+{%- endif %}{# END if rule_action.captcha.custom_request_handling is defined #}
+{%- endif %}{# END if rule_action.captcha is defined #}
+{%- if rule_action.challenge is defined %}{# BEGIN if rule_action.challenge is defined #}
+{%- if rule_action.challenge|length == 0 %}
+Challenge: {}
+{%- else %}
+Challenge:
+{%- endif %}
+{%- if rule_action.challenge.custom_request_handling is defined %}{# BEGIN if rule_action.challenge.custom_request_handling is defined #}
+  CustomRequestHandling:
+    {{- prep_custom_request_handling(rule_action.challenge.custom_request_handling) | indent(width=12, first=false) }}
+{%- endif %}{# END if rule_action.challenge.custom_request_handling is defined #}
+{%- endif %}{# END if rule_action.challenge is defined #}
+{%- if rule_action.count is defined %}{# BEGIN if rule_action.count is defined #}
+{%- if rule_action.count|length == 0 %}
+Count: {}
+{%- else %}
+Count:
+{%- endif %}
+{%- if rule_action.count.custom_request_handling is defined %}{# BEGIN if rule_action.count.custom_request_handling is defined #}
+  CustomRequestHandling:
+    {{- prep_custom_request_handling(rule_action.count.custom_request_handling) | indent(width=12, first=false) }}
+{%- endif %}{# END if rule_action.count.custom_request_handling is defined #}
+{%- endif %}{# END if rule_action.count is defined #}
+{%- endmacro %}
+{# END RuleAction structure #}
+
+
+{# BEGIN TextTransformation structure as of 2026-05-18
+Reference: https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-wafv2-webacl-texttransformation.html
+  Priority: Integer
+  Type: String
+#}
+{%- macro prep_text_transformation(text_transformation) %}
+Priority: {{ text_transformation.priority }}
+Type: {{ text_transformation.type }}
+{%- endmacro %}
+{# END TextTransformation structure #}
+
+
+{# BEGIN ForwardedIPConfiguration structure as of 2026-05-18
+Reference: https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-wafv2-webacl-forwardedipconfiguration.html
+  FallbackBehavior: String
+  HeaderName: String
+#}
+{%- macro prep_forwarded_ip_configuration(forwarded_ip_configuration) %}
+FallbackBehavior: {{ forwarded_ip_configuration.fallback_behavior }}
+HeaderName: {{ forwarded_ip_configuration.header_name }}
+{%- endmacro %}
+{# END ForwardedIPConfiguration structure #}
+
+
+{# BEGIN ResponseInspection structure as of 2026-05-18
+Reference: https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-wafv2-webacl-responseinspection.html
+BodyContains:
+  FailureStrings:
+    - String
+  SuccessStrings:
+    - String
+Header:
+  FailureValues:
+    - String
+  Name: String
+  SuccessValues:
+    - String
+Json:
+  FailureValues:
+    - String
+  Identifier: String
+  SuccessValues:
+    - String
+StatusCode:
+  FailureCodes:
+    - Integer
+  SuccessCodes:
+    - Integer
+#}
+{%- macro prep_response_inspection(response_inspection) %}
+{%- if response_inspection.body_contains is defined %}{# BEGIN if response_inspection.body_contains is defined #}
+BodyContains:
+  FailureStrings:
+{%- for failure in response_inspection.body_contains.failure_strings %}
+    - {{ failure }}
+{%- endfor %}
+  SuccessStrings:
+{%- for success in response_inspection.body_contains.success_strings %}
+    - {{ success }}
+{%- endfor %}
+{%- endif %}{# END if response_inspection.body_contains is defined #}
+{%- if response_inspection.header is defined %}{# BEGIN if response_inspection.header is defined #}
+Header:
+  FailureValues:
+{%- for failure in response_inspection.header.failure_values %}
+    - {{ failure }}
+{%- endfor %}
+  Name: {{ response_inspection.header.name }}
+  SuccessValues:
+{%- for success in response_inspection.header.success_values %}
+    - {{ success }}
+{%- endfor %}
+{%- endif %}{# END if response_inspection.header is defined #}
+{%- if response_inspection.json is defined %}{# BEGIN if response_inspection.json is defined #}
+Json:
+  FailureValues:
+{%- for failure in response_inspection.json.failure_values %}
+    - {{ failure }}
+{%- endfor %}
+  Identifier: {{ response_inspection.json.identifier }}
+  SuccessValues:
+{%- for success in response_inspection.json.success_values %}
+    - {{ success }}
+{%- endfor %}
+{%- endif %}{# END if response_inspection.json is defined #}
+{%- if response_inspection.status_code is defined %}{# BEGIN if response_inspection.status_code is defined #}
+StatusCode:
+  FailureCodes:
+{%- for failure in response_inspection.status_code.failure_codes %}
+    - {{ failure }}
+{%- endfor %}
+  SuccessCodes:
+{%- for success in response_inspection.status_code.success_codes %}
+    - {{ success }}
+{%- endfor %}
+{%- endif %}{# END if response_inspection.status_code is defined #}
+{%- endmacro %}
+{# END ResponseInspection Structure #}
+
+
+{# BEGIN FieldToMatch structure as of 2026-05-08
+Reference: https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-wafv2-webacl-fieldtomatch.html
+            AllQueryArguments: Json
+            Body:
+              OversizeHandling: String
+            Cookies:
+              MatchPattern:
+                All: Json
+                ExcludedCookies:
+                  - String
+                IncludedCookies:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            HeaderOrder:
+              OversizeHandling: String
+            Headers:
+              MatchPattern:
+                All: Json
+                ExcludedHeaders:
+                  - String
+                IncludedHeaders:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            JA3Fingerprint:
+              FallbackBehavior: String
+            JA4Fingerprint:
+              FallbackBehavior: String
+            JsonBody:
+              InvalidFallbackBehavior: String
+              MatchPattern:
+                All: Json
+                IncludedPaths:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            Method: Json
+            QueryString: Json
+            SingleHeader:
+              Name: String
+            SingleQueryArgument:
+              Name: String
+            UriFragment:
+              FallbackBehavior: String
+            UriPath: Json
+#}
+{%- macro prep_field_to_match(field_to_match) %}
+{%- if field_to_match.all_query_arguments is defined %}{# BEGIN if field_to_match.all_query_arguments is defined #}
+AllQueryArguments:
+  {{ field_to_match.all_query_arguments | indent(width=2, first=false) }}
+{%- elif field_to_match.all_query_arguments_json is defined %}
+AllQueryArguments: |-
+  {{ field_to_match.all_query_arguments_json | indent(width=2, first=false) }}
+{%- endif %}{# END if field_to_match.all_query_arguments is defined #}
+{%- if field_to_match.body is defined %}{# BEGIN if field_to_match.body is defined #}
+Body:
+{%- if field_to_match.body.oversize_handling is defined %}
+  OversizeHandling: {{ field_to_match.body.oversize_handling }}
+{%- endif %}
+{%- endif %}{# END if field_to_match.body is defined #}
+{%- if field_to_match.cookies is defined %}{# BEGIN if field_to_match.cookies is defined #}
+Cookies:
+  MatchPattern:
+{%- if field_to_match.cookies.match_pattern.all is defined %}
+    All:
+      {{ field_to_match.cookies.match_pattern.all | indent(width=6, first=false) }}
+{%- elif field_to_match.cookies.match_pattern.all_json is defined %}
+    All: |-
+      {{ field_to_match.cookies.match_pattern.all_json | indent(width=6, first=false) }}
+{%- endif %}
+{%- if field_to_match.cookies.match_pattern.excluded_cookies is defined %}{# BEGIN if field_to_match.cookies.match_pattern.excluded_cookies is defined #}
+    ExcludedCookies:
+{%- for cookie in field_to_match.cookies.match_pattern.excluded_cookies %}
+      - {{ cookie }}
+{%- endfor %}
+{%- endif %}{# END if field_to_match.cookies.match_pattern.excluded_cookies is defined #}
+{%- if field_to_match.cookies.match_pattern.included_cookies is defined %}{# BEGIN if field_to_match.cookies.match_pattern.included_cookies is defined #}
+    IncludedCookies:
+{%- for cookie in field_to_match.cookies.match_pattern.included_cookies %}
+      - {{ cookie }}
+{%- endfor %}
+{%- endif %}{# END if field_to_match.cookies.match_pattern.included_cookies is defined #}
+  MatchScope: {{ field_to_match.cookies.match_scope }}
+  OversizeHandling: {{ field_to_match.cookies.oversize_handling }}
+{%- endif %}{# END if field_to_match.cookies is defined#}
+{%- if field_to_match.header_order is defined %}
+HeaderOrder:
+  OversizeHandling: {{ field_to_match.header_order.oversize_handling }}
+{%- endif %}
+{%- if field_to_match.headers is defined %}{# BEGIN if field_to_match.headers is defined #}
+Headers:
+  MatchPattern:
+{%- if field_to_match.headers.match_pattern.all is defined %}
+    All:
+      {{ field_to_match.headers.match_pattern.all | indent(width=6, first=false) }}
+{%- elif field_to_match.headers.match_pattern.all_json is defined %}
+    All: |-
+      {{ field_to_match.headers.match_pattern.all_json | indent(width=6, first=false) }}
+{%- endif %}
+{%- if field_to_match.headers.match_pattern.excluded_headers is defined %}{# BEGIN if field_to_match.headers.match_pattern.excluded_headers is defined #}
+    ExcludedHeaders:
+{%- for excluded_header in field_to_match.headers.match_pattern.excluded_headers %}
+      - {{ excluded_header }}
+{%- endfor %}
+{%- endif %}
+{%- if field_to_match.headers.match_pattern.included_headers is defined %}{# BEGIN if field_to_match.headers.match_pattern.included_headers is defined #}
+    IncludedHeaders:
+{%- for included_header in field_to_match.headers.match_pattern.included_headers %}
+      - {{ included_header }}
+{%- endfor %}
+{%- endif %}{# END if field_to_match.headers.match_pattern.included_headers is defined #}
+  MatchScope: {{ field_to_match.headers.match_scope }}
+  OversizeHandling: {{ field_to_match.headers.oversize_handling }}
+{%- endif %}{# END if field_to_match.headers is defined #}
+{%- if field_to_match.ja3_fingerprint is defined %}
+JA3Fingerprint:
+  FallbackBehavior: {{ field_to_match.ja3_fingerprint.fallback_behavior }}
+{%- endif %}
+{%- if field_to_match.ja4_fingerprint is defined %}
+JA4Fingerprint:
+  FallbackBehavior: {{ field_to_match.ja4_fingerprint.fallback_behavior }}
+{%- endif %}
+{%- if field_to_match.json_body is defined %}{# BEGIN if field_to_match.json_body is defined #}
+JsonBody:
+  MatchPattern:
+{%- if field_to_match.json_body.match_pattern.all is defined %}
+    All:
+      {{ field_to_match.json_body.match_pattern.all | indent(width=6, first=false) }}
+{%- elif field_to_match.json_body.match_pattern.all_json is defined %}
+    All: |-
+      {{ field_to_match.json_body.match_pattern.all_json | indent(width=6, first=false) }}
+{%- endif %}
+{%- if field_to_match.json_body.match_pattern.included_paths is defined %}{# BEGIN if field_to_match.json_body.match_pattern.included_paths is defined #}
+    IncludedPaths:
+{%- for included_path in field_to_match.json_body.match_pattern.included_paths %}
+      - {{ included_path }}
+{%- endfor %}
+{%- endif %}{# END if field_to_match.json_body.match_pattern.included_paths is defined #}
+  MatchScope: {{ field_to_match.json_body.match_scope }}
+{%- if field_to_match.json_body.invalid_fallback_behavior is defined %}
+  InvalidFallbackBehavior: {{ field_to_match.json_body.invalid_fallback_behavior }}
+{%- endif %}
+{%- if field_to_match.json_body.oversize_handling is defined %}
+  OversizeHandling: {{ field_to_match.json_body.oversize_handling }}
+{%- endif %}
+{%- endif %}{# END if field_to_match.json_body is defined #}
+{%- if field_to_match.method is defined %}
+Method:
+  {{ field_to_match.method | indent(width=2, first=false) }}
+{%- elif field_to_match.method_json is defined %}
+Method: |-
+  {{ field_to_match.method_json | indent(width=2, first=false) }}
+{%- endif %}
+{%- if field_to_match.query_string is defined %}
+QueryString:
+  {{ field_to_match.query_string | indent(width=2, first=false) }}
+{%- elif field_to_match.query_string_json is defined %}
+QueryString: |-
+  {{ field_to_match.query_string_json | indent(width=2, first=false) }}
+{%- endif %}
+{%- if field_to_match.single_header is defined %}
+SingleHeader:
+  Name: {{ field_to_match.single_header.name }}
+{%- endif %}
+{%- if field_to_match.single_query_argument is defined %}
+SingleQueryArgument:
+  Name: {{ field_to_match.single_query_argument.name }}
+{%- endif %}
+{%- if field_to_match.uri_fragment is defined %}{# BEGIN if field_to_match.uri_fragment is defined #}
+UriFragment:
+{%- if field_to_match.uri_fragment.fallback_behavior is defined %}
+  FallbackBehavior: {{ field_to_match.uri_fragment.fallback_behavior }}
+{%- endif %}
+{%- endif %}{# END if field_to_match.uri_fragment is defined #}
+{%- if field_to_match.uri_path is defined %}
+UriPath:
+  {{ field_to_match.uri_path | indent(width=2, first=false) }}
+{%- elif field_to_match.uri_path_json is defined %}
+UriPath: |-
+  {{ field_to_match.uri_path_json | indent(width=2, first=false) }}
+{%- endif %}
+{%- endmacro %}
+{# END FieldToMatch structure #}
+
+
+{# BEGIN Statement structure as of 2025-05-08
+Reference: https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-wafv2-webacl-statement.html
+        AndStatement:
+          Statements:
+            - Statement
+        AsnMatchStatement:
+          AsnList:
+            - Integer
+          ForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+        ByteMatchStatement:
+          FieldToMatch:
+            FieldToMatch
+          PositionalConstraint: String
+          SearchString:
+            String
+          SearchStringBase64:
+            String
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        GeoMatchStatement:
+          CountryCodes:
+            - String
+          ForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+        IPSetReferenceStatement:
+          Arn: String
+          IPSetForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+            Position: String
+        LabelMatchStatement:
+          Key: String
+          Scope: String
+        ManagedRuleGroupStatement:
+          ExcludedRules:
+            - Name: String
+          ManagedRuleGroupConfigs:
+            -
+              AWSManagedRulesACFPRuleSet:
+                CreationPath: String
+                EnableRegexInPath: Boolean
+                RegistrationPagePath: String
+                RequestInspection:
+                  AddressFields:
+                    - Identifier: String
+                  EmailField:
+                    Identifier: String
+                  PasswordField:
+                    Identifier: String
+                  PayloadType: String
+                  PhoneNumberFields:
+                    - Identifier: String
+                  UsernameField:
+                    Identifier: String
+                ResponseInspection:
+                  BodyContains:
+                    FailureStrings:
+                      - String
+                    SuccessStrings:
+                      - String
+                  Header:
+                    FailureValues:
+                      - String
+                    Name: String
+                    SuccessValues:
+                      - String
+                  Json:
+                    FailureValues:
+                      - String
+                    Identifier: String
+                    SuccessValues:
+                      - String
+                  StatusCode:
+                    FailureCodes:
+                      - Integer
+                    SuccessCodes:
+                      - Integer
+              AWSManagedRulesAntiDDoSRuleSet:
+                ClientSideActionConfig:
+                  Challenge:
+                    ExemptUriRegularExpressions:
+                      -
+                        RegexString:
+                          String
+                    Sensitivity: String
+                    UsageOfAction: String
+                SensitivityToBlock: String
+              AWSManagedRulesATPRuleSet:
+                EnableRegexInPath: Boolean
+                LoginPath: String
+                RequestInspection:
+                  PasswordField:
+                    Identifier: String
+                  PayloadType: String
+                  UsernameField:
+                    Identifier: String
+                ResponseInspection:
+                  BodyContains:
+                    FailureStrings:
+                      - String
+                    SuccessStrings:
+                      - String
+                  Header:
+                    FailureValues:
+                      - String
+                    Name: String
+                    SuccessValues:
+                      - String
+                  Json:
+                    FailureValues:
+                      - String
+                    Identifier: String
+                    SuccessValues:
+                      - String
+                  StatusCode:
+                    FailureCodes:
+                      - Integer
+                    SuccessCodes:
+                      - Integer
+              AWSManagedRulesBotControlRuleSet:
+                EnableMachineLearning: Boolean
+                InspectionLevel: String
+              LoginPath: String
+              PasswordField:
+                Identifier: String
+              PayloadType: String
+              UsernameField:
+                Identifier: String
+          Name: String
+          RuleActionOverrides:
+            -
+              ActionToUse:
+                Allow:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Block:
+                  CustomResponse:
+                    CustomResponseBodyKey: String
+                    ResponseCode: Integer
+                    ResponseHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Captcha:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Challenge:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Count:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+              Name: String
+          ScopeDownStatement:
+            Statement
+          VendorName: String
+          Version: String
+        NotStatement:
+          Statement:
+            Statement
+        OrStatement:
+          Statements:
+            - Statement
+        RateBasedStatement:
+          AggregateKeyType: String
+          CustomKeys:
+            -
+              ASN: Json
+              Cookie:
+                Name: String
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+              ForwardedIP: Json
+              Header:
+                RateLimitHeader
+              HTTPMethod: Json
+              IP: Json
+              JA3Fingerprint:
+                FallbackBehavior: String
+              JA4Fingerprint:
+                FallbackBehavior: String
+              LabelNamespace:
+                Namespace: String
+              QueryArgument:
+                Name: String
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+              QueryString:
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+              UriPath:
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+          EvaluationWindowSec: Integer
+          ForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+          Limit: Integer
+          ScopeDownStatement:
+            Statement
+        RegexMatchStatement:
+          FieldToMatch:
+            FieldToMatch
+          RegexString:
+            String
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        RegexPatternSetReferenceStatement:
+          Arn: String
+          FieldToMatch:
+            FieldToMatch
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        RuleGroupReferenceStatement:
+          Arn: String
+          ExcludedRules:
+            - Name: String
+          RuleActionOverrides:
+            -
+              ActionToUse:
+                Allow:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Block:
+                  CustomResponse:
+                    CustomResponseBodyKey: String
+                    ResponseCode: Integer
+                    ResponseHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Captcha:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Challenge:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+                Count:
+                  CustomRequestHandling:
+                    InsertHeaders:
+                      -
+                        Name: String
+                        Value: String
+              Name: String
+        SizeConstraintStatement:
+          ComparisonOperator: String
+          FieldToMatch:
+            FieldToMatch
+          Size: Number
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        SqliMatchStatement:
+          FieldToMatch:
+            FieldToMatch
+          SensitivityLevel: String
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        XssMatchStatement:
+          FieldToMatch:
+            FieldToMatch
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+#}
+{%- macro prep_statement(statement) %}
+{%- if statement.and_statement is defined %}{# BEGIN if statement.and_statement is defined #}
+AndStatement:
+  Statements:
+{%- for sub_statement in statement.and_statement.statements %}
+    -
+      {{- prep_statement(sub_statement) | indent(width=6, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if statement.and_statement is defined #}
+{%- if statement.asn_match_statement is defined %}{# BEGIN if statement.asn_match_statement is defined #}
+AsnMatchStatement:
+{%- if statement.asn_match_statement.asn_list is defined %}{# BEGIN if statement.asn_match_statement.asn_list is defined #}
+  AsnList:
+{%- for asn in statement.asn_match_statement.asn_list %}
+    - {{ asn }}
+{%- endfor %}
+{%- endif %}{# END if statement.asn_match_statement.asn_list is defined #}
+{%- if statement.asn_match_statement.forwarded_ip_config is defined %}{# BEGIN if statement.asn_match_statement.forwarded_ip_config is defined #}
+  ForwardedIPConfig:
+    {{- prep_forwarded_ip_configuration(statement.asn_match_statement.forwarded_ip_config) | indent(width=4, first=false) }}
+{%- endif %}{# END if statement.asn_match_statement.forwarded_ip_config is defined #}
+{%- endif %}{# END if statement.asn_match_statement is defined #}
+{%- if statement.byte_match_statement is defined %}{# BEGIN if statement.byte_match_statement is defined #}
+ByteMatchStatement:
+{%- if statement.byte_match_statement.field_to_match is defined %}
+  FieldToMatch:
+    {{- prep_field_to_match(statement.byte_match_statement.field_to_match) | indent(width=4,first=false) }}
+{%- endif %}
+{%- if statement.byte_match_statement.positional_constraint is defined %}
+  PositionalConstraint: {{ statement.byte_match_statement.positional_constraint }}
+{%- endif %}
+{%- if statement.byte_match_statement.search_string is defined %}
+  SearchString:
+    {{ statement.byte_match_statement.search_string | indent(width=4, first=false) }}
+{%- endif %}
+{%- if statement.byte_match_statement.search_string_base64 is defined %}
+  SearchStringBase64:
+    {{ statement.byte_match_statement.search_string_base64 | indent(width=4, first=false) }}
+{%- endif %}
+{%- if statement.byte_match_statement.text_transformations is defined %}{# BEGIN if statement.byte_match_statement.text_transformations is defined #}
+  TextTransformations:
+{%- for text_transformation in statement.byte_match_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
+{%- endif %}{# END if statement.byte_match_statement.text_transformations is defined #}
+{%- endif %}{# END if statement.byte_match_statement is defined #}
+{%- if statement.geo_match_statement is defined %}{# BEGIN if statement.geo_match_statement is defined #}
+GeoMatchStatement:
+{%- if statement.geo_match_statement.country_codes is defined %}{# BEGIN if statement.geo_match_statement.country_codes is defined #}
+  CountryCodes:
+{%- for country_code in statement.geo_match_statement.country_codes %}
+    - {{ country_code }}
+{%- endfor %}
+{%- endif %}{# END if statement.geo_match_statement.country_codes is defined #}
+{%- if statement.geo_match_statement.forwarded_ip_config is defined %}
+  ForwardedIPConfig:
+    {{- prep_forwarded_ip_configuration(statement.geo_match_statement.forwarded_ip_config) | indent(width=4, first=false) }}
+{%- endif %}
+{%- endif %}{# END if statement.geo_match_statement is defined #}
+{%- if statement.ip_set_reference_statement is defined %}{# BEGIN if statement.ip_set_reference_statement is defined #}
+IPSetReferenceStatement:
+  Arn: {{ statement.ip_set_reference_statement.arn }}
+{%- if statement.ip_set_reference_statement.ip_set_forwarded_ip_config is defined %}
+  IPSetForwardedIPConfig:
+    FallbackBehavior: {{ statement.ip_set_reference_statement.ip_set_forwarded_ip_config.fallback_behavior }}
+    HeaderName: {{ statement.ip_set_reference_statement.ip_set_forwarded_ip_config.header_name }}
+    Position: {{ statement.ip_set_reference_statement.ip_set_forwarded_ip_config.position }}
+{%- endif %}
+{%- endif %}{# END if statement.ip_set_reference_statement is defined #}
+{%- if statement.label_match_statement is defined %}{# BEGIN if statement.label_match_statement is defined#}
+LabelMatchStatement:
+  Key: {{ statement.label_match_statement.key }}
+  Scope: {{ statement.label_match_statement.scope }}
+{%- endif %}{# END if statement.label_match_statement is defined #}
+{%- if statement.not_statement is defined %}
+NotStatement:
+  Statement:
+    {{- prep_statement(statement.not_statement.statement) | indent(width=4, first=false) }}
+{%- endif %}
+{%- if statement.or_statement is defined %}
+OrStatement:
+  Statements:
+{%- for sub_statement in statement.or_statement.statements %}
+    -
+      {{- prep_statement(sub_statement) | indent(width=6, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.rate_based_statement is defined %}
+RateBasedStatement:
+  AggregateKeyType: {{ statement.rate_based_statement.aggregate_key_type }}
+  Limit: {{ statement.rate_based_statement.limit }}
+{%- if statement.rate_based_statement.custom_keys is defined %}{# BEGIN if statement.rate_based_statement.custom_keys is defined #}
+  CustomKeys:
+{%- for custom_key in statement.rate_based_statement.custom_keys %}{# BEGIN for custom_key in statement.rate_based_statement.custom_keys #}
+    -
+{%- if custom_key.asn is defined %}
+      ASN:
+        {{ custom_key.asn | indent(width=8, first=false) }}
+{%- elif custom_key.asn_json is defined %}
+      ASN: |-
+        {{ custom_key.asn_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if custom_key.cookie is defined %}{# BEGIN if custom_key.cookie is defined #}
+      Cookie:
+        Name: {{ custom_key.cookie.name }}
+        TextTransformations:
+{%- for text_transformation in custom_key.cookie.text_transformations %}
+          -
+            {{- prep_text_transformation(text_transformation) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if custom_key.cookie is defined #}
+{%- if custom_key.forwarded_ip is defined %}{# BEGIN if custom_key.forwarded_ip is defined #}
+      ForwardedIP:
+        {{ custom_key.forwarded_ip | indent(width=8, first=false) }}
+{%- elif custom_key.forwarded_ip_json is defined %}
+      ForwardedIP: |-
+        {{ custom_key.forwarded_ip_json | indent(width=8, first=false) }}
+{%- endif %}{# END if custom_key.forwarded_ip is defined #}
+{%- if custom_key.header is defined %}{# BEGIN if custom_key.header is defined #}
+      Header:
+        Name: {{ custom_key.header.name }}
+        TextTransformations:
+{%- for text_transformation in custom_key.header.text_transformations %}
+          -
+            {{- prep_text_transformation(text_transformation) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if custom_key.header is defined #}
+{%- if custom_key.http_method is defined %}
+      HTTPMethod:
+        {{ custom_key.http_method | indent(width=8, first=false) }}
+{%- elif custom_key.http_method_json is defined %}
+      HTTPMethod: |-
+        {{ custom_key.http_method_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if custom_key.ip is defined %}
+      IP:
+        {{ custom_key.ip | indent(width=8, first=false) }}
+{%- elif custom_key.ip_json is defined %}
+      IP: |-
+        {{ custom_key.ip_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if custom_key.ja3_fingerprint is defined %}
+      JA3Fingerprint:
+        FallbackBehavior: {{ custom_key.ja3_fingerprint.fallback_behavior }}
+{%- endif %}
+{%- if custom_key.ja4_fingerprint is defined %}
+      JA4Fingerprint:
+        FallbackBehavior: {{ custom_key.ja4_fingerprint.fallback_behavior }}
+{%- endif %}
+{%- if custom_key.label_namespace is defined %}
+      LabelNamespace:
+        Namespace: {{ custom_key.label_namespace.namespace }}
+{%- endif %}
+{%- if custom_key.query_argument is defined %}
+      QueryArgument:
+        Name: {{ custom_key.query_argument.name }}
+        TextTransformations:
+{%- for text_transformation in custom_key.query_argument.text_transformations %}
+          -
+            {{- prep_text_transformation(text_transformation) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if custom_key.query_string is defined %}
+      QueryString:
+        TextTransformations:
+{%- for text_transformation in custom_key.query_string.text_transformations %}
+          -
+            {{- prep_text_transformation(text_transformation) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if custom_key.uri_path is defined %}
+      UriPath:
+        TextTransformations:
+{%- for text_transformation in custom_key.uri_path.text_transformations %}
+          -
+            {{- prep_text_transformation(text_transformation) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}{# END for custom_key in statement.rate_based_statement.custom_keys #}
+{%- endif %}{# END if statement.rate_based_statement.custom_keys is defined #}
+{%- if statement.rate_based_statement.evaluation_window_sec is defined %}
+  EvaluationWindowSec: {{ statement.rate_based_statement.evaluation_window_sec }}
+{%- endif %}
+{%- if statement.rate_based_statement.forwarded_ip_config is defined %}
+  ForwardedIPConfig:
+    {{- prep_forwarded_ip_configuration(statement.rate_based_statement.forwarded_ip_config) | indent(width=4, first=false) }}
+{%- endif %}
+{%- if statement.rate_based_statement.scope_down_statement is defined %}
+  ScopeDownStatement:
+    {{- prep_statement(statement.rate_based_statement.scope_down_statement) | indent(width=4, first=false) }}
+{%- endif %}
+{%- endif %}
+{%- if statement.regex_match_statement is defined %}{# BEGIN if statement.regex_match_statement is defined #}
+RegexMatchStatement:
+  FieldToMatch:
+    {{- prep_field_to_match(statement.regex_match_statement.field_to_match) | indent(width=4,first=false) }}
+  RegexString: |-
+    {{ statement.regex_match_statement.regex_string | indent(width=4, first=false) }}
+  TextTransformations:
+{%- for text_transformation in statement.regex_match_statement.text_transformations %}
+    - Priority: {{ text_transformation.priority }}
+      Type: {{ text_transformation.type }}
+{%- endfor %}
+{%- endif %}{# END if statement.regex_match_statement is defined #}
+{%- if statement.regex_pattern_set_reference_statement is defined %}{# BEGIN if statement.regex_pattern_set_reference_statement is defined #}
+RegexPatternSetReferenceStatement:
+  Arn: {{ statement.regex_pattern_set_reference_statement.arn }}
+  FieldToMatch:
+    {{- prep_field_to_match(statement.regex_pattern_set_reference_statement.field_to_match) | indent(width=4,first=false) }}
+  TextTransformations:
+{%- for text_transformation in statement.regex_pattern_set_reference_statement.text_transformations %}
+    -
+      {{- prep_text_transformation(text_transformation) | indent(width=6, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if statement.regex_pattern_set_reference_statement is defined #}
+{%- if statement.size_constraint_statement is defined %}
+SizeConstraintStatement:
+  ComparisonOperator: {{ statement.size_constraint_statement.comparison_operator }}
+  FieldToMatch:
+    {{- prep_field_to_match(statement.size_constraint_statement.field_to_match) | indent(width=4,first=false) }}
+  Size: {{ statement.size_constraint_statement.size }}
+  TextTransformations:
+{%- for text_transformation in statement.size_constraint_statement.text_transformations %}
+    -
+      {{- prep_text_transformation(text_transformation) | indent(width=6, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if statement.sqli_match_statement is defined %}
+SqliMatchStatement:
+  FieldToMatch:
+    {{- prep_field_to_match(statement.sqli_match_statement.field_to_match) | indent(width=4,first=false) }}
+  TextTransformations:
+{%- for text_transformation in statement.sqli_match_statement.text_transformations %}
+    -
+      {{- prep_text_transformation(text_transformation) | indent(width=6, first=false) }}
+{%- endfor %}
+{%- if statement.sqli_match_statement.sensitivity_level is defined %}
+  SensitivityLevel: {{ statement.sqli_match_statement.sensitivity_level }}
+{%- endif %}
+{%- endif %}
+{%- if statement.xss_match_statement is defined %}
+XssMatchStatement:
+  FieldToMatch:
+    {{- prep_field_to_match(statement.xss_match_statement.field_to_match) | indent(width=4,first=false) }}
+  TextTransformations:
+{%- for text_transformation in statement.xss_match_statement.text_transformations %}
+    -
+      {{- prep_text_transformation(text_transformation) | indent(width=6, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}
+{# END Statement structure #}

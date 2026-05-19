@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('WAFv2 IPSet(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAFv2 IP Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for ip_set in sceptre_user_data.ip_sets %}
 {%- set ip_set_name = ip_set.name %}
   {{ ip_set_name }}:
@@ -32,11 +31,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for ip_set in sceptre_user_data.ip_sets %}
 {%- set ip_set_name = ip_set.name %}
   {{ ip_set_name }}:
@@ -46,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ ip_set_name }}"
-
   {{ ip_set_name }}Arn:
     Description: The ARN of {{ ip_set_name }}
     Value:
@@ -56,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ ip_set_name }}-Arn"
-
   {{ ip_set_name }}Id:
     Description: The ID of {{ ip_set_name }}
     Value:
@@ -66,5 +61,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ ip_set_name }}-Id"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-05-19:
+Type: AWS::WAFv2::IPSet
+Properties:
+  Addresses:
+    - String
+  Description: String
+  IPAddressVersion: String
+  Name: String
+  Scope: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
