@@ -12,13 +12,13 @@ Resources:
     Properties:
 {%- if hook_default_version.type_name is defined %}
       TypeName: {{ hook_default_version.type_name }}
-{% endif %}
+{%- endif %}
 {%- if hook_default_version.type_version_arn is defined %}
       TypeVersionArn: {{ hook_default_version.type_version_arn | trim }}
-{% endif %}
+{%- endif %}
 {%- if hook_default_version.version_id is defined %}
       VersionId: {{ hook_default_version.version_id | trim }}
-{% endif %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
