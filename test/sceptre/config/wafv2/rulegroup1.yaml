@@ -1,0 +1,152 @@
+---
+template:
+  type: file
+  path: wafv2/rule_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFv2 Rule Group(s)"
+  rule_groups:
+    - name: BasicSecurityRules
+      capacity: 100
+      scope: "REGIONAL"
+      visibility_config:
+        cloud_watch_metrics_enabled: 'true'
+        metric_name: BasicSecurityRulesMetric
+        sampled_requests_enabled: 'true'
+      description: "Basic security rules for web applications"
+      rules:
+        - name: BlockLargeRequests
+          priority: 0
+          statement:
+            size_constraint_statement:
+              comparison_operator: "GT"
+              field_to_match:
+                body:
+                  oversize_handling: MATCH
+              size: 8192
+              text_transformations:
+                - priority: 0
+                  type: "NONE"
+          visibility_config:
+            cloud_watch_metrics_enabled: 'true'
+            metric_name: BlockLargeRequestsMetric
+            sampled_requests_enabled: 'true'
+          action:
+            block: {}
+          rule_labels:
+            - name: "awswaf:blocked_large_request"
+
+        - name: BlockSqlInjection
+          priority: 1
+          statement:
+            sqli_match_statement:
+              field_to_match:
+                all_query_arguments: |-
+                  {}
+              text_transformations:
+                - priority: 0
+                  type: "URL_DECODE"
+                - priority: 1
+                  type: "HTML_ENTITY_DECODE"
+              sensitivity_level: "HIGH"
+          visibility_config:
+            cloud_watch_metrics_enabled: 'true'
+            metric_name: BlockSqlInjectionMetric
+            sampled_requests_enabled: 'true'
+          action:
+            block: {}
+
+      tags:
+        Name: BasicSecurityRules
+        Environment: Test
+
+    - name: AdvancedThreatProtection
+      capacity: 200
+      scope: "CLOUDFRONT"
+      visibility_config:
+        cloud_watch_metrics_enabled: 'true'
+        metric_name: AdvancedThreatProtectionMetric
+        sampled_requests_enabled: 'true'
+      description: "Advanced threat protection with multiple rule types"
+      rule_group_name: "AdvancedThreatProtectionSet"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+      custom_response_bodies:
+        BlockedRequestBody:
+          ContentType: "TEXT_PLAIN"
+          Content: "Request blocked by WAF"
+      rules:
+        - name: BlockXssAttacks
+          priority: 0
+          statement:
+            xss_match_statement:
+              field_to_match:
+                all_query_arguments: |-
+                  {}
+              text_transformations:
+                - priority: 0
+                  type: "URL_DECODE"
+          visibility_config:
+            cloud_watch_metrics_enabled: 'true'
+            metric_name: BlockXssAttacksMetric
+            sampled_requests_enabled: 'true'
+          action:
+            block:
+              custom_response:
+                response_code: 403
+                custom_response_body_key: "BlockedRequestBody"
+
+        - name: CountGeoBlockedRequests
+          priority: 1
+          statement:
+            geo_match_statement:
+              country_codes:
+                - "CN"
+                - "RU"
+          visibility_config:
+            cloud_watch_metrics_enabled: 'true'
+            metric_name: CountGeoBlockedMetric
+            sampled_requests_enabled: 'true'
+          action:
+            count: {}
+
+      tags:
+        Name: AdvancedThreatProtection
+        Environment: Test
+        ThreatLevel: High
+
+    - name: RateLimitingRules
+      capacity: 150
+      scope: "REGIONAL"
+      visibility_config:
+        cloud_watch_metrics_enabled: 'true'
+        metric_name: RateLimitingMetric
+        sampled_requests_enabled: 'false'
+      description: "Rate limiting and DoS protection rules"
+      rules:
+        - name: RateLimitByIP
+          priority: 0
+          statement:
+            rate_based_statement:
+              aggregate_key_type: "IP"
+              limit: 2000
+              evaluation_window_sec: 300
+          visibility_config:
+            cloud_watch_metrics_enabled: 'true'
+            metric_name: RateLimitByIPMetric
+            sampled_requests_enabled: 'true'
+          action:
+            block: {}
+          captcha_config:
+            immunity_time_property:
+              immunity_time: 300
+
+      tags:
+        Name: RateLimitingRules
+        Environment: Test
+        Purpose: DosProtection
+
+stack_tags:
+  Test: wafv2-rule-group

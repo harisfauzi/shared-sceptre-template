@@ -1,5 +1,5 @@
 ---
-{%- import 'macros/statement.yaml.j2' as rule_group_statement %}
+{%- import 'macros/rule_group_helper.yaml.j2' as macros_helper %}
 Description: {{sceptre_user_data.description|default('WAFv2 RuleGroup(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
@@ -14,9 +14,7 @@ Resources:
       Capacity: {{ rule_group.capacity }}
       Scope: {{ rule_group.scope }}
       VisibilityConfig:
-        CloudWatchMetricsEnabled: {{ rule_group.visibility_config.cloud_watch_metrics_enabled }}
-        MetricName: {{ rule_group.visibility_config.metric_name }}
-        SampledRequestsEnabled: {{ rule_group.visibility_config.sampled_requests_enabled }}
+        {{- macros_helper.prep_visibility_config(rule_group.visibility_config) | indent(width=8, first=false) }}
 {%- if rule_group.custom_response_bodies is defined %}
       CustomResponseBodies:
 {%- for key,value in rule_group.custom_response_bodies.items() %}
@@ -29,46 +27,33 @@ Resources:
 {%- if rule_group.rule_group_name is defined %}
       Name: {{ rule_group.rule_group_name }}
 {%- endif %}
-{%- if rule_group.rules is defined %}
+{%- if rule_group.rules is defined %}{# BEGIN if rule_group.rules is defined #}
       Rules:
-{%- for rule in rule_group.rules %}
+{%- for rule in rule_group.rules %}{# BEGIN for rule in rule_group.rules #}
         -
           Name: {{ rule.name }}
           Priority: {{ rule.priority }}
           Statement:
-            {{- rule_group_statement.prep(rule.statement) | indent(width=12, first=false) }}
+            {{- macros_helper.prep_statement(rule.statement) | indent(width=12, first=false) }}
           VisibilityConfig:
-            CloudWatchMetricsEnabled: {{ rule.visibility_config.cloud_watch_metrics_enabled }}
-            MetricName: {{ rule.visibility_config.metric_name }}
-            SampledRequestsEnabled: {{ rule.visibility_config.sampled_requests_enabled}}
+            {{- macros_helper.prep_visibility_config(rule.visibility_config) | indent(width=12, first=false) }}
 {%- if rule.action is defined %}
           Action:
-{%- if rule.action.allow is defined %}
-            Allow: {{ rule.action.allow }}
-{%- endif %}
-{%- if rule.action.block is defined %}
-            Block: {{ rule.action.block }}
-{%- endif %}
-{%- if rule.action.captcha is defined %}
-            Captcha: {{ rule.action.captcha }}
-{%- endif %}
-{%- if rule.action.count is defined %}
-            Count: {{ rule.action.count }}
-{%- endif %}
+            {{- macros_helper.prep_rule_action(rule.action) | indent(width=12, first=false) }}
 {%- endif %}
 {%- if rule.captcha_config is defined %}
           CaptchaConfig:
             ImmunityTimeProperty:
               ImmunityTime: {{ rule.captcha_config.immunity_time_property.immunity_time }}
 {%- endif %}
-{%- if rule.rule_labels is defined %}
+{%- if rule.rule_labels is defined %}{# BEGIN if rule.rule_labels is defined #}
           RuleLabels:
 {%- for rule_label in rule.rule_labels %}
             - Name: {{ rule_label.name }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endif %}{# END if rule.rule_labels is defined #}
+{%- endfor %}{# END for rule in rule_group.rules #}
+{%- endif %}{# END if rule_group.rules is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -117,4 +102,462 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ rule_group_name }}-LabelNamespace"
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-05-19:
+Type: AWS::WAFv2::RuleGroup
+Properties:
+  AvailableLabels:
+    - Name: String
+  Capacity: Integer
+  ConsumedLabels:
+    - Name: String
+  CustomResponseBodies:
+    Key: Value
+  Description: String
+  Name: String
+  Rules:
+    -
+      Action:
+        Allow:
+          CustomRequestHandling:
+            InsertHeaders:
+              -
+                Name: String
+                Value: String
+        Block:
+          CustomResponse:
+            CustomResponseBodyKey: String
+            ResponseCode: Integer
+            ResponseHeaders:
+              -
+                Name: String
+                Value: String
+        Captcha:
+          CustomRequestHandling:
+            InsertHeaders:
+              -
+                Name: String
+                Value: String
+        Challenge:
+          CustomRequestHandling:
+            InsertHeaders:
+              -
+                Name: String
+                Value: String
+        Count:
+          CustomRequestHandling:
+            InsertHeaders:
+              -
+                Name: String
+                Value: String
+      CaptchaConfig:
+        ImmunityTimeProperty:
+          ImmunityTime: Integer
+      ChallengeConfig:
+        ImmunityTimeProperty:
+          ImmunityTime: Integer
+      Name: String
+      Priority: Integer
+      RuleLabels:
+        - Name: String
+      Statement:
+        AndStatement:
+          Statements:
+            - Statement
+        AsnMatchStatement:
+          AsnList:
+            - Integer
+          ForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+        ByteMatchStatement:
+          FieldToMatch:
+            AllQueryArguments: Json
+            Body:
+              OversizeHandling: String
+            Cookies:
+              MatchPattern:
+                All: Json
+                ExcludedCookies:
+                  - String
+                IncludedCookies:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            HeaderOrder:
+              OversizeHandling: String
+            Headers:
+              MatchPattern:
+                All: Json
+                ExcludedHeaders:
+                  - String
+                IncludedHeaders:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            JA3Fingerprint:
+              FallbackBehavior: String
+            JA4Fingerprint:
+              FallbackBehavior: String
+            JsonBody:
+              InvalidFallbackBehavior: String
+              MatchPattern:
+                All: Json
+                IncludedPaths:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            Method: Json
+            QueryString: Json
+            SingleHeader:
+              Name: String
+            SingleQueryArgument:
+              Name: String
+            UriFragment:
+              FallbackBehavior: String
+            UriPath: Json
+          PositionalConstraint: String
+          SearchString:
+            String
+          SearchStringBase64:
+            String
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        GeoMatchStatement:
+          CountryCodes:
+            - String
+          ForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+        IPSetReferenceStatement:
+          Arn: String
+          IPSetForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+            Position: String
+        LabelMatchStatement:
+          Key: String
+          Scope: String
+        NotStatement:
+          Statement:
+            Statement
+        OrStatement:
+          Statements:
+            - Statement
+        RateBasedStatement:
+          AggregateKeyType: String
+          CustomKeys:
+            -
+              ASN: Json
+              Cookie:
+                Name: String
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+              ForwardedIP: Json
+              Header:
+                RateLimitHeader
+              HTTPMethod: Json
+              IP: Json
+              JA3Fingerprint:
+                FallbackBehavior: String
+              JA4Fingerprint:
+                FallbackBehavior: String
+              LabelNamespace:
+                Namespace: String
+              QueryArgument:
+                Name: String
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+              QueryString:
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+              UriPath:
+                TextTransformations:
+                  -
+                    Priority: Integer
+                    Type: String
+          EvaluationWindowSec: Integer
+          ForwardedIPConfig:
+            FallbackBehavior: String
+            HeaderName: String
+          Limit: Integer
+          ScopeDownStatement:
+            Statement
+        RegexMatchStatement:
+          FieldToMatch:
+            AllQueryArguments: Json
+            Body:
+              OversizeHandling: String
+            Cookies:
+              MatchPattern:
+                All: Json
+                ExcludedCookies:
+                  - String
+                IncludedCookies:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            HeaderOrder:
+              OversizeHandling: String
+            Headers:
+              MatchPattern:
+                All: Json
+                ExcludedHeaders:
+                  - String
+                IncludedHeaders:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            JA3Fingerprint:
+              FallbackBehavior: String
+            JA4Fingerprint:
+              FallbackBehavior: String
+            JsonBody:
+              InvalidFallbackBehavior: String
+              MatchPattern:
+                All: Json
+                IncludedPaths:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            Method: Json
+            QueryString: Json
+            SingleHeader:
+              Name: String
+            SingleQueryArgument:
+              Name: String
+            UriFragment:
+              FallbackBehavior: String
+            UriPath: Json
+          RegexString:
+            String
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        RegexPatternSetReferenceStatement:
+          Arn: String
+          FieldToMatch:
+            AllQueryArguments: Json
+            Body:
+              OversizeHandling: String
+            Cookies:
+              MatchPattern:
+                All: Json
+                ExcludedCookies:
+                  - String
+                IncludedCookies:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            HeaderOrder:
+              OversizeHandling: String
+            Headers:
+              MatchPattern:
+                All: Json
+                ExcludedHeaders:
+                  - String
+                IncludedHeaders:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            JA3Fingerprint:
+              FallbackBehavior: String
+            JA4Fingerprint:
+              FallbackBehavior: String
+            JsonBody:
+              InvalidFallbackBehavior: String
+              MatchPattern:
+                All: Json
+                IncludedPaths:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            Method: Json
+            QueryString: Json
+            SingleHeader:
+              Name: String
+            SingleQueryArgument:
+              Name: String
+            UriFragment:
+              FallbackBehavior: String
+            UriPath: Json
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        SizeConstraintStatement:
+          ComparisonOperator: String
+          FieldToMatch:
+            AllQueryArguments: Json
+            Body:
+              OversizeHandling: String
+            Cookies:
+              MatchPattern:
+                All: Json
+                ExcludedCookies:
+                  - String
+                IncludedCookies:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            HeaderOrder:
+              OversizeHandling: String
+            Headers:
+              MatchPattern:
+                All: Json
+                ExcludedHeaders:
+                  - String
+                IncludedHeaders:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            JA3Fingerprint:
+              FallbackBehavior: String
+            JA4Fingerprint:
+              FallbackBehavior: String
+            JsonBody:
+              InvalidFallbackBehavior: String
+              MatchPattern:
+                All: Json
+                IncludedPaths:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            Method: Json
+            QueryString: Json
+            SingleHeader:
+              Name: String
+            SingleQueryArgument:
+              Name: String
+            UriFragment:
+              FallbackBehavior: String
+            UriPath: Json
+          Size: Number
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        SqliMatchStatement:
+          FieldToMatch:
+            AllQueryArguments: Json
+            Body:
+              OversizeHandling: String
+            Cookies:
+              MatchPattern:
+                All: Json
+                ExcludedCookies:
+                  - String
+                IncludedCookies:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            HeaderOrder:
+              OversizeHandling: String
+            Headers:
+              MatchPattern:
+                All: Json
+                ExcludedHeaders:
+                  - String
+                IncludedHeaders:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            JA3Fingerprint:
+              FallbackBehavior: String
+            JA4Fingerprint:
+              FallbackBehavior: String
+            JsonBody:
+              InvalidFallbackBehavior: String
+              MatchPattern:
+                All: Json
+                IncludedPaths:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            Method: Json
+            QueryString: Json
+            SingleHeader:
+              Name: String
+            SingleQueryArgument:
+              Name: String
+            UriFragment:
+              FallbackBehavior: String
+            UriPath: Json
+          SensitivityLevel: String
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+        XssMatchStatement:
+          FieldToMatch:
+            AllQueryArguments: Json
+            Body:
+              OversizeHandling: String
+            Cookies:
+              MatchPattern:
+                All: Json
+                ExcludedCookies:
+                  - String
+                IncludedCookies:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            HeaderOrder:
+              OversizeHandling: String
+            Headers:
+              MatchPattern:
+                All: Json
+                ExcludedHeaders:
+                  - String
+                IncludedHeaders:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            JA3Fingerprint:
+              FallbackBehavior: String
+            JA4Fingerprint:
+              FallbackBehavior: String
+            JsonBody:
+              InvalidFallbackBehavior: String
+              MatchPattern:
+                All: Json
+                IncludedPaths:
+                  - String
+              MatchScope: String
+              OversizeHandling: String
+            Method: Json
+            QueryString: Json
+            SingleHeader:
+              Name: String
+            SingleQueryArgument:
+              Name: String
+            UriFragment:
+              FallbackBehavior: String
+            UriPath: Json
+          TextTransformations:
+            -
+              Priority: Integer
+              Type: String
+      VisibilityConfig:
+        CloudWatchMetricsEnabled: Boolean
+        MetricName: String
+        SampledRequestsEnabled: Boolean
+  Scope: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  VisibilityConfig:
+    CloudWatchMetricsEnabled: Boolean
+    MetricName: String
+    SampledRequestsEnabled: Boolean
+#}

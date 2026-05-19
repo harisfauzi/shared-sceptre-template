@@ -1,5 +1,5 @@
 ---
-{%- import 'macros/statement.yaml.j2' as web_acl_statement %}
+{%- import 'macros/web_acl_helper.yaml.j2' as macros_helper %}
 Description: {{sceptre_user_data.description|default('WAFv2 WebACL(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
@@ -12,22 +12,19 @@ Resources:
     UpdateReplacePolicy: {{ web_acl.update_replace_policy | default('Delete') }}
     Properties:
       DefaultAction:
-{%- if web_acl.default_action.allow is defined %}
-{%- if not web_acl.default_action.allow.custom_request_handling is defined %}
+{%- if web_acl.default_action.allow is defined %}{# BEGIN if web_acl.default_action.allow is defined #}
+{%- if not web_acl.default_action.allow.custom_request_handling is defined %}{# BEGIN if not web_acl.default_action.allow.custom_request_handling is defined #}
         Allow: {}
 {%- else %}
         Allow:
+{%- if web_acl.default_action.allow.custom_request_handling is defined %}{# BEGIN if web_acl.default_action.allow.custom_request_handling is defined #}
           CustomRequestHandling:
-            InsertHeaders:
-{%- for header in web_acl.default_action.allow.custom_request_handling.insert_headers %}
-              -
-                Name: {{ header.name }}
-                Value: {{ header.value }}
-{%- endfor %}
-{%- endif %}
-{%- endif %}
-{%- if web_acl.default_action.block is defined %}
-{%- if not web_acl.default_action.block.custom_response is defined %}
+            {{- macros_helper.prep_custom_request_handling(web_acl.default_action.allow.custom_request_handling) | indent(width=12, first=false) }}
+{%- endif %}{# END if web_acl.default_action.allow.custom_request_handling is defined #}
+{%- endif %}{# END if not web_acl.default_action.allow.custom_request_handling is defined #}
+{%- endif %}{# END if web_acl.default_action.allow is defined #}
+{%- if web_acl.default_action.block is defined %}{# BEGIN if web_acl.default_action.block is defined #}
+{%- if not web_acl.default_action.block.custom_response is defined %}{# BEGIN if not web_acl.default_action.block.custom_response is defined #}
         Block: {}
 {%- else %}
         Block:
@@ -36,125 +33,141 @@ Resources:
 {%- if web_acl.default_action.block.custom_response.custom_response_body_key is defined %}
             CustomResponseBodyKey: {{ web_acl.default_action.block.custom_response.custom_response_body_key }}
 {%- endif %}
-{%- if web_acl.default_action.block.custom_response.response_headers is defined %}
+{%- if web_acl.default_action.block.custom_response.response_headers is defined %}{# BEGIN if web_acl.default_action.block.custom_response.response_headers is defined #}
             ResponseHeaders:
 {%- for response_header in web_acl.default_action.block.custom_response.response_headers %}
               -
-                Name: {{ response_header.name }}
-                Value: {{ response_header.value }}
+                {{- macros_helper.prep_custom_http_header(response_header) | indent(width=16, first=false) }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}
-{%- endif %}
+{%- endif %}{# END if web_acl.default_action.block.custom_response.response_headers is defined #}
+{%- endif %}{# END if not web_acl.default_action.block.custom_response is defined #}
+{%- endif %}{# END if web_acl.default_action.block is defined #}
       Scope: {{ web_acl.scope }}
       VisibilityConfig:
-        CloudWatchMetricsEnabled: {{ web_acl.visibility_config.cloud_watch_metrics_enabled }}
-        MetricName: {{ web_acl.visibility_config.metric_name }}
-        SampledRequestsEnabled: {{ web_acl.visibility_config.sampled_requests_enabled }}
-{%- if web_acl.captcha_config is defined %}
+        {{- macros_helper.prep_visibility_config(web_acl.visibility_config) | indent(width=8, first=false) }}
+{%- if web_acl.application_config is defined %}{# BEGIN if web_acl.application_config is defined #}
+      ApplicationConfig:
+        Attributes:
+{%- for attribute in web_acl.application_config.attributes %}{# BEGIN for attribute in web_acl.application_config.attributes #}
+          -
+            Name: {{ attribute.name }}
+            Values:
+{%- for item in attribute.values %}
+              - {{ item }}
+{%- endfor %}
+{%- endfor %}{# END for attribute in web_acl.application_config.attributes #}
+{%- endif %}{# END if web_acl.application_config is defined #}
+{%- if web_acl.association_config is defined %}{# BEGIN if web_acl.association_config is defined #}
+      AssociationConfig:
+{%- if web_acl.association_config.request_body is defined %}{# BEGIN if web_acl.association_config.request_body is defined #}
+        RequestBody:
+          {{ web_acl.association_config.request_body | indent(width=10, first=false) }}
+{%- elif web_acl.association_config.request_body_json is defined %}
+        RequestBody: |-
+          {{ web_acl.association_config.request_body_json | indent(width=10, first=false) }}
+{%- endif %}{# END if web_acl.association_config.request_body is defined #}
+{%- endif %}{# END if web_acl.association_config is defined #}
+{%- if web_acl.captcha_config is defined %}{# BEGIN if web_acl.captcha_config is defined #}
       CaptchaConfig:
+{%- if web_acl.captcha_config.immunity_time_property is defined %}
         ImmunityTimeProperty:
           ImmunityTime: {{ web_acl.captcha_config.immunity_time_property.immunity_time }}
 {%- endif %}
-{%- if web_acl.custom_response_bodies is defined %}
-      CustomResponseBodies:
-{{ web_acl.custom_response_bodies | indent(width=8,first=true) }}
+{%- endif %}{# END if web_acl.captcha_config is defined #}
+{%- if web_acl.challenge_config is defined %}{# BEGIN if web_acl.challenge_config is defined #}
+      ChallengeConfig:
+{%- if web_acl.challenge_config.immunity_time_property is defined %}
+        ImmunityTimeProperty:
+          ImmunityTime: {{ web_acl.challenge_config.immunity_time_property.immunity_time }}
 {%- endif %}
+{%- endif %}{# END if web_acl.challenge_config is defined #}
+{%- if web_acl.custom_response_bodies is defined %}{# BEGIN if web_acl.custom_response_bodies is defined #}
+      CustomResponseBodies:
+        {{ web_acl.custom_response_bodies | indent(width=8, first=false) }}
+{%- endif %}{# END if web_acl.custom_response_bodies is defined #}
+{%- if web_acl.data_protection_config is defined %}{# BEGIN if web_acl.data_protection_config is defined #}
+      DataProtectionConfig:
+        DataProtections:
+{%- for data_protection in web_acl.data_protection_config.data_protections %}{# BEGIN for data_protection in web_acl.data_protection_config.data_protections #}
+          -
+            Action: {{ data_protection.action }}
+            Field:
+              FieldType: {{ data_protection.field.field_type }}
+{%- if data_protection.field.field_keys is defined %}{# BEGIN if data_protection.field.field_keys is defined #}
+              FieldKeys:
+{%- for key in data_protection.field.field_keys %}
+                - {{ key }}
+{%- endfor %}
+{%- endif %}{# END if data_protection.field.field_keys is defined #}
+{%- if data_protection.exclude_rate_based_details is defined %}
+            ExcludeRateBasedDetails: {{ data_protection.exclude_rate_based_details | lower }}
+{%- endif %}
+{%- if data_protection.exclude_rule_match_details is defined %}
+            ExcludeRuleMatchDetails: {{ data_protection.exclude_rule_match_details | lower }}
+{%- endif %}
+{%- endfor %}{# END for data_protection in web_acl.data_protection_config.data_protections #}
+{%- endif %}{# END if web_acl.data_protection_config is defined #}
 {%- if web_acl.description is defined %}
       Description: {{ web_acl.description }}
 {%- endif %}
 {%- if web_acl.web_acl_name is defined %}
       Name: {{ web_acl.web_acl_name }}
 {%- endif %}
-{%- if web_acl.rules is defined %}
+{%- if web_acl.on_source_ddos_protection_config is defined %}
+      OnSourceDDoSProtectionConfig:
+        ALBLowReputationMode: {{ web_acl.on_source_ddos_protection_config.alb_low_reputation_mode }}
+{%- endif %}
+{%- if web_acl.rules is defined %}{# BEGIN if web_acl.rules is defined #}
       Rules:
-{%- for rule in web_acl.rules %}
+{%- for rule in web_acl.rules %}{# BEGIN for rule in web_acl.rules #}
         -
           Name: {{ rule.name }}
           Priority: {{ rule.priority }}
           Statement:
-            {{- web_acl_statement.prep(rule.statement) | indent(width=12, first=false) }}
+            {{- macros_helper.prep_statement(rule.statement) | indent(width=12, first=false) }}
           VisibilityConfig:
-            CloudWatchMetricsEnabled: {{ rule.visibility_config.cloud_watch_metrics_enabled}}
-            MetricName: {{ rule.visibility_config.metric_name }}
-            SampledRequestsEnabled: {{ rule.visibility_config.sampled_requests_enabled }}
+            {{- macros_helper.prep_visibility_config(rule.visibility_config) | indent(width=12, first=false) }}
 {%- if rule.action is defined %}
           Action:
-{%- if rule.action.allow is defined %}{# BEGIN if rule.action.allow is defined #}
-{%- if rule.action.allow.custom_request_handling is defined %}{# BEGIN if rule.action.allow.custom_request_handling is defined #}
-            Allow:
-              CustomRequestHandling:
-                InsertHeaders:
-{%- for insert_header in rule.action.allow.custom_request_handling.insert_headers %}
-                  -
-                    Name: {{ insert_header.name }}
-                    Value: {{ insert_header.value }}
-{%- endfor %}
-{%- else %}{# ELSE if rule.action.allow.custom_request_handling is defined #}
-            Allow: {}
-{%- endif %}{# END if rule.action.allow.custom_request_handling is defined #}
-{%- endif %}{# END if rule.action.allow is defined #}
-{%- if rule.action.block is defined %}{# BEGIN if rule.action.block is defined #}
-{%- if rule.action.block.custom_response is defined %}{# BEGIN if rule.action.block.custom_response is defined #}
-            Block:
-              CustomResponse:
-                ResponseCode: {{ rule.action.block.custom_response.response_code }}
-{%- if rule.action.block.custom_response.custom_response_body_key is defined %}
-                CustomResponseBodyKey: {{ rule.action.block.custom_response.custom_response_body_key }}
+            {{- macros_helper.prep_rule_action(rule.action) | indent(width=12, first=false) }}
 {%- endif %}
-{%- if rule.action.block.custom_response.response_headers is defined %}
-                ResponseHeaders:
-{%- for response_header in rule.action.block.custom_response.response_headers %}
-                  -
-                    Name: {{ response_header.name }}
-                    Value: {{ response_header.value }}
-{%- endfor %}
-{%- endif %}
-{%- else %}{# ELSE if rule.action.block.custom_response is defined #}
-            Block: {}
-{%- endif %}{# END if rule.action.block.custom_response is defined #}
-{%- endif %}{# END if rule.action.block is defined #}
-{%- if rule.action.captcha is defined %}
-            Captcha:
-              CustomRequestHandling:
-                InsertHeaders:
-{%- for insert_header in rule.action.captcha.custom_request_handling.insert_headers %}
-                  -
-                    Name: {{ insert_header.name }}
-                    Value: {{ insert_header.value }}
-{%- endfor %}
-{%- endif %}
-{%- if rule.action.count is defined %}
-            Count:
-              CustomRequestHandling:
-                InsertHeaders:
-{%- for insert_header in rule.action.count.custom_request_handling.insert_headers %}
-                  -
-                    Name: {{ insert_header.name }}
-                    Value: {{ insert_header.value }}
-{%- endfor %}
-{%- endif %}
-{%- endif %}
-{%- if rule.captcha_config is defined %}
+{%- if rule.captcha_config is defined %}{# BEGIN if rule.captcha_config is defined #}
           CaptchaConfig:
+{%- if rule.captcha_config.immunity_time_property is defined %}
             ImmunityTimeProperty:
               ImmunityTime: {{ rule.captcha_config.immunity_time_property.immunity_time }}
 {%- endif %}
-{%- if rule.override_action is defined %}
+{%- endif %}{# END if rule.captcha_config is defined #}
+{%- if rule.challenge_config is defined %}{# BEGIN if rule.challenge_config is defined #}
+          ChallengeConfig:
+{%- if rule.challenge_config.immunity_time_property is defined %}
+            ImmunityTimeProperty:
+              ImmunityTime: {{ rule.challenge_config.immunity_time_property.immunity_time }}
+{%- endif %}
+{%- endif %}{# END if rule.challenge_config is defined #}
+{%- if rule.override_action is defined %}{# BEGIN if rule.override_action is defined #}
           OverrideAction:
 {%- if rule.override_action.count is defined %}
-            Count: {{ rule.override_action.count }}
+            Count:
+              {{ rule.override_action.count | indent(width=14, first=false) }}
+{%- elif rule.override_action.count_json is defined %}
+            Count: |-
+              {{ rule.override_action.count_json | indent(width=14, first=false) }}
 {%- endif %}
 {%- if rule.override_action.none is defined %}
-            None: {{ rule.override_action.none }}
+            None:
+              {{ rule.override_action.none | indent(width=14, first=false) }}
+{%- elif rule.override_action.none_json is defined %}
+            None: |-
+              {{ rule.override_action.none_json | indent(width=14, first=false) }}
 {%- endif %}
-{%- endif %}
-{%- if rule.rule_labels is defined %}
+{%- endif %}{# END if rule.override_action is defined #}
+{%- if rule.rule_labels is defined %}{# BEGIN if rule.rule_labels is defined #}
           RuleLabels:
 {%- for rule_label in rule.rule_labels %}
             - Name: {{ rule_label.name }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if rule.rule_labels is defined #}
 {%- endfor %}
 {%- endif %}
       Tags:
@@ -164,8 +177,14 @@ Resources:
 {%- for key,value in web_acl.tags.items() %}
         - Key: {{ key }}
           Value: {{ value }}
+{%- endfor %}{# END for rule in web_acl.rules #}
+{%- endif %}{# END if web_acl.rules is defined #}
+{%- if web_acl.token_domains is defined %}{# BEGIN if web_acl.token_domains is defined #}
+      TokenDomains:
+{%- for domain in web_acl.token_domains %}
+        - {{ domain }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if web_acl.token_domains is defined #}
 {%- endfor %}
 
 Outputs:

@@ -1,0 +1,49 @@
+---
+template:
+  type: file
+  path: wafv2/ip_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFv2 IP Sets configuration"
+  ip_sets:
+    - name: BlockedIPs
+      addresses:
+        - "192.0.2.0/24"
+        - "198.51.100.0/24"
+      ip_address_version: "IPV4"
+      scope: "REGIONAL"
+      description: "Blocked IP addresses for regional WAF"
+      tags:
+        Name: BlockedIPs
+        Environment: Test
+
+    - name: AllowedCIDRs
+      addresses:
+        - "10.0.0.0/8"
+        - "172.16.0.0/12"
+      ip_address_version: "IPV4"
+      scope: "CLOUDFRONT"
+      description: "Allowed CIDR ranges for CloudFront distribution"
+      ip_set_name: "AllowedCIDRSet"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+      tags:
+        Name: AllowedCIDRs
+        Environment: Test
+        Purpose: AllowList
+
+    - name: IPv6BlockList
+      addresses:
+        - "2001:db8::/32"
+        - "2001:db9::/32"
+      ip_address_version: "IPV6"
+      scope: "REGIONAL"
+      description: "IPv6 address blocks"
+      tags:
+        Name: IPv6BlockList
+        Environment: Test
+
+stack_tags:
+  Test: wafv2-ipset

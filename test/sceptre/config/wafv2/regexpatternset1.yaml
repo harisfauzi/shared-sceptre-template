@@ -1,0 +1,48 @@
+---
+template:
+  type: file
+  path: wafv2/regex_pattern_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFv2 Regex Pattern Set(s)"
+  regex_pattern_sets:
+    - name: SqlInjectionPatterns
+      regular_expression_list:
+        - "(?i)(union.*select|select.*from|insert.*into|delete.*from|drop.*table|update.*set)"
+        - "(?i)(or\\s+1\\s*=\\s*1|or\\s+true|and\\s+1\\s*=\\s*2)"
+      scope: "REGIONAL"
+      description: "Regex patterns for detecting SQL injection attempts"
+      tags:
+        Name: SqlInjectionPatterns
+        Environment: Test
+        ThreatType: SQLInjection
+
+    - name: XssPatterns
+      regular_expression_list:
+        - "(?i)(<script[^>]*>|javascript:|onerror=|onload=|<iframe|<object)"
+        - "(?i)(alert\\(|confirm\\(|eval\\(|prompt\\()"
+      scope: "REGIONAL"
+      description: "Regex patterns for detecting XSS attacks"
+      regex_pattern_set_name: "XssDetectionSet"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+      tags:
+        Name: XssPatterns
+        Environment: Test
+        ThreatType: CrossSiteScripting
+
+    - name: MaliciousUrlPatterns
+      regular_expression_list:
+        - "(?i)(admin|shell|backdoor|webshell|cmd\\.aspx|eval\\.php)"
+        - "(?i)\\.\\.[\\/\\\\]|\\.\\.%2f|\\.\\.%5c"
+      scope: "CLOUDFRONT"
+      description: "Regex patterns for blocking malicious URL patterns"
+      tags:
+        Name: MaliciousUrlPatterns
+        Environment: Test
+        ThreatType: MaliciousUrl
+
+stack_tags:
+  Test: wafv2-regex-pattern-set
