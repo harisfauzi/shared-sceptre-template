@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('Events EventBus(es) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Events Event Bus(es) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -26,10 +26,20 @@ Resources:
 {%- if event_bus.kms_key_identifier is defined %}
       KmsKeyIdentifier: {{ event_bus.kms_key_identifier | trim }}
 {%- endif %}
+{%- if event_bus.log_config is defined %}{# BEGIN if event_bus.log_config is defined #}
+      LogConfig:
+{%- if event_bus.log_config.include_detail is defined %}
+        IncludeDetail: {{ event_bus.log_config.include_detail }}
+{%- endif %}
+{%- if event_bus.log_config.level is defined %}
+        Level: {{ event_bus.log_config.level }}
+{%- endif %}
+{%- endif %}{# END if event_bus.log_config is defined #}
 {%- if event_bus.policy_json is defined %}
-      Policy: {{ event_bus.policy_json }}
+      Policy: |-
+        {{ event_bus.policy_json | indent(width=8, first=false) }}
 {%- elif event_bus.policy is defined %}
-        {{ event_bus.policy | indent(width=8, first=False) }}
+        {{ event_bus.policy | indent(width=8, first=false) }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -52,7 +62,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ event_bus_name }}"
-
   {{ event_bus_name }}Arn:
     Description: The ARN for event bus {{ event_bus_name }}
     Value:
@@ -62,9 +71,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ event_bus_name }}-Arn"
-{%- endfor %}
-{#
-# Supported structure as of 20250226:
+{%- endfor %}{#
+# Supported structure as of 2026-05-21:
 Type: AWS::Events::EventBus
 Properties:
   DeadLetterConfig:
@@ -72,6 +80,9 @@ Properties:
   Description: String
   EventSourceName: String
   KmsKeyIdentifier: String
+  LogConfig:
+    IncludeDetail: String
+    Level: String
   Name: String
   Policy: Json
   Tags:

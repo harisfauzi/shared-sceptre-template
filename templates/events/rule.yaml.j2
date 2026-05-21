@@ -18,7 +18,8 @@ Resources:
 {%- endif %}
 {#- must define either event_pattern on schedule_expression #}
 {%- if rule.event_pattern_json is defined %}
-      EventPattern: {{ rule.event_pattern_json }}
+      EventPattern: |-
+        {{ rule.event_pattern_json | indent(width=8, first=false) }}
 {%- elif rule.event_pattern is defined %}
       EventPattern:
         {{ rule.event_pattern | indent(width=8, first=false) }}
@@ -33,6 +34,15 @@ Resources:
 {%- endif %}
 {%- if rule.role_arn is defined %}
       RoleArn: {{ rule.role_arn | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if rule.tags is defined %}
+{%- for key,value in rule.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
 {%- endif %}
 {%- if rule.targets is defined %}
       Targets:
@@ -275,7 +285,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ rule_name }}"
-
   {{ rule_name }}Arn:
     Description: The ARN for rule {{ rule_name }}
     Value:
@@ -285,9 +294,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ rule_name }}-Arn"
-{%- endfor %}
-{#
-# Supported structure as of 20250226:
+{%- endfor %}{#
+# Supported structure as of 2026-05-21:
 Type: AWS::Events::Rule
 Properties:
   Description: String
@@ -297,6 +305,9 @@ Properties:
   RoleArn: String
   ScheduleExpression: String
   State: String
+  Tags:
+    - Key: String
+      Value: String
   Targets:
     -
       AppSyncParameters:
