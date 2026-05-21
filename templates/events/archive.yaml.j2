@@ -18,10 +18,14 @@ Resources:
       Description: {{ archive.description }}
 {%- endif %}
 {%- if archive.event_pattern_json is defined %}
-      EventPattern: {{ archive.event_pattern_json }}
+      EventPattern: |-
+        {{ archive.event_pattern_json | indent(width=8, first=false) }}
 {%- elif archive.event_pattern is defined %}
       EventPattern:
         {{ archive.event_pattern | indent(width=8, first=false) }}
+{%- endif %}
+{%- if archive.kms_key_identifier is defined %}
+      KmsKeyIdentifier: {{ archive.kms_key_identifier | trim }}
 {%- endif %}
 {%- if archive.retention_days is defined %}
       RetentionDays: {{ archive.retention_days }}
@@ -38,7 +42,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ archive_name }}"
-
   {{ archive_name }}Arn:
     Description: The ARN for {{ archive_name }}
     Value:
@@ -48,15 +51,14 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ archive_name }}-Arn"
-
-{%- endfor %}
-{#
-# Supported structure as of 20250226:
+{%- endfor %}{#
+# Supported structure as of 2026-05-21:
 Type: AWS::Events::Archive
 Properties:
   ArchiveName: String
   Description: String
   EventPattern: Json
+  KmsKeyIdentifier: String
   RetentionDays: Integer
   SourceArn: String
 #}

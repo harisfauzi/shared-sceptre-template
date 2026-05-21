@@ -34,7 +34,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ api_destination_name }}"
-
   {{ api_destination_name }}Arn:
     Description: The ARN for API Destination {{ api_destination_name }}
     Value:
@@ -44,9 +43,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ api_destination_name }}-Arn"
-
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20250226:
 Type: AWS::Events::ApiDestination
 Properties:
