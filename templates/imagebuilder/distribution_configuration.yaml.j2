@@ -14,7 +14,7 @@ Resources:
       Distributions:
 {%- for distribution in distribution_configuration.distributions %}
         - Region: {{ distribution.region }}
-{%- if distribution.ami_distribution_configuration is defined %}{# BEGIN {%- if distribution.ami_distribution_configuration is defined %} #}
+{%- if distribution.ami_distribution_configuration is defined %}{# BEGIN if distribution.ami_distribution_configuration is defined #}
           AmiDistributionConfiguration:
 {%- if distribution.ami_distribution_configuration.ami_tags is defined %}
             AmiTags:
@@ -30,25 +30,25 @@ Resources:
 {%- endif %}
 {%- if distribution.ami_distribution_configuration.launch_permission_configuration is defined %}
             LaunchPermissionConfiguration:
-{% if distribution.ami_distribution_configuration.launch_permission_configuration.organizational_unit_arns is defined %}
+{%- if distribution.ami_distribution_configuration.launch_permission_configuration.organizational_unit_arns is defined %}
               OrganizationalUnitArns:
 {%- for ou_arn in distribution.ami_distribution_configuration.launch_permission_configuration.organizational_unit_arns %}
                 - {{ ou_arn | trim }}
 {%- endfor %}
 {%- endif %}
-{% if distribution.ami_distribution_configuration.launch_permission_configuration.organization_arns is defined %}
+{%- if distribution.ami_distribution_configuration.launch_permission_configuration.organization_arns is defined %}
               OrganizationArns:
 {%- for organization_arn in distribution.ami_distribution_configuration.launch_permission_configuration.organization_arns %}
                 - {{ organization_arn | trim }}
 {%- endfor %}
 {%- endif %}
-{% if distribution.ami_distribution_configuration.launch_permission_configuration.user_groups is defined %}
+{%- if distribution.ami_distribution_configuration.launch_permission_configuration.user_groups is defined %}
               UserGroups:
 {%- for user_group in distribution.ami_distribution_configuration.launch_permission_configuration.user_groups %}
                 - {{ user_group }}
 {%- endfor %}
 {%- endif %}
-{% if distribution.ami_distribution_configuration.launch_permission_configuration.user_ids is defined %}
+{%- if distribution.ami_distribution_configuration.launch_permission_configuration.user_ids is defined %}
               UserIds:
 {%- for user_id in distribution.ami_distribution_configuration.launch_permission_configuration.user_ids %}
                 - {{ user_id }}
@@ -64,8 +64,8 @@ Resources:
               - {{ account_id | trim }}
 {%- endfor %}
 {%- endif %}
-{%- endif %}{# END {%- if distribution.ami_distribution_configuration is defined %} #}
-{%- if distribution.container_distribution_configuration is defined %}{# BEGIN {%- if distribution.container_distribution_configuration is defined %} #}
+{%- endif %}{# END if distribution.ami_distribution_configuration is defined #}
+{%- if distribution.container_distribution_configuration is defined %}{# BEGIN if distribution.container_distribution_configuration is defined #}
           ContainerDistributionConfiguration:
 {%- if distribution.container_distribution_configuration.container_tags is defined %}
             ContainerTags:
@@ -85,10 +85,10 @@ Resources:
               Service: {{ distribution.container_distribution_configuration.target_repository.service }}
 {%- endif %}
 {%- endif %}
-{%- endif %}{# END {%- if distribution.container_distribution_configuration is defined %} #}
-{%- if distribution.fast_launch_configurations is defined %}{# BEGIN {%- if distribution.fast_launch_configurations is defined %} #}
+{%- endif %}{# END if distribution.container_distribution_configuration is defined #}
+{%- if distribution.fast_launch_configurations is defined %}{# BEGIN if distribution.fast_launch_configurations is defined #}
           FastLaunchConfigurations:
-{%- for fast_launch_configuration in distribution.fast_launch_configurations %}{# BEGIN {%- for fast_launch_configuration in distribution.fast_launch_configurations %} #}
+{%- for fast_launch_configuration in distribution.fast_launch_configurations %}{# BEGIN for fast_launch_configuration in distribution.fast_launch_configurations #}
             -
 {%- if fast_launch_configuration.account_id is defined %}
               AccountId: {{ fast_launch_configuration.account_id }}
@@ -96,7 +96,7 @@ Resources:
 {%- if fast_launch_configuration.enabled is defined %}
               Enabled: {{ fast_launch_configuration.enabled }}
 {%- endif %}
-{%- if fast_launch_configuration.launch_template is defined %}{# BEGIN {%- if fast_launch_configuration.launch_template is defined %} #}
+{%- if fast_launch_configuration.launch_template is defined %}{# BEGIN if fast_launch_configuration.launch_template is defined #}
               LaunchTemplate:
 {%- if fast_launch_configuration.launch_template.launch_template_id is defined %}
                 LaunchTemplateId: {{fast_launch_configuration.launch_template.launch_template_id }}
@@ -107,7 +107,7 @@ Resources:
 {%- if fast_launch_configuration.launch_template.launch_template_version is defined %}
                 LaunchTemplateVersion: {{ fast_launch_configuration.launch_template.launch_template_version }}
 {%- endif %}
-{%- endif %}{# END {%- if fast_launch_configuration.launch_template is defined %} #}
+{%- endif %}{# END if fast_launch_configuration.launch_template is defined #}
 {%- if fast_launch_configuration.max_parallel_launches is defined %}
               MaxParallelLaunches: {{ fast_launch_configuration.max_parallel_launches }}
 {%- endif %}
@@ -115,9 +115,9 @@ Resources:
               SnapshotConfiguration:
                 TargetResourceCount: {{ fast_launch_configuration.snapshot_configuration.target_resource_count }}
 {%- endif %}
-{%- endfor %}{# END {%- for fast_launch_configuration in distribution.fast_launch_configurations %} #}
-{%- endif %}{# END {%- if distribution.fast_launch_configurations is defined %} #}
-{%- if distribution.launch_template_configurations is defined %}{# BEGIN {%- if distribution.launch_template_configurations is defined %} #}
+{%- endfor %}{# END for fast_launch_configuration in distribution.fast_launch_configurations #}
+{%- endif %}{# END if distribution.fast_launch_configurations is defined #}
+{%- if distribution.launch_template_configurations is defined %}{# BEGIN if distribution.launch_template_configurations is defined #}
           LaunchTemplateConfigurations:
 {%- for launch_template_configuration in distribution.launch_template_configurations %}
             -
@@ -131,13 +131,13 @@ Resources:
               SetDefaultVersion: {{ launch_template_configuration.set_default_version }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}{# END {%- if distribution.launch_template_configurations is defined %} #}
-{%- if distribution.license_configuration_arns is defined %}{# BEGIN {%- if distribution.license_configuration_arns is defined %} #}
+{%- endif %}{# END if distribution.launch_template_configurations is defined #}
+{%- if distribution.license_configuration_arns is defined %}{# BEGIN if distribution.license_configuration_arns is defined #}
           LicenseConfigurationArns:
 {%- for license_configuration_arn in distribution.license_configuration_arns %}
             - {{ license_configuration_arn | trim }}
 {%- endfor %}
-{%- endif %}{# END {%- if distribution.license_configuration_arns is defined %} #}
+{%- endif %}{# END if distribution.license_configuration_arns is defined #}
 {%- endfor %}
       Name: {{ distribution_configuration.distribution_configuration_name }}
 {%- if distribution_configuration.description is defined %}

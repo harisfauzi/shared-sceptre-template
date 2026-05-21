@@ -1,3 +1,9 @@
+{# BEGIN Parameter structure as of 2026-05-21
+as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-events-connection-parameter.html
+  IsValueSecret: Boolean
+  Key: String
+  Value: String
+#}
 {%- macro prep_parameter(parameter) %}
 Key: {{ parameter.key }}
 Value: {{ parameter.value}}
@@ -5,11 +11,55 @@ Value: {{ parameter.value}}
 IsValueSecret: {{ parameter.is_value_secret | lower }}
 {%- endif %}
 {%- endmacro %}
+{# END Parameter structure #}
 
+
+{# BEGIN ResourceParameters structure as of 2026-05-21
+as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-events-connection-invocationconnectivityparameters.html
+  ResourceParameters:
+    ResourceAssociationArn: String
+    ResourceConfigurationArn: String
+#}
 {%- macro prep_resource_parameters(resource_parameters) %}
-ResourceParameters: 
+ResourceParameters:
   ResourceConfigurationArn: {{ resource_parameters.resource_configuration_arn | trim }}
 {%- if resource_parameters.resource_association_arn is defined %}
   ResourceAssociationArn: {{ resource_parameters.resource_association_arn | trim }}
 {%- endif %}
 {%- endmacro %}
+{# END ResourceParameters structure #}
+
+
+{# BEGIN ConnectionHttpParameters structure as of 2026-05-21
+as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-events-connection-connectionhttpparameters.html
+  BodyParameters:
+    - Parameter
+  HeaderParameters:
+    - Parameter
+  QueryStringParameters:
+    - Parameter
+#}
+{%- macro prep_connection_http_parameters(http_parameters) %}
+{%- if http_parameters.body_parameters is defined %}{# BEGIN if http_parameters.body_parameters is defined #}
+BodyParameters:
+{%- for parameter in http_parameters.body_parameters %}
+  -
+    {{- prep_parameter(parameter) | indent(width=4, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if http_parameters.body_parameters is defined #}
+{%- if http_parameters.header_parameters is defined %}{# BEGIN if http_parameters.header_parameters is defined #}
+HeaderParameters:
+{%- for parameter in http_parameters.header_parameters %}
+  -
+    {{- prep_parameter(parameter) | indent(width=4, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if http_parameters.header_parameters is defined #}
+{%- if http_parameters.query_string_parameters is defined %}{# BEGIN if http_parameters.query_string_parameters is defined #}
+QueryStringParameters:
+{%- for parameter in http_parameters.query_string_parameters %}
+  -
+    {{- prep_parameter(parameter) | indent(width=4, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if http_parameters.query_string_parameters is defined #}
+{%- endmacro %}
+{# END ConnectionHttpParameters structure #}

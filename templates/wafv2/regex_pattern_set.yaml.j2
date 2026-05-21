@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('WAFv2 RegexPatternSet(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAFv2 Regex Pattern Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for regex_pattern_set in sceptre_user_data.regex_pattern_sets %}
 {%- set regex_pattern_set_name = regex_pattern_set.name %}
   {{ regex_pattern_set_name }}:
@@ -31,11 +30,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for regex_pattern_set in sceptre_user_data.regex_pattern_sets %}
 {%- set regex_pattern_set_name = regex_pattern_set.name %}
   {{ regex_pattern_set_name }}:
@@ -45,7 +42,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ regex_pattern_set_name }}"
-
   {{ regex_pattern_set_name }}Arn:
     Description: The ARN of {{ regex_pattern_set_name }}
     Value:
@@ -55,7 +51,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ regex_pattern_set_name }}-Arn"
-
   {{ regex_pattern_set_name }}Id:
     Description: The ID of {{ regex_pattern_set_name }}
     Value:
@@ -65,5 +60,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ regex_pattern_set_name }}-Id"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-05-19:
+Type: AWS::WAFv2::RegexPatternSet
+Properties:
+  Description: String
+  Name: String
+  RegularExpressionList:
+    - String
+  Scope: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

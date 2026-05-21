@@ -57,7 +57,7 @@ Resources:
 {%- endif %}
 {%- if resource_data_sync.sync_source.include_future_regions is defined %}
         IncludeFutureRegions: {{ resource_data_sync.sync_source.include_future_regions }}
-{% endif %}
+{%- endif %}
 {%- endif %}{# END {%- if resource_data_sync.sync_source is defined %} #}
 {%- if resource_data_sync.sync_type is defined %}
       SyncType: {{ resource_data_sync.sync_type}}

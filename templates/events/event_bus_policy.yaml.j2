@@ -11,21 +11,6 @@ Resources:
     UpdateReplacePolicy: {{ event_bus_policy.update_replace_policy | default('Delete') }}
     Properties:
       StatementId: {{ event_bus_policy.statement_id }}
-{%- if event_bus_policy.action is defined %}
-      Action: {{ event_bus_policy.action }}
-{%- endif %}
-{%- if event_bus_policy.condition is defined %}
-      Condition:
-{%- if event_bus_policy.condition.key is defined %}
-        Key: {{ event_bus_policy.condition.key }}
-{%- endif %}
-{%- if event_bus_policy.condition.type is defined %}
-        Type: {{ event_bus_policy.condition.type }}
-{%- endif %}
-{%- if event_bus_policy.condition.value is defined %}
-        Value: {{ event_bus_policy.condition.value }}
-{%- endif %}
-{%- endif %}
 {%- if event_bus_policy.event_bus_name is defined %}
       EventBusName: {{ event_bus_policy.event_bus_name }}
 {%- endif %}
@@ -33,10 +18,11 @@ Resources:
       Principal: {{ event_bus_policy.principal }}
 {%- endif %}
 {%- if event_bus_policy.statement_json is defined %}
-      Statement: {{ event_bus_policy.statement_json }}
+      Statement: |-
+        {{ event_bus_policy.statement_json | indent(width=8, first=false) }}
 {%- elif event_bus_policy.statement is defined %}
       Statement:
-        {{ event_bus_policy.statement | indent(width=8, first=False) }}
+        {{ event_bus_policy.statement | indent(width=8, first=false) }}
 {%- endif %}
 {%- endfor %}
 
@@ -50,16 +36,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ event_bus_policy_name }}"
-{%- endfor %}
-{#
-# Supported structure as of 20250226:
+{%- endfor %}{#
+# Supported structure as of 2026-05-21:
 Type: AWS::Events::EventBusPolicy
 Properties:
-  Action: String
-  Condition:
-    Key: String
-    Type: String
-    Value: String
   EventBusName: String
   Principal: String
   Statement: Json

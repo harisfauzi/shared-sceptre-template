@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('WAFv2 LoggingConfiguration(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAFv2 Logging Configuration(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for logging_configuration in sceptre_user_data.logging_configurations %}
 {%- set logging_configuration_name = logging_configuration.name %}
   {{ logging_configuration_name }}:
@@ -15,40 +14,63 @@ Resources:
 {%- for log_destination_config in logging_configuration.log_destination_configs %}
         - {{ log_destination_config }}
 {%- endfor %}
-      ResourceArn: {{ logging_configuration.resource_arn }}
-{%- if logging_configuration.logging_filter is defined %}
-      LoggingFilter: {{ logging_configuration.logging_filter }}
-{%- elif logging_configuration.logging_filter_json is defined %}
-      LoggingFilter: |
-{{ logging_configuration.logging_filter | indent(width=8, first=true) }}
+      ResourceArn: {{ logging_configuration.resource_arn | trim }}
+{%- if logging_configuration.logging_filter is defined %}{# BEGIN if logging_configuration.logging_filter is defined #}
+      LoggingFilter:
+        DefaultBehavior: {{ logging_configuration.logging_filter.default_behavior }}
+        Filters:
+{%- for afilter in logging_configuration.logging_filter.filters %}{# BEGIN for filter in logging_configuration.logging_filter.filters #}
+          -
+            Behavior: {{ afilter.behavior }}
+            Conditions:
+{%- for condition in afilter.conditions %}{# BEGIN for condition in afilter.conditions #}
+              -
+{%- if condition.action_condition is defined %}
+                ActionCondition:
+                  Action: {{ condition.action_condition.action }}
 {%- endif %}
-{%- if logging_configuration.redacted_fields is defined %}
+{%- if condition.label_name_condition is defined %}
+                LabelNameCondition:
+                  LabelName: {{ condition.label_name_condition.label_name }}
+{%- endif %}
+{%- endfor %}{# END for condition in afilter.conditions #}
+            Requirement: {{ afilter.requirement }}
+{%- endfor %}{# END for filter in logging_configuration.logging_filter.filters #}
+{%- endif %}{# END if logging_configuration.logging_filter is defined #}
+{%- if logging_configuration.redacted_fields is defined %}{# BEGIN if logging_configuration.redacted_fields is defined #}
       RedactedFields:
 {%- for redacted_field in logging_configuration.redacted_fields %}
         -
-{%- if redacted_field.json_body is defined %}
-          JsonBody:
-            {{ redacted_field.json_body }}
-{%- endif %}
 {%- if redacted_field.method is defined %}
-          Method: {{ redacted_field.method }}
+          Method:
+            {{ redacted_field.method | indent(width=12, first=false) }}
+{%- elif redacted_field.method_json is defined %}
+          Method: |-
+            {{ redacted_field.method_json | indent(width=12, first=false) }}
 {%- endif %}
 {%- if redacted_field.query_string is defined %}
-          QueryString: {{ redacted_field.query_string }}
+          QueryString:
+            {{ redacted_field.query_string | indent(width=12, first=false) }}
+{%- elif redacted_field.query_string_json is defined %}
+          QueryString: |-
+            {{ redacted_field.query_string_json | indent(width=12, first=false) }}
 {%- endif %}
 {%- if redacted_field.single_header is defined %}
-          SingleHeader: {{ redacted_field.single_header }}
+          SingleHeader:
+            Name: {{ redacted_field.single_header.name }}
 {%- endif %}
 {%- if redacted_field.uri_path is defined %}
-          UriPath: {{ redacted_field.uri_path }}
+          UriPath:
+            {{ redacted_field.uri_path | indent(width=12, first=false) }}
+{%- elif redacted_field.uri_path_json is defined %}
+          UriPath: |-
+            {{ redacted_field.uri_path_json | indent(width=12, first=false) }}
 {%- endif %}
 {%- endfor %}
-{%- endif %}
-
+{%- endif %}{# END if logging_configuration.redacted_fields is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for logging_configuration in sceptre_user_data.logging_configurations %}
 {%- set logging_configuration_name = logging_configuration.name %}
   {{ logging_configuration_name }}:
@@ -58,7 +80,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ logging_configuration_name }}"
-
   {{ logging_configuration_name }}ManagedByFirewallManager:
     Description: Indicate if {{ logging_configuration_name }} was created by AWS Firewall Manager
     Value:
@@ -68,5 +89,30 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ logging_configuration_name }}-ManagedByFirewallManager"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-05-19:
+Type: AWS::WAFv2::LoggingConfiguration
+Properties:
+  LogDestinationConfigs:
+    - String
+  LoggingFilter:
+    DefaultBehavior: String
+    Filters:
+      -
+        Behavior: String
+        Conditions:
+          -
+            ActionCondition:
+              Action: String
+            LabelNameCondition:
+              LabelName: String
+        Requirement: String
+  RedactedFields:
+    -
+      Method: Json
+      QueryString: Json
+      SingleHeader:
+        Name: String
+      UriPath: Json
+  ResourceArn: String
+#}

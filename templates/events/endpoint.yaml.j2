@@ -10,20 +10,16 @@ Resources:
     DeletionPolicy: {{ endpoint.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ endpoint.update_replace_policy | default('Delete') }}
     Properties:
-      {# BEGIN endpoint.event_buses #}
       EventBuses:
 {%- for event_bus in endpoint.event_buses %}
         - EventBusArn: {{ event_bus.event_bus_arn | trim }}
 {%- endfor %}
-      {# END endpoint.event_buses #}
-      {# BEGIN endpoint.routing_config #}
       RoutingConfig:
         FailoverConfig:
           Primary:
             HealthCheck: {{ endpoint.routing_config.failover_config.primary.health_check }}
           Secondary:
             Route: {{ endpoint.routing_config.failover_config.secondary.route }}
-      {# END endpoint.routing_config #}
 {%- if endpoint.description is defined %}
       Description: {{ endpoint.description }}
 {%- endif %}
@@ -49,7 +45,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}"
-
   {{ endpoint_name }}Arn:
     Description: The ARN for {{ endpoint_name }}
     Value:
@@ -59,7 +54,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-Arn"
-
   {{ endpoint_name }}EndpointId:
     Description: The Endpoint ID for {{ endpoint_name }}
     Value:
@@ -69,7 +63,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-EndpointId"
-
   {{ endpoint_name }}EndpointUrl:
     Description: The Endpoint URL for {{ endpoint_name }}
     Value:
@@ -79,7 +72,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-EndpointUrl"
-
   {{ endpoint_name }}State:
     Description: The main Region of the endpoint {{ endpoint_name }}
     Value:
@@ -89,7 +81,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-State"
-
   {{ endpoint_name }}StateReason:
     Description: The reason the endpoint {{ endpoint_name }} is in its current state.
     Value:
@@ -99,8 +90,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ endpoint_name }}-StateReason"
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20250226:
 Type: AWS::Events::Endpoint
 Properties:
