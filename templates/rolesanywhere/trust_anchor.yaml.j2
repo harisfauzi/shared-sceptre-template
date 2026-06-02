@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM Roles Anywhere Trust A
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for trust_anchor in sceptre_user_data.trust_anchors %}
 {%- set trust_anchor_name = trust_anchor.name %}
   {{ trust_anchor_name }}:
@@ -18,15 +17,29 @@ Resources:
 {%- endif %}
         SourceData:
 {%- if trust_anchor.source.source_data.acm_pca_arn is defined %}
-          AcmPcaArn: {{trust_anchor.source.source_data.acm_pca_arn}}
+          AcmPcaArn: {{trust_anchor.source.source_data.acm_pca_arn | trim}}
 {%- endif %}
 {%- if trust_anchor.source.source_data.x509_certificate_data is defined %}
-          X509CertificateData: |
+          X509CertificateData: |-
             {{trust_anchor.source.source_data.x509_certificate_data|indent(width=12)}}
 {%- endif %}
 {%- if trust_anchor.enabled is defined %}
       Enabled: {{trust_anchor.enabled}}
 {%- endif %}
+{%- if trust_anchor.notification_settings is defined %}{# BEGIN if trust_anchor.notification_settings is defined #}
+      NotificationSettings:
+{%- for setting in trust_anchor.notification_settings %}{# BEGIN for setting in trust_anchor.notification_settings #}
+        -
+          Enabled: {{ setting.enabled | lower }}
+          Event: {{ setting.event }}
+{%- if setting.channel is defined %}
+          Channel: {{ setting.channel }}
+{%- endif %}
+{%- if setting.threshold is defined %}
+          Threshold: {{ setting.threshold }}
+{%- endif %}
+{%- endfor %}{# END for setting in trust_anchor.notification_settings #}
+{%- endif %}{# END if trust_anchor.notification_settings is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -36,11 +49,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for trust_anchor in sceptre_user_data.trust_anchors %}
 {%- set trust_anchor_name = trust_anchor.name %}
   {{ trust_anchor_name }}:
@@ -50,7 +61,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ trust_anchor_name }}"
-
   {{ trust_anchor_name }}TrustAnchorArn:
     Description: The ARN of the trust anchor {{ trust_anchor_name }}
     Value:
@@ -60,7 +70,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ trust_anchor_name }}-TrustAnchorArn"
-
   {{ trust_anchor_name }}TrustAnchorId:
     Description: The unique identifier of the trust anchor {{ trust_anchor_name }}
     Value:
@@ -70,5 +79,25 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ trust_anchor_name }}-TrustAnchorId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-02
+Type: AWS::RolesAnywhere::TrustAnchor
+Properties:
+  Enabled: Boolean
+  Name: String
+  NotificationSettings:
+    -
+      Channel: String
+      Enabled: Boolean
+      Event: String
+      Threshold: Number
+  Source:
+    SourceData:
+      AcmPcaArn: String
+      X509CertificateData: String
+    SourceType: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
