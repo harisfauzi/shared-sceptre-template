@@ -1,0 +1,81 @@
+---
+template:
+  type: file
+  path: route53/record_set.yaml.j2
+
+sceptre_user_data:
+  description: "Route53 Record Set(s) for {{stack_group_config.project_code}}"
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  record_sets:
+    - name: RecordSetApexAlias
+      record_set_name: "example.com."
+      type: "A"
+      alias_target:
+        dns_name: "d123456789.cloudfront.net."
+        hosted_zone_id: "Z2FDTNDATAQYW2"
+        evaluate_target_health: false
+    - name: RecordSetWwwAlias
+      record_set_name: "www.example.com."
+      type: "A"
+      alias_target:
+        dns_name: "example.com.s3-website-us-east-1.amazonaws.com."
+        hosted_zone_id: "Z3AQQSTJ8EXAMPLE"
+        evaluate_target_health: true
+    - name: RecordSetMxRecords
+      record_set_name: "example.com."
+      type: "MX"
+      ttl: "3600"
+      resource_records:
+        - "10 mail.example.com."
+        - "20 mail2.example.com."
+      comment: "Mail server records"
+    - name: RecordSetApiPrimary
+      record_set_name: "api.example.com."
+      type: "A"
+      set_identifier: "API-Primary"
+      weight: 70
+      resource_records:
+        - "192.0.2.1"
+      comment: "Primary API endpoint"
+    - name: RecordSetApiSecondary
+      record_set_name: "api.example.com."
+      type: "A"
+      set_identifier: "API-Secondary"
+      weight: 30
+      resource_records:
+        - "192.0.2.2"
+      comment: "Secondary API endpoint"
+    - name: RecordSetFailoverPrimary
+      record_set_name: "failover.example.com."
+      type: "A"
+      set_identifier: "Failover-Primary"
+      failover: "PRIMARY"
+      resource_records:
+        - "203.0.113.10"
+      health_check_id: "abcd1234-efgh-5678-ijkl-9012mn34pqrs"
+    - name: RecordSetFailoverSecondary
+      record_set_name: "failover.example.com."
+      type: "A"
+      set_identifier: "Failover-Secondary"
+      failover: "SECONDARY"
+      resource_records:
+        - "203.0.113.20"
+    - name: RecordSetTxtVerification
+      record_set_name: "_acme-challenge.example.com."
+      type: "TXT"
+      ttl: "300"
+      resource_records:
+        - '"v=spf1 include:_spf.google.com ~all"'
+      comment: "DNS verification record"
+    - name: RecordSetCname
+      record_set_name: "blog.example.com."
+      type: "CNAME"
+      ttl: "3600"
+      resource_records:
+        - "blogger.example.com."
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+stack_tags:
+  Test: route53-record-set

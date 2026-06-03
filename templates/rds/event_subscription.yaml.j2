@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('RDS Event Subscription(s) 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for event_subscription in sceptre_user_data.event_subscriptions %}
 {%- set event_subscription_name = event_subscription.name %}
   {{ event_subscription_name }}:
@@ -15,18 +14,18 @@ Resources:
 {%- if event_subscription.enabled is defined %}
       Enabled: {{ event_subscription.enabled }}
 {%- endif %}
-{%- if event_subscription.event_categories is defined %}
+{%- if event_subscription.event_categories is defined %}{# BEGIN if event_subscription.event_categories is defined #}
       EventCategories:
 {%- for event_category in event_subscription.event_categories %}
         - {{ event_category }}
 {%- endfor %}
-{%- endif %}
-{%- if event_subscription.source_ids is defined %}
+{%- endif %}{# END if event_subscription.event_categories is defined #}
+{%- if event_subscription.source_ids is defined %}{# BEGIN if event_subscription.source_ids is defined #}
       SourceIds:
 {%- for source_id in event_subscription.source_ids %}
         - {{ source_id | trim }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if event_subscription.source_ids is defined #}
 {%- if event_subscription.source_type is defined %}
       SourceType: {{ event_subscription.source_type }}
 {%- endif %}
@@ -42,11 +41,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for event_subscription in sceptre_user_data.event_subscriptions %}
 {%- set event_subscription_name = event_subscription.name %}
   {{ event_subscription_name }}:
@@ -56,5 +53,19 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ event_subscription_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-03:
+Type: AWS::RDS::EventSubscription
+Properties:
+  Enabled: Boolean
+  EventCategories:
+    - String
+  SnsTopicArn: String
+  SourceIds:
+    - String
+  SourceType: String
+  SubscriptionName: String
+  Tags:
+    - Key: String
+      Value: String
+#}

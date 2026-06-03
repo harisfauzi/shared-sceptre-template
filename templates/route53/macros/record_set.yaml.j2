@@ -1,21 +1,60 @@
+{# Supported structure as of 2026-06-03
+  AliasTarget:
+    DNSName: String
+    EvaluateTargetHealth: Boolean
+    HostedZoneId: String
+  CidrRoutingConfig:
+    CollectionId: String
+    LocationName: String
+  Comment: String
+  Failover: String
+  GeoLocation:
+    ContinentCode: String
+    CountryCode: String
+    SubdivisionCode: String
+  GeoProximityLocation:
+    AWSRegion: String
+    Bias: Integer
+    Coordinates:
+      Latitude: String
+      Longitude: String
+    LocalZoneGroup: String
+  HealthCheckId: String
+  HostedZoneId: String
+  HostedZoneName: String
+  MultiValueAnswer: Boolean
+  Name: String
+  Region: String
+  ResourceRecords:
+    - String
+  SetIdentifier: String
+  TTL: String
+  Type: String
+  Weight: Integer
+#}
 {%- macro prep(record_set) %}
 Name: {{ record_set.record_set_name }}
 Type: {{ record_set.type }}
-{%- if record_set.alias_target is defined %}
+{%- if record_set.alias_target is defined %}{# BEGIN if record_set.alias_target is defined #}
 AliasTarget:
   DNSName: {{ record_set.alias_target.dns_name }}
   HostedZoneId: {{ record_set.alias_target.hosted_zone_id | trim }}
 {%- if record_set.alias_target.evaluate_target_health is defined %}
-  EvaluateTargetHealth: {{ record_set.alias_target.evaluate_target_health }}
+  EvaluateTargetHealth: {{ record_set.alias_target.evaluate_target_health | lower }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if record_set.alias_target is defined #}
+{%- if record_set.cidr_routing_config is defined %}{# BEGIN if record_set.cidr_routing_config is defined #}
+CidrRoutingConfig:
+  CollectionId: {{ record_set.cidr_routing_config.collection_id }}
+  LocationName: {{ record_set.cidr_routing_config.location_name }}
+{%- endif %}{# END if record_set.cidr_routing_config is defined #}
 {%- if record_set.comment is defined %}
 Comment: {{ record_set.comment }}
 {%- endif %}
 {%- if record_set.failover is defined %}
 Failover: {{ record_set.failover }}
 {%- endif %}
-{%- if record_set.geo_location is defined %}
+{%- if record_set.geo_location is defined %}{# BEGIN if record_set.geo_location is defined #}
 GeoLocation:
 {%- if record_set.geo_location.continent_code is defined %}
   ContinentCode: {{ record_set.geo_location.continent_code }}
@@ -26,7 +65,24 @@ GeoLocation:
 {%- if record_set.geo_location.subdivision_code is defined %}
   SubdivisionCode: {{ record_set.geo_location.subdivision_code }}
 {%- endif %}
+{%- endif %}{# END if record_set.geo_location is defined #}
+{%- if record_set.geo_proximity_location is defined %}{# BEGIN if record_set.geo_proximity_location is defined #}
+GeoProximityLocation:
+{%- if record_set.geo_proximity_location.aws_region is defined %}
+  AWSRegion: {{ record_set.geo_proximity_location.aws_region }}
 {%- endif %}
+{%- if record_set.geo_proximity_location.bias is defined %}
+  Bias: {{ record_set.geo_proximity_location.bias }}
+{%- endif %}
+{%- if record_set.geo_proximity_location.coordinates is defined %}
+  Coordinates:
+    Latitude: {{ record_set.geo_proximity_location.coordinates.latitude }}
+    Longitude: {{ record_set.geo_proximity_location.coordinates.longitude }}
+{%- endif %}
+{%- if record_set.geo_proximity_location.local_zone_group is defined %}
+  LocalZoneGroup: {{ record_set.geo_proximity_location.local_zone_group }}
+{%- endif %}
+{%- endif %}{# END if record_set.geo_proximity_location is defined #}
 {%- if record_set.health_check_id is defined %}
 HealthCheckId: {{ record_set.health_check_id | trim }}
 {%- endif %}
@@ -42,12 +98,12 @@ MultiValueAnswer: {{ record_set.multi_value_answer }}
 {%- if record_set.region is defined %}
 Region: {{ record_set.region }}
 {%- endif %}
-{%- if record_set.resource_records is defined %}
+{%- if record_set.resource_records is defined %}{# BEGIN if record_set.resource_records is defined #}
 ResourceRecords:
 {%- for resource_record in record_set.resource_records %}
   - {{ resource_record }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if record_set.resource_records is defined #}
 {%- if record_set.set_identifier is defined %}
 SetIdentifier: {{ record_set.set_identifier }}
 {%- endif %}

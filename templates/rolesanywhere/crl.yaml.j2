@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM Roles Anywhere CRL(s) 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for crl in sceptre_user_data.crls %}
 {%- set crl_name = crl.name %}
   {{ crl_name }}:
@@ -15,10 +14,10 @@ Resources:
       CrlData: |
         {{crl.crl_data|indent(width=8,first=false)}}
 {%- if crl.enabled is defined %}
-      Enabled: {{crl.enabled}}
+      Enabled: {{crl.enabled | lower}}
 {%- endif %}
 {%- if crl.trust_anchor_arn is defined %}
-      TrustAnchorArn: {{crl.trust_anchor_arn}}
+      TrustAnchorArn: {{crl.trust_anchor_arn | trim}}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -29,11 +28,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for crl in sceptre_user_data.crls %}
 {%- set crl_name = crl.name %}
   {{ crl_name }}:
@@ -43,7 +40,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ crl_name }}"
-
   {{ crl_name }}CrlId:
     Description: The unique primary identifier of the Crl  {{ crl_name }}
     Value:
@@ -53,5 +49,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ crl_name }}-CrlId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-02
+Type: AWS::RolesAnywhere::CRL
+Properties:
+  CrlData: String
+  Enabled: Boolean
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TrustAnchorArn: String
+#}

@@ -7,7 +7,7 @@ dependencies:
   - rds/secretsmanager-secret1.yaml
 
 sceptre_user_data:
-  project_code: "{{ stack_group_config.project_code }}"
+  project_code: "{{ project_code }}"
   source_repo_url: "{{git_repo}}"
   roles:
     - name: RDSProxy1

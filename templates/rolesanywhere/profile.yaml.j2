@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('IAM Roles Anywhere Profile
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for profile in sceptre_user_data.profiles %}
 {%- set profile_name = profile.name %}
   {{ profile_name }}:
@@ -16,23 +15,37 @@ Resources:
 {%- for role_arn in profile.role_arns %}
         - {{role_arn}}
 {%- endfor %}
+{%- if profile.accept_role_session_name is defined %}
+      AcceptRoleSessionName: {{profile.accept_role_session_name | lower}}
+{%- endif %}
+{%- if profile.attribute_mappings is defined %}{# BEGIN if profile.attribute_mappings is defined #}
+      AttributeMappings:
+{%- for mapping in profile.attribute_mappings %}{# BEGIN for mapping in profile.attribute_mappings #}
+        -
+          CertificateField: {{ mapping.certificate_field }}
+          MappingRules:
+{%- for rule in mapping.mapping_rules %}
+            - Specifier: {{ rule.specifier }}
+{%- endfor %}
+{%- endfor %}{# END for mapping in profile.attribute_mappings #}
+{%- endif %}{# END if profile.attribute_mappings is defined #}
 {%- if profile.duration_seconds is defined %}
       DurationSeconds: {{profile.duration_seconds}}
 {%- endif %}
 {%- if profile.enabled is defined %}
-      Enabled: {{profile.enabled}}
+      Enabled: {{profile.enabled | lower}}
 {%- endif %}
-{%- if profile.managed_policy_arns is defined %}
+{%- if profile.managed_policy_arns is defined %}{# BEGIN if profile.managed_policy_arns is defined #}
       ManagedPolicyArns:
 {%- for managed_policy_arn in profile.managed_policy_arns %}
         - {{managed_policy_arn}}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if profile.managed_policy_arns is defined #}
 {%- if profile.require_instance_properties is defined %}
-      RequireInstanceProperties: {{profile.require_instance_properties}}
+      RequireInstanceProperties: {{profile.require_instance_properties | lower}}
 {%- endif %}
 {%- if profile.session_policy is defined %}
-      SessionPolicy: |
+      SessionPolicy: |-
         {{profile.session_policy|indent(width=8)}}
 {%- endif %}
       Tags:
@@ -44,11 +57,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for profile in sceptre_user_data.profiles %}
 {%- set profile_name = profile.name %}
   {{ profile_name }}:
@@ -58,7 +69,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ profile_name }}"
-
   {{ profile_name }}ProfileArn:
     Description: The ARN of the profile {{ profile_name }}
     Value:
@@ -68,7 +78,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ profile_name }}-ProfileArn"
-
   {{ profile_name }}ProfileId:
     Description: The unique primary identifier of the Profile {{ profile_name }}
     Value:
@@ -78,5 +87,27 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ profile_name }}-ProfileId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-02
+Type: AWS::RolesAnywhere::Profile
+Properties:
+  AcceptRoleSessionName: Boolean
+  AttributeMappings:
+    -
+      CertificateField: String
+      MappingRules:
+        - Specifier: String
+  DurationSeconds: Number
+  Enabled: Boolean
+  ManagedPolicyArns:
+    - String
+  Name: String
+  RequireInstanceProperties: Boolean
+  RoleArns:
+    - String
+  SessionPolicy: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

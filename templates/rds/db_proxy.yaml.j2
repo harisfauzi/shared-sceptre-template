@@ -3,8 +3,7 @@ Description: {{sceptre_user_data.description|default('RDS DB Proxy(s) for '+scep
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
-{%- for db_proxy in sceptre_user_data.db_proxys %}
+{%- for db_proxy in sceptre_user_data.db_proxies %}
 {%- set db_proxy_name = db_proxy.name %}
   {{ db_proxy_name }}:
     Type: AWS::RDS::DBProxy
@@ -38,20 +37,29 @@ Resources:
         - {{ subnet_id | trim }}
 {%- endfor %}
 {%- if db_proxy.debug_logging is defined %}
-      DebugLogging: {{ db_proxy.debug_logging }}
+      DebugLogging: {{ db_proxy.debug_logging | lower }}
+{%- endif %}
+{%- if db_proxy.default_auth_scheme is defined %}
+      DefaultAuthScheme: {{ db_proxy.default_auth_scheme }}
+{%- endif %}
+{%- if db_proxy.endpoint_network_type is defined %}
+      EndpointNetworkType: {{ db_proxy.endpoint_network_type }}
 {%- endif %}
 {%- if db_proxy.idle_client_timeout is defined %}
       IdleClientTimeout: {{ db_proxy.idle_client_timeout }}
 {%- endif %}
 {%- if db_proxy.require_tls is defined %}
-      RequireTLS: {{ db_proxy.require_tls }}
+      RequireTLS: {{ db_proxy.require_tls | lower }}
 {%- endif %}
-{%- if db_proxy.vpc_security_group_ids is defined %}
+{%- if db_proxy.target_connection_network_type is defined %}
+      TargetConnectionNetworkType: {{ db_proxy.target_connection_network_type }}
+{%- endif %}
+{%- if db_proxy.vpc_security_group_ids is defined %}{# BEGIN if db_proxy.vpc_security_group_ids is defined #}
       VpcSecurityGroupIds:
 {%- for security_group_id in db_proxy.vpc_security_group_ids %}
         - {{ security_group_id | trim }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if db_proxy.vpc_security_group_ids is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -61,12 +69,10 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
-{%- for db_proxy in sceptre_user_data.db_proxys %}
+{%- for db_proxy in sceptre_user_data.db_proxies %}
 {%- set db_proxy_name = db_proxy.name %}
   {{ db_proxy_name }}:
     Description: The DB proxy name for {{ db_proxy_name }}
@@ -75,7 +81,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_proxy_name }}"
-
   {{ db_proxy_name }}DBProxyArn:
     Description: The ARN for {{ db_proxy_name }}
     Value:
@@ -85,7 +90,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_proxy_name }}-DBProxyArn"
-
   {{ db_proxy_name }}Endpoint:
     Description: The writer endpoint for the RDS DB instance or Aurora DB cluster for {{ db_proxy_name }}
     Value:
@@ -95,7 +99,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_proxy_name }}-Endpoint"
-
   {{ db_proxy_name }}VpcId:
     Description: The VPC ID to associate with the DB proxy for {{ db_proxy_name }}
     Value:
@@ -105,5 +108,31 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_proxy_name }}-VpcId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-03:
+Type: AWS::RDS::DBProxy
+Properties:
+  Auth:
+    -
+      AuthScheme: String
+      ClientPasswordAuthType: String
+      Description: String
+      IAMAuth: String
+      SecretArn: String
+  DBProxyName: String
+  DebugLogging: Boolean
+  DefaultAuthScheme: String
+  EndpointNetworkType: String
+  EngineFamily: String
+  IdleClientTimeout: Integer
+  RequireTLS: Boolean
+  RoleArn: String
+  Tags:
+    - Key: String
+      Value: String
+  TargetConnectionNetworkType: String
+  VpcSecurityGroupIds:
+    - String
+  VpcSubnetIds:
+    - String
+#}
