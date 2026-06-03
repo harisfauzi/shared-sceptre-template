@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('Resource Share(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('RAM Resource Share(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for resource_share in sceptre_user_data.resource_shares %}
 {%- set resource_share_name = resource_share.name %}
   {{ resource_share_name }}:
@@ -15,24 +14,30 @@ Resources:
 {%- if resource_share.allow_external_principals is defined %}
       AllowExternalPrincipals: {{ resource_share.allow_external_principals }}
 {%- endif %}
-{%- if resource_share.permission_arns is defined %}
+{%- if resource_share.permission_arns is defined %}{# BEGIN if resource_share.permission_arns is defined #}
       PermissionArns:
 {%- for permission_arn in resource_share.permission_arns %}
-        - {{ permission_arn }}
+        - {{ permission_arn | trim }}
 {%- endfor %}
-{%- endif %}
-{%- if resource_share.principals is defined %}
+{%- endif %}{# END if resource_share.permission_arns is defined #}
+{%- if resource_share.principals is defined %}{# BEGIN if resource_share.principals is defined #}
       Principals:
 {%- for principal in resource_share.principals %}
         - "{{ principal }}"
 {%- endfor %}
-{%- endif %}
-{%- if resource_share.resource_arns is defined %}
+{%- endif %}{# END if resource_share.principals is defined #}
+{%- if resource_share.resource_arns is defined %}{# BEGIN if resource_share.resource_arns is defined #}
       ResourceArns:
 {%- for resource_arn in resource_share.resource_arns %}
-        - {{ resource_arn }}
+        - {{ resource_arn | trim }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if resource_share.resource_arns is defined #}
+{%- if resource_share.sources is defined %}{# BEGIN if resource_share.sources is defined #}
+      Sources:
+{%- for source in resource_share.sources %}
+        - {{ source }}
+{%- endfor %}
+{%- endif %}{# END if resource_share.sources is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -48,13 +53,12 @@ Outputs:
 {%- for resource_share in sceptre_user_data.resource_shares %}
 {%- set resource_share_name = resource_share.name %}
   {{ resource_share_name }}:
-    Description: Subnet ID for {{ resource_share_name }}
+    Description: The ID for {{ resource_share_name }}
     Value:
       Ref: {{ resource_share_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_share_name }}"
-
   {{ resource_share_name }}Arn:
     Description: ARN for {{ resource_share_name }}
     Value:
@@ -64,5 +68,31 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_share_name }}-Arn"
-
-{%- endfor %}
+  {{ resource_share_name }}Status:
+    Description: Status for {{ resource_share_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ resource_share_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ resource_share_name }}-Status"
+{%- endfor %}{#
+# Supported structure as of 2026-06-03
+Type: AWS::RAM::ResourceShare
+Properties:
+  AllowExternalPrincipals: Boolean
+  Name: String
+  PermissionArns:
+    - String
+  Principals:
+    - String
+  ResourceArns:
+    - String
+  Sources:
+    - String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

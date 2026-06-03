@@ -1,0 +1,90 @@
+---
+Description: {{sceptre_user_data.description|default('RAM Permission(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for permission in sceptre_user_data.permissions %}
+{%- set permission_name = permission.name %}
+  {{ permission_name }}:
+    Type: AWS::RAM::Permission
+    DeletionPolicy: {{ permission.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ permission.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ permission_name }}
+{%- if permission.policy_template is defined %}
+      PolicyTemplate:
+        {{ permission.policy_template | indent(width=8, first=false) }}
+{%- elif permission.policy_template_json is defined %}
+      PolicyTemplate: |-
+        {{ permission.policy_template_json | indent(width=8, first=false) }}
+{%- endif %}
+      ResourceType: {{ permission.resource_type }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if permission.tags is defined %}
+{%- for key,value in permission.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for permission in sceptre_user_data.permissions %}
+{%- set permission_name = permission.name %}
+  {{ permission_name }}:
+    Description: The ARN for {{ permission_name }}
+    Value:
+      Ref: {{ permission_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ permission_name }}"
+  {{ permission_name }}Arn:
+    Description: ARN for {{ permission_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ permission_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ permission_name }}-Arn"
+  {{ permission_name }}IsResourceTypeDefault:
+    Description: Specifies whether this permission is the default for {{ permission_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ permission_name }}
+        - IsResourceTypeDefault
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ permission_name }}-IsResourceTypeDefault"
+  {{ permission_name }}PermissionType:
+    Description: The type of managed permission for {{ permission_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ permission_name }}
+        - PermissionType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ permission_name }}-PermissionType"
+  {{ permission_name }}Version:
+    Description: The version number for {{ permission_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ permission_name }}
+        - Version
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ permission_name }}-Version"
+{%- endfor %}{#
+# Supported structure as of 2026-06-03
+Type: AWS::RAM::Permission
+Properties:
+  Name: String
+  PolicyTemplate: Json
+  ResourceType: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

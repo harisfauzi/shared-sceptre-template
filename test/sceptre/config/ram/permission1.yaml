@@ -1,0 +1,101 @@
+---
+template:
+  type: file
+  path: ram/permission.yaml.j2
+
+sceptre_user_data:
+  description: "RAM Permission(s) for {{project_code}}"
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  permissions:
+    - name: RamPermissionEc2Instance
+      resource_type: "ec2:Instance"
+      policy_template_json: |-
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "ec2:DescribeInstances",
+                "ec2:DescribeTags",
+                "ec2:DescribeInstanceAttribute"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "ec2:ModifyInstanceAttribute",
+                "ec2:ModifyNetworkInterfaceAttribute"
+              ],
+              "Resource": "arn:aws:ec2:*:*:instance/*",
+              "Condition": {
+                "StringEquals": {
+                  "aws:ResourceTag/Environment": "Shared"
+                }
+              }
+            }
+          ]
+        }
+      tags:
+        Environment: "Production"
+        Service: "EC2Sharing"
+    - name: RamPermissionRdsDatabase
+      resource_type: "rds:Cluster"
+      policy_template: |-
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - rds:DescribeDBClusters
+              - rds:DescribeDBInstances
+              - rds:ListTagsForResource
+            Resource: "*"
+          - Effect: Allow
+            Action:
+              - rds:ModifyDBCluster
+              - rds:ModifyDBInstance
+            Resource: "arn:aws:rds:*:*:cluster/*"
+            Condition:
+              StringEquals:
+                "aws:ResourceTag/SharedAccess": "true"
+      tags:
+        Environment: "Staging"
+        Service: "RDSSharing"
+    - name: RamPermissionS3Bucket
+      resource_type: "s3:Bucket"
+      policy_template_json: |-
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetBucket*",
+                "s3:ListBucket*",
+                "s3:DescribeBucket"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                "arn:aws:s3:::shared-bucket/*",
+                "arn:aws:s3:::shared-bucket"
+              ]
+            }
+          ]
+        }
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+      tags:
+        Environment: "Development"
+        Service: "S3Sharing"
+
+stack_tags:
+  Test: ram-permission
