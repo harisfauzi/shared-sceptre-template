@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('RDS DB Security Group(s) f
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for db_security_group in sceptre_user_data.db_security_groups %}
 {%- set db_security_group_name = db_security_group.name %}
   {{ db_security_group_name }}:
@@ -12,13 +11,13 @@ Resources:
     UpdateReplacePolicy: {{ db_security_group.update_replace_policy | default('Delete') }}
     Properties:
       DBSecurityGroupIngress:
-{%- for ingress in db_security_group.db_security_group_ingress %}
+{%- for ingress in db_security_group.db_security_group_ingress %}{# BEGIN for ingress in db_security_group.db_security_group_ingress #}
         -
 {%- if ingress.cidr_ip is defined %}
           CIDRIP: {{ ingress.cidr_ip }}
 {%- endif %}
 {%- if ingress.ec2_security_group_id is defined %}
-          EC2SecurityGroupId: {{ ingress.ec2_security_group_id }}
+          EC2SecurityGroupId: {{ ingress.ec2_security_group_id | trim }}
 {%- endif %}
 {%- if ingress.ec2_security_group_name is defined %}
           EC2SecurityGroupName: {{ ingress.ec2_security_group_name }}
@@ -26,10 +25,10 @@ Resources:
 {%- if ingress.ec2_security_group_owner_id is defined %}
           EC2SecurityGroupOwnerId: {{ ingress.ec2_security_group_owner_id }}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{# END for ingress in db_security_group.db_security_group_ingress #}
       GroupDescription: {{ db_security_group.group_description }}
 {%- if db_security_group.ec2_vpc_id is defined %}
-      EC2VpcId: {{ db_security_group.ec2_vpc_id }}
+      EC2VpcId: {{ db_security_group.ec2_vpc_id | trim }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -40,11 +39,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for db_security_group in sceptre_user_data.db_security_groups %}
 {%- set db_security_group_name = db_security_group.name %}
   {{ db_security_group_name }}:
@@ -54,5 +51,19 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_security_group_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-03:
+Type: AWS::RDS::DBSecurityGroup
+Properties:
+  DBSecurityGroupIngress:
+    -
+      CIDRIP: String
+      EC2SecurityGroupId: String
+      EC2SecurityGroupName: String
+      EC2SecurityGroupOwnerId: String
+  EC2VpcId: String
+  GroupDescription: String
+  Tags:
+    - Key: String
+      Value: String
+#}
