@@ -14,10 +14,15 @@ Resources:
       Family: {{ db_parameter_group.family }}
 {%- if db_parameter_group.parameters is defined %}{# BEGIN if db_parameter_group.parameters is defined #}
       Parameters:
-        {{ db_parameter_group.parameters | indent(width=8, first=false) }}
+{%- for key, value in db_parameter_group.parameters.items() %}
+        {{ key }}: {{ value}}
+{%- endfor %}
 {%- elif db_parameter_group.parameters_json is defined %}
-      Parameters: |-
+      Parameters:
         {{ db_parameter_group.parameters_json | indent(width=8, first=false) }}
+{%- elif db_parameter_group.parameters_string is defined %}
+      Parameters: |-
+        {{ db_parameter_group.parameters_string | indent(width=8, first=false) }}
 {%- endif %}{# END if db_parameter_group.parameters is defined #}
 {%- if db_parameter_group.db_parameter_group_name is defined %}
       DBParameterGroupName: {{ db_parameter_group.db_parameter_group_name }}
