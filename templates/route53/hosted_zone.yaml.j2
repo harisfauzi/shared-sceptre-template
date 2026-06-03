@@ -4,7 +4,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
 
-{%- for hosted_zone in sceptre_user_data.hosted_zones %}{# BEGIN {%- for hosted_zone in sceptre_user_data.hosted_zones %} #}
+{%- for hosted_zone in sceptre_user_data.hosted_zones %}{# BEGIN for hosted_zone in sceptre_user_data.hosted_zones #}
 {%- set hosted_zone_name = hosted_zone.name %}
   {{ hosted_zone_name }}:
     Type: AWS::Route53::HostedZone
@@ -12,10 +12,18 @@ Resources:
     UpdateReplacePolicy: {{ hosted_zone.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ hosted_zone.hosted_zone_name }}
-{%- if hosted_zone.hosted_zone_config is defined %}
+{%- if hosted_zone.hosted_zone_config is defined %}{# BEGIN if hosted_zone.hosted_zone_config is defined #}
       HostedZoneConfig:
+{%- if hosted_zone.hosted_zone_config.comment is defined  %}
         Comment: {{ hosted_zone.hosted_zone_config.comment }}
 {%- endif %}
+{%- endif %}{# END if hosted_zone.hosted_zone_config is defined #}
+{%- if hosted_zone.hosted_zone_features is defined %}{# BEGIN if hosted_zone.hosted_zone_features is defined #}
+      HostedZoneFeatures:
+{%- if hosted_zone.hosted_zone_features.enable_accelerated_recovery is defined %}
+        EnableAcceleratedRecovery: {{ hosted_zone.hosted_zone_features.enable_accelerated_recovery | lower }}
+{%- endif %}
+{%- endif %}{# END if hosted_zone.hosted_zone_features is defined #}
 {%- if hosted_zone.hosted_zone_tags is defined %}
       HostedZoneTags:
 {%- for key, value in hosted_zone.hosted_zone_tags.items() %}
@@ -25,17 +33,16 @@ Resources:
 {%- endif %}
 {%- if hosted_zone.query_logging_config is defined %}
       QueryLoggingConfig:
-        CloudWatchLogsLogGroupArn: {{ hosted_zone.query_logging_config.cloud_watch_logs_log_group_arn }}
+        CloudWatchLogsLogGroupArn: {{ hosted_zone.query_logging_config.cloud_watch_logs_log_group_arn | trim }}
 {%- endif %}
-{%- if hosted_zone.vpcs is defined %}
+{%- if hosted_zone.vpcs is defined %}{# BEGIN if hosted_zone.vpcs is defined #}
       VPCs:
 {%- for vpc in hosted_zone.vpcs %}
         - VPCId: {{ vpc.vpc_id | trim }}
           VPCRegion: {{ vpc.vpc_region }}
 {%- endfor %}
-{%- endif %}
-
-{%- if hosted_zone.enable_dnssec is defined and hosted_zone.enable_dnssec == '1' %}
+{%- endif %}{# END if hosted_zone.vpcs is defined #}
+{%- if hosted_zone.enable_dnssec is defined and (hosted_zone.enable_dnssec or hosted_zone.enable_dnssec == '1') %}{# accepts true or '1' #}
   {{ hosted_zone_name }}DNSSEC:
     Type: AWS::Route53::DNSSEC
     DeletionPolicy: {{ hosted_zone.deletion_policy | default('Delete') }}
@@ -44,8 +51,7 @@ Resources:
       HostedZoneId:
         Ref: {{ hosted_zone_name }}
 {%- endif %}
-
-{%- endfor %}{# END {%- for hosted_zone in sceptre_user_data.hosted_zones %} #}
+{%- endfor %}{# END {%- for hosted_zone in sceptre_user_data.hosted_zones #}
 
 Outputs:
 {%- for hosted_zone in sceptre_user_data.hosted_zones %}
@@ -57,9 +63,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}"
-
-{%- if sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %}{# BEGIN {%- sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %} #}
-{%- else %}
   {{ hosted_zone_name }}Id:
     Description: The Hosted Zone ID for {{ hosted_zone_name }}
     Value:
@@ -69,8 +72,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-Id"
-
-{%- if not hosted_zone.vpcs is defined %}{# BEGIN {%- if not hosted_zone.vpcs is defined %} #}
+{%- if not hosted_zone.vpcs is defined %}{# BEGIN if not hosted_zone.vpcs is defined -- only valid for public hosted zones #}
   {{ hosted_zone_name }}NameServer0:
     Description: The NS Server for {{ hosted_zone_name }}
     Value:
@@ -82,7 +84,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer0"
-
   {{ hosted_zone_name }}NameServer1:
     Description: The NS Server for {{ hosted_zone_name }}
     Value:
@@ -94,7 +95,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer1"
-
   {{ hosted_zone_name }}NameServer2:
     Description: The NS Server for {{ hosted_zone_name }}
     Value:
@@ -106,7 +106,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer2"
-
   {{ hosted_zone_name }}NameServer3:
     Description: The NS Server for {{ hosted_zone_name }}
     Value:
@@ -118,7 +117,24 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hosted_zone_name }}-NameServer3"
-
-{%- endif %}{# END {%- if not hosted_zone.vpcs is defined %}#}
-{%- endif %}{# END {%- sceptre_user_data.verbose_output is defined and not sceptre_user_data.verbose_output %} #}
-{%- endfor %}
+{%- endif %}{# END if not hosted_zone.vpcs is defined #}
+{%- endfor %}{#
+# Supported structure as of 2026-06-03
+Type: AWS::Route53::HostedZone
+Properties:
+  HostedZoneConfig:
+    Comment: String
+  HostedZoneFeatures:
+    EnableAcceleratedRecovery: Boolean
+  HostedZoneTags:
+    -
+      Key: String
+      Value: String
+  Name: String
+  QueryLoggingConfig:
+    CloudWatchLogsLogGroupArn: String
+  VPCs:
+    -
+      VPCId: String
+      VPCRegion: String
+#}

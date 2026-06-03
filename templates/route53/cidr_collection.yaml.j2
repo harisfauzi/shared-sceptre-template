@@ -1,0 +1,65 @@
+---
+Description: {{sceptre_user_data.description|default('Route53 CIDR Collection(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for cidr_collection in sceptre_user_data.cidr_collections %}{# BEGIN for cidr_collection in sceptre_user_data.cidr_collections #}
+{%- set cidr_collection_name = cidr_collection.name %}
+  {{ cidr_collection_name }}:
+    Type: AWS::Route53::CidrCollection
+    DeletionPolicy: {{ cidr_collection.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ cidr_collection.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ cidr_collection_name }}
+{%- if cidr_collection.locations is defined %}{# BEGIN if cidr_collection.locations is defined #}
+      Locations:
+{%- for location in cidr_collection.locations %}{# BEGIN for location in cidr_collection.locations #}
+        -
+          CidrList:
+{%- for cidr in location.cidr_list %}
+            - {{ cidr }}
+{%- endfor %}
+          LocationName: {{ location.location_name }}
+{%- endfor %}{# END for location in cidr_collection.locations #}
+{%- endif %}{# END if cidr_collection.locations is defined#}
+{%- endfor %}{# END for cidr_collection in sceptre_user_data.cidr_collections #}
+
+Outputs:
+{%- for cidr_collection in sceptre_user_data.cidr_collections %}
+{%- set cidr_collection_name = cidr_collection.name %}
+  {{ cidr_collection_name }}:
+    Description: The CIDR Collection ID for {{ cidr_collection_name }}
+    Value:
+      Ref: {{ cidr_collection_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cidr_collection_name }}"
+  {{ cidr_collection_name }}Arn:
+    Description: The ARN for {{ cidr_collection_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cidr_collection_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cidr_collection_name }}-Arn"
+  {{ cidr_collection_name }}Id:
+    Description: The UUID of the CIDR collection {{ cidr_collection_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cidr_collection_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cidr_collection_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-06-03
+Type: AWS::Route53::CidrCollection
+Properties:
+  Locations:
+    -
+      CidrList:
+        - String
+      LocationName: String
+  Name: String
+#}
