@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Route53 Health Check(s) fo
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for health_check in sceptre_user_data.health_checks %}{# BEGIN {%- for health_check in sceptre_user_data.health_checks %} #}
 {%- set health_check_name = health_check.name %}
   {{ health_check_name }}:
@@ -12,7 +11,64 @@ Resources:
     UpdateReplacePolicy: {{ health_check.update_replace_policy | default('Delete') }}
     Properties:
       HealthCheckConfig:
-{{ health_check.health_check_config | indent(width=8, first=true) }}
+        Type: {{ health_check.health_check_config.type }}
+{%- if health_check.health_check_config.alarm_identifier is defined %}
+        AlarmIdentifier:
+          Name: {{ health_check.health_check_config.alarm_identifier.name }}
+          Region: {{ health_check.health_check_config.alarm_identifier.region }}
+{%- endif %}
+{%- if health_check.health_check_config.child_health_checks is defined %}{# BEGIN if health_check.health_check_config.child_health_checks is defined #}
+        ChildHealthChecks:
+{%- for child_health_check in health_check.health_check_config.child_health_checks %}
+          - {{ child_health_check }}
+{%- endfor %}
+{%- endif %}{# END if health_check.health_check_config.child_health_checks is defined #}
+{%- if health_check.health_check_config.enable_sni is defined %}
+        EnableSNI: {{ health_check.health_check_config.enable_sni | lower }}
+{%- endif %}
+{%- if health_check.health_check_config.failure_threshold is defined %}
+        FailureThreshold: {{ health_check.health_check_config.failure_threshold }}
+{%- endif %}
+{%- if health_check.health_check_config.fully_qualified_domain_name is defined %}
+        FullyQualifiedDomainName: {{ health_check.health_check_config.fully_qualified_domain_name }}
+{%- endif %}
+{%- if health_check.health_check_config.health_threshold is defined %}
+        HealthThreshold: {{ health_check.health_check_config.health_threshold }}
+{%- endif %}
+{%- if health_check.health_check_config.insufficient_data_health_status is defined %}
+        InsufficientDataHealthStatus: {{ health_check.health_check_config.insufficient_data_health_status }}
+{%- endif %}
+{%- if health_check.health_check_config.inverted is defined %}
+        Inverted: {{ health_check.health_check_config.inverted | lower }}
+{%- endif %}
+{%- if health_check.health_check_config.ip_address is defined %}
+        IPAddress: {{ health_check.health_check_config.ip_address }}
+{%- endif %}
+{%- if health_check.health_check_config.measure_latency is defined %}
+        MeasureLatency: {{ health_check.health_check_config.measure_latency | lower }}
+{%- endif %}
+{%- if health_check.health_check_config.port is defined %}
+        Port: {{ health_check.health_check_config.port }}
+{%- endif %}
+{%- if health_check.health_check_config.regions is defined %}{# BEGIN if health_check.health_check_config.regions is defined #}
+        Regions:
+{%- for region in health_check.health_check_config.regions %}
+          - {{ region }}
+{%- endfor %}
+{%- endif %}{# END if health_check.health_check_config.regions is defined #}
+{%- if health_check.health_check_config.request_interval is defined %}
+        RequestInterval: {{ health_check.health_check_config.request_interval }}
+{%- endif %}
+{%- if health_check.health_check_config.resource_path is defined %}
+        ResourcePath: {{ health_check.health_check_config.resource_path }}
+{%- endif %}
+{%- if health_check.health_check_config.routing_control_arn is defined %}
+        RoutingControlArn: {{ health_check.health_check_config.routing_control_arn | trim }}
+{%- endif %}
+{%- if health_check.health_check_config.search_string is defined %}
+        SearchString: |-
+          {{ health_check.health_check_config.search_string | indent(width=10, first=false) }}
+{%- endif %}
 {%- if health_check.health_check_tags is defined %}
       HealthCheckTags:
 {%- for key, value in health_check.health_check_tags.items() %}
@@ -32,15 +88,44 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ health_check_name }}"
-
   {{ health_check_name }}HealthCheckId:
     Description: The Health Check ID for {{ health_check_name }}
     Value:
-      Fn::GetAtt: {{ health_check_name }}
+      Fn::GetAtt:
         - {{ health_check_name }}
         - HealthCheckId
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ health_check_name }}-HealthCheckId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-03
+Type: AWS::Route53::HealthCheck
+Properties:
+  HealthCheckConfig:
+    AlarmIdentifier:
+      Name: String
+      Region: String
+    ChildHealthChecks:
+      - String
+    EnableSNI: Boolean
+    FailureThreshold: Integer
+    FullyQualifiedDomainName: String
+    HealthThreshold: Integer
+    InsufficientDataHealthStatus: String
+    Inverted: Boolean
+    IPAddress: String
+    MeasureLatency: Boolean
+    Port: Integer
+    Regions:
+      - String
+    RequestInterval: Integer
+    ResourcePath: String
+    RoutingControlArn: String
+    SearchString:
+      String
+    Type: String
+  HealthCheckTags:
+    -
+      Key: String
+      Value: String
+#}

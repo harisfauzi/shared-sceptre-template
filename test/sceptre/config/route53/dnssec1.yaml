@@ -1,0 +1,19 @@
+---
+template:
+  type: file
+  path: route53/dnssec.yaml.j2
+
+sceptre_user_data:
+  description: "Route53 DNSSEC(s) for {{project_code}}"
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  dnssecs:
+    - name: DnsSecPrimaryZone
+      hosted_zone_id: "Z1234567890ABC"
+    - name: DnsSecSecondaryZone
+      hosted_zone_id: "Z0987654321DEF"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+
+stack_tags:
+  Test: route53-dnssec

@@ -1,0 +1,49 @@
+---
+template:
+  type: file
+  path: route53/health_check.yaml.j2
+
+sceptre_user_data:
+  description: "Route53 Health Check(s) for {{project_code}}"
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  health_checks:
+    - name: HealthCheckHttpEndpoint
+      health_check_config:
+        type: "HTTP"
+        ip_address: "192.0.2.1"
+        port: 80
+        request_interval: 30
+        failure_threshold: 3
+        resource_path: "/health"
+        measure_latency: true
+        enable_sni: false
+      health_check_tags:
+        Environment: "Production"
+        Service: "WebServer"
+    - name: HealthCheckCloudWatchAlarm
+      health_check_config:
+        type: "CLOUDWATCH_METRIC"
+        alarm_identifier:
+          name: "MyCloudWatchAlarm"
+          region: "us-east-1"
+        insufficient_data_health_status: "Unhealthy"
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+      health_check_tags:
+        Environment: "Staging"
+        Service: "Monitoring"
+    - name: HealthCheckCalculated
+      health_check_config:
+        type: "CALCULATED"
+        child_health_checks:
+          - "abcdef12-3456-7890-abcd-ef1234567890"
+          - "12345678-90ab-cdef-1234-567890abcdef"
+        health_threshold: 1
+        inverted: false
+      health_check_tags:
+        Environment: "Production"
+        Service: "Calculated"
+
+stack_tags:
+  Test: route53-health-check

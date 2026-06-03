@@ -1,0 +1,47 @@
+---
+template:
+  type: file
+  path: route53/hosted_zone.yaml.j2
+
+sceptre_user_data:
+  description: "Route53 Hosted Zone(s) for {{project_code}}"
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  verbose_output: true
+  hosted_zones:
+    - name: PublicHostedZoneExample
+      hosted_zone_name: "example.com."
+      hosted_zone_config:
+        comment: "Public hosted zone for example.com"
+      hosted_zone_features:
+        enable_accelerated_recovery: true
+      hosted_zone_tags:
+        Environment: "Production"
+        Purpose: "Primary"
+        Team: "CloudOps"
+      enable_dnssec: true
+    - name: PrivateHostedZoneInternal
+      hosted_zone_name: "internal.example.com."
+      hosted_zone_config:
+        comment: "Private hosted zone for internal services"
+      vpcs:
+        - vpc_id: "vpc-12345678"
+          vpc_region: "us-east-1"
+        - vpc_id: "vpc-87654321"
+          vpc_region: "us-west-2"
+      hosted_zone_tags:
+        Environment: "Development"
+        Purpose: "Internal"
+        Team: "Platform"
+      query_logging_config:
+        cloud_watch_logs_log_group_arn: "arn:aws:logs:us-east-1:123456789012:log-group:/aws/route53/internal.example.com"
+    - name: SimpleHostedZone
+      hosted_zone_name: "subdomain.example.com."
+      deletion_policy: "Retain"
+      update_replace_policy: "Retain"
+      hosted_zone_tags:
+        Environment: "Staging"
+        Purpose: "Testing"
+
+stack_tags:
+  Test: route53-hosted-zone
