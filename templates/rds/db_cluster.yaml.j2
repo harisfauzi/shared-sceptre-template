@@ -11,12 +11,10 @@ Parameters:
     Description: Master User Password for {{ db_cluster_name }}
     Default: ''
     NoEcho: true
-
 {%- endfor %}
 {%- endif %}
 
 Resources:
-
 {%- for db_cluster in sceptre_user_data.db_clusters %}
 {%- set db_cluster_name = db_cluster.name %}
   {{ db_cluster_name }}:
@@ -37,7 +35,7 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if db_cluster.auto_minor_version_upgrade is defined %}
-      AutoMinorVersionUpgrade: {{ db_cluster.auto_minor_version_upgrade }}
+      AutoMinorVersionUpgrade: {{ db_cluster.auto_minor_version_upgrade | lower }}
 {%- endif %}
 {%- if db_cluster.availability_zones is defined %}
       AvailabilityZones:
@@ -51,8 +49,14 @@ Resources:
 {%- if db_cluster.backup_retention_period is defined %}
       BackupRetentionPeriod: {{ db_cluster.backup_retention_period }}
 {%- endif %}
+{%- if db_cluster.cluster_scalability_type is defined %}
+      ClusterScalabilityType: {{ db_cluster.cluster_scalability_type }}
+{%- endif %}
 {%- if db_cluster.copy_tags_to_snapshot is defined %}
-      CopyTagsToSnapshot: {{ db_cluster.copy_tags_to_snapshot }}
+      CopyTagsToSnapshot: {{ db_cluster.copy_tags_to_snapshot | lower }}
+{%- endif %}
+{%- if db_cluster.database_insights_mode is defined %}
+      DatabaseInsightsMode: {{ db_cluster.database_insights_mode }}
 {%- endif %}
 {%- if db_cluster.database_name is defined %}
       DatabaseName: {{ db_cluster.database_name }}
@@ -75,8 +79,11 @@ Resources:
 {%- if db_cluster.db_system_id is defined %}
       DBSystemId: {{ db_cluster.db_system_id | trim }}
 {%- endif %}
+{%- if db_cluster.delete_automated_backups is defined %}
+      DeleteAutomatedBackups: {{ db_cluster.delete_automated_backups | lower }}
+{%- endif %}
 {%- if db_cluster.deletion_protection is defined %}
-      DeletionProtection: {{ db_cluster.deletion_protection }}
+      DeletionProtection: {{ db_cluster.deletion_protection | lower }}
 {%- endif %}
 {%- if db_cluster.domain is defined %}
       Domain: {{ db_cluster.domain | trim }}
@@ -84,23 +91,23 @@ Resources:
 {%- if db_cluster.domain_iam_role_name is defined %}
       DomainIAMRoleName: {{ db_cluster.domain_iam_role_name | trim }}
 {%- endif %}
-{%- if db_cluster.enable_cloudwatch_logs_exports is defined %}
+{%- if db_cluster.enable_cloudwatch_logs_exports is defined %}{# BEGIN if db_cluster.enable_cloudwatch_logs_exports is defined #}
       EnableCloudwatchLogsExports:
 {%- for cloudwatch_log_exports in db_cluster.enable_cloudwatch_logs_exports %}
         - {{ cloudwatch_log_exports }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if db_cluster.enable_cloudwatch_logs_exports is defined #}
 {%- if db_cluster.enable_global_write_forwarding is defined %}
-      EnableGlobalWriteForwarding: {{ db_cluster.enable_global_write_forwarding }}
+      EnableGlobalWriteForwarding: {{ db_cluster.enable_global_write_forwarding | lower }}
 {%- endif %}
 {%- if db_cluster.enable_http_endpoint is defined %}
-      EnableHttpEndpoint: {{ db_cluster.enable_http_endpoint }}
+      EnableHttpEndpoint: {{ db_cluster.enable_http_endpoint | lower }}
 {%- endif %}
 {%- if db_cluster.enable_iam_database_authentication is defined %}
-      EnableIAMDatabaseAuthentication: {{ db_cluster.enable_iam_database_authentication }}
+      EnableIAMDatabaseAuthentication: {{ db_cluster.enable_iam_database_authentication | lower }}
 {%- endif %}
 {%- if db_cluster.enable_local_write_forwarding is defined %}
-      EnableLocalWriteForwarding: {{ db_cluster.enable_local_write_forwarding }}
+      EnableLocalWriteForwarding: {{ db_cluster.enable_local_write_forwarding | lower }}
 {%- endif %}
 {%- if db_cluster.engine is defined %}
       Engine: {{ db_cluster.engine }}
@@ -124,7 +131,10 @@ Resources:
       KmsKeyId: {{ db_cluster.kms_key_id | trim }}
 {%- endif %}
 {%- if db_cluster.manage_master_user_password is defined %}
-      ManageMasterUserPassword: {{ db_cluster.manage_master_user_password | trim }}
+      ManageMasterUserPassword: {{ db_cluster.manage_master_user_password | lower }}
+{%- endif %}
+{%- if db_cluster.master_user_authentication_type is defined %}
+      MasterUserAuthenticationType: {{ db_cluster.master_user_authentication_type }}
 {%- endif %}
 {%- if db_cluster.master_username is defined %}
       MasterUsername: {{ db_cluster.master_username }}
@@ -135,29 +145,29 @@ Resources:
 {%- elif db_cluster.master_user_password is defined %}
       MasterUserPassword: {{ db_cluster.master_user_password }}
 {%- endif %}
-{%- if db_cluster.master_user_secret is defined %}
+{%- if db_cluster.master_user_secret is defined %}{# BEGIN if db_cluster.master_user_secret is defined #}
       MasterUserSecret:
 {%- if db_cluster.master_user_secret.kms_key_id is defined %}
-        KmsKeyId: {{ db_cluster.master_user_secret.kms_key_id }}
+        KmsKeyId: {{ db_cluster.master_user_secret.kms_key_id | trim }}
 {%- endif %}
 {%- if db_cluster.master_user_secret.secret_arn is defined %}
-        SecretArn: {{ db_cluster.master_user_secret.secret_arn }}
+        SecretArn: {{ db_cluster.master_user_secret.secret_arn | trim }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if db_cluster.master_user_secret is defined #}
 {%- if db_cluster.monitoring_interval is defined %}
       MonitoringInterval: {{ db_cluster.monitoring_interval }}
 {%- endif %}
 {%- if db_cluster.monitoring_role_arn is defined %}
-      MonitoringRoleArn: {{ db_cluster.monitoring_role_arn }}
+      MonitoringRoleArn: {{ db_cluster.monitoring_role_arn | trim }}
 {%- endif %}
 {%- if db_cluster.network_type is defined %}
       NetworkType: {{ db_cluster.network_type }}
 {%- endif %}
 {%- if db_cluster.performance_insights_enabled is defined %}
-      PerformanceInsightsEnabled: {{ db_cluster.performance_insights_enabled }}
+      PerformanceInsightsEnabled: {{ db_cluster.performance_insights_enabled | lower }}
 {%- endif %}
 {%- if db_cluster.performance_insights_kms_key_id is defined %}
-      PerformanceInsightsKmsKeyId: {{ db_cluster.performance_insights_kms_key_id }}
+      PerformanceInsightsKmsKeyId: {{ db_cluster.performance_insights_kms_key_id | trim }}
 {%- endif %}
 {%- if db_cluster.performance_insights_retention_period is defined %}
       PerformanceInsightsRetentionPeriod: {{ db_cluster.performance_insights_retention_period }}
@@ -172,7 +182,7 @@ Resources:
       PreferredMaintenanceWindow: {{ db_cluster.preferred_maintenance_window }}
 {%- endif %}
 {%- if db_cluster.publicly_accessible is defined %}
-      PubliclyAccessible: {{ db_cluster.publicly_accessible }}
+      PubliclyAccessible: {{ db_cluster.publicly_accessible | lower }}
 {%- endif %}
 {%- if db_cluster.read_endpoint is defined %}
       ReadEndpoint:
@@ -187,7 +197,7 @@ Resources:
 {%- if db_cluster.restore_type is defined %}
       RestoreType: {{ db_cluster.restore_type }}
 {%- endif %}
-{%- if db_cluster.scaling_configuration is defined %}{# BEGIN {%- if db_cluster.scaling_configuration is defined %} #}
+{%- if db_cluster.scaling_configuration is defined %}{# BEGIN if db_cluster.scaling_configuration is defined #}
       ScalingConfiguration:
 {%- if db_cluster.scaling_configuration.auto_pause is defined %}
         AutoPause: {{ db_cluster.scaling_configuration.auto_pause }}
@@ -207,8 +217,8 @@ Resources:
 {%- if db_cluster.scaling_configuration.timeout_action is defined %}
         TimeoutAction: {{ db_cluster.scaling_configuration.timeout_action }}
 {%- endif %}
-{%- endif %}{# END {%- if db_cluster.scaling_configuration is defined %} #}
-{%- if db_cluster.serverless_v2_scaling_configuration is defined %}{# BEGIN {%- if db_cluster.serverless_v2_scaling_configuration is defined %} #}
+{%- endif %}{# END if db_cluster.scaling_configuration is defined #}
+{%- if db_cluster.serverless_v2_scaling_configuration is defined %}{# BEGIN if db_cluster.serverless_v2_scaling_configuration is defined #}
       ServerlessV2ScalingConfiguration:
 {%- if db_cluster.serverless_v2_scaling_configuration.max_capacity is defined %}
         MaxCapacity: {{ db_cluster.serverless_v2_scaling_configuration.max_capacity }}
@@ -216,18 +226,24 @@ Resources:
 {%- if db_cluster.serverless_v2_scaling_configuration.min_capacity is defined %}
         MinCapacity: {{ db_cluster.serverless_v2_scaling_configuration.min_capacity }}
 {%- endif %}
-{%- endif %}{# END {%- if db_cluster.serverless_v2_scaling_configuration is defined %}#}
+{%- if db_cluster.serverless_v2_scaling_configuration.seconds_until_auto_pause is defined %}
+        SecondsUntilAutoPause: {{ db_cluster.serverless_v2_scaling_configuration.seconds_until_auto_pause }}
+{%- endif %}
+{%- endif %}{# END if db_cluster.serverless_v2_scaling_configuration is defined %}#}
 {%- if db_cluster.snapshot_identifier is defined %}
       SnapshotIdentifier: {{ db_cluster.snapshot_identifier }}
 {%- endif %}
 {%- if db_cluster.source_db_cluster_identifier is defined %}
-      SourceDBClusterIdentifier: {{ db_cluster.source_db_cluster_identifier }}
+      SourceDBClusterIdentifier: {{ db_cluster.source_db_cluster_identifier | trim }}
+{%- endif %}
+{%- if db_cluster.source_db_cluster_resource_id is defined %}
+      SourceDbClusterResourceId: {{ db_cluster.source_db_cluster_resource_id | trim }}
 {%- endif %}
 {%- if db_cluster.source_region is defined %}
       SourceRegion: {{ db_cluster.source_region }}
 {%- endif %}
 {%- if db_cluster.storage_encrypted is defined %}
-      StorageEncrypted: {{ db_cluster.storage_encrypted }}
+      StorageEncrypted: {{ db_cluster.storage_encrypted | lower }}
 {%- endif %}
 {%- if db_cluster.storage_type is defined %}
       StorageType: {{ db_cluster.storage_type }}
@@ -235,12 +251,12 @@ Resources:
 {%- if db_cluster.use_latest_restorable_time is defined %}
       UseLatestRestorableTime: {{ db_cluster.use_latest_restorable_time }}
 {%- endif %}
-{%- if db_cluster.vpc_security_group_ids is defined %}
+{%- if db_cluster.vpc_security_group_ids is defined %}{# BEGIN if db_cluster.vpc_security_group_ids is defined #}
       VpcSecurityGroupIds:
 {%- for security_group_id in db_cluster.vpc_security_group_ids %}
         - {{ security_group_id | trim }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if db_cluster.vpc_security_group_ids is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -250,11 +266,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for db_cluster in sceptre_user_data.db_clusters %}
 {%- set db_cluster_name = db_cluster.name %}
   {{ db_cluster_name }}:
@@ -264,7 +278,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}"
-
   {{ db_cluster_name }}DBClusterArn:
     Description: The Amazon Resource Name (ARN) for the DB cluster {{ db_cluster_name }}
     Value:
@@ -274,7 +287,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-DBClusterArn"
-
   {{ db_cluster_name }}DBClusterResourceId:
     Description: The AWS Region-unique, immutable identifier for the DB cluster {{ db_cluster_name }}
     Value:
@@ -284,7 +296,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-DBClusterResourceId"
-
   {{ db_cluster_name }}EndpointAddres:
     Description: The connection endpoint for {{ db_cluster_name }}
     Value:
@@ -294,7 +305,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-EndpointAddres"
-
   {{ db_cluster_name }}EndpointPort:
     Description: The connection port for {{ db_cluster_name }}
     Value:
@@ -305,7 +315,6 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-EndpointPort"
 {%- if db_cluster.master_user_secret is defined %}
-
   {{ db_cluster_name }}MasterUserSecretSecretArn:
     Description: The Amazon Resource Name (ARN) of the secret for master user of {{ db_cluster_name }}
     Value:
@@ -317,7 +326,6 @@ Outputs:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-MasterUserSecretSecretArn"
 {%- endif %}
 {%- if db_cluster.read_endpoint is defined %}
-
   {{ db_cluster_name }}ReadEndpointAddress:
     Description: The reader endpoint for DB cluster {{ db_cluster_name }}
     Value:
@@ -328,5 +336,88 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-ReadEndpointAddress"
 {%- endif %}
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-03:
+Type: AWS::RDS::DBCluster
+Properties:
+  AllocatedStorage: Integer
+  AssociatedRoles:
+    -
+      FeatureName: String
+      RoleArn: String
+  AutoMinorVersionUpgrade: Boolean
+  AvailabilityZones:
+    - String
+  BacktrackWindow: Integer
+  BackupRetentionPeriod: Integer
+  ClusterScalabilityType: String
+  CopyTagsToSnapshot: Boolean
+  DatabaseInsightsMode: String
+  DatabaseName: String
+  DBClusterIdentifier: String
+  DBClusterInstanceClass: String
+  DBClusterParameterGroupName: String
+  DBInstanceParameterGroupName: String
+  DBSubnetGroupName: String
+  DBSystemId: String
+  DeleteAutomatedBackups: Boolean
+  DeletionProtection: Boolean
+  Domain: String
+  DomainIAMRoleName: String
+  EnableCloudwatchLogsExports:
+    - String
+  EnableGlobalWriteForwarding: Boolean
+  EnableHttpEndpoint: Boolean
+  EnableIAMDatabaseAuthentication: Boolean
+  EnableLocalWriteForwarding: Boolean
+  Engine: String
+  EngineLifecycleSupport: String
+  EngineMode: String
+  EngineVersion: String
+  GlobalClusterIdentifier: String
+  Iops: Integer
+  KmsKeyId: String
+  ManageMasterUserPassword: Boolean
+  MasterUserAuthenticationType: String
+  MasterUsername: String
+  MasterUserPassword: String
+  MasterUserSecret:
+    KmsKeyId: String
+    SecretArn: String
+  MonitoringInterval: Integer
+  MonitoringRoleArn: String
+  NetworkType: String
+  PerformanceInsightsEnabled: Boolean
+  PerformanceInsightsKmsKeyId: String
+  PerformanceInsightsRetentionPeriod: Integer
+  Port: Integer
+  PreferredBackupWindow: String
+  PreferredMaintenanceWindow: String
+  PubliclyAccessible: Boolean
+  ReplicationSourceIdentifier: String
+  RestoreToTime: String
+  RestoreType: String
+  ScalingConfiguration:
+    AutoPause: Boolean
+    MaxCapacity: Integer
+    MinCapacity: Integer
+    SecondsBeforeTimeout: Integer
+    SecondsUntilAutoPause: Integer
+    TimeoutAction: String
+  ServerlessV2ScalingConfiguration:
+    MaxCapacity: Number
+    MinCapacity: Number
+    SecondsUntilAutoPause: Integer
+  SnapshotIdentifier: String
+  SourceDBClusterIdentifier: String
+  SourceDbClusterResourceId: String
+  SourceRegion: String
+  StorageEncrypted: Boolean
+  StorageType: String
+  Tags:
+    - Key: String
+      Value: String
+  UseLatestRestorableTime: Boolean
+  VpcSecurityGroupIds:
+    - String
+#}

@@ -20,6 +20,9 @@ Resources:
 {%- elif db_parameter_group.parameters_json is defined %}
       Parameters:
         {{ db_parameter_group.parameters_json | indent(width=8, first=false) }}
+{%- elif db_parameter_group.parameters_string is defined %}
+      Parameters: |-
+        {{ db_parameter_group.parameters_string | indent(width=8, first=false) }}
 {%- endif %}{# END if db_parameter_group.parameters is defined #}
 {%- if db_parameter_group.db_parameter_group_name is defined %}
       DBParameterGroupName: {{ db_parameter_group.db_parameter_group_name }}
@@ -46,7 +49,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_parameter_group_name }}"
 {%- endfor %}{#
-# Supported structure as of 2025/04/30:
+# Supported structure as of 2026-06-03:
 Type: AWS::RDS::DBParameterGroup
 Properties:
   DBParameterGroupName: String

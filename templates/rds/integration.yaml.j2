@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('RDS Integration(s) for '+s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for integration in sceptre_user_data.integrations %}
 {%- set integration_name = integration.name %}
   {{ integration_name }}:
@@ -15,9 +14,7 @@ Resources:
       TargetArn: {{ integration.target_arn | trim }}
 {%- if integration.additional_encryption_context is defined %}
       AdditionalEncryptionContext:
-{%- for key,value in integration.additional_encryption_context.items() %}
-        {{ key }}: {{ value }}
-{%- endfor %}
+        {{ integration.additional_encryption_context | indent(width=8, first=false)}}
 {%- endif %}
 {%- if integration.data_filter is defined %}
       DataFilter: {{ integration.data_filter }}
@@ -29,7 +26,7 @@ Resources:
       IntegrationName: {{ integration.integration_name }}
 {%- endif %}
 {%- if integration.kms_key_id is defined %}
-      KMSKeyId: {{ integration.kms_key_id }}
+      KMSKeyId: {{ integration.kms_key_id | trim }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -40,11 +37,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for integration in sceptre_user_data.integrations %}
 {%- set integration_name = integration.name %}
   {{ integration_name }}:
@@ -54,9 +49,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ integration_name }}"
-
   {{ integration_name }}CreateTime:
-    Description: The ARN of the integration {{ integration_name }}
+    Description: The time when the integration {{ integration_name }} was created
     Value:
       Fn::GetAtt:
         - {{ integration_name }}
@@ -64,5 +58,28 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ integration_name }}-CreateTime"
-
-{%- endfor %}
+  {{ integration_name }}IntegrationArn:
+    Description: The ARN of the integration {{ integration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ integration_name }}
+        - IntegrationArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ integration_name }}-IntegrationArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-03:
+Type: AWS::RDS::Integration
+Properties:
+  AdditionalEncryptionContext:
+    Key: Value
+  DataFilter: String
+  Description: String
+  IntegrationName: String
+  KMSKeyId: String
+  SourceArn: String
+  Tags:
+    - Key: String
+      Value: String
+  TargetArn: String
+#}

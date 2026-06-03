@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('RDS Option Group(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for option_group in sceptre_user_data.option_groups %}
 {%- set option_group_name = option_group.name %}
   {{ option_group_name }}:
@@ -17,19 +16,19 @@ Resources:
 {%- if option_group.option_group_name is defined %}
       OptionGroupName: {{ option_group.option_group_name }}
 {%- endif %}
-{%- if option_group.option_configurations is defined %}
+{%- if option_group.option_configurations is defined %}{# BEGIN if option_group.option_configurations is defined #}
       OptionConfigurations:
-{%- for option_configuration in option_group.option_configurations %}
+{%- for option_configuration in option_group.option_configurations %}{# BEGIN for option_configuration in option_group.option_configurations #}
         - OptionName: {{ option_configuration.option_name }}
-{%- if option_configuration.db_security_group_memberships is defined %}
+{%- if option_configuration.db_security_group_memberships is defined %}{# BEGIN if option_configuration.db_security_group_memberships is defined #}
           DBSecurityGroupMemberships:
 {%- for db_security_group_name in option_configuration.db_security_group_memberships %}
             - {{ db_security_group_name }}
 {%- endfor %}
-{%- endif %}
-{%- if option_configuration.option_settings is defined %}
+{%- endif %}{# END if option_configuration.db_security_group_memberships is defined #}
+{%- if option_configuration.option_settings is defined %}{# BEGIN if option_configuration.option_settings is defined #}
           OptionSettings:
-{%- for option_setting in option_configuration.option_settings %}
+{%- for option_setting in option_configuration.option_settings %}{# BEGIN for option_setting in option_configuration.option_settings #}
             -
 {%- if option_setting.name is defined %}
               Name: {{ option_setting.name }}
@@ -37,22 +36,22 @@ Resources:
 {%- if option_setting.value is defined %}
               Value: {{ option_setting.value }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for option_setting in option_configuration.option_settings #}
+{%- endif %}{# END if option_configuration.option_settings is defined #}
 {%- if option_configuration.option_version is defined %}
           OptionVersion: {{ option_configuration.option_version }}
 {%- endif %}
 {%- if option_configuration.port is defined %}
           Port: {{ option_configuration.port }}
 {%- endif %}
-{%- if option_configuration.vpc_security_group_memberships is defined %}
+{%- if option_configuration.vpc_security_group_memberships is defined %}{# BEGIN if option_configuration.vpc_security_group_memberships is defined #}
           VpcSecurityGroupMemberships:
 {%- for vpc_security_group_name in option_configuration.vpc_security_group_memberships %}
             - {{ vpc_security_group_name }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endif %}{# END if option_configuration.vpc_security_group_memberships is defined #}
+{%- endfor %}{# END for option_configuration in option_group.option_configurations #}
+{%- endif %}{# END if option_group.option_configurations is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -62,11 +61,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for option_group in sceptre_user_data.option_groups %}
 {%- set option_group_name = option_group.name %}
   {{ option_group_name }}:
@@ -76,5 +73,28 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ option_group_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-03:
+Type: AWS::RDS::OptionGroup
+Properties:
+  EngineName: String
+  MajorEngineVersion: String
+  OptionConfigurations:
+    -
+      DBSecurityGroupMemberships:
+        - String
+      OptionName: String
+      OptionSettings:
+        -
+          Name: String
+          Value: String
+      OptionVersion: String
+      Port: Integer
+      VpcSecurityGroupMemberships:
+        - String
+  OptionGroupDescription: String
+  OptionGroupName: String
+  Tags:
+    - Key: String
+      Value: String
+#}

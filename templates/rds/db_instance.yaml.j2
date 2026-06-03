@@ -11,12 +11,10 @@ Parameters:
     Description: Master User Password for {{ db_instance_name }}
     Default: ''
     NoEcho: true
-
 {%- endfor %}
 {%- endif %}
 
 Resources:
-
 {%- for db_instance in sceptre_user_data.db_instances %}
 {%- set db_instance_name = db_instance.name %}
   {{ db_instance_name }}:
@@ -24,27 +22,57 @@ Resources:
     DeletionPolicy: {{ db_instance.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ db_instance.update_replace_policy | default('Delete') }}
     Properties:
+{%- if db_instance.additional_storage_volumes is defined %}{# BEGIN if db_instance.additional_storage_volumes is defined #}
+      AdditionalStorageVolumes:
+{%- for volume in db_instance.additional_storage_volumes %}{# BEGIN for volume in db_instance.additional_storage_volumes #}
+        -
+{%- if volume.allocated_storage is defined %}
+          AllocatedStorage: {{ volume.allocated_storage }}
+{%- endif %}
+{%- if volume.iops is defined %}
+          Iops: {{ volume.iops }}
+{%- endif %}
+{%- if volume.max_allocated_storage is defined %}
+          MaxAllocatedStorage: {{ volume.max_allocated_storage }}
+{%- endif %}
+{%- if volume.storage_throughput is defined %}
+          StorageThroughput: {{ volume.storage_throughput }}
+{%- endif %}
+{%- if volume.storage_type is defined %}
+          StorageType: {{ volume.storage_type }}
+{%- endif %}
+{%- if volume.volume_name is defined %}
+          VolumeName: {{ volume.volume_name }}
+{%- endif %}
+{%- endfor %}{# END for volume in db_instance.additional_storage_volumes #}
+{%- endif %}{# END if db_instance.additional_storage_volumes is defined #}
 {%- if db_instance.allocated_storage is defined %}
       AllocatedStorage: {{ db_instance.allocated_storage }}
 {%- endif %}
 {%- if db_instance.allow_major_version_upgrade is defined %}
-      AllowMajorVersionUpgrade: {{ db_instance.allow_major_version_upgrade }}
+      AllowMajorVersionUpgrade: {{ db_instance.allow_major_version_upgrade | lower }}
 {%- endif %}
-{%- if db_instance.associated_roles is defined %}
+{%- if db_instance.apply_immediately is defined %}
+      ApplyImmediately: {{ db_instance.apply_immediately | lower }}
+{%- endif %}
+{%- if db_instance.associated_roles is defined %}{# BEGIN if db_instance.associated_roles is defined #}
       AssociatedRoles:
 {%- for associated_role in db_instance.associated_roles %}
         - FeatureName: {{ associated_role.feature_name }}
           RoleArn: {{ associated_role.role_arn }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if db_instance.associated_roles is defined #}
 {%- if db_instance.automatic_backup_replication_kms_key_id is defined %}
-      AutomaticBackupReplicationKmsKeyId: {{ db_instance.automatic_backup_replication_kms_key_id }}
+      AutomaticBackupReplicationKmsKeyId: {{ db_instance.automatic_backup_replication_kms_key_id | trim }}
 {%- endif %}
 {%- if db_instance.automatic_backup_replication_region is defined %}
       AutomaticBackupReplicationRegion: {{ db_instance.automatic_backup_replication_region }}
 {%- endif %}
+{%- if db_instance.automatic_backup_replication_retention_period is defined %}
+      AutomaticBackupReplicationRetentionPeriod: {{ db_instance.automatic_backup_replication_retention_period }}
+{%- endif %}
 {%- if db_instance.auto_minor_version_upgrade is defined %}
-      AutoMinorVersionUpgrade: {{ db_instance.auto_minor_version_upgrade }}
+      AutoMinorVersionUpgrade: {{ db_instance.auto_minor_version_upgrade | lower }}
 {%- endif %}
 {%- if db_instance.availability_zone is defined %}
       AvailabilityZone: {{ db_instance.availability_zone }}
@@ -52,10 +80,13 @@ Resources:
 {%- if db_instance.backup_retention_period is defined %}
       BackupRetentionPeriod: {{ db_instance.backup_retention_period }}
 {%- endif %}
+{%- if db_instance.backup_target is defined %}
+      BackupTarget: {{ db_instance.backup_target }}
+{%- endif %}
 {%- if db_instance.ca_certificate_identifier is defined %}
       CACertificateIdentifier: {{ db_instance.ca_certificate_identifier }}
 {%- endif %}
-{%- if db_instance.certificate_details is defined %}{# BEGIN {%- if db_instance.certificate_details is defined %} #}
+{%- if db_instance.certificate_details is defined %}{# BEGIN if db_instance.certificate_details is defined (this is no longer available )#}
       CertificateDetails: {{ db_instance.certificate_details }}
 {%- if db_instance.certificate_details.ca_identifier is defined %}
         CAIdentifier: {{ db_instance.certificate_details.ca_identifier }}
@@ -63,24 +94,27 @@ Resources:
 {%- if db_instance.certificate_details.valid_till is defined %}
         ValidTill: {{ db_instance.certificate_details.valid_till }}
 {%- endif %}
-{%- endif %}{# END {%- if db_instance.certificate_details is defined %} #}
+{%- endif %}{# END if db_instance.certificate_details is defined #}
 {%- if db_instance.certificate_rotation_restart is defined %}
-      CertificateRotationRestart: {{ db_instance.certificate_rotation_restart }}
+      CertificateRotationRestart: {{ db_instance.certificate_rotation_restart | lower }}
 {%- endif %}
 {%- if db_instance.character_set_name is defined %}
       CharacterSetName: {{ db_instance.character_set_name }}
 {%- endif %}
 {%- if db_instance.copy_tags_to_snapshot is defined %}
-      CopyTagsToSnapshot: {{ db_instance.copy_tags_to_snapshot }}
+      CopyTagsToSnapshot: {{ db_instance.copy_tags_to_snapshot | lower }}
 {%- endif %}
 {%- if db_instance.custom_iam_instance_profile is defined %}
       CustomIAMInstanceProfile: {{ db_instance.custom_iam_instance_profile }}
 {%- endif %}
+{%- if db_instance.database_insights_mode is defined %}
+      DatabaseInsightsMode: {{ db_instance.database_insights_mode }}
+{%- endif %}
 {%- if db_instance.db_cluster_identifier is defined %}
-      DBClusterIdentifier: {{ db_instance.db_cluster_identifier }}
+      DBClusterIdentifier: {{ db_instance.db_cluster_identifier | trim }}
 {%- endif %}
 {%- if db_instance.db_cluster_snapshot_identifier is defined %}
-      DBClusterSnapshotIdentifier: {{ db_instance.db_cluster_snapshot_identifier }}
+      DBClusterSnapshotIdentifier: {{ db_instance.db_cluster_snapshot_identifier | trim }}
 {%- endif %}
 {%- if db_instance.db_instance_class is defined %}
       DBInstanceClass: {{ db_instance.db_instance_class }}
@@ -110,26 +144,26 @@ Resources:
       DBSystemId: {{ db_instance.db_system_id }}
 {%- endif %}
 {%- if db_instance.dedicated_log_volume is defined %}
-      DedicatedLogVolume: {{ db_instance.dedicated_log_volume }}
+      DedicatedLogVolume: {{ db_instance.dedicated_log_volume | lower }}
 {%- endif %}
 {%- if db_instance.delete_automated_backups is defined %}
-      DeleteAutomatedBackups: {{ db_instance.delete_automated_backups }}
+      DeleteAutomatedBackups: {{ db_instance.delete_automated_backups | lower }}
 {%- endif %}
 {%- if db_instance.deletion_protection is defined %}
-      DeletionProtection: {{ db_instance.deletion_protection }}
+      DeletionProtection: {{ db_instance.deletion_protection | lower }}
 {%- endif %}
 {%- if db_instance.domain is defined %}
       Domain: {{ db_instance.domain }}
 {%- endif %}
 {%- if db_instance.domain_auth_secret_arn is defined %}
-      DomainAuthSecretArn: {{ db_instance.domain_auth_secret_arn }}
+      DomainAuthSecretArn: {{ db_instance.domain_auth_secret_arn | trim }}
 {%- endif %}
-{%- if db_instance.domain_dns_ips is defined %}
+{%- if db_instance.domain_dns_ips is defined %}{# BEGIN if db_instance.domain_dns_ips is defined #}
       DomainDnsIps:
 {%- for ip_address in db_instance.domain_dns_ips %}
         - {{ ip_address }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if db_instance.domain_dns_ips is defined #}
 {%- if db_instance.domain_fqdn is defined %}
       DomainFqdn: {{ db_instance.domain_fqdn }}
 {%- endif %}
@@ -139,19 +173,19 @@ Resources:
 {%- if db_instance.domain_ou is defined %}
       DomainOu: {{ db_instance.domain_ou }}
 {%- endif %}
-{%- if db_instance.enable_cloudwatch_logs_exports is defined %}
+{%- if db_instance.enable_cloudwatch_logs_exports is defined %}{# BEGIN if db_instance.enable_cloudwatch_logs_exports is defined #}
       EnableCloudwatchLogsExports:
 {%- for cloudwatch_log_export in db_instance.enable_cloudwatch_logs_exports %}
         - {{ cloudwatch_log_export }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if db_instance.enable_cloudwatch_logs_exports is defined #}
 {%- if db_instance.enable_iam_database_authentication is defined %}
-      EnableIAMDatabaseAuthentication: {{ db_instance.enable_iam_database_authentication }}
+      EnableIAMDatabaseAuthentication: {{ db_instance.enable_iam_database_authentication | lower }}
 {%- endif %}
 {%- if db_instance.enable_performance_insights is defined %}
-      EnablePerformanceInsights: {{ db_instance.enable_performance_insights }}
+      EnablePerformanceInsights: {{ db_instance.enable_performance_insights | lower }}
 {%- endif %}
-{%- if db_instance.endpoint is defined %}
+{%- if db_instance.endpoint is defined %}{# BEGIN if db_instance.endpoint is defined (this is no longer available) #}
       Endpoint:
 {%- if db_instance.endpoint.address is defined %}
         Address: {{ db_instance.endpoint.address }}
@@ -162,7 +196,7 @@ Resources:
 {%- if db_instance.endpoint.port is defined %}
         Port: {{ db_instance.endpoint.port }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if db_instance.endpoint is defined #}
 {%- if db_instance.engine is defined %}
       Engine: {{ db_instance.engine }}
 {%- endif %}
@@ -182,7 +216,10 @@ Resources:
       LicenseModel: {{ db_instance.license_model }}
 {%- endif %}
 {%- if db_instance.manage_master_user_password is defined %}
-      ManageMasterUserPassword: {{ db_instance.manage_master_user_password }}
+      ManageMasterUserPassword: {{ db_instance.manage_master_user_password | lower }}
+{%- endif %}
+{%- if db_instance.manage_master_user_authentication_type is defined %}
+      MasterUserAuthenticationType: {{ db_instance.master_user_authentication_type }}
 {%- endif %}
 {%- if db_instance.master_username is defined %}
       MasterUsername: {{ db_instance.master_username }}
@@ -195,15 +232,15 @@ Resources:
       MasterUserPassword: {{ db_instance.master_user_password }}
 {%- endif %}
 {%- endif %}
-{%- if db_instance.master_user_secret is defined %}{# BEGIN {%- if db_instance.master_user_secret is defined %} #}
+{%- if db_instance.master_user_secret is defined %}{# BEGIN if db_instance.master_user_secret is defined #}
       MasterUserSecret:
 {%- if db_instance.master_user_secret.kms_key_id is defined %}
-        KmsKeyId: {{ db_instance.master_user_secret.kms_key_id }}
+        KmsKeyId: {{ db_instance.master_user_secret.kms_key_id | trim }}
 {%- endif %}
 {%- if db_instance.master_user_secret.secret_arn is defined %}
-        SecretArn: {{ db_instance.master_user_secret.secret_arn }}
+        SecretArn: {{ db_instance.master_user_secret.secret_arn | trim }}
 {%- endif %}
-{%- endif %}{# END {%- if db_instance.master_user_secret is defined %} #}
+{%- endif %}{# END if db_instance.master_user_secret is defined #}
 {%- if db_instance.max_allocated_storage is defined %}
       MaxAllocatedStorage: {{ db_instance.max_allocated_storage }}
 {%- endif %}
@@ -211,10 +248,10 @@ Resources:
       MonitoringInterval: {{ db_instance.monitoring_interval }}
 {%- endif %}
 {%- if db_instance.monitoring_role_arn is defined %}
-      MonitoringRoleArn: {{ db_instance.monitoring_role_arn }}
+      MonitoringRoleArn: {{ db_instance.monitoring_role_arn | trim }}
 {%- endif %}
 {%- if db_instance.multi_az is defined %}
-      MultiAZ: {{ db_instance.multi_az }}
+      MultiAZ: {{ db_instance.multi_az | lower }}
 {%- endif %}
 {%- if db_instance.nchar_character_set_name is defined %}
       NcharCharacterSetName: {{ db_instance.nchar_character_set_name }}
@@ -226,7 +263,7 @@ Resources:
       OptionGroupName: {{ db_instance.option_group_name }}
 {%- endif %}
 {%- if db_instance.performance_insights_kms_key_id is defined %}
-      PerformanceInsightsKMSKeyId: {{ db_instance.performance_insights_kms_key_id }}
+      PerformanceInsightsKMSKeyId: {{ db_instance.performance_insights_kms_key_id | trim }}
 {%- endif %}
 {%- if db_instance.performance_insights_retention_period is defined %}
       PerformanceInsightsRetentionPeriod: {{ db_instance.performance_insights_retention_period }}
@@ -240,9 +277,9 @@ Resources:
 {%- if db_instance.preferred_maintenance_window is defined %}
       PreferredMaintenanceWindow: {{ db_instance.preferred_maintenance_window }}
 {%- endif %}
-{%- if db_instance.processor_features is defined %}
+{%- if db_instance.processor_features is defined %}{# BEGIN if db_instance.processor_features is defined #}
       ProcessorFeatures:
-{%- for processor_feature in db_instance.processor_features %}
+{%- for processor_feature in db_instance.processor_features %}{# BEGIN for processor_feature in db_instance.processor_features #}
         -
 {%- if processor_feature.name is defined %}
           Name: {{ processor_feature.name }}
@@ -250,13 +287,13 @@ Resources:
 {%- if processor_feature.value is defined %}
           Value: {{ processor_feature.value }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for processor_feature in db_instance.processor_features #}
+{%- endif %}{# END if db_instance.processor_features is defined #}
 {%- if db_instance.promotion_tier is defined %}
       PromotionTier: {{ db_instance.promotion_tier }}
 {%- endif %}
 {%- if db_instance.publicly_accessible is defined %}
-      PubliclyAccessible: {{ db_instance.publicly_accessible }}
+      PubliclyAccessible: {{ db_instance.publicly_accessible | lower }}
 {%- endif %}
 {%- if db_instance.replica_mode is defined %}
       ReplicaMode: {{ db_instance.replica_mode }}
@@ -265,22 +302,22 @@ Resources:
       RestoreTime: {{ db_instance.restore_time }}
 {%- endif %}
 {%- if db_instance.source_db_cluster_identifier is defined %}
-      SourceDBClusterIdentifier: {{ db_instance.source_db_cluster_identifier }}
+      SourceDBClusterIdentifier: {{ db_instance.source_db_cluster_identifier | trim }}
 {%- endif %}
 {%- if db_instance.source_db_instance_automatied_backups_arn is defined %}
-      SourceDBInstanceAutomatedBackupsArn: {{ db_instance.source_db_instance_automatied_backups_arn }}
+      SourceDBInstanceAutomatedBackupsArn: {{ db_instance.source_db_instance_automatied_backups_arn | trim }}
 {%- endif %}
 {%- if db_instance.source_db_instance_identifier is defined %}
-      SourceDBInstanceIdentifier: {{ db_instance.source_db_instance_identifier }}
+      SourceDBInstanceIdentifier: {{ db_instance.source_db_instance_identifier | trim }}
 {%- endif %}
 {%- if db_instance.source_dbi_resource_id is defined %}
-      SourceDbiResourceId: {{ db_instance.source_dbi_resource_id }}
+      SourceDbiResourceId: {{ db_instance.source_dbi_resource_id | trim }}
 {%- endif %}
 {%- if db_instance.source_region is defined %}
       SourceRegion: {{ db_instance.source_region }}
 {%- endif %}
 {%- if db_instance.storage_encrypted is defined %}
-      StorageEncrypted: {{ db_instance.storage_encrypted }}
+      StorageEncrypted: {{ db_instance.storage_encrypted | lower }}
 {%- endif %}
 {%- if db_instance.storage_throughput is defined %}
       StorageThroughput: {{ db_instance.storage_throughput }}
@@ -292,17 +329,17 @@ Resources:
       Timezone: {{ db_instance.timezone }}
 {%- endif %}
 {%- if db_instance.use_default_processor_features is defined %}
-      UseDefaultProcessorFeatures: {{ db_instance.use_default_processor_features }}
+      UseDefaultProcessorFeatures: {{ db_instance.use_default_processor_features | lower }}
 {%- endif %}
 {%- if db_instance.use_latest_restorable_time is defined %}
-      UseLatestRestorableTime: {{ db_instance.use_latest_restorable_time }}
+      UseLatestRestorableTime: {{ db_instance.use_latest_restorable_time | lower }}
 {%- endif %}
-{%- if db_instance.vpc_security_groups is defined %}
+{%- if db_instance.vpc_security_groups is defined %}{# BEGIN if db_instance.vpc_security_groups is defined #}
       VPCSecurityGroups:
 {%- for security_group_id in db_instance.vpc_security_groups %}
         - {{ security_group_id }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if db_instance.vpc_security_groups is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -312,11 +349,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for db_instance in sceptre_user_data.db_instances %}
 {%- set db_instance_name = db_instance.name %}
   {{ db_instance_name }}:
@@ -327,7 +362,6 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}"
 {%- if db_instance.certificate_details is defined %}
-
   {{ db_instance_name }}CertificateDetailsCAIdentifier:
     Description: The CA identifier of the CA certificate used for the DB instance's server certificate for {{ db_instance_name }}
     Value:
@@ -337,7 +371,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}-CertificateDetailsCAIdentifier"
-
   {{ db_instance_name }}CertificateDetailsValidTill:
     Description: The expiration date of the DB instance’s server certificate for {{ db_instance_name }}
     Value:
@@ -347,8 +380,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}-CertificateDetailsValidTill"
+  {{ db_instance_name }}DBInstanceArn:
+    Description: The Amazon Resource Name (ARN) of the DB instance for {{ db_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ db_instance_name }}
+        - DBInstanceArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}-DBInstanceArn"
 {%- endif %}
-
   {{ db_instance_name }}EndpointAddress:
     Description: The connection endpoint for {{ db_instance_name }}
     Value:
@@ -358,7 +399,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}-EndpointAddress"
-
   {{ db_instance_name }}EndpointPort:
     Description: The port number for {{ db_instance_name }}
     Value:
@@ -369,7 +409,6 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}-EndpointPort"
 {%- if db_instance.master_user_secret is defined %}
-
   {{ db_instance_name }}MasterUserSecretSecretArn:
     Description: The Amazon Resource Name (ARN) of the Master User secret for {{ db_instance_name }}
     Value:
@@ -380,4 +419,110 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_instance_name }}-MasterUserSecretSecretArn"
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-03:
+Type: AWS::RDS::DBInstance
+Properties:
+  AdditionalStorageVolumes:
+    -
+      AllocatedStorage: String
+      Iops: Integer
+      MaxAllocatedStorage: Integer
+      StorageThroughput: Integer
+      StorageType: String
+      VolumeName: String
+  AllocatedStorage: String
+  AllowMajorVersionUpgrade: Boolean
+  ApplyImmediately: Boolean
+  AssociatedRoles:
+    -
+      FeatureName: String
+      RoleArn: String
+  AutomaticBackupReplicationKmsKeyId: String
+  AutomaticBackupReplicationRegion: String
+  AutomaticBackupReplicationRetentionPeriod: Integer
+  AutoMinorVersionUpgrade: Boolean
+  AvailabilityZone: String
+  BackupRetentionPeriod: Integer
+  BackupTarget: String
+  CACertificateIdentifier: String
+  CertificateRotationRestart: Boolean
+  CharacterSetName: String
+  CopyTagsToSnapshot: Boolean
+  CustomIAMInstanceProfile: String
+  DatabaseInsightsMode: String
+  DBClusterIdentifier: String
+  DBClusterSnapshotIdentifier: String
+  DBInstanceClass: String
+  DBInstanceIdentifier: String
+  DBName: String
+  DBParameterGroupName: String
+  DBSecurityGroups:
+    - String
+  DBSnapshotIdentifier: String
+  DBSubnetGroupName: String
+  DBSystemId: String
+  DedicatedLogVolume: Boolean
+  DeleteAutomatedBackups: Boolean
+  DeletionProtection: Boolean
+  Domain: String
+  DomainAuthSecretArn: String
+  DomainDnsIps:
+    - String
+  DomainFqdn: String
+  DomainIAMRoleName: String
+  DomainOu: String
+  EnableCloudwatchLogsExports:
+    - String
+  EnableIAMDatabaseAuthentication: Boolean
+  EnablePerformanceInsights: Boolean
+  Engine: String
+  EngineLifecycleSupport: String
+  EngineVersion: String
+  Iops: Integer
+  KmsKeyId: String
+  LicenseModel: String
+  ManageMasterUserPassword: Boolean
+  MasterUserAuthenticationType: String
+  MasterUsername: String
+  MasterUserPassword: String
+  MasterUserSecret:
+    KmsKeyId: String
+    SecretArn: String
+  MaxAllocatedStorage: Integer
+  MonitoringInterval: Integer
+  MonitoringRoleArn: String
+  MultiAZ: Boolean
+  NcharCharacterSetName: String
+  NetworkType: String
+  OptionGroupName: String
+  PerformanceInsightsKMSKeyId: String
+  PerformanceInsightsRetentionPeriod: Integer
+  Port: String
+  PreferredBackupWindow: String
+  PreferredMaintenanceWindow: String
+  ProcessorFeatures:
+    -
+      Name: String
+      Value: String
+  PromotionTier: Integer
+  PubliclyAccessible: Boolean
+  ReplicaMode: String
+  RestoreTime: String
+  SourceDBClusterIdentifier: String
+  SourceDBInstanceAutomatedBackupsArn: String
+  SourceDBInstanceIdentifier: String
+  SourceDbiResourceId: String
+  SourceRegion: String
+  StorageEncrypted: Boolean
+  StorageThroughput: Integer
+  StorageType: String
+  Tags:
+    - Key: String
+      Value: String
+  Timezone: String
+  UseDefaultProcessorFeatures: Boolean
+  UseLatestRestorableTime: Boolean
+  VPCSecurityGroups:
+    - String
+#}

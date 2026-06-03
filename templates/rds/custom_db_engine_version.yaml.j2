@@ -10,6 +10,12 @@ Resources:
     DeletionPolicy: {{ custom_db_engine_version.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ custom_db_engine_version.update_replace_policy | default('Delete') }}
     Properties:
+{%- if custom_db_engine_version.database_installation_files is defined %}{# BEGIN if custom_db_engine_version.database_installation_files is defined #}
+      DatabaseInstallationFiles:
+{%- for file in custom_db_engine_version.database_installation_files %}
+        - {{ file }}
+{%- endfor %}
+{%- endif %}{# END if custom_db_engine_version.database_installation_files is defined #}
 {%- if custom_db_engine_version.database_installation_files_s3_bucket_name is defined %}
       DatabaseInstallationFilesS3BucketName: {{ custom_db_engine_version.database_installation_files_s3_bucket_name }}
 {%- endif %}
@@ -70,9 +76,11 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ custom_db_engine_version_name }}-DBEngineVersionArn"
 {%- endfor %}{#
-# Supported structure as of 2025-04-30:
+# Supported structure as of 2026-06-03:
 Type: AWS::RDS::CustomDBEngineVersion
 Properties:
+  DatabaseInstallationFiles:
+    - String
   DatabaseInstallationFilesS3BucketName: String
   DatabaseInstallationFilesS3Prefix: String
   Description: String

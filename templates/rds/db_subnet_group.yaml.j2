@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('RDS DB Subnet Group(s) for
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for db_subnet_group in sceptre_user_data.db_subnet_groups %}
 {%- set db_subnet_group_name = db_subnet_group.name %}
   {{ db_subnet_group_name }}:
@@ -31,7 +30,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for db_subnet_group in sceptre_user_data.db_subnet_groups %}
 {%- set db_subnet_group_name = db_subnet_group.name %}
   {{ db_subnet_group_name }}:
@@ -41,5 +39,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_subnet_group_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-03:
+Type: AWS::RDS::DBSubnetGroup
+Properties:
+  DBSubnetGroupDescription: String
+  DBSubnetGroupName: String
+  SubnetIds:
+    - String
+  Tags:
+    - Key: String
+      Value: String
+#}

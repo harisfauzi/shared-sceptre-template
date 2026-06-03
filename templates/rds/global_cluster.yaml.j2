@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('RDS Global Cluster(s) for 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for global_cluster in sceptre_user_data.global_clusters %}
 {%- set global_cluster_name = global_cluster.name %}
   {{ global_cluster_name }}:
@@ -12,7 +11,7 @@ Resources:
     UpdateReplacePolicy: {{ global_cluster.update_replace_policy | default('Delete') }}
     Properties:
 {%- if global_cluster.deletion_protection is defined %}
-      DeletionProtection: {{ global_cluster.deletion_protection }}
+      DeletionProtection: {{ global_cluster.deletion_protection | lower }}
 {%- endif %}
 {%- if global_cluster.engine is defined %}
       Engine: {{ global_cluster.engine }}
@@ -30,13 +29,20 @@ Resources:
       SourceDBClusterIdentifier: {{ global_cluster.source_db_cluster_identifier }}
 {%- endif %}
 {%- if global_cluster.storage_encrypted is defined %}
-      StorageEncrypted: {{ global_cluster.storage_encrypted }}
+      StorageEncrypted: {{ global_cluster.storage_encrypted | lower }}
 {%- endif %}
-
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if global_cluster.tags is defined %}
+{%- for key,value in global_cluster.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for global_cluster in sceptre_user_data.global_clusters %}
 {%- set global_cluster_name = global_cluster.name %}
   {{ global_cluster_name }}:
@@ -46,5 +52,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ global_cluster_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-03:
+Type: AWS::RDS::GlobalCluster
+Properties:
+  DeletionProtection: Boolean
+  Engine: String
+  EngineLifecycleSupport: String
+  EngineVersion: String
+  GlobalClusterIdentifier: String
+  SourceDBClusterIdentifier: String
+  StorageEncrypted: Boolean
+  Tags:
+    - Key: String
+      Value: String
+#}

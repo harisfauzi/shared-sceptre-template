@@ -13,10 +13,11 @@ Resources:
       Description: {{ db_cluster_parameter_group.description }}
       Family: {{ db_cluster_parameter_group.family }}
 {%- if db_cluster_parameter_group.parameters_json is defined %}
-      Parameters: {{ db_cluster_parameter_group.parameters_json }}
+      Parameters: |-
+        {{ db_cluster_parameter_group.parameters_json | indent(width=8, first=false) }}
 {%- else %}
       Parameters:
-{{ db_cluster_parameter_group.parameters | indent(width=8, first=true) }}
+        {{ db_cluster_parameter_group.parameters | indent(width=8, first=false) }}
 {%- endif %}
 {%- if db_cluster_parameter_group.db_cluster_parameter_group_name is defined %}
       DBClusterParameterGroupName: {{ db_cluster_parameter_group.db_cluster_parameter_group_name }}

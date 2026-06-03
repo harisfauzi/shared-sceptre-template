@@ -1,0 +1,44 @@
+---
+template:
+  type: file
+  path: rds/db_shard_group.yaml.j2
+
+sceptre_user_data:
+  description: "RDS DB Shard Group(s) for {{project_code}}"
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  db_shard_groups:
+    - name: ShardGroupProduction
+      db_cluster_identifier: "production-aurora-cluster"
+      max_acu: 256
+      min_acu: 1
+      compute_redundancy: 1
+      db_shard_group_identifier: "prod-shard-group-001"
+      publicly_accessible: false
+      tags:
+        Environment: "Production"
+        Purpose: "HighAvailability"
+        Team: "DataEngineering"
+    - name: ShardGroupStaging
+      db_cluster_identifier: "staging-aurora-cluster"
+      max_acu: 128
+      min_acu: 2
+      compute_redundancy: 0
+      db_shard_group_identifier: "staging-shard-group-001"
+      tags:
+        Environment: "Staging"
+        Purpose: "Testing"
+        Team: "DataEngineering"
+    - name: ShardGroupDevelopment
+      db_cluster_identifier: "development-aurora-cluster"
+      max_acu: 64
+      publicly_accessible: true
+      deletion_policy: "Delete"
+      update_replace_policy: "Delete"
+      tags:
+        Environment: "Development"
+        Purpose: "Development"
+        Team: "DataEngineering"
+
+stack_tags:
+  Test: rds-db-shard-group
