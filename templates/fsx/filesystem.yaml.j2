@@ -398,15 +398,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ file_system_name }}"
-  {{ file_system_name }}DNSName:
-    Description: The FSx for Windows file system's DNSName for {{ file_system_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ file_system_name }}
-        - DNSName
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-DNSName"
   {{ file_system_name }}ResourceARN:
     Description: The ARN for {{ file_system_name }}
     Value:
@@ -416,7 +407,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-ResourceARN"
-{%- if file_system.file_system_type == 'LUSTRE' %}
+{%- if file_system.file_system_type == ' WINDOWS' %}
+  {{ file_system_name }}DNSName:
+    Description: The FSx for Windows file system's DNSName for {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - DNSName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-DNSName"
+{%- elif file_system.file_system_type == 'LUSTRE' %}
   {{ file_system_name }}LustreMountName:
     Description: The LustreMountName for {{ file_system_name }}
     Value:
