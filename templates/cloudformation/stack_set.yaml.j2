@@ -15,15 +15,21 @@ Resources:
 {%- if stack_set.administration_role_arn is defined %}
       AdministrationRoleARN: {{ stack_set.administration_role_arn }}
 {%- endif %}
-{%- if stack_set.auto_deployment is defined %}
+{%- if stack_set.auto_deployment is defined %}{# BEGIN if stack_set.auto_deployment is defined #}
       AutoDeployment:
+{%- if stack_set.auto_deployment.depends_on is defined %}{# BEGIN if stack_set.auto_deployment.depends_on is defined #}
+        DependsOn:
+{%- for dependency in stack_set.auto_deployment.depends_on %}
+          - {{ dependency }}
+{%- endfor %}
+{%- endif %}{# END if stack_set.auto_deployment.depends_on is defined #}
 {%- if stack_set.auto_deployment.enabled is defined %}
         Enabled: {{ stack_set.auto_deployment.enabled | lower }}
 {%- endif %}
 {%- if stack_set.auto_deployment.retain_stacks_on_account_removal is defined %}
         RetainStacksOnAccountRemoval: {{ stack_set.auto_deployment.retain_stacks_on_account_removal | lower }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if stack_set.auto_deployment is defined #}
 {%- if stack_set.call_as is defined %}
       CallAs: {{ stack_set.call_as }}
 {%- endif %}
@@ -113,7 +119,7 @@ Resources:
 {%- endfor %}{# END for stack_instance in stack_set.stack_instances_group #}
 {%- endif %}{# END if stack_set.stack_instances_group is defined #}
 {%- if stack_set.template_body is defined %}
-      TemplateBody: |
+      TemplateBody: |-
         {{ stack_set.template_body | indent(width=8, first=false) }}
 {%- endif %}
 {%- if stack_set.template_url is defined %}
@@ -150,11 +156,13 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ stack_set_name }}-StackSetId"
 {%- endfor %}{#
-# Supported structure as of 2025-04-14
+# Supported structure as of 2026-06-09
 Type: AWS::CloudFormation::StackSet
 Properties:
   AdministrationRoleARN: String
   AutoDeployment:
+    DependsOn:
+      - String
     Enabled: Boolean
     RetainStacksOnAccountRemoval: Boolean
   CallAs: String
