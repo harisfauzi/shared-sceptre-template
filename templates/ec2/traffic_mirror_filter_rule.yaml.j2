@@ -32,6 +32,15 @@ Resources:
         FromPort: {{ traffic_mirror_filter_rule.source_port_range.from_port }}
         ToPort: {{ traffic_mirror_filter_rule.source_port_range.to_port }}
 {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if traffic_mirror_filter_rule.tags is defined %}
+{%- for key,value in traffic_mirror_filter_rule.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:

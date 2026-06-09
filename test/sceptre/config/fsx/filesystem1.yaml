@@ -1,0 +1,155 @@
+---
+template:
+  type: file
+  path: fsx/filesystem.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: FSx File Systems
+  use_parameter_for_password: false
+  file_systems:
+    - name: LustreFileSystem1
+      file_system_type: LUSTRE
+      subnet_ids:
+        - subnet-12345678
+        - subnet-87654321
+      storage_capacity: 1200
+      storage_type: SSD
+      kms_key_id: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+      deletion_policy: Delete
+      lustre_configuration:
+        deployment_type: PERSISTENT_1
+        throughput_capacity: 50
+        automatic_backup_retention_days: 7
+        daily_automatic_backup_start_time: "01:00"
+        weekly_maintenance_start_time: "SUN:02:00"
+        data_compression_type: LZ4
+        imported_file_chunk_size: 262144
+        import_path: "s3://my-bucket/import"
+        export_path: "s3://my-bucket/export"
+        auto_import_policy: NEW
+        efa_enabled: true
+        per_unit_storage_throughput: 200
+        metadata_configuration:
+          mode: AUTOMATIC
+          iops: 20000
+        data_read_cache_configuration:
+          size_gib: 200
+          sizing_mode: USER_PROVIDED
+      tags:
+        Environment: Production
+        Purpose: DataProcessing
+
+    - name: OntapFileSystem1
+      file_system_type: ONTAP
+      subnet_ids:
+        - subnet-11111111
+      storage_capacity: 1024
+      deletion_policy: Delete
+      ontap_configuration:
+        deployment_type: MULTI_AZ_1
+        fsx_admin_password: "MyAdminPassword123!"
+        throughput_capacity: 128
+        automatic_backup_retention_days: 30
+        daily_automatic_backup_start_time: "02:00"
+        weekly_maintenance_start_time: "MON:03:00"
+        endpoint_ip_address_range: "10.0.0.0/24"
+        endpoint_ipv6_address_range: "2600:1f13:9d5:bb00::/64"
+        ha_pairs: 1
+        disk_iops_configuration:
+          mode: USER_PROVIDED
+          iops: 24000
+        route_table_ids:
+          - rtb-12345678
+      security_group_ids:
+        - sg-12345678
+      tags:
+        Environment: Production
+        FileSystemType: ONTAP
+
+    - name: OpenZfsFileSystem1
+      file_system_type: OPENZFS
+      subnet_ids:
+        - subnet-22222222
+        - subnet-33333333
+      storage_capacity: 500
+      storage_type: SSD
+      deletion_policy: Retain
+      open_zfs_configuration:
+        deployment_type: MULTI_AZ_1
+        throughput_capacity: 256
+        automatic_backup_retention_days: 14
+        daily_automatic_backup_start_time: "03:00"
+        weekly_maintenance_start_time: "THU:04:00"
+        copy_tags_to_backups: true
+        copy_tags_to_volumes: true
+        disk_iops_configuration:
+          mode: USER_PROVIDED
+          iops: 10000
+        endpoint_ip_address_range: "10.1.0.0/24"
+        options:
+          - crossmount
+        route_table_ids:
+          - rtb-87654321
+        read_cache_configuration:
+          size_gib: 100
+          sizing_mode: USER_PROVIDED
+        root_volume_configuration:
+          copy_tags_to_snapshots: true
+          data_compression_type: ZSTD
+          read_only: false
+          record_size_kib: 128
+          nfs_exports:
+            - client_configurations:
+                - clients: "'*'"
+                  options:
+                    - "rw"
+                    - "crossmount"
+          user_and_group_quotas:
+            - id: 1001
+              type: USER
+              storage_capacity_quota_gib: 100
+            - id: 1002
+              type: USER
+              storage_capacity_quota_gib: 50
+      tags:
+        Environment: Development
+        FileSystemType: OpenZFS
+
+    - name: WindowsFileSystem1
+      file_system_type: WINDOWS
+      subnet_ids:
+        - subnet-44444444
+      storage_capacity: 2000
+      storage_type: HDD
+      deletion_policy: Delete
+      windows_configuration:
+        deployment_type: SINGLE_AZ_1
+        throughput_capacity: 8
+        active_directory_id: "d-1234567890"
+        automatic_backup_retention_days: 7
+        daily_automatic_backup_start_time: "04:00"
+        weekly_maintenance_start_time: "WED:05:00"
+        copy_tags_to_backups: true
+        audit_log_configuration:
+          file_access_audit_log_level: SUCCESS_AND_FAILURE
+          file_share_access_audit_log_level: SUCCESS_AND_FAILURE
+          audit_log_destination: "arn:aws:logs:us-east-1:123456789012:log-group:/aws/fsx/windows"
+        fsrm_configuration:
+          fsrm_service_enabled: true
+          event_log_destination: "arn:aws:logs:us-east-1:123456789012:log-group:/aws/fsx/fsrm"
+        disk_iops_configuration:
+          mode: AUTOMATIC
+        aliases:
+          - alias1.example.com
+          - alias2.example.com
+      security_group_ids:
+        - sg-87654321
+        - sg-56789012
+      tags:
+        Environment: Production
+        OSType: Windows
+
+stack_tags:
+  Test: fsx-filesystem

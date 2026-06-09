@@ -1,0 +1,92 @@
+---
+template:
+  type: file
+  path: fsx/s3_access_point_attachment.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: FSx S3 Access Point Attachments
+  s3_access_point_attachments:
+    - name: OntapS3ApUnix1
+      s3_access_point_attachment_name: ontap-s3ap-unix-1
+      type: ONTAP
+      deletion_policy: Delete
+      ontap_configuration:
+        file_system_identity:
+          type: UNIX
+          unix_user:
+            name: ubuntu
+        volume_id: "fsvol-0123456789abcdef0"
+      s3_access_point:
+        resource_arn: "arn:aws:s3:us-east-1:123456789012:accesspoint/my-ontap-s3ap"
+        alias: "ontap-s3ap-unix-prod.s3-accesspoint.us-east-1.amazonaws.com"
+        vpc_configuration:
+          vpc_id: "vpc-12345678"
+
+    - name: OntapS3ApWindows1
+      s3_access_point_attachment_name: ontap-s3ap-windows-1
+      type: ONTAP
+      deletion_policy: Delete
+      ontap_configuration:
+        file_system_identity:
+          type: WINDOWS
+          windows_user:
+            name: "EXAMPLE\\Admin"
+        volume_id: "fsvol-0987654321fedcba0"
+      s3_access_point:
+        resource_arn: "arn:aws:s3:us-east-1:123456789012:accesspoint/my-ontap-s3ap-windows"
+        policy_json: |-
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": "*",
+                "Action": "s3:GetObject",
+                "Resource": "*"
+              }
+            ]
+          }
+        vpc_configuration:
+          vpc_id: "vpc-87654321"
+
+    - name: OpenZfsS3Ap1
+      s3_access_point_attachment_name: openzfs-s3ap-1
+      type: OPENZFS
+      deletion_policy: Retain
+      open_zfs_configuration:
+        file_system_identity:
+          type: POSIX_USER
+          posix_user:
+            uid: 1000
+            gid: 1000
+            secondary_gids:
+              - gid: 1001
+              - gid: 1002
+              - gid: 1003
+        volume_id: "fsvol-aaaaaaaaaaaaaaaa0"
+      s3_access_point:
+        resource_arn: "arn:aws:s3:us-east-1:123456789012:accesspoint/my-zfs-s3ap"
+        alias: "openzfs-s3ap-prod.s3-accesspoint.us-east-1.amazonaws.com"
+        vpc_configuration:
+          vpc_id: "vpc-abcdefgh"
+
+    - name: OpenZfsS3Ap2
+      s3_access_point_attachment_name: openzfs-s3ap-2
+      type: OPENZFS
+      deletion_policy: Delete
+      open_zfs_configuration:
+        file_system_identity:
+          type: POSIX_USER
+          posix_user:
+            uid: 2000
+            gid: 2000
+        volume_id: "fsvol-bbbbbbbbbbbbbbbb0"
+      s3_access_point:
+        resource_arn: "arn:aws:s3:us-east-1:123456789012:accesspoint/my-zfs-s3ap-dev"
+        vpc_configuration:
+          vpc_id: "vpc-ijklmnop"
+
+stack_tags:
+  Test: fsx-s3accesspointattachment
