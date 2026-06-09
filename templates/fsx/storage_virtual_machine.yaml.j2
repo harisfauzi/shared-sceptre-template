@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('FSx StorageVirtualMachine(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('FSx Storage Virtual Machine(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 {%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
@@ -12,7 +12,6 @@ Parameters:
     Description: SvmAdminPassword for {{ storage_virtual_machine_name }}
     Default: ''
     NoEcho: true
-
 {%- endif %}
 {%- if storage_virtual_machine.active_directory_configuration is defined and
   storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration is defined and
@@ -22,13 +21,11 @@ Parameters:
     Description: Windows Configuration Self Managed Active Directory Configuration Admin Password for {{ storage_virtual_machine_name }}
     Default: ''
     NoEcho: true
-
 {%- endif %}
 {%- endfor %}
 {%- endif %}
 
 Resources:
-
 {%- for storage_virtual_machine in sceptre_user_data.storage_virtual_machines %}
 {%- set storage_virtual_machine_name = storage_virtual_machine.name %}
   {{ storage_virtual_machine_name }}:
@@ -38,18 +35,21 @@ Resources:
     Properties:
       FileSystemId: {{ storage_virtual_machine.file_system_id | trim }}
       Name: {{ storage_virtual_machine.storage_virtual_machine_name }}
-{%- if storage_virtual_machine.active_directory_configuration is defined %}{# BEGIN {%- if storage_virtual_machine.active_directory_configuration is defined %} #}
+{%- if storage_virtual_machine.active_directory_configuration is defined %}{# BEGIN if storage_virtual_machine.active_directory_configuration is defined #}
       ActiveDirectoryConfiguration:
 {%- if storage_virtual_machine.active_directory_configuration.net_bios_name is defined %}
         NetBiosName: {{ storage_virtual_machine.active_directory_configuration.net_bios_name }}
 {%- endif %}
-{%- if storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration is defined %}
+{%- if storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration is defined %}{# BEGIN if storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration is defined #}
         SelfManagedActiveDirectoryConfiguration:
-{%- if storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.dns_ips is defined %}
+{%- if storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.dns_ips is defined %}{# BEGIN if storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.dns_ips is defined #}
           DnsIps:
 {%- for dns_ip in storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.dns_ips %}
             - {{ dns_ip }}
 {%- endfor %}
+{%- endif %}{# END if storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.dns_ips is defined #}
+{%- if storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.domain_join_service_account_secret is defined %}
+          DomainJoinServiceAccountSecret: {{ storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.domain_join_service_account_secret }}
 {%- endif %}
 {%- if storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.domain_name is defined %}
           DomainName: {{ storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.domain_name }}
@@ -71,8 +71,8 @@ Resources:
 {%- if storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.user_name is defined %}
           UserName: {{ storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration.user_name }}
 {%- endif %}
-{%- endif %}
-{%- endif %}{# END {%- if storage_virtual_machine.active_directory_configuration is defined %} #}
+{%- endif %}{# END if storage_virtual_machine.active_directory_configuration.self_managed_active_directory_configuration is defined #}
+{%- endif %}{# END if storage_virtual_machine.active_directory_configuration is defined #}
 {%- if storage_virtual_machine.root_volume_security_style is defined %}
       RootVolumeSecurityStyle: {{ storage_virtual_machine.root_volume_security_style }}
 {%- endif %}
@@ -93,11 +93,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for storage_virtual_machine in sceptre_user_data.storage_virtual_machines %}
 {%- set storage_virtual_machine_name = storage_virtual_machine.name %}
   {{ storage_virtual_machine_name }}:
@@ -107,7 +105,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ storage_virtual_machine_name }}"
-
   {{ storage_virtual_machine_name }}ResourceARN:
     Description: The ResourceARN for {{ storage_virtual_machine_name }}
     Value:
@@ -117,7 +114,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ storage_virtual_machine_name }}-ResourceARN"
-
   {{ storage_virtual_machine_name }}StorageVirtualMachineId:
     Description: The StorageVirtualMachine generated Id for {{ storage_virtual_machine_name }}
     Value:
@@ -127,7 +123,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ storage_virtual_machine_name }}-StorageVirtualMachineId"
-
   {{ storage_virtual_machine_name }}UUID:
     Description: The storage virtual machine's system generated unique identifier for {{ storage_virtual_machine_name }}
     Value:
@@ -137,5 +132,27 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ storage_virtual_machine_name }}-UUID"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-09
+Type: AWS::FSx::StorageVirtualMachine
+Properties:
+  ActiveDirectoryConfiguration:
+    NetBiosName: String
+    SelfManagedActiveDirectoryConfiguration:
+      DnsIps:
+        - String
+      DomainJoinServiceAccountSecret: String
+      DomainName: String
+      FileSystemAdministratorsGroup: String
+      OrganizationalUnitDistinguishedName: String
+      Password: String
+      UserName: String
+  FileSystemId: String
+  Name: String
+  RootVolumeSecurityStyle: String
+  SvmAdminPassword: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

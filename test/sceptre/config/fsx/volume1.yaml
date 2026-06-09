@@ -1,0 +1,166 @@
+---
+template:
+  type: file
+  path: fsx/volume.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: FSx Volumes
+  volumes:
+    - name: OntapVolumeBasic1
+      volume_name: ontap-vol-basic-prod-01
+      volume_type: ONTAP
+      deletion_policy: Delete
+      ontap_configuration:
+        storage_virtual_machine_id: "svm-01234567890abcdef0"
+        ontap_volume_type: RW
+        security_style: NTFS
+        size_in_megabytes: 1024
+        copy_tags_to_backups: true
+        storage_efficiency_enabled: true
+        snapshot_policy: default
+      tags:
+        Environment: Production
+        VolumeType: BasicStorage
+
+    - name: OntapVolumeWithSnaplock1
+      volume_name: ontap-vol-snaplock-prod-01
+      volume_type: ONTAP
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      ontap_configuration:
+        storage_virtual_machine_id: "svm-01234567890abcdef0"
+        ontap_volume_type: RW
+        security_style: UNIX
+        size_in_bytes: "1099511627776"
+        junction_path: "/data/archive"
+        snaplock_configuration:
+          snaplock_type: COMPLIANCE
+          audit_log_volume: false
+          volume_append_mode_enabled: true
+          privileged_delete: DISABLED
+          autocommit_period:
+            type: DAYS
+            value: 30
+          retention_period:
+            minimum_retention:
+              type: DAYS
+              value: 30
+            default_retention:
+              type: DAYS
+              value: 60
+            maximum_retention:
+              type: DAYS
+              value: 365
+        storage_efficiency_enabled: true
+      tags:
+        Environment: Production
+        ComplianceRequired: "true"
+
+    - name: OntapVolumeWithAggregates1
+      volume_name: ontap-vol-aggregate-prod-01
+      volume_type: ONTAP
+      deletion_policy: Delete
+      ontap_configuration:
+        storage_virtual_machine_id: "svm-01234567890abcdef0"
+        ontap_volume_type: RW
+        security_style: MIXED
+        size_in_megabytes: 2048
+        volume_style: FLEXVOL
+        aggregate_configuration:
+          aggregates:
+            - aggr1
+            - aggr2
+          constituents_per_aggregate: 2
+        tiering_policy:
+          name: AUTO
+          cooling_period: 31
+      tags:
+        Environment: Production
+        Tiering: Enabled
+
+    - name: OpenZfsVolumeBasic1
+      volume_name: zfs-vol-basic-dev-01
+      volume_type: OPENZFS
+      deletion_policy: Delete
+      open_zfs_configuration:
+        parent_volume_id: "fsvol-aaaaaaaaaaaaaaaa0"
+        data_compression_type: ZSTD
+        copy_tags_to_snapshots: true
+        read_only: false
+        record_size_kib: 128
+        storage_capacity_quota_gib: 500
+        storage_capacity_reservation_gib: 100
+        options:
+          - crossmount
+      tags:
+        Environment: Development
+        Application: DataProcessing
+
+    - name: OpenZfsVolumeWithNfs1
+      volume_name: zfs-vol-nfs-prod-01
+      volume_type: OPENZFS
+      deletion_policy: Delete
+      open_zfs_configuration:
+        parent_volume_id: "fsvol-bbbbbbbbbbbbbbbb0"
+        data_compression_type: LZ4
+        read_only: false
+        record_size_kib: 256
+        storage_capacity_quota_gib: 1000
+        nfs_exports:
+          - client_configurations:
+              - clients: "10.0.0.0/8"
+                options:
+                  - "rw"
+                  - "crossmount"
+                  - "no_subtree_check"
+              - clients: "172.16.0.0/12"
+                options:
+                  - "ro"
+                  - "crossmount"
+      tags:
+        Environment: Production
+        Protocol: NFS
+
+    - name: OpenZfsVolumeWithQuotas1
+      volume_name: zfs-vol-quotas-prod-01
+      volume_type: OPENZFS
+      deletion_policy: Delete
+      open_zfs_configuration:
+        parent_volume_id: "fsvol-cccccccccccccccc0"
+        data_compression_type: ZSTD
+        read_only: false
+        record_size_kib: 128
+        storage_capacity_quota_gib: 2000
+        user_and_group_quotas:
+          - id: 1001
+            type: USER
+            storage_capacity_quota_gib: 100
+          - id: 1002
+            type: USER
+            storage_capacity_quota_gib: 200
+          - id: 2001
+            type: GROUP
+            storage_capacity_quota_gib: 500
+      tags:
+        Environment: Production
+        QuotasEnabled: "true"
+
+    - name: OpenZfsVolumeFromSnapshot1
+      volume_name: zfs-vol-clone-prod-01
+      volume_type: OPENZFS
+      deletion_policy: Delete
+      open_zfs_configuration:
+        parent_volume_id: "fsvol-dddddddddddddddd0"
+        read_only: false
+        record_size_kib: 128
+        origin_snapshot:
+          snapshot_arn: "arn:aws:fsx:us-east-1:123456789012:snapshot/fss-snapshot-abcd1234"
+          copy_strategy: CLONE
+      tags:
+        Environment: Staging
+        SourceType: Snapshot
+
+stack_tags:
+  Test: fsx-volume

@@ -1,0 +1,68 @@
+---
+template:
+  type: file
+  path: fsx/storage_virtual_machine.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: FSx Storage Virtual Machines
+  use_parameter_for_password: false
+  storage_virtual_machines:
+    - name: OntapSvmBasic1
+      file_system_id: "fs-0123456789abcdef0"
+      storage_virtual_machine_name: svm-basic-prod-01
+      deletion_policy: Delete
+      root_volume_security_style: UNIX
+      svm_admin_password: "AdminPassword123!"
+      tags:
+        Environment: Production
+        Purpose: BasicStorage
+
+    - name: OntapSvmWithAd1
+      file_system_id: "fs-0123456789abcdef0"
+      storage_virtual_machine_name: svm-ad-prod-01
+      deletion_policy: Delete
+      root_volume_security_style: NTFS
+      svm_admin_password: "AdminPassword456!"
+      active_directory_configuration:
+        net_bios_name: "SVMADPROD01"
+        self_managed_active_directory_configuration:
+          dns_ips:
+            - "10.0.1.10"
+            - "10.0.1.11"
+          domain_name: "example.com"
+          user_name: "Admin"
+          password: "DomainAdminPassword123!"
+          file_system_administrators_group: "EXAMPLE\\FSxAdmins"
+          organizational_unit_distinguished_name: "OU=FSx,DC=example,DC=com"
+          domain_join_service_account_secret: "arn:aws:secretsmanager:us-east-1:123456789012:secret:fsx-domain-join-xyz123"
+      tags:
+        Environment: Production
+        DirectoryIntegration: "true"
+        Domain: example.com
+
+    - name: OntapSvmMixed1
+      file_system_id: "fs-0987654321fedcba0"
+      storage_virtual_machine_name: svm-mixed-dev-01
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      root_volume_security_style: MIXED
+      active_directory_configuration:
+        net_bios_name: "SVMMIXDEV01"
+      tags:
+        Environment: Development
+        Team: DataEngineering
+        SVMType: Mixed
+
+    - name: OntapSvmUnix1
+      file_system_id: "fs-aaaaaaaaaaaaaaaa0"
+      storage_virtual_machine_name: svm-unix-staging-01
+      deletion_policy: Delete
+      root_volume_security_style: UNIX
+      tags:
+        Environment: Staging
+        Purpose: UnixWorkloads
+
+stack_tags:
+  Test: fsx-storagevirtualmachine

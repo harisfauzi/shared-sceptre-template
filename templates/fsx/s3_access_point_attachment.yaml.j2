@@ -1,0 +1,129 @@
+---
+Description: {{sceptre_user_data.description|default('FSx S3 Access Point Attachment(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for s3_access_point_attachment in sceptre_user_data.s3_access_point_attachments %}
+{%- set s3_access_point_attachment_name = s3_access_point_attachment.name %}
+  {{ s3_access_point_attachment_name }}:
+    Type: AWS::FSx::S3AccessPointAttachment
+    DeletionPolicy: {{ s3_access_point_attachment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ s3_access_point_attachment.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ s3_access_point_attachment.s3_access_point_attachment_name}}
+      Type: {{ s3_access_point_attachment.type}}
+{%- if s3_access_point_attachment.ontap_configuration is defined %}{# BEGIN if s3_access_point_attachment.ontap_configuration is defined #}
+      OntapConfiguration:
+        FileSystemIdentity:
+          Type: {{ s3_access_point_attachment.ontap_configuration.file_system_identity.type }}
+{%- if s3_access_point_attachment.ontap_configuration.file_system_identity.unix_user is defined %}
+          UnixUser:
+              Name: {{ s3_access_point_attachment.ontap_configuration.file_system_identity.unix_user.name }}
+{%- endif %}
+{%- if s3_access_point_attachment.ontap_configuration.file_system_identity.windows_user is defined %}
+          WindowsUser:
+            Name: {{ s3_access_point_attachment.ontap_configuration.file_system_identity.windows_user.name }}
+{%- endif %}
+        VolumeId: {{ s3_access_point_attachment.ontap_configuration.volume_id | trim }}
+{%- endif %}{# END if s3_access_point_attachment.ontap_configuration is defined#}
+{%- if s3_access_point_attachment.open_zfs_configuration is defined %}{# BEGIN if s3_access_point_attachment.open_zfs_configuration is defined #}
+      OpenZFSConfiguration:
+        FileSystemIdentity:
+          PosixUser:
+            Gid: {{ s3_access_point_attachment.open_zfs_configuration.file_system_identity.posix_user.gid }}
+{%- if s3_access_point_attachment.open_zfs_configuration.file_system_identity.posix_user.secondary_gids is defined %}{# BEGIN if s3_access_point_attachment.open_zfs_configuration.file_system_identity.posix_user.secondary_gids is defined #}
+            SecondaryGids:
+{%- for secondary_gid in s3_access_point_attachment.open_zfs_configuration.file_system_identity.posix_user.secondary_gids %}
+              - Gid: {{ secondary_gid.gid }}
+{%- endfor %}
+{%- endif %}{# END if s3_access_point_attachment.open_zfs_configuration.file_system_identity.posix_user.secondary_gids is defined #}
+            Uid: {{ s3_access_point_attachment.open_zfs_configuration.file_system_identity.posix_user.uid }}
+          Type: {{ s3_access_point_attachment.open_zfs_configuration.file_system_identity.type }}
+        VolumeId: {{ s3_access_point_attachment.open_zfs_configuration.volume_id | trim }}
+{%- endif %}{# END if s3_access_point_attachment.open_zfs_configuration is defined #}
+{%- if s3_access_point_attachment.s3_access_point is defined %}{# BEGIN if s3_access_point_attachment.s3_access_point is defined #}
+      S3AccessPoint:
+{%- if s3_access_point_attachment.s3_access_point.alias is defined %}
+        Alias:
+          {{ s3_access_point_attachment.s3_access_point.alias | indent(width=10, first=false) }}
+{%- elif s3_access_point_attachment.s3_access_point.alias_json is defined %}
+        Alias: |-
+          {{ s3_access_point_attachment.s3_access_point.alias_json | indent(width=10, first=false) }}
+{%- endif %}
+{%- if s3_access_point_attachment.s3_access_point.policy is defined %}
+        Policy:
+          {{ s3_access_point_attachment.s3_access_point.policy | indent(width=10, first=false) }}
+{%- elif s3_access_point_attachment.s3_access_point.policy_json is defined %}
+        Policy: |-
+          {{ s3_access_point_attachment.s3_access_point.policy_json | indent(width=10, first=false) }}
+{%- endif %}
+{%- if s3_access_point_attachment.s3_access_point.resource_arn is defined %}
+        ResourceARN: {{ s3_access_point_attachment.s3_access_point.resource_arn | trim }}
+{%- endif %}
+{%- if s3_access_point_attachment.s3_access_point.vpc_configuration is defined %}
+        VpcConfiguration:
+          VpcId: {{ s3_access_point_attachment.s3_access_point.vpc_configuration.vpc_id | trim }}
+{%- endif %}
+{%- endif %}{# END if s3_access_point_attachment.s3_access_point is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for s3_access_point_attachment in sceptre_user_data.s3_access_point_attachments %}
+{%- set s3_access_point_attachment_name = s3_access_point_attachment.name %}
+  {{ s3_access_point_attachment_name }}Lifecycle:
+    Description: The lifecycle status of {{ s3_access_point_attachment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ s3_access_point_attachment_name }}
+        - Lifecycle
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ s3_access_point_attachment_name }}-Lifecycle"
+  {{ s3_access_point_attachment_name }}S3AccessPointAlias:
+    Description: The Alias for {{ s3_access_point_attachment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ s3_access_point_attachment_name }}
+        - S3AccessPoint.Alias
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ s3_access_point_attachment_name }}-S3AccessPointAlias"
+  {{ s3_access_point_attachment_name }}S3AccessPointResourceARN:
+    Description: The Resource ARN for {{ s3_access_point_attachment_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ s3_access_point_attachment_name }}
+        - S3AccessPoint.ResourceARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ s3_access_point_attachment_name }}-S3AccessPointResourceARN"
+{%- endfor %}{#
+# Supported structure as of 2026-06-09
+Type: AWS::FSx::S3AccessPointAttachment
+Properties:
+  Name: String
+  OntapConfiguration:
+    FileSystemIdentity:
+      Type: String
+      UnixUser:
+          Name: String
+      WindowsUser:
+        Name: String
+    VolumeId: String
+  OpenZFSConfiguration:
+    FileSystemIdentity:
+      PosixUser:
+        Gid: Number
+        SecondaryGids:
+          - Gid: Number
+        Uid: Number
+      Type: String
+    VolumeId: String
+  S3AccessPoint:
+    Alias: String
+    Policy: Json
+    ResourceARN: String
+    VpcConfiguration:
+      VpcId: String
+  Type: String
+#}

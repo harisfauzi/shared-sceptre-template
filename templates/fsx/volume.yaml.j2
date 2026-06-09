@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('FSx Volume(s) for '+sceptr
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for volume in sceptre_user_data.volumes %}
 {%- set volume_name = volume.name %}
   {{ volume_name }}:
@@ -15,16 +14,84 @@ Resources:
 {%- if volume.backup_id is defined %}
       BackupId: {{ volume.backup_id | trim }}
 {%- endif %}
-{%- if volume.ontap_configuration is defined %}
+{%- if volume.ontap_configuration is defined %}{# BEGIN if volume.ontap_configuration is defined #}
       OntapConfiguration:
-        JunctionPath: {{ volume.ontap_configuration.junction_path }}
-        SizeInMegabytes: {{ volume.ontap_configuration.size_in_megabytes }}
-        StorageEfficiencyEnabled: {{ volume.ontap_configuration.storage_efficiency_enabled }}
         StorageVirtualMachineId: {{ volume.ontap_configuration.storage_virtual_machine_id | trim }}
+{%- if volume.ontap_configuration.aggregate_configuration is defined %}{# BEGIN if volume.ontap_configuration.aggregate_configuration is defined #}
+        AggregateConfiguration:
+{%- if volume.ontap_configuration.aggregate_configuration.aggregates is defined %}{# BEGIN if volume.ontap_configuration.aggregate_configuration.aggregates is defined #}
+          Aggregates:
+{%- for aggregate in volume.ontap_configuration.aggregate_configuration.aggregates %}
+            - {{ aggregate }}
+{%- endfor %}
+{%- endif %}{# END if volume.ontap_configuration.aggregate_configuration.aggregates is defined #}
+{%- if volume.ontap_configuration.aggregate_configuration.constituents_per_aggregate is defined %}
+          ConstituentsPerAggregate: {{ volume.ontap_configuration.aggregate_configuration.constituents_per_aggregate }}
+{%- endif %}
+{%- endif %}{# END if volume.ontap_configuration.aggregate_configuration is defined #}
+{%- if volume.ontap_configuration.copy_tags_to_backups is defined %}
+        CopyTagsToBackups: {{ volume.ontap_configuration.copy_tags_to_backups }}
+{%- endif %}
+{%- if volume.ontap_configuration.junction_path is defined %}
+        JunctionPath: {{ volume.ontap_configuration.junction_path }}
+{%- endif %}
+{%- if volume.ontap_configuration.ontap_volume_type is defined %}
+        OntapVolumeType: {{ volume.ontap_configuration.ontap_volume_type }}
+{%- endif %}
+{%- if volume.ontap_configuration.size_in_bytes is defined %}
+        SizeInBytes: {{ volume.ontap_configuration.size_in_bytes }}
+{%- endif %}
+{%- if volume.ontap_configuration.size_in_megabytes is defined %}
+        SizeInMegabytes: {{ volume.ontap_configuration.size_in_megabytes }}
+{%- endif %}
+{%- if volume.ontap_configuration.snaplock_configuration is defined %}{# BEGIN if volume.ontap_configuration.snaplock_configuration is defined #}
+        SnaplockConfiguration:
+          SnaplockType: {{ volume.ontap_configuration.snaplock_configuration.snaplock_type }}
+{%- if volume.ontap_configuration.snaplock_configuration.audit_log_volume is defined %}
+          AuditLogVolume: {{ volume.ontap_configuration.snaplock_configuration.audit_log_volume }}
+{%- endif %}
+{%- if volume.ontap_configuration.snaplock_configuration.autocommit_period is defined %}{# BEGIN if volume.ontap_configuration.snaplock_configuration.autocommit_period is defined #}
+          AutocommitPeriod:
+            Type: {{ volume.ontap_configuration.snaplock_configuration.autocommit_period.type }}
+{%- if volume.ontap_configuration.snaplock_configuration.autocommit_period.value is defined %}
+            Value: {{ volume.ontap_configuration.snaplock_configuration.autocommit_period.value }}
+{%- endif %}
+{%- endif %}{# END if volume.ontap_configuration.snaplock_configuration.autocommit_period is defined #}
+{%- if volume.ontap_configuration.snaplock_configuration.privileged_delete is defined %}
+          PrivilegedDelete: {{ volume.ontap_configuration.snaplock_configuration.privileged_delete }}
+{%- endif %}
+{%- if volume.ontap_configuration.snaplock_configuration.retention_period is defined %}{# BEGIN if volume.ontap_configuration.snaplock_configuration.retention_period is defined #}
+          RetentionPeriod:
+            DefaultRetention:
+              Type: {{ volume.ontap_configuration.snaplock_configuration.retention_period.default_retention.type }}
+{%- if volume.ontap_configuration.snaplock_configuration.retention_period.default_retention.value is defined %}
+              Value: {{ volume.ontap_configuration.snaplock_configuration.retention_period.default_retention.value }}
+{%- endif %}
+            MaximumRetention:
+              Type: {{ volume.ontap_configuration.snaplock_configuration.retention_period.maximum_retention.type }}
+{%- if volume.ontap_configuration.snaplock_configuration.retention_period.maximum_retention.value is defined %}
+              Value: {{ volume.ontap_configuration.snaplock_configuration.retention_period.maximum_retention.value }}
+{%- endif %}
+            MinimumRetention:
+              Type: {{ volume.ontap_configuration.snaplock_configuration.retention_period.minimum_retention.type }}
+{%- if volume.ontap_configuration.snaplock_configuration.retention_period.minimum_retention.value is defined %}
+              Value: {{ volume.ontap_configuration.snaplock_configuration.retention_period.minimum_retention.value }}
+{%- endif %}
+{%- endif %}{# END if volume.ontap_configuration.snaplock_configuration.retention_period is defined #}
+{%- if volume.ontap_configuration.snaplock_configuration.volume_append_mode_enabled is defined %}
+          VolumeAppendModeEnabled: {{ volume.ontap_configuration.snaplock_configuration.volume_append_mode_enabled }}
+{%- endif %}
+{%- endif %}{# END if volume.ontap_configuration.snaplock_configuration is defined #}
+{%- if volume.ontap_configuration.snapshot_policy is defined %}
+        SnapshotPolicy: {{ volume.ontap_configuration.snapshot_policy }}
+{%- endif %}
+{%- if volume.ontap_configuration.storage_efficiency_enabled is defined %}
+        StorageEfficiencyEnabled: {{ volume.ontap_configuration.storage_efficiency_enabled }}
+{%- endif %}
 {%- if volume.ontap_configuration.security_style is defined %}
         SecurityStyle: {{ volume.ontap_configuration.security_style }}
 {%- endif %}
-{%- if volume.ontap_configuration.tiering_policy is defined %}
+{%- if volume.ontap_configuration.tiering_policy is defined %}{# BEGIN if volume.ontap_configuration.tiering_policy is defined #}
         TieringPolicy:
 {%- if volume.ontap_configuration.tiering_policy.cooling_period is defined %}
           CoolingPeriod: {{ volume.ontap_configuration.tiering_policy.cooling_period }}
@@ -32,43 +99,46 @@ Resources:
 {%- if volume.ontap_configuration.tiering_policy.name is defined %}
           Name: {{ volume.ontap_configuration.tiering_policy.name }}
 {%- endif %}
+{%- endif %}{# END if volume.ontap_configuration.tiering_policy is defined #}
+{%- if volume.ontap_configuration.volume_style is defined %}
+        VolumeStyle: {{ volume.ontap_configuration.volume_style }}
 {%- endif %}
-{%- endif %}
-{%- if volume.open_zfs_configuration is defined %}
+{%- endif %}{# END if volume.ontap_configuration is defined #}
+{%- if volume.open_zfs_configuration is defined %}{# BEGIN if volume.open_zfs_configuration is defined #}
       OpenZFSConfiguration:
         ParentVolumeId: {{ volume.open_zfs_configuration.parent_volume_id | trim }}
 {%- if volume.open_zfs_configuration.copy_tags_to_snapshots is defined %}
-        CopyTagsToSnapshots: {{ volume.open_zfs_configuration.copy_tags_to_snapshots }}
+        CopyTagsToSnapshots: {{ volume.open_zfs_configuration.copy_tags_to_snapshots | lower }}
 {%- endif %}
 {%- if volume.open_zfs_configuration.data_compression_type is defined %}
         DataCompressionType: {{ volume.open_zfs_configuration.data_compression_type }}
 {%- endif %}
-{%- if volume.open_zfs_configuration.nfs_exports is defined %}
+{%- if volume.open_zfs_configuration.nfs_exports is defined %}{# BEGIN if volume.open_zfs_configuration.nfs_exports is defined #}
         NfsExports:
-{%- for nfs_export in volume.open_zfs_configuration.nfs_exports %}
+{%- for nfs_export in volume.open_zfs_configuration.nfs_exports %}{# BEGIN for nfs_export in volume.open_zfs_configuration.nfs_exports #}
           - ClientConfigurations:
-{%- for client_configuration in nfs_export.client_configurations %}
+{%- for client_configuration in nfs_export.client_configurations %}{# BEGIN for client_configuration in nfs_export.client_configurations #}
               - Clients: {{ client_configuration.clients }}
                 Options:
 {%- for option in client_configuration.options %}
                   - {{ option }}
 {%- endfor %}
-{%- endfor %}
-{%- endfor %}
-{%- endif %}
-{%- if volume.open_zfs_configuration.options is defined %}
+{%- endfor %}{# END for client_configuration in nfs_export.client_configurations #}
+{%- endfor %}{# END for nfs_export in volume.open_zfs_configuration.nfs_exports #}
+{%- endif %}{# END if volume.open_zfs_configuration.nfs_exports is defined #}
+{%- if volume.open_zfs_configuration.options is defined %}{# BEGIN if volume.open_zfs_configuration.options is defined #}
         Options:
 {%- for option in volume.open_zfs_configuration.options %}
           - {{ option }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if volume.open_zfs_configuration.options is defined #}
 {%- if volume.open_zfs_configuration.origin_snapshot is defined %}
         OriginSnapshot:
           CopyStrategy: {{ volume.open_zfs_configuration.origin_snapshot.copy_strategy }}
           SnapshotARN: {{ volume.open_zfs_configuration.origin_snapshot.snapshot_arn | trim }}
 {%- endif %}
 {%- if volume.open_zfs_configuration.read_only is defined %}
-        ReadOnly: {{ volume.open_zfs_configuration.read_only }}
+        ReadOnly: {{ volume.open_zfs_configuration.read_only | lower }}
 {%- endif %}
 {%- if volume.open_zfs_configuration.record_size_kib is defined %}
         RecordSizeKiB: {{ volume.open_zfs_configuration.record_size_kib }}
@@ -79,15 +149,15 @@ Resources:
 {%- if volume.open_zfs_configuration.storage_capacity_reservation_gib is defined %}
         StorageCapacityReservationGiB: {{ volume.open_zfs_configuration.storage_capacity_reservation_gib }}
 {%- endif %}
-{%- if volume.open_zfs_configuration.user_and_group_quotas is defined %}
+{%- if volume.open_zfs_configuration.user_and_group_quotas is defined %}{# BEGIN if volume.open_zfs_configuration.user_and_group_quotas is defined #}
         UserAndGroupQuotas:
 {%- for quota in volume.open_zfs_configuration.user_and_group_quotas %}
           - Id: {{ quota.id }}
             StorageCapacityQuotaGiB: {{ quota.storage_capacity_quota_gib }}
             Type: {{ quota.type }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}
+{%- endif %}{# END if volume.open_zfs_configuration.user_and_group_quotas is defined #}
+{%- endif %}{# END if volume.open_zfs_configuration is defined #}
 {%- if volume.volume_type is defined %}
       VolumeType: {{ volume.volume_type }}
 {%- endif %}
@@ -100,11 +170,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for volume in sceptre_user_data.volumes %}
 {%- set volume_name = volume.name %}
   {{ volume_name }}:
@@ -114,7 +182,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ volume_name }}"
-
   {{ volume_name }}ResourceARN:
     Description: The ResourceARN for {{ volume_name }}
     Value:
@@ -124,7 +191,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ volume_name }}-ResourceARN"
-
   {{ volume_name }}UUID:
     Description: The universally unique identifier for {{ volume_name }}
     Value:
@@ -134,7 +200,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ volume_name }}-UUID"
-
   {{ volume_name }}VolumeId:
     Description: The Volume Id for {{ volume_name }}
     Value:
@@ -144,5 +209,76 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ volume_name }}-VolumeId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-09
+Type: AWS::FSx::Volume
+Properties:
+  BackupId: String
+  Name: String
+  OntapConfiguration:
+    AggregateConfiguration:
+      Aggregates:
+        - String
+      ConstituentsPerAggregate: Integer
+    CopyTagsToBackups: String
+    JunctionPath: String
+    OntapVolumeType: String
+    SecurityStyle: String
+    SizeInBytes: String
+    SizeInMegabytes: String
+    SnaplockConfiguration:
+      AuditLogVolume: String
+      AutocommitPeriod:
+        Type: String
+        Value: Integer
+      PrivilegedDelete: String
+      RetentionPeriod:
+        DefaultRetention:
+          Type: String
+          Value: Integer
+        MaximumRetention:
+          Type: String
+          Value: Integer
+        MinimumRetention:
+          Type: String
+          Value: Integer
+      SnaplockType: String
+      VolumeAppendModeEnabled: String
+    SnapshotPolicy: String
+    StorageEfficiencyEnabled: String
+    StorageVirtualMachineId: String
+    TieringPolicy:
+      CoolingPeriod: Integer
+      Name: String
+    VolumeStyle: String
+  OpenZFSConfiguration:
+    CopyTagsToSnapshots: Boolean
+    DataCompressionType: String
+    NfsExports:
+      -
+        ClientConfigurations:
+          -
+            Clients: String
+            Options:
+              - String
+    Options:
+      - String
+    OriginSnapshot:
+      CopyStrategy: String
+      SnapshotARN: String
+    ParentVolumeId: String
+    ReadOnly: Boolean
+    RecordSizeKiB: Integer
+    StorageCapacityQuotaGiB: Integer
+    StorageCapacityReservationGiB: Integer
+    UserAndGroupQuotas:
+      -
+        Id: Integer
+        StorageCapacityQuotaGiB: Integer
+        Type: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  VolumeType: String
+#}
