@@ -1,0 +1,54 @@
+---
+template:
+  type: file
+  path: fsx/snapshot.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: FSx Snapshots
+  snapshots:
+    - name: LustreSnapshot1
+      snapshot_name: lustre-snapshot-prod-001
+      volume_id: "fsvol-0123456789abcdef0"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Purpose: DataBackup
+        Team: DataEngineering
+
+    - name: OntapSnapshot1
+      snapshot_name: ontap-snapshot-hourly-001
+      volume_id: "fsvol-0987654321fedcba0"
+      deletion_policy: Delete
+      tags:
+        Environment: Production
+        SnapshotType: Hourly
+        RetentionDays: "7"
+
+    - name: OntapSnapshot2
+      snapshot_name: ontap-snapshot-daily-001
+      volume_id: "fsvol-aaaaaaaaaaaaaaaa0"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        SnapshotType: Daily
+        RetentionDays: "30"
+
+    - name: OpenZfsSnapshot1
+      snapshot_name: zfs-snapshot-dev-001
+      volume_id: "fsvol-bbbbbbbbbbbbbbbb0"
+      deletion_policy: Delete
+      tags:
+        Environment: Development
+        Application: DataProcessing
+
+    - name: OpenZfsSnapshot2
+      snapshot_name: zfs-snapshot-archive-001
+      volume_id: "fsvol-cccccccccccccccc0"
+      deletion_policy: Retain
+
+stack_tags:
+  Test: fsx-snapshot

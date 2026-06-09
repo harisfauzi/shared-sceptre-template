@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('FSx Snapshot(s) for '+scep
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for snapshot in sceptre_user_data.snapshots %}
 {%- set snapshot_name = snapshot.name %}
   {{ snapshot_name }}:
@@ -22,11 +21,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for snapshot in sceptre_user_data.snapshots %}
 {%- set snapshot_name = snapshot.name %}
   {{ snapshot_name }}:
@@ -36,7 +33,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ snapshot_name }}"
-
   {{ snapshot_name }}ResourceARN:
     Description: The Resource ARN for {{ snapshot_name }}
     Value:
@@ -46,5 +42,14 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ snapshot_name }}-ResourceARN"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-09
+Type: AWS::FSx::Snapshot
+Properties:
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  VolumeId: String
+#}

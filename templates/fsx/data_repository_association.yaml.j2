@@ -1,0 +1,98 @@
+---
+Description: {{sceptre_user_data.description|default('FSx Data Repository Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for data_repository_association in sceptre_user_data.data_repository_associations %}
+{%- set data_repository_association_name = data_repository_association.name %}
+  {{ data_repository_association_name }}:
+    Type: AWS::FSx::DataRepositoryAssociation
+    DeletionPolicy: {{ data_repository_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ data_repository_association.update_replace_policy | default('Delete') }}
+    Properties:
+      DataRepositoryPath: {{ data_repository_association.data_repository_path }}
+      FileSystemId: {{ data_repository_association.file_system_id }}
+      FileSystemPath: {{ data_repository_association.file_system_path }}
+{%- if data_repository_association.batch_import_meta_data_on_create is defined %}
+      BatchImportMetaDataOnCreate: {{ data_repository_association.batch_import_meta_data_on_create }}
+{%- endif %}
+{%- if data_repository_association.imported_file_chunk_size is defined %}
+      ImportedFileChunkSize: {{ data_repository_association.imported_file_chunk_size }}
+{%- endif %}
+{%- if data_repository_association.s3 is defined %}{# BEGIN if data_repository_association.s3 is defined #}
+      S3:
+{%- if data_repository_association.s3.auto_export_policy is defined %}{# BEGIN if data_repository_association.s3.auto_export_policy is defined #}
+        AutoExportPolicy:
+          Events:
+{%- for event in data_repository_association.s3.auto_export_policy.events %}
+            - {{ event }}
+{%- endfor %}
+{%- endif %}{# END if data_repository_association.s3.auto_export_policy is defined #}
+{%- if data_repository_association.s3.auto_import_policy is defined %}{# BEGIN if data_repository_association.s3.auto_import_policy is defined #}
+        AutoImportPolicy:
+          Events:
+{%- for event in data_repository_association.s3.auto_import_policy.events %}
+            - {{ event }}
+{%- endfor %}
+{%- endif %}{# END if data_repository_association.s3.auto_import_policy is defined #}
+{%- endif %}{# END if data_repository_association.s3 is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if data_repository_association.tags is defined %}
+{%- for key,value in data_repository_association.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for data_repository_association in sceptre_user_data.data_repository_associations %}
+{%- set data_repository_association_name = data_repository_association.name %}
+  {{ data_repository_association_name }}:
+    Description: The data repository association resource ID ID for {{ data_repository_association_name }}
+    Value:
+      Ref: {{ data_repository_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ data_repository_association_name }}"
+  {{ data_repository_association_name }}ResourceARN:
+    Description: The Resource ARN for {{ data_repository_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ data_repository_association_name }}
+        - ResourceARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ data_repository_association_name }}-ResourceARN"
+  {{ data_repository_association_name }}AssociationId:
+    Description: The data repository association resource ID ID for {{ data_repository_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ data_repository_association_name }}
+        - AssociationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ data_repository_association_name }}-AssociationId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-09
+Type: AWS::FSx::DataRepositoryAssociation
+Properties:
+  BatchImportMetaDataOnCreate: Boolean
+  DataRepositoryPath: String
+  FileSystemId: String
+  FileSystemPath: String
+  ImportedFileChunkSize: Integer
+  S3:
+    AutoExportPolicy:
+      Events:
+        - String
+    AutoImportPolicy:
+      Events:
+        - String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

@@ -12,7 +12,6 @@ Parameters:
     Description: FsxAdminPassword for {{ file_system_name }}
     Default: ''
     NoEcho: true
-
 {%- endif %}
 {%- if file_system.windows_configuration is defined and
   file_system.windows_configuration.self_managed_active_directory_configuration is defined and
@@ -22,13 +21,11 @@ Parameters:
     Description: Windows Configuration Self Managed Active Directory Configuration Admin Password for {{ file_system_name }}
     Default: ''
     NoEcho: true
-
 {%- endif %}
 {%- endfor %}
 {%- endif %}
 
 Resources:
-
 {%- for file_system in sceptre_user_data.file_systems %}
 {%- set file_system_name = file_system.name %}
   {{ file_system_name }}:
@@ -50,7 +47,10 @@ Resources:
 {%- if file_system.kms_key_id is defined %}
       KmsKeyId: {{ file_system.kms_key_id | trim }}
 {%- endif %}
-{%- if file_system.lustre_configuration is defined %}{# BEGIN {%- if file_system.lustre_configuration is defined %} #}
+{%- if file_system.network_type is defined %}
+      NetworkType: {{ file_system.network_type }}
+{%- endif %}
+{%- if file_system.lustre_configuration is defined %}{# BEGIN if file_system.lustre_configuration is defined #}
       LustreConfiguration:
 {%- if file_system.lustre_configuration.auto_import_policy is defined %}
         AutoImportPolicy: {{ file_system.lustre_configuration.auto_import_policy }}
@@ -59,7 +59,7 @@ Resources:
         AutomaticBackupRetentionDays: {{ file_system.lustre_configuration.automatic_backup_retention_days }}
 {%- endif %}
 {%- if file_system.lustre_configuration.copy_tags_to_backups is defined %}
-        CopyTagsToBackups: {{ file_system.lustre_configuration.copy_tags_to_backups }}
+        CopyTagsToBackups: {{ file_system.lustre_configuration.copy_tags_to_backups | lower }}
 {%- endif %}
 {%- if file_system.lustre_configuration.daily_automatic_backup_start_time is defined %}
         DailyAutomaticBackupStartTime: {{ file_system.lustre_configuration.daily_automatic_backup_start_time }}
@@ -67,11 +67,23 @@ Resources:
 {%- if file_system.lustre_configuration.data_compression_type is defined %}
         DataCompressionType: {{ file_system.lustre_configuration.data_compression_type }}
 {%- endif %}
+{%- if file_system.lustre_configuration.data_read_cache_configuration is defined %}{# BEGIN if file_system.lustre_configuration.data_read_cache_configuration is defined #}
+        DataReadCacheConfiguration:
+{%- if file_system.lustre_configuration.data_read_cache_configuration.size_gib is defined %}
+          SizeGiB: {{ file_system.lustre_configuration.data_read_cache_configuration.size_gib }}
+{%- endif %}
+{%- if file_system.lustre_configuration.data_read_cache_configuration.sizing_mode is defined %}
+          SizingMode: {{ file_system.lustre_configuration.data_read_cache_configuration.sizing_mode }}
+{%- endif %}
+{%- endif %}{# END if file_system.lustre_configuration.data_read_cache_configuration is defined #}
 {%- if file_system.lustre_configuration.deployment_type is defined %}
         DeploymentType: {{ file_system.lustre_configuration.deployment_type }}
 {%- endif %}
 {%- if file_system.lustre_configuration.drive_cache_type is defined %}
         DriveCacheType: {{ file_system.lustre_configuration.drive_cache_type }}
+{%- endif %}
+{%- if file_system.lustre_configuration.efa_enabled is defined %}
+        EfaEnabled: {{ file_system.lustre_configuration.efa_enabled | lower }}
 {%- endif %}
 {%- if file_system.lustre_configuration.export_path is defined %}
         ExportPath: {{ file_system.lustre_configuration.export_path }}
@@ -82,16 +94,28 @@ Resources:
 {%- if file_system.lustre_configuration.import_path is defined %}
         ImportPath: {{ file_system.lustre_configuration.import_path }}
 {%- endif %}
+{%- if file_system.lustre_configuration.metadata_configuration is defined %}{# BEGIN if file_system.lustre_configuration.metadata_configuration is defined #}
+        MetadataConfiguration:
+{%- if file_system.lustre_configuration.metadata_configuration.iops is defined %}
+          Iops: {{ file_system.lustre_configuration.metadata_configuration.iops }}
+{%- endif %}
+{%- if file_system.lustre_configuration.metadata_configuration.mode is defined %}
+          Mode: {{ file_system.lustre_configuration.metadata_configuration.mode }}
+{%- endif %}
+{%- endif %}{# END if file_system.lustre_configuration.metadata_configuration is defined #}
 {%- if file_system.lustre_configuration.per_unit_storage_throughput is defined %}
         PerUnitStorageThroughput: {{ file_system.lustre_configuration.per_unit_storage_throughput }}
+{%- endif %}
+{%- if file_system.lustre_configuration.throughput_capacity is defined %}
+        ThroughputCapacity: {{ file_system.lustre_configuration.throughput_capacity }}
 {%- endif %}
 {%- if file_system.lustre_configuration.weekly_maintenance_start_time is defined %}
         WeeklyMaintenanceStartTime: {{ file_system.lustre_configuration.weekly_maintenance_start_time }}
 {%- endif %}
-{%- endif %}{# END {%- if file_system.lustre_configuration is defined %} #}
-{%- if file_system.ontap_configuration is defined %}{# BEGIN {%- if file_system.ontap_configuration is defined %} #}
+{%- endif %}{# END if file_system.lustre_configuration is defined #}
+{%- if file_system.ontap_configuration is defined %}{# BEGIN if file_system.ontap_configuration is defined #}
       OntapConfiguration:
-        DeploymentType: {{ ile_system.ontap_configuration.deployment_type }}
+        DeploymentType: {{ file_system.ontap_configuration.deployment_type }}
 {%- if file_system.ontap_configuration.automatic_backup_retention_days is defined %}
         AutomaticBackupRetentionDays: {{ file_system.ontap_configuration.automatic_backup_retention_days }}
 {%- endif %}
@@ -110,6 +134,9 @@ Resources:
 {%- if file_system.ontap_configuration.endpoint_ip_address_range is defined %}
         EndpointIpAddressRange: {{ file_system.ontap_configuration.endpoint_ip_address_range }}
 {%- endif %}
+{%- if file_system.ontap_configuration.endpoint_ipv6_address_range is defined %}
+        EndpointIpv6AddressRange: {{ file_system.ontap_configuration.endpoint_ipv6_address_range }}
+{%- endif %}
 {%- if file_system.ontap_configuration.fsx_admin_password is defined %}
 {%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
         FsxAdminPassword:
@@ -118,33 +145,39 @@ Resources:
         FsxAdminPassword: {{ file_system.ontap_configuration.fsx_admin_password }}
 {%- endif %}
 {%- endif %}
+{%- if file_system.ontap_configuration.ha_pairs is defined %}
+        HAPairs: {{ file_system.ontap_configuration.ha_pairs }}
+{%- endif %}
 {%- if file_system.ontap_configuration.preferred_subnet_id is defined %}
         PreferredSubnetId: {{ file_system.ontap_configuration.preferred_subnet_id }}
 {%- endif %}
-{%- if file_system.ontap_configuration.route_table_ids is defined %}
+{%- if file_system.ontap_configuration.route_table_ids is defined %}{# BEGIN if file_system.ontap_configuration.route_table_ids is defined #}
         RouteTableIds:
 {%- for route_table_id in file_system.ontap_configuration.route_table_ids %}
           - {{ route_table_id }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if file_system.ontap_configuration.route_table_ids is defined #}
 {%- if file_system.ontap_configuration.throughput_capacity is defined %}
         ThroughputCapacity: {{ file_system.ontap_configuration.throughput_capacity }}
+{%- endif %}
+{%- if file_system.ontap_configuration.throughput_capacity_per_ha_pair is defined %}
+        ThroughputCapacityPerHAPair: {{ file_system.ontap_configuration.throughput_capacity_per_ha_pair }}
 {%- endif %}
 {%- if file_system.ontap_configuration.weekly_maintenance_start_time is defined %}
         WeeklyMaintenanceStartTime: {{ file_system.ontap_configuration.weekly_maintenance_start_time }}
 {%- endif %}
-{%- endif %}{# END {%- if file_system.ontap_configuration is defined %} #}
-{%- if file_system.open_zfs_configuration is defined %}{# BEGIN {%- if file_system.open_zfs_configuration is defined %} #}
+{%- endif %}{# END if file_system.ontap_configuration is defined #}
+{%- if file_system.open_zfs_configuration is defined %}{# BEGIN if file_system.open_zfs_configuration is defined #}
       OpenZFSConfiguration:
         DeploymentType: {{ file_system.open_zfs_configuration.deployment_type }}
 {%- if file_system.open_zfs_configuration.automatic_backup_retention_days is defined %}
         AutomaticBackupRetentionDays: {{ file_system.open_zfs_configuration.automatic_backup_retention_days }}
 {%- endif %}
 {%- if file_system.open_zfs_configuration.copy_tags_to_backups is defined %}
-        CopyTagsToBackups: {{ file_system.open_zfs_configuration.copy_tags_to_backups }}
+        CopyTagsToBackups: {{ file_system.open_zfs_configuration.copy_tags_to_backups | lower }}
 {%- endif %}
 {%- if file_system.open_zfs_configuration.copy_tags_to_volumes is defined %}
-        CopyTagsToVolumes: {{ file_system.open_zfs_configuration.copy_tags_to_volumes }}
+        CopyTagsToVolumes: {{ file_system.open_zfs_configuration.copy_tags_to_volumes | lower }}
 {%- endif %}
 {%- if file_system.open_zfs_configuration.daily_automatic_backup_start_time is defined %}
         DailyAutomaticBackupStartTime: {{ file_system.open_zfs_configuration.daily_automatic_backup_start_time }}
@@ -158,47 +191,71 @@ Resources:
           Mode: {{ file_system.open_zfs_configuration.disk_iops_configuration.mode }}
 {%- endif %}
 {%- endif %}
+{%- if file_system.open_zfs_configuration.endpoint_ip_address_range is defined %}
+        EndpointIpAddressRange: {{ file_system.open_zfs_configuration.endpoint_ip_address_range }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.endpoint_ipv6_address_range is defined %}
+        EndpointIpv6AddressRange: {{ file_system.open_zfs_configuration.endpoint_ipv6_address_range }}
+{%- endif %}
 {%- if file_system.open_zfs_configuration.options is defined %}
         Options:
 {%- for option in file_system.open_zfs_configuration.options %}
           - {{ option }}
 {%- endfor %}
 {%- endif %}
-{%- if file_system.open_zfs_configuration.root_volume_configuration is defined %}
+{%- if file_system.open_zfs_configuration.preferred_subnet_id is defined %}
+        PreferredSubnetId: {{ file_system.open_zfs_configuration.preferred_subnet_id | trim }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.route_table_ids is defined %}{# BEGIN if file_system.open_zfs_configuration.route_table_ids is defined #}
+        RouteTableIds:
+{%- for route_table_id in file_system.open_zfs_configuration.route_table_ids %}
+          - {{ route_table_id }}
+{%- endfor %}
+{%- endif %}{# END if file_system.open_zfs_configuration.route_table_ids is defined #}
+{%- if file_system.open_zfs_configuration.read_cache_configuration is defined %}{# BEGIN if file_system.open_zfs_configuration.read_cache_configuration is defined #}
+        ReadCacheConfiguration:
+{%- if file_system.open_zfs_configuration.read_cache_configuration.size_gib is defined %}
+          SizeGiB: {{ file_system.open_zfs_configuration.read_cache_configuration.size_gib }}
+{%- endif %}
+{%- if file_system.open_zfs_configuration.read_cache_configuration.sizing_mode is defined %}
+          SizingMode: {{ file_system.open_zfs_configuration.read_cache_configuration.sizing_mode }}
+{%- endif %}
+{%- endif %}{# END if file_system.open_zfs_configuration.read_cache_configuration is defined #}
+{%- if file_system.open_zfs_configuration.root_volume_configuration is defined %}{# BEGIN if file_system.open_zfs_configuration.root_volume_configuration is defined #}
         RootVolumeConfiguration:
 {%- if file_system.open_zfs_configuration.root_volume_configuration.copy_tags_to_snapshots is defined %}
-          CopyTagsToSnapshots: {{ file_system.open_zfs_configuration.root_volume_configuration.copy_tags_to_snapshots }}
+          CopyTagsToSnapshots: {{ file_system.open_zfs_configuration.root_volume_configuration.copy_tags_to_snapshots | lower }}
 {%- endif %}
 {%- if file_system.open_zfs_configuration.root_volume_configuration.data_compression_type is defined %}
           DataCompressionType: {{ file_system.open_zfs_configuration.root_volume_configuration.data_compression_type }}
 {%- endif %}
-{%- if file_system.open_zfs_configuration.root_volume_configuration.nfs_exports is defined %}
+{%- if file_system.open_zfs_configuration.root_volume_configuration.nfs_exports is defined %}{# BEGIN if file_system.open_zfs_configuration.root_volume_configuration.nfs_exports is defined #}
           NfsExports:
-{%- for nfs_export in file_system.open_zfs_configuration.root_volume_configuration.nfs_exports %}
+{%- for nfs_export in file_system.open_zfs_configuration.root_volume_configuration.nfs_exports %}{# BEGIN for nfs_export in file_system.open_zfs_configuration.root_volume_configuration.nfs_exports #}
             - ClientConfigurations:
-{%- for client_configuration in nfs_export.client_configurations %}
+{%- for client_configuration in nfs_export.client_configurations %}{# BEGIN for client_configuration in nfs_export.client_configurations #}
                 -
 {%- if client_configuration.clients is defined %}
                   Clients: {{ client_configuration.clients }}
 {%- endif %}
-{%- if client_configuration.options is defined %}
+{%- if client_configuration.options is defined %}{# BEGIN if client_configuration.options is defined #}
                   Options:
 {%- for option in client_configuration.options %}
                     - {{ option }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}
-{%- endfor %}
-{%- endif %}
+{%- endif %}{# END if client_configuration.options is defined #}
+{%- endfor %}{# END for client_configuration in nfs_export.client_configurations #}
+{%- endfor %}{# END for nfs_export in file_system.open_zfs_configuration.root_volume_configuration.nfs_exports #}
+{%- endif %}{# END if file_system.open_zfs_configuration.root_volume_configuration.nfs_exports is defined #}
 {%- if file_system.open_zfs_configuration.root_volume_configuration.read_only is defined %}
-          ReadOnly: {{ file_system.open_zfs_configuration.root_volume_configuration.read_only }}
+          ReadOnly: {{ file_system.open_zfs_configuration.root_volume_configuration.read_only | lower }}
 {%- endif %}
 {%- if file_system.open_zfs_configuration.root_volume_configuration.record_size_kib is defined %}
           RecordSizeKiB: {{ file_system.open_zfs_configuration.root_volume_configuration.record_size_kib }}
 {%- endif %}
-{%- if file_system.open_zfs_configuration.root_volume_configuration.user_and_group_quotas is defined %}
+{%- if file_system.open_zfs_configuration.root_volume_configuration.user_and_group_quotas is defined %}{# BEGIN if file_system.open_zfs_configuration.root_volume_configuration.user_and_group_quotas is defined #}
           UserAndGroupQuotas:
-{%- for quota in file_system.open_zfs_configuration.root_volume_configuration.user_and_group_quotas %}
+{%- for quota in file_system.open_zfs_configuration.root_volume_configuration.user_and_group_quotas %}{# BEGIN for quota in file_system.open_zfs_configuration.root_volume_configuration.user_and_group_quotas #}
             -
 {%- if quota.id is defined %}
               Id: {{ quota.id }}
@@ -209,16 +266,16 @@ Resources:
 {%- if quota.type is defined %}
               Type: {{ quota.type }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- endif %}
+{%- endfor %}{# END for quota in file_system.open_zfs_configuration.root_volume_configuration.user_and_group_quotas #}
+{%- endif %}{# END if file_system.open_zfs_configuration.root_volume_configuration.user_and_group_quotas is defined #}
+{%- endif %}{# END if file_system.open_zfs_configuration.root_volume_configuration is defined #}
 {%- if file_system.open_zfs_configuration.throughput_capacity is defined %}
         ThroughputCapacity: {{ file_system.open_zfs_configuration.throughput_capacity }}
 {%- endif %}
 {%- if file_system.open_zfs_configuration.weekly_maintenance_start_time is defined %}
         WeeklyMaintenanceStartTime: {{ file_system.open_zfs_configuration.weekly_maintenance_start_time }}
 {%- endif %}
-{%- endif %}{# END {%- if file_system.open_zfs_configuration is defined %} #}
+{%- endif %}{# END if file_system.open_zfs_configuration is defined #}
 {%- if file_system.security_group_ids is defined %}
       SecurityGroupIds:
 {%- for security_group_id in file_system.security_group_ids %}
@@ -231,7 +288,7 @@ Resources:
 {%- if file_system.storage_type is defined %}
       StorageType: {{ file_system.storage_type }}
 {%- endif %}
-{%- if file_system.windows_configuration is defined %}{# BEGIN {%- if file_system.windows_configuration is defined %} #}
+{%- if file_system.windows_configuration is defined %}{# BEGIN if file_system.windows_configuration is defined #}
       WindowsConfiguration:
 {%- if file_system.windows_configuration.active_directory_id is defined %}
         ActiveDirectoryId: {{ file_system.windows_configuration.active_directory_id | trim }}
@@ -242,19 +299,19 @@ Resources:
           - {{ alias }}
 {%- endfor %}
 {%- endif %}
-{%- if file_system.windows_configuration.audit_log_configuration is defined %}
+{%- if file_system.windows_configuration.audit_log_configuration is defined %}{# BEGIN if file_system.windows_configuration.audit_log_configuration is defined #}
         AuditLogConfiguration:
           FileAccessAuditLogLevel: {{ file_system.windows_configuration.audit_log_configuration.file_access_audit_log_level }}
           FileShareAccessAuditLogLevel: {{ file_system.windows_configuration.audit_log_configuration.file_share_access_audit_log_level }}
 {%- if file_system.windows_configuration.audit_log_configuration.audit_log_destination is defined %}
           AuditLogDestination: {{ file_system.windows_configuration.audit_log_configuration.audit_log_destination }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if file_system.windows_configuration.audit_log_configuration is defined #}
 {%- if file_system.windows_configuration.automatic_backup_retention_days is defined %}
         AutomaticBackupRetentionDays: {{ file_system.windows_configuration.automatic_backup_retention_days }}
 {%- endif %}
 {%- if file_system.windows_configuration.copy_tags_to_backups is defined %}
-        CopyTagsToBackups: {{ file_system.windows_configuration.copy_tags_to_backups }}
+        CopyTagsToBackups: {{ file_system.windows_configuration.copy_tags_to_backups | lower }}
 {%- endif %}
 {%- if file_system.windows_configuration.daily_automatic_backup_start_time is defined %}
         DailyAutomaticBackupStartTime: {{ file_system.windows_configuration.daily_automatic_backup_start_time }}
@@ -262,16 +319,35 @@ Resources:
 {%- if file_system.windows_configuration.deployment_type is defined %}
         DeploymentType: {{ file_system.windows_configuration.deployment_type }}
 {%- endif %}
+{%- if file_system.windows_configuration.disk_iops_configuration is defined %}{# BEGIN if file_system.windows_configuration.disk_iops_configuration is defined #}
+        DiskIopsConfiguration:
+{%- if file_system.windows_configuration.disk_iops_configuration.iops is defined %}
+          Iops: {{ file_system.windows_configuration.disk_iops_configuration.iops }}
+{%- endif %}
+{%- if file_system.windows_configuration.disk_iops_configuration.mode is defined %}
+          Mode: {{ file_system.windows_configuration.disk_iops_configuration.mode }}
+{%- endif %}
+{%- endif %}{# END if file_system.windows_configuration.disk_iops_configuration is defined #}
+{%- if file_system.windows_configuration.fsrm_configuration is defined %}{# BEGIN if file_system.windows_configuration.fsrm_configuration is defined #}
+        FsrmConfiguration:
+          FsrmServiceEnabled: {{ file_system.windows_configuration.fsrm_configuration.fsrm_service_enabled | lower }}
+{%- if file_system.windows_configuration.fsrm_configuration.event_log_destination is defined %}
+          EventLogDestination: {{ file_system.windows_configuration.fsrm_configuration.event_log_destination }}
+{%- endif %}
+{%- endif %}{# END if file_system.windows_configuration.fsrm_configuration is defined #}
 {%- if file_system.windows_configuration.preferred_subnet_id is defined %}
         PreferredSubnetId: {{ file_system.windows_configuration.preferred_subnet_id | trim }}
 {%- endif %}
-{%- if file_system.windows_configuration.self_managed_active_directory_configuration is defined %}
+{%- if file_system.windows_configuration.self_managed_active_directory_configuration is defined %}{# BEGIN if file_system.windows_configuration.self_managed_active_directory_configuration is defined #}
         SelfManagedActiveDirectoryConfiguration:
-{%- if file_system.windows_configuration.self_managed_active_directory_configuration.dns_ips is defined %}
+{%- if file_system.windows_configuration.self_managed_active_directory_configuration.dns_ips is defined %}{# BEGIN if file_system.windows_configuration.self_managed_active_directory_configuration.dns_ips is defined #}
           DnsIps:
 {%- for dns_ip in file_system.windows_configuration.self_managed_active_directory_configuration.dns_ips %}
             - {{ dns_ip }}
 {%- endfor %}
+{%- endif %}{# END if file_system.windows_configuration.self_managed_active_directory_configuration.dns_ips is defined #}
+{%- if file_system.windows_configuration.self_managed_active_directory_configuration.domain_join_service_account_secret is defined %}
+          DomainJoinServiceAccountSecret: {{ file_system.windows_configuration.self_managed_active_directory_configuration.domain_join_service_account_secret }}
 {%- endif %}
 {%- if file_system.windows_configuration.self_managed_active_directory_configuration.domain_name is defined %}
           DomainName: {{ file_system.windows_configuration.self_managed_active_directory_configuration.domain_name }}
@@ -293,14 +369,14 @@ Resources:
 {%- if file_system.windows_configuration.self_managed_active_directory_configuration.user_name is defined %}
           UserName: {{ file_system.windows_configuration.self_managed_active_directory_configuration.user_name }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if file_system.windows_configuration.self_managed_active_directory_configuration is defined #}
 {%- if file_system.windows_configuration.throughput_capacity is defined %}
         ThroughputCapacity: {{ file_system.windows_configuration.throughput_capacity }}
 {%- endif %}
 {%- if file_system.windows_configuration.weekly_maintenance_start_time is defined %}
         WeeklyMaintenanceStartTime: {{ file_system.windows_configuration.weekly_maintenance_start_time }}
 {%- endif %}
-{%- endif %}{# END {%- if file_system.windows_configuration is defined %} #}
+{%- endif %}{# END if file_system.windows_configuration is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -310,11 +386,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for file_system in sceptre_user_data.file_systems %}
 {%- set file_system_name = file_system.name %}
   {{ file_system_name }}:
@@ -324,7 +398,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ file_system_name }}"
-
   {{ file_system_name }}DNSName:
     Description: The FSx for Windows file system's DNSName for {{ file_system_name }}
     Value:
@@ -334,7 +407,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-DNSName"
-
+  {{ file_system_name }}ResourceARN:
+    Description: The ARN for {{ file_system_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ file_system_name }}
+        - ResourceARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-ResourceARN"
 {%- if file_system.file_system_type == 'LUSTRE' %}
   {{ file_system_name }}LustreMountName:
     Description: The LustreMountName for {{ file_system_name }}
@@ -356,5 +437,129 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ file_system_name }}-RootVolumeId"
 {%- endif %}
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-09
+Type: AWS::FSx::FileSystem
+Properties:
+  BackupId: String
+  FileSystemType: String
+  FileSystemTypeVersion: String
+  KmsKeyId: String
+  LustreConfiguration:
+    AutoImportPolicy: String
+    AutomaticBackupRetentionDays: Integer
+    CopyTagsToBackups: Boolean
+    DailyAutomaticBackupStartTime: String
+    DataCompressionType: String
+    DataReadCacheConfiguration:
+      SizeGiB: Integer
+      SizingMode: String
+    DeploymentType: String
+    DriveCacheType: String
+    EfaEnabled: Boolean
+    ExportPath: String
+    ImportedFileChunkSize: Integer
+    ImportPath: String
+    MetadataConfiguration:
+      Iops: Integer
+      Mode: String
+    PerUnitStorageThroughput: Integer
+    ThroughputCapacity: Integer
+    WeeklyMaintenanceStartTime: String
+  NetworkType: String
+  OntapConfiguration:
+    AutomaticBackupRetentionDays: Integer
+    DailyAutomaticBackupStartTime: String
+    DeploymentType: String
+    DiskIopsConfiguration:
+      Iops: Integer
+      Mode: String
+    EndpointIpAddressRange: String
+    EndpointIpv6AddressRange: String
+    FsxAdminPassword: String
+    HAPairs: Integer
+    PreferredSubnetId: String
+    RouteTableIds:
+      - String
+    ThroughputCapacity: Integer
+    ThroughputCapacityPerHAPair: Integer
+    WeeklyMaintenanceStartTime: String
+  OpenZFSConfiguration:
+    AutomaticBackupRetentionDays: Integer
+    CopyTagsToBackups: Boolean
+    CopyTagsToVolumes: Boolean
+    DailyAutomaticBackupStartTime: String
+    DeploymentType: String
+    DiskIopsConfiguration:
+      Iops: Integer
+      Mode: String
+    EndpointIpAddressRange: String
+    EndpointIpv6AddressRange: String
+    Options:
+      - String
+    PreferredSubnetId: String
+    ReadCacheConfiguration:
+      SizeGiB: Integer
+      SizingMode: String
+    RootVolumeConfiguration:
+      CopyTagsToSnapshots: Boolean
+      DataCompressionType: String
+      NfsExports:
+        -
+          ClientConfigurations:
+            -
+              Clients: String
+              Options:
+                - String
+      ReadOnly: Boolean
+      RecordSizeKiB: Integer
+      UserAndGroupQuotas:
+        -
+          Id: Integer
+          StorageCapacityQuotaGiB: Integer
+          Type: String
+    RouteTableIds:
+      - String
+    ThroughputCapacity: Integer
+    WeeklyMaintenanceStartTime: String
+  SecurityGroupIds:
+    - String
+  StorageCapacity: Integer
+  StorageType: String
+  SubnetIds:
+    - String
+  Tags:
+    -
+      Key: String
+      Value: String
+  WindowsConfiguration:
+    ActiveDirectoryId: String
+    Aliases:
+      - String
+    AuditLogConfiguration:
+      AuditLogDestination: String
+      FileAccessAuditLogLevel: String
+      FileShareAccessAuditLogLevel: String
+    AutomaticBackupRetentionDays: Integer
+    CopyTagsToBackups: Boolean
+    DailyAutomaticBackupStartTime: String
+    DeploymentType: String
+    DiskIopsConfiguration:
+      Iops: Integer
+      Mode: String
+    FsrmConfiguration:
+      EventLogDestination: String
+      FsrmServiceEnabled: Boolean
+    PreferredSubnetId: String
+    SelfManagedActiveDirectoryConfiguration:
+      DnsIps:
+        - String
+      DomainJoinServiceAccountSecret: String
+      DomainName: String
+      FileSystemAdministratorsGroup: String
+      OrganizationalUnitDistinguishedName: String
+      Password: String
+      UserName: String
+    ThroughputCapacity: Integer
+    WeeklyMaintenanceStartTime: String
+#}

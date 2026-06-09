@@ -1,0 +1,51 @@
+---
+template:
+  type: file
+  path: fsx/data_repository_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: FSx Data Repository Associations
+  data_repository_associations:
+    - name: DataRepoAssociation1
+      data_repository_path: "s3://my-bucket/path1"
+      file_system_id: "fs-1234567890abcdef0"
+      file_system_path: "/fsx/path1"
+      deletion_policy: Delete
+      batch_import_meta_data_on_create: true
+      tags:
+        Environment: Production
+        Team: DataEngineering
+    - name: DataRepoAssociation2
+      data_repository_path: "s3://my-bucket/path2"
+      file_system_id: "fs-1234567890abcdef0"
+      file_system_path: "/fsx/path2"
+      imported_file_chunk_size: 262144
+      s3:
+        auto_export_policy:
+          events:
+            - NEW
+            - CHANGED
+        auto_import_policy:
+          events:
+            - NEW
+            - CHANGED
+            - DELETED
+      tags:
+        Environment: Development
+        Team: DataEngineering
+    - name: DataRepoAssociation3
+      data_repository_path: "s3://another-bucket/archive"
+      file_system_id: "fs-0987654321fedcba0"
+      file_system_path: "/fsx/archive"
+      deletion_policy: Retain
+      batch_import_meta_data_on_create: false
+      imported_file_chunk_size: 524288
+      s3:
+        auto_export_policy:
+          events:
+            - NEW
+
+stack_tags:
+  Test: fsx-datarepositoryassociation
