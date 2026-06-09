@@ -72,6 +72,15 @@ Resources:
         - {{ subnet_id }}
 {%- endfor %}
 {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if vpc_endpoint.tags is defined %}
+{%- for key,value in vpc_endpoint.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- if vpc_endpoint.vpc_endpoint_type is defined %}
       VpcEndpointType: {{ vpc_endpoint.vpc_endpoint_type }}
 {%- endif %}
