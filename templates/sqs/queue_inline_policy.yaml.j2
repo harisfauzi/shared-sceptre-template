@@ -1,12 +1,12 @@
 ---
-Description: {{sceptre_user_data.description|default('SQS Queue Policy(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('SQS Queue Inline Policy(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-{%- for queue_policy in sceptre_user_data.queue_policies %}
+{%- for queue_policy in sceptre_user_data.queue_inline_policies %}
 {%- set queue_policy_name = queue_policy.name %}
   {{ queue_policy_name }}:
-    Type: AWS::SQS::QueuePolicy
+    Type: AWS::SQS::QueueInlinePolicy
     DeletionPolicy: {{ queue_policy.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ queue_policy.update_replace_policy | default('Delete') }}
     Properties:
@@ -17,15 +17,11 @@ Resources:
       PolicyDocument:
         {{ queue_policy.policy_document | indent(width=8, first=false) }}
 {%- endif %}
-      Queues:
-{%- for queue in queue_policy.queues %}
-        - {{ queue }}
-{%- endfor %}
+      Queue: {{ queue_policy.queue }}
 {%- endfor %}{#
 # Supported structure as of 2026-06-10:
-Type: AWS::SQS::QueuePolicy
+Type: AWS::SQS::QueueInlinePolicy
 Properties:
   PolicyDocument: Json
-  Queues: 
-    - String
+  Queue: String
 #}
