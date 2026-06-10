@@ -1,0 +1,108 @@
+---
+template:
+  type: file
+  path: sqs/queue.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SQS Queue(s) for testing purposes"
+  queues:
+    - name: StandardProcessingQueue
+      queue_name: standard-processing-queue
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      delay_seconds: 0
+      maximum_message_size: 262144
+      message_retention_period: 345600
+      visibility_timeout: 30
+      receive_message_time_seconds: 0
+      fifo_queue: false
+      sqs_managed_sse_enabled: false
+      tags:
+        Environment: Production
+        Application: MessageProcessing
+        Type: Standard
+
+    - name: FifoOrderingQueue
+      queue_name: fifo-ordering-queue.fifo
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      fifo_queue: true
+      content_based_deduplication: true
+      deduplication_scope: MessageGroup
+      fifo_throughput_limit: PerMessageGroupId
+      maximum_message_size: 262144
+      message_retention_period: 1209600
+      visibility_timeout: 60
+      receive_message_time_seconds: 20
+      kms_master_key_id: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+      kms_data_key_reuse_period_seconds: 300
+      tags:
+        Environment: Production
+        Application: OrderProcessing
+        Type: FIFO
+
+    - name: ProcessingQueueWithDlq
+      queue_name: processing-with-dlq
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      delay_seconds: 5
+      maximum_message_size: 262144
+      message_retention_period: 604800
+      visibility_timeout: 120
+      receive_message_time_seconds: 10
+      fifo_queue: false
+      sqs_managed_sse_enabled: true
+      redrive_policy_json: |-
+        {
+          "deadLetterTargetArn": "arn:aws:sqs:us-east-1:123456789012:processing-dlq",
+          "maxReceiveCount": "3"
+        }
+      redrive_allow_policy_json: |-
+        {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "sqs.amazonaws.com"
+              },
+              "Action": "sqs:SendMessage",
+              "Resource": "arn:aws:sqs:us-east-1:123456789012:processing-with-dlq",
+              "Condition": {
+                "ArnEquals": {
+                  "aws:SourceArn": "arn:aws:sqs:us-east-1:123456789012:processing-dlq"
+                }
+              }
+            }
+          ]
+        }
+      tags:
+        Environment: Production
+        Application: DataProcessing
+        Type: Standard
+        HasDlq: "true"
+
+    - name: EncryptedHighThroughputQueue
+      queue_name: encrypted-high-throughput
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      fifo_queue: false
+      maximum_message_size: 262144
+      message_retention_period: 86400
+      visibility_timeout: 45
+      receive_message_time_seconds: 20
+      delay_seconds: 0
+      kms_master_key_id: "alias/sqs-default-key"
+      kms_data_key_reuse_period_seconds: 600
+      sqs_managed_sse_enabled: true
+      tags:
+        Environment: Production
+        Encryption: KMS
+        Compliance: HIPAA
+        Owner: SecurityTeam
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: sqs-queue
