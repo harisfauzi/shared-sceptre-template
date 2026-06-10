@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('WAF XssMatchSet(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAF XSS Match Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for xss_match_set in sceptre_user_data.xss_match_sets %}
 {%- set xss_match_set_name = xss_match_set.name %}
   {{ xss_match_set_name }}:
@@ -13,7 +12,7 @@ Resources:
     Properties:
       Name: {{ xss_match_set.xss_match_set_name }}
       XssMatchTuples:
-{%- for xss_match_tuple in xss_match_set.xss_match_tuples %}
+{%- for xss_match_tuple in xss_match_set.xss_match_tuples %}{# BEGIN for xss_match_tuple in xss_match_set.xss_match_tuples #}
         -
           FieldToMatch:
             Type: {{ xss_match_tuple.field_to_match.type }}
@@ -21,40 +20,28 @@ Resources:
             Data: {{ xss_match_tuple.field_to_match.data }}
 {%- endif %}
           TextTransformation: {{ xss_match_tuple.text_transformation }}
-{%- endfor %}
-
+{%- endfor %}{# END for xss_match_tuple in xss_match_set.xss_match_tuples #}
 {%- endfor %}
 
 Outputs:
-
 {%- for xss_match_set in sceptre_user_data.xss_match_sets %}
 {%- set xss_match_set_name = xss_match_set.name %}
   {{ xss_match_set_name }}:
-    Description: Role Name for {{ xss_match_set_name }}
+    Description: The ID for {{ xss_match_set_name }}
     Value:
       Ref: {{ xss_match_set_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ xss_match_set_name }}"
-
-  {{ xss_match_set_name }}Arn:
-    Description: The ARN for {{ xss_match_set_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ xss_match_set_name }}
-        - Arn
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ xss_match_set_name }}-Arn"
-
-  {{ xss_match_set_name }}RoleId:
-    Description: The Role Id for {{ xss_match_set_name }}
-    Value:
-      Fn::GetAtt:
-        - {{ xss_match_set_name }}
-        - RoleId
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ xss_match_set_name }}-RoleId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-11:
+Type: AWS::WAF::XssMatchSet
+Properties:
+  Name: String
+  XssMatchTuples:
+    -
+      FieldToMatch:
+        Data: String
+        Type: String
+      TextTransformation: String
+#}

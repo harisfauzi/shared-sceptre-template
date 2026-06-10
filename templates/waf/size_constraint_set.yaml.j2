@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('WAF SizeConstraintSet(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAF Size Constraint Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for size_constraint_set in sceptre_user_data.size_constraint_sets %}
 {%- set size_constraint_set_name = size_constraint_set.name %}
   {{ size_constraint_set_name }}:
@@ -13,7 +12,7 @@ Resources:
     Properties:
       Name: {{ size_constraint_set.size_constraint_set_name }}
       SizeConstraints:
-{%- for size_constraint in size_constraint_set.size_constraints %}
+{%- for size_constraint in size_constraint_set.size_constraints %}{# BEGIN for size_constraint in size_constraint_set.size_constraints #}
         -
           ComparisonOperator: {{ size_constraint.comparison_operator }}
           FieldToMatch:
@@ -23,12 +22,10 @@ Resources:
 {%- endif %}
           Size: {{ size_constraint.size }}
           TextTransformation: {{ size_constraint.text_transformation }}
-{%- endfor %}
-
+{%- endfor %}{# END for size_constraint in size_constraint_set.size_constraints #}
 {%- endfor %}
 
 Outputs:
-
 {%- for size_constraint_set in sceptre_user_data.size_constraint_sets %}
 {%- set size_constraint_set_name = size_constraint_set.name %}
   {{ size_constraint_set_name }}:
@@ -38,5 +35,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ size_constraint_set_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-11:
+Type: AWS::WAF::SizeConstraintSet
+Properties:
+  Name: String
+  SizeConstraints:
+    -
+      ComparisonOperator: String
+      FieldToMatch:
+        Data: String
+        Type: String
+      Size: Integer
+      TextTransformation: String
+#}

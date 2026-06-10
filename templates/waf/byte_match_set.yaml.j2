@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('WAF ByteMatchSet(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAF Byte Match Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -11,9 +11,9 @@ Resources:
     UpdateReplacePolicy: {{ byte_match_set.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ byte_match_set.byte_match_set_name }}
-{%-if byte_match_set.byte_match_tuples is defined %}
+{%- if byte_match_set.byte_match_tuples is defined %}{# BEGIN if byte_match_set.byte_match_tuples is defined #}
       ByteMatchTuples:
-{%- for byte_match_tuple in byte_match_set.byte_match_tuples %}
+{%- for byte_match_tuple in byte_match_set.byte_match_tuples %}{# BEGIN for byte_match_tuple in byte_match_set.byte_match_tuples #}
         - FieldToMatch:
             Type: {{ byte_match_tuple.field_to_match.type }}
 {%- if byte_match_tuple.field_to_match.data is defined %}
@@ -29,8 +29,8 @@ Resources:
           TargetStringBase64:
             {{ byte_match_tuple.target_string_base64 }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for byte_match_tuple in byte_match_set.byte_match_tuples #}
+{%- endif %}{# END if byte_match_set.byte_match_tuples is defined #}
 {%- endfor %}
 
 Outputs:
@@ -43,5 +43,20 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ byte_match_set_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-11:
+Type: AWS::WAF::ByteMatchSet
+Properties:
+  ByteMatchTuples:
+    -
+      FieldToMatch:
+        Data: String
+        Type: String
+      PositionalConstraint: String
+      TargetString:
+        String
+      TargetStringBase64:
+        String
+      TextTransformation: String
+  Name: String
+#}
