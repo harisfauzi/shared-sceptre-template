@@ -1,0 +1,47 @@
+---
+template:
+  type: file
+  path: synthetics/group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Synthetics Canary Group(s) for monitoring organization"
+  groups:
+    - name: Group1
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      group_name: api-monitoring-group
+      resource_arns:
+        - arn:aws:synthetics:us-east-1:123456789012:canary:api-health-check
+        - arn:aws:synthetics:us-east-1:123456789012:canary:api-endpoint-check
+      tags:
+        Environment: Test
+        Owner: "{{ stack_group_config.owner | default('DevOps') }}"
+        Purpose: ApiMonitoring
+
+    - name: Group2
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      group_name: web-ui-monitoring-group
+      resource_arns:
+        - arn:aws:synthetics:us-east-1:123456789012:canary:web-ui-visual-check
+        - arn:aws:synthetics:us-east-1:123456789012:canary:web-ui-functional-check
+        - arn:aws:synthetics:us-east-1:123456789012:canary:web-ui-performance-check
+      tags:
+        Environment: Test
+        Owner: "{{ stack_group_config.owner | default('DevOps') }}"
+        Purpose: UiMonitoring
+        Team: Frontend
+
+    - name: Group3
+      group_name: infrastructure-health-group
+      tags:
+        Environment: Test
+        Owner: "{{ stack_group_config.owner | default('DevOps') }}"
+        Purpose: InfrastructureHealthCheck
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: synthetics-group

@@ -1,0 +1,61 @@
+---
+Description: {{sceptre_user_data.description|default('Synthetics Canary(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for group in sceptre_user_data.groups %}
+{%- set group_name = group.name %}
+  {{ group_name }}:
+    Type: AWS::Synthetics::Group
+    DeletionPolicy: {{ group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ group.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ group.group_name }}
+{%- if group.resource_arns is defined %}{# BEGIN if group.resource_arns is defined #}
+      ResourceArns:
+{%- for arn in group.resource_arns %}
+        - {{ arn | trim }}
+{%- endfor %}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if group.tags is defined %}
+{%- for key,value in group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for group in sceptre_user_data.groups %}
+{%- set group_name = group.name %}
+  {{ group_name }}:
+    Description: The Name of the group for {{ group_name }}
+    Value:
+      Ref: {{ group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ group_name }}"
+  {{ group_name }}Id:
+    Description: The Id of group for {{ group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ group_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ group_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-06-10:
+Type: AWS::Synthetics::Group
+Properties:
+  Name: String
+  ResourceArns:
+    - String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
