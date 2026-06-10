@@ -1,0 +1,124 @@
+---
+template:
+  type: file
+  path: kms/key.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "KMS Key(s) for testing purposes"
+  kms_keys:
+    - name: GeneralPurposeSymmetricKey
+      generic_key_policy:
+        administrator_arns:
+          - "Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:role/admin-role'"
+        user_arns:
+          - "Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:role/application-role'"
+          - "Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:user/service-account'"
+      description: General purpose symmetric encryption key
+      enabled: true
+      enable_key_rotation: true
+      key_spec: SYMMETRIC_DEFAULT
+      key_usage: ENCRYPT_DECRYPT
+      multi_region: false
+      pending_window_in_days: 7
+      tags:
+        Environment: Production
+        Purpose: GeneralEncryption
+        Owner: SecurityTeam
+      alias_names:
+        - general-purpose-key
+        - prod-symmetric-key
+
+    - name: DatabaseEncryptionKey
+      generic_key_policy:
+        administrator_arns:
+          - "Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:role/kms-admin'"
+        user_arns:
+          - "Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:role/rds-enhanced-monitoring'"
+          - "Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:role/database-access-role'"
+      description: KMS key for RDS database encryption
+      enabled: true
+      enable_key_rotation: true
+      key_spec: SYMMETRIC_DEFAULT
+      key_usage: ENCRYPT_DECRYPT
+      multi_region: false
+      pending_window_in_days: 30
+      tags:
+        Environment: Production
+        Purpose: DatabaseEncryption
+        Service: RDS
+      alias_names:
+        - rds-encryption-key
+
+    - name: MultiRegionSigningKey
+      key_policy_json: |-
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "Enable IAM policies",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::123456789012:root"
+              },
+              "Action": "kms:*",
+              "Resource": "*"
+            },
+            {
+              "Sid": "Allow signing operations",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::123456789012:role/signing-service-role"
+              },
+              "Action": [
+                "kms:Sign",
+                "kms:Verify",
+                "kms:DescribeKey",
+                "kms:GetPublicKey"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      description: Multi-region key for cryptographic signing
+      enabled: true
+      enable_key_rotation: false
+      key_spec: RSA_2048
+      key_usage: SIGN_VERIFY
+      multi_region: true
+      origin: AWS_KMS
+      pending_window_in_days: 7
+      tags:
+        Environment: Production
+        Purpose: DigitalSignature
+        Compliance: PCI-DSS
+      alias_names:
+        - multi-region-signing-key
+        - corporate-signing-key
+
+    - name: AutomatedRotationKey
+      generic_key_policy:
+        administrator_arns:
+          - "Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:role/kms-admin'"
+        user_arns:
+          - "Fn::Sub: 'arn:aws:iam::${AWS::AccountId}:role/automation-role'"
+      description: Key with automated rotation for compliance
+      enabled: true
+      enable_key_rotation: true
+      key_spec: SYMMETRIC_DEFAULT
+      key_usage: ENCRYPT_DECRYPT
+      multi_region: false
+      rotation_period_in_days: 90
+      pending_window_in_days: 14
+      tags:
+        Environment: Production
+        Purpose: ComplianceEncryption
+        ComplianceFramework: HIPAA
+      alias_names:
+        - compliance-rotation-key
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: kms-key
