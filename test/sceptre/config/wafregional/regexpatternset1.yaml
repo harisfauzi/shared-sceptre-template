@@ -1,0 +1,44 @@
+---
+template:
+  type: file
+  path: wafregional/regex_pattern_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFRegional Regex Pattern Set(s) for testing purposes"
+  regex_pattern_sets:
+    - name: SqlInjectionPatternSet
+      regex_pattern_set_name: sql-injection-patterns
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      regex_pattern_strings:
+        - "(?i:union.*select)"
+        - "(?i:drop.*table)"
+        - "(?i:insert.*into)"
+        - "(?i:delete.*from)"
+        - "(?i:select.*from.*where)"
+
+    - name: PathTraversalPatternSet
+      regex_pattern_set_name: path-traversal-patterns
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      regex_pattern_strings:
+        - "\\.\\./"
+        - "\\.\\.%2[fF]"
+        - "'%2e%2e/'"
+        - "\\x2e\\x2e/"
+
+    - name: CommandInjectionPatternSet
+      regex_pattern_set_name: command-injection-patterns
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      regex_pattern_strings:
+        - "[;|&$()]"
+        - "(?i:bash|cmd|powershell)"
+        - "'`.*`'"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: wafregional-regex-pattern-set

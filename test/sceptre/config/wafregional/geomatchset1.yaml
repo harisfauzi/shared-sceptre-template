@@ -1,0 +1,43 @@
+---
+template:
+  type: file
+  path: wafregional/geo_match_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFRegional Geo Match Sets for testing purposes"
+  geo_match_sets:
+    - name: AllowedCountriesGeoMatchSet
+      geo_match_set_name: allowed-countries-geo-match
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      geo_match_constraints:
+        - value: "US"
+        - value: "CA"
+        - value: "GB"
+        - value: "DE"
+        - value: "FR"
+
+    - name: BlockedCountriesGeoMatchSet
+      geo_match_set_name: blocked-countries-geo-match
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      geo_match_constraints:
+        - value: "CN"
+        - value: "RU"
+        - value: "KP"
+
+    - name: HighRiskCountriesGeoMatchSet
+      geo_match_set_name: high-risk-countries-geo-match
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      geo_match_constraints:
+        - value: "IR"
+        - value: "SY"
+        - value: "CU"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: wafregional-geo-match-set

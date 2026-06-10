@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: wafregional/ip_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFRegional IP Set(s) for testing purposes"
+  ip_sets:
+    - name: AllowedIpAddressesIpSet
+      ip_set_name: allowed-ip-addresses
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      ip_set_descriptors:
+        - type: IPV4
+          value: "10.0.0.0/8"
+        - type: IPV4
+          value: "172.16.0.0/12"
+        - type: IPV4
+          value: "192.168.0.0/16"
+
+    - name: BlockedMaliciousIpsIpSet
+      ip_set_name: blocked-malicious-ips
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      ip_set_descriptors:
+        - type: IPV4
+          value: "192.0.2.0/24"
+        - type: IPV4
+          value: "198.51.100.0/24"
+        - type: IPV4
+          value: "203.0.113.0/24"
+        - type: IPV6
+          value: "2001:db8::/32"
+
+    - name: ComplianceIpsIpSet
+      ip_set_name: compliance-ip-ranges
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      ip_set_descriptors:
+        - type: IPV4
+          value: "203.0.113.0/24"
+        - type: IPV6
+          value: "2001:db8:1234::/48"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: wafregional-ip-set

@@ -1,0 +1,32 @@
+---
+template:
+  type: file
+  path: wafregional/web_acl_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFRegional Web ACL Association(s) for testing purposes"
+  web_acl_associations:
+    - name: ProductionAlbWafAssociation
+      resource_arn: "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/prod-alb/1234567890abcdef"
+      web_acl_id: "arn:aws:wafregional:us-east-1:123456789012:webacl/12345678-1234-1234-1234-123456789012"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+    - name: ApiLoadBalancerWafAssociation
+      resource_arn: "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/api-alb/abcdef1234567890"
+      web_acl_id: "arn:aws:wafregional:us-east-1:123456789012:webacl/87654321-4321-4321-4321-210987654321"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+    - name: ClassicLoadBalancerWafAssociation
+      resource_arn: "arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/classic-lb"
+      web_acl_id: "arn:aws:wafregional:us-east-1:123456789012:webacl/11111111-2222-3333-4444-555555555555"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: wafregional-web-acl-association

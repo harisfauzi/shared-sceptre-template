@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('WAFRegional WebACLAssociation(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAFRegional Web ACL Association(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for web_acl_association in sceptre_user_data.web_acl_associations %}
 {%- set web_acl_association_name = web_acl_association.name %}
   {{ web_acl_association_name }}:
@@ -13,5 +12,10 @@ Resources:
     Properties: 
       ResourceArn: {{ web_acl_association.resource_arn | trim }}
       WebACLId: {{ web_acl_association.web_acl_id | trim }}
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-10
+Type: AWS::WAFRegional::WebACLAssociation
+Properties:
+  ResourceArn: String
+  WebACLId: String
+#}

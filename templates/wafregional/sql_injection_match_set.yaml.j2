@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('WAFRegional SqlInjectionMatchSet(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAFRegional Sql Injection Match Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for sql_injection_match_set in sceptre_user_data.sql_injection_match_sets %}
 {%- set sql_injection_match_set_name = sql_injection_match_set.name %}
   {{ sql_injection_match_set_name }}:
@@ -12,9 +11,9 @@ Resources:
     UpdateReplacePolicy: {{ sql_injection_match_set.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ sql_injection_match_set.sql_injection_match_set_name }}
-{%- if sql_injection_match_set.sql_injection_match_tuples is defined %}
+{%- if sql_injection_match_set.sql_injection_match_tuples is defined %}{# BEGIN if sql_injection_match_set.sql_injection_match_tuples is defined #}
       SqlInjectionMatchTuples:
-{%- for sql_injection_match_tuple in sql_injection_match_set.sql_injection_match_tuples %}
+{%- for sql_injection_match_tuple in sql_injection_match_set.sql_injection_match_tuples %}{# BEGIN for sql_injection_match_tuple in sql_injection_match_set.sql_injection_match_tuples #}
         -
           FieldToMatch:
             Type: {{ sql_injection_match_tuple.field_to_match.type }}
@@ -22,13 +21,11 @@ Resources:
             Data: {{ sql_injection_match_tuple.field_to_match.data }}
 {%- endif %}
           TextTransformation: {{ sql_injection_match_tuple.text_transformation }}
-{%- endfor %}
-{%- endif %}
-
+{%- endfor %}{# END for sql_injection_match_tuple in sql_injection_match_set.sql_injection_match_tuples #}
+{%- endif %}{# END if sql_injection_match_set.sql_injection_match_tuples is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for sql_injection_match_set in sceptre_user_data.sql_injection_match_sets %}
 {%- set sql_injection_match_set_name = sql_injection_match_set.name %}
   {{ sql_injection_match_set_name }}:
@@ -38,5 +35,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ sql_injection_match_set_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-10
+Type: AWS::WAFRegional::SqlInjectionMatchSet
+Properties:
+  Name: String
+  SqlInjectionMatchTuples:
+    -
+      FieldToMatch:
+        Data: String
+        Type: String
+      TextTransformation: String
+#}
