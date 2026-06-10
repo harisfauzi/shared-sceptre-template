@@ -1,0 +1,61 @@
+---
+template:
+  type: file
+  path: wafregional/sql_injection_match_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFRegional SQL Injection Match Set(s) for testing purposes"
+  sql_injection_match_sets:
+    - name: SqlInjectionGeneralMatchSet
+      sql_injection_match_set_name: sql-injection-general-detection
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      sql_injection_match_tuples:
+        - field_to_match:
+            type: QUERY_STRING
+          text_transformation: URL_DECODE
+        - field_to_match:
+            type: BODY
+          text_transformation: HTML_ENTITY_DECODE
+        - field_to_match:
+            type: URI
+          text_transformation: URL_DECODE
+
+    - name: SqlInjectionHeaderMatchSet
+      sql_injection_match_set_name: sql-injection-header-detection
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      sql_injection_match_tuples:
+        - field_to_match:
+            type: HEADER
+            data: Authorization
+          text_transformation: LOWERCASE
+        - field_to_match:
+            type: HEADER
+            data: Cookie
+          text_transformation: URL_DECODE
+        - field_to_match:
+            type: HEADER
+            data: X-Forwarded-For
+          text_transformation: NONE
+
+    - name: SqlInjectionRoleBasedMatchSet
+      sql_injection_match_set_name: sql-injection-role-based-detection
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      sql_injection_match_tuples:
+        - field_to_match:
+            type: ARGS
+            data: user_id
+          text_transformation: HTML_ENTITY_DECODE
+        - field_to_match:
+            type: ARGS
+            data: search
+          text_transformation: URL_DECODE
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: wafregional-sql-injection-match-set

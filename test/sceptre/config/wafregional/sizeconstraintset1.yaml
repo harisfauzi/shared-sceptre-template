@@ -1,0 +1,59 @@
+---
+template:
+  type: file
+  path: wafregional/size_constraint_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFRegional Size Constraint Set(s) for testing purposes"
+  size_constraint_sets:
+    - name: PayloadSizeConstraintSet
+      size_constraint_set_name: payload-size-constraints
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      size_constraints:
+        - comparison_operator: GT
+          field_to_match:
+            type: BODY
+          size: 10485760
+          text_transformation: NONE
+        - comparison_operator: LT
+          field_to_match:
+            type: URI
+          size: 1024
+          text_transformation: NONE
+
+    - name: HeaderSizeConstraintSet
+      size_constraint_set_name: header-size-constraints
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      size_constraints:
+        - comparison_operator: GT
+          field_to_match:
+            type: HEADER
+            data: Content-Length
+          size: 5242880
+          text_transformation: NONE
+        - comparison_operator: GT
+          field_to_match:
+            type: HEADER
+            data: User-Agent
+          size: 512
+          text_transformation: LOWERCASE
+
+    - name: QueryStringSizeConstraintSet
+      size_constraint_set_name: query-string-size-constraints
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      size_constraints:
+        - comparison_operator: EQ
+          field_to_match:
+            type: QUERY_STRING
+          size: 0
+          text_transformation: URL_DECODE
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: wafregional-size-constraint-set

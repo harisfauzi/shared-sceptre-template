@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('WAFRegional WebACL(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAFRegional Web ACL(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for web_acl in sceptre_user_data.web_acls %}
 {%- set web_acl_name = web_acl.name %}
   {{ web_acl_name }}:
@@ -15,9 +14,9 @@ Resources:
         Type: {{ web_acl.default_action.type }}
       MetricName: {{ web_acl.metric_name }}
       Name: {{ web_acl.web_acl_name }}
-{%- if web_acl.rules is defined %}
+{%- if web_acl.rules is defined %}{# BEGIN if web_acl.rules is defined #}
       Rules:
-{%- for rule in web_acl.rules %}
+{%- for rule in web_acl.rules %}{# BEGIN for rule in web_acl.rules #}
         -
           Priority: {{ rule.priority }}
           RuleId: {{ rule.rule_id | trim }}
@@ -25,13 +24,11 @@ Resources:
           Action:
             Type: {{ rule.action.type }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
-
+{%- endfor %}{# END for rule in web_acl.rules #}
+{%- endif %}{# END if web_acl.rules is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for web_acl in sceptre_user_data.web_acls %}
 {%- set web_acl_name = web_acl.name %}
   {{ web_acl_name }}:
@@ -41,5 +38,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ web_acl_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-10
+Type: AWS::WAFRegional::WebACL
+Properties:
+  DefaultAction:
+    Type: String
+  MetricName: String
+  Name: String
+  Rules:
+    -
+      Action:
+        Type: String
+      Priority: Integer
+      RuleId: String
+#}

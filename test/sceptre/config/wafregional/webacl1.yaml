@@ -1,0 +1,62 @@
+---
+template:
+  type: file
+  path: wafregional/web_acl.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFRegional Web ACL(s) for testing purposes"
+  web_acls:
+    - name: ProductionWebWebAcl
+      web_acl_name: production-web-protection
+      metric_name: ProductionWebAclMetric
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      default_action:
+        type: ALLOW
+      rules:
+        - priority: 1
+          rule_id: SqlInjectionDetectionRule
+          action:
+            type: BLOCK
+        - priority: 2
+          rule_id: XssDetectionRule
+          action:
+            type: BLOCK
+        - priority: 3
+          rule_id: PathTraversalDetectionRule
+          action:
+            type: COUNT
+
+    - name: ApiProtectionWebAcl
+      web_acl_name: api-protection-acl
+      metric_name: ApiProtectionAclMetric
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      default_action:
+        type: BLOCK
+      rules:
+        - priority: 1
+          rule_id: AttackThrottlingRule
+          action:
+            type: BLOCK
+        - priority: 2
+          rule_id: GeoBlockingRule
+          action:
+            type: BLOCK
+        - priority: 3
+          rule_id: AllowedIpAddressesIpSet
+
+    - name: AdminDashboardWebAcl
+      web_acl_name: admin-dashboard-acl
+      metric_name: AdminDashboardAclMetric
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      default_action:
+        type: ALLOW
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: wafregional-web-acl
