@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFormation Custom Reso
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for custom_resource in sceptre_user_data.custom_resources %}
 {%- set custom_resource_name = custom_resource.name %}
   {{ custom_resource_name }}:
@@ -12,5 +11,13 @@ Resources:
     UpdateReplacePolicy: {{ hook_default_version.update_replace_policy | default('Delete') }}
     Properties:
       ServiceToken: {{ custom_resource.service_token }}
-
-{%- endfor %}
+{%- if custom_resource.service_timeout is defined %}
+      ServiceTimeout: {{ custom_resource.service_timeout }}
+{%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-09
+Type: AWS::CloudFormation::CustomResource
+Properties:
+  ServiceTimeout: String
+  ServiceToken: String
+#}
