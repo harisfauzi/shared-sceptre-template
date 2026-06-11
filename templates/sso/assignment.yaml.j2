@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('SSO Assignment(s) for '+sc
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for assignment in sceptre_user_data.assignments %}
 {%- set assignment_name = assignment.name %}
   {{ assignment_name }}:
@@ -12,16 +11,14 @@ Resources:
     UpdateReplacePolicy: {{ assignment.update_replace_policy | default('Delete') }}
     Properties:
       InstanceArn: {{ assignment.instance_arn | trim }}
-      PermissionSetArn: {{ permission_set_arn | trim }}
+      PermissionSetArn: {{ assignment.permission_set_arn | trim }}
       PrincipalId: {{ assignment.principal_id | trim }}
       PrincipalType: {{ assignment.principal_type }}
       TargetId: {{ assignment.target_id | trim }}
       TargetType: 'AWS_ACCOUNT'
-
 {%- endfor %}
 
 Outputs:
-
 {%- for assignment in sceptre_user_data.assignments %}
 {%- set assignment_name = assignment.name %}
   {{ assignment_name }}:
@@ -31,5 +28,14 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ assignment_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-11
+Type: AWS::SSO::Assignment
+Properties:
+  InstanceArn: String
+  PermissionSetArn: String
+  PrincipalId: String
+  PrincipalType: String
+  TargetId: String
+  TargetType: String
+#}

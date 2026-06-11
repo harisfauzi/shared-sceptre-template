@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('SSO PermissionSet(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('SSO Permission Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for permission_set in sceptre_user_data.permission_sets %}
 {%- set permission_set_name = permission_set.name %}
   {{ permission_set_name }}:
@@ -13,21 +12,47 @@ Resources:
     Properties:
       InstanceArn: {{ permission_set.instance_arn | trim }}
       Name: {{ permission_set.permission_set_name }}
+{%- if permission_set.customer_managed_policy_references is defined %}{# BEGIN if permission_set.customer_managed_policy_references is defined #}
+      CustomerManagedPolicyReferences:
+{%- for reference in permission_set.customer_managed_policy_references %}{# BEGIN for reference in permission_set.customer_managed_policy_references #}
+        -
+          Name: {{ reference.name }}
+{%- if reference.path is defined %}
+          Path: {{ reference.path }}
+{%- endif %}
+{%- endfor %}{# END for reference in permission_set.customer_managed_policy_references #}
+{%- endif %}{# END if permission_set.customer_managed_policy_references is defined #}
 {%- if permission_set.description is defined %}
       Description: {{ permission_set.description }}
 {%- endif %}
 {%- if permission_set.inline_policy_json is defined %}
-      InlinePolicy: {{ permission_set.inline_policy_json }}
-{%- if permission_set.inline_policy is defined %}
+      InlinePolicy: |-
+        {{ permission_set.inline_policy_json | indent(width=8,first=false) }}
+{%- elif permission_set.inline_policy is defined %}
       InlinePolicy:
-{{ permission_set.inline_policy | indent(width=8,first=true) }}
+        {{ permission_set.inline_policy | indent(width=8,first=false) }}
 {%- endif %}
-{%- if permission_set.managed_policies is defined %}
+{%- if permission_set.managed_policies is defined %}{# BEGIN if permission_set.managed_policies is defined #}
       ManagedPolicies:
 {%- for managed_policy in permission_set.managed_policies %}
         - {{ managed_policy }}
 {%- endfor %}
+{%- endif %}{# END if permission_set.managed_policies is defined #}
+{%- if permission_set.permission_boundary is defined %}{# BEGIN if permission_set.permission_boundary is defined #}
+      PermissionsBoundary:
+{%- if permission_set.permission_boundary.customer_managed_policy_reference is defined %}{# BEGIN if permission_set.permission_boundary.customer_managed_policy_reference is defined #}
+        CustomerManagedPolicyReference:
+{%- if permission_set.permission_boundary.customer_managed_policy_reference.name is defined %}
+          Name: {{ permission_set.permission_boundary.customer_managed_policy_reference.name }}
 {%- endif %}
+{%- if permission_set.permission_boundary.customer_managed_policy_reference.path is defined %}
+          Path: {{ permission_set.permission_boundary.customer_managed_policy_reference.path }}
+{%- endif %}
+{%- endif %}{# END if permission_set.permission_boundary.customer_managed_policy_reference is defined #}
+{%- if permission_set.permission_boundary.managed_policy_arn is defined %}
+        ManagedPolicyArn: {{ permission_set.permission_boundary.managed_policy_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if permission_set.permission_boundary is defined #}
 {%- if permission_set.relay_state_type is defined %}
       RelayStateType: {{ permission_set.relay_state_type }}
 {%- endif %}
@@ -43,11 +68,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for permission_set in sceptre_user_data.permission_sets %}
 {%- set permission_set_name = permission_set.name %}
   {{ permission_set_name }}:
@@ -57,7 +80,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ permission_set_name }}"
-
   {{ permission_set_name }}PermissionSetArn:
     Description: The ARN for {{ permission_set_name }}
     Value:
@@ -67,5 +89,28 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ permission_set_name }}-PermissionSetArn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-11
+Type: AWS::SSO::PermissionSet
+Properties:
+  CustomerManagedPolicyReferences:
+    -
+      Name: String
+      Path: String
+  Description: String
+  InlinePolicy: Json
+  InstanceArn: String
+  ManagedPolicies:
+    - String
+  Name: String
+  PermissionsBoundary:
+    CustomerManagedPolicyReference:
+      Name: String
+      Path: String
+    ManagedPolicyArn: String
+  RelayStateType: String
+  SessionDuration: String
+  Tags:
+    - Key: String
+      Value: String
+#}

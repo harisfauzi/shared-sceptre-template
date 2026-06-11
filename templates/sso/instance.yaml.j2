@@ -1,0 +1,81 @@
+---
+Description: {{sceptre_user_data.description|default('SSO Instance(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for instance in sceptre_user_data.instances %}
+{%- set instance_name = instance.name %}
+  {{ instance_name }}:
+    Type: AWS::SSO::Instance
+    DeletionPolicy: {{ instance.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ instance.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if instance.instance_name is defined %}
+      Name: {{ instance.instance_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if instance.tags is defined %}
+{%- for key,value in instance.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for instance in sceptre_user_data.instances %}
+{%- set instance_name = instance.name %}
+  {{ instance_name }}:
+    Description: Generated Id for {{ instance_name }}
+    Value:
+      Ref: {{ instance_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}"
+  {{ instance_name }}IdentityStoreId:
+    Description: The identifier of the identity store that is connected to {{ instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - IdentityStoreId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-IdentityStoreId"
+  {{ instance_name }}InstanceArn:
+    Description: The ARN of the Identity Center instance for {{ instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - InstanceArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-InstanceArn"
+  {{ instance_name }}OwnerAccountId:
+    Description: The AWS account ID number of the owner of {{ instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - OwnerAccountId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-OwnerAccountId"
+  {{ instance_name }}Status:
+    Description: The current status of {{ instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-Status"
+{%- endfor %}{#
+# Supported structure as of 2026-06-11
+Type: AWS::SSO::Instance
+Properties:
+  Name: String
+  Tags:
+    - Key: String
+      Value: String
+#}

@@ -1,0 +1,91 @@
+---
+Description: {{sceptre_user_data.description|default('SSO Application(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Type: AWS::SSO::Application
+    DeletionPolicy: {{ application.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ application.update_replace_policy | default('Delete') }}
+    Properties:
+      ApplicationProviderArn: {{ application.application_provider_arn | trim }}
+      InstanceArn: {{ application.instance_arn | trim }}
+      Name: {{ application.application_name }}
+{%- if application.description is defined %}
+      Description: {{ application.description }}
+{%- endif %}
+{%- if application.portal_options is defined %}{# BEGIN if application.portal_options is defined #}
+      PortalOptions:
+{%- if application.portal_options.sign_in_options is defined %}{# BEGIN if application.portal_options.sign_in_options is defined #}
+        SignInOptions:
+          Origin: {{ application.portal_options.sign_in_options.origin }}
+{%- if application.portal_options.sign_in_options.application_url is defined %}
+          ApplicationUrl: {{ application.portal_options.sign_in_options.application_url }}
+{%- endif %}
+{%- endif %}{# END if application.portal_options.sign_in_options is defined #}
+{%- if application.portal_options.visibility is defined %}
+        Visibility: {{ application.portal_options.visibility }}
+{%- endif %}
+{%- endif %}{# END if application.portal_options is defined #}
+{%- if application.status is defined %}
+      Status: {{ application.status }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if application.tags is defined %}
+{%- for key,value in application.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Description: Generated Id for {{ application_name }}
+    Value:
+      Ref: {{ application_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}"
+  {{ application_name }}ApplicationArn:
+    Description: Application ARN for {{ application_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ application_name }}
+        - ApplicationArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}-ApplicationArn"
+  {{ application_name }}IdentityStoreArn:
+    Description: The ARN of the identity store that is connected to {{ application_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ application_name }}
+        - IdentityStoreArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}-IdentityStoreArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-11
+Type: AWS::SSO::Application
+Properties:
+  ApplicationProviderArn: String
+  Description: String
+  InstanceArn: String
+  Name: String
+  PortalOptions:
+    SignInOptions:
+      ApplicationUrl: String
+      Origin: String
+    Visibility: String
+  Status: String
+  Tags:
+    - Key: String
+      Value: String
+#}

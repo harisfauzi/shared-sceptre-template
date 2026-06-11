@@ -1,0 +1,29 @@
+---
+template:
+  type: file
+  path: sso/application_assignment.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test SSO Application Assignment with comprehensive Jinja2 template coverage.
+  application_assignments:
+    - name: BasicApplicationAssignment
+      application_arn: "arn:aws:sso::123456789012:application/sso-instance-123abc/apl-1234567890abcdef0"
+      principal_id: "u-1234567890abcdef0"
+      principal_type: "USER"
+
+    - name: GroupApplicationAssignment
+      application_arn: "arn:aws:sso::123456789012:application/sso-instance-123abc/apl-abcdef0123456789a"
+      principal_id: "g-0987654321fedcba0"
+      principal_type: "GROUP"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+
+    - name: DeveloperApplicationAssignment
+      application_arn: "arn:aws:sso::123456789012:application/sso-instance-123abc/apl-9876543210fedcba9"
+      principal_id: "u-abcdef1234567890a"
+      principal_type: "USER"
+
+stack_tags:
+  Test: sso-application-assignment
