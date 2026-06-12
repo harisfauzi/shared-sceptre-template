@@ -1,0 +1,42 @@
+---
+template:
+  type: file
+  path: sso/instance_access_control_attribute_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test SSO Instance Access Control Attribute Configuration with comprehensive Jinja2 template coverage.
+  instance_access_control_attribute_configurations:
+    - name: BasicAccessControlAttributeConfiguration
+      instance_arn: "arn:aws:sso::123456789012:instance/sso-instance-123abc"
+
+    - name: EnterpriseAccessControlAttributeConfiguration
+      instance_arn: "arn:aws:sso::123456789012:instance/sso-instance-123abc"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      access_control_attributes:
+        - key: "Department"
+          value:
+            source:
+              - "corporateDirectory"
+        - key: "CostCenter"
+          value:
+            source:
+              - "corporateDirectory"
+              - "workdayHCM"
+
+    - name: DevelopmentAccessControlAttributeConfiguration
+      instance_arn: "arn:aws:sso::123456789012:instance/sso-instance-123abc"
+      access_control_attributes:
+        - key: "Environment"
+          value:
+            source:
+              - "corporateDirectory"
+        - key: "Team"
+          value:
+            source:
+              - "corporateDirectory"
+
+stack_tags:
+  Test: sso-instance-access-control-attribute-configuration

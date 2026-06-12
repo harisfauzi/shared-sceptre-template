@@ -1,0 +1,72 @@
+---
+template:
+  type: file
+  path: sso/permission_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test SSO Permission Set with comprehensive Jinja2 template coverage.
+  permission_sets:
+    - name: BasicPermissionSet
+      instance_arn: "arn:aws:sso::123456789012:instance/sso-instance-123abc"
+      permission_set_name: BasicSSO
+
+    - name: AdminPermissionSet
+      instance_arn: "arn:aws:sso::123456789012:instance/sso-instance-123abc"
+      permission_set_name: AdminSSO
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      description: Admin permission set with managed policies
+      managed_policies:
+        - "arn:aws:iam::aws:policy/AdministratorAccess"
+      session_duration: "PT8H"
+      tags:
+        Environment: Production
+        Role: Administrator
+        Owner: CloudTeam
+
+    - name: DeveloperPermissionSet
+      instance_arn: "arn:aws:sso::123456789012:instance/sso-instance-123abc"
+      permission_set_name: DeveloperSSO
+      description: Developer permission set with custom and managed policies
+      managed_policies:
+        - "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
+        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+      customer_managed_policy_references:
+        - name: "CustomDeveloperPolicy"
+          path: "/custom/"
+      inline_policy_json: |-
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Action": "logs:*",
+              "Resource": "*"
+            }
+          ]
+        }
+      permission_boundary:
+        managed_policy_arn: "arn:aws:iam::aws:policy/PowerUserAccess"
+      session_duration: "PT4H"
+      tags:
+        Environment: Development
+        Role: Developer
+        CostCenter: Engineering
+
+    - name: ReadOnlyPermissionSet
+      instance_arn: "arn:aws:sso::123456789012:instance/sso-instance-123abc"
+      permission_set_name: ReadOnlySSO
+      description: Read-only permission set for auditors
+      managed_policies:
+        - "arn:aws:iam::aws:policy/ReadOnlyAccess"
+      relay_state_type: "https://console.aws.amazon.com/"
+      session_duration: "PT2H"
+      tags:
+        Environment: Production
+        Role: Auditor
+        DataAccess: ReadOnly
+
+stack_tags:
+  Test: sso-permission-set
