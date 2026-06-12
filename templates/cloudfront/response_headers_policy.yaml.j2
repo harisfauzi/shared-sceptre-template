@@ -16,94 +16,106 @@ Resources:
 {%- if response_headers_policy.response_header_policy_config.comment is defined %}
         Comment: {{ response_headers_policy.response_header_policy_config.comment }}
 {%- endif %}
-{%- if response_headers_policy.response_header_policy_config.cors_config is defined %}{# BEGIN {%- if response_headers_policy.response_header_policy_config.cors_config is defined %} #}
+{%- if response_headers_policy.response_header_policy_config.cors_config is defined %}{# BEGIN if response_headers_policy.response_header_policy_config.cors_config is defined #}
         CorsConfig:
-          AccessControlAllowCredentials: {{ response_headers_policy.response_header_policy_config.cors_config.access_control_allow_credentials }}
+          AccessControlAllowCredentials: {{ response_headers_policy.response_header_policy_config.cors_config.access_control_allow_credentials | lower }}
           AccessControlAllowHeaders:
             Items:
-{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_allow_headers.items %}
+{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_allow_headers._items %}
               - {{ item }}
 {%- endfor %}
           AccessControlAllowMethods:
             Items:
-{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_allow_methods.items %}
+{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_allow_methods._items %}
               - {{ item }}
 {%- endfor %}
           AccessControlAllowOrigins:
             Items:
-{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_allow_origins.items %}
+{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_allow_origins._items %}
               - {{ item }}
 {%- endfor %}
-          OriginOverride: {{ response_headers_policy.response_header_policy_config.cors_config.origin_override }}
-{%- if response_headers_policy.response_header_policy_config.cors_config.access_control_expose_headers is defined %}
+          OriginOverride: {{ response_headers_policy.response_header_policy_config.cors_config.origin_override | lower }}
+{%- if response_headers_policy.response_header_policy_config.cors_config.access_control_expose_headers is defined %}{# BEGIN if response_headers_policy.response_header_policy_config.cors_config.access_control_expose_headers is defined #}
           AccessControlExposeHeaders:
             Items:
-{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_expose_headers.items %}
+{%- for item in response_headers_policy.response_header_policy_config.cors_config.access_control_expose_headers._items %}
               - {{ item }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if response_headers_policy.response_header_policy_config.cors_config.access_control_expose_headers is defined #}
 {%- if response_headers_policy.response_header_policy_config.cors_config.access_control_max_age_sec is defined %}
           AccessControlMaxAgeSec: {{response_headers_policy.response_header_policy_config.cors_config.access_control_max_age_sec }}
 {%- endif %}
-{%- endif %}{# END {%- if response_headers_policy.response_header_policy_config.cors_config is defined %} #}
-{%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %}{# BEGIN {%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %} #}
+{%- endif %}{# END if response_headers_policy.response_header_policy_config.cors_config is defined #}
+{%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %}{# BEGIN if response_headers_policy.response_header_policy_config.custom_header_config is defined #}
         CustomHeadersConfig:
           Items:
-{%- for item in response_headers_policy.response_header_policy_config.custom_header_config.items %}
+{%- for item in response_headers_policy.response_header_policy_config.custom_header_config._items %}
             - Header: {{ item.header }}
-              Override: {{ item.override }}
+              Override: {{ item.override | lower }}
               Value: {{ item.value }}
 {%- endfor %}
-{%- endif %}{# END {%- if response_headers_policy.response_header_policy_config.custom_header_config is defined %} #}
-{%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %}{# BEGIN {%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %} #}
+{%- endif %}{# END if response_headers_policy.response_header_policy_config.custom_header_config is defined #}
+{%- if response_headers_policy.response_header_policy_config.remove_headers_config is defined %}{# BEGIN if response_headers_policy.response_header_policy_config.remove_headers_config is defined #}
+        RemoveHeadersConfig:
+          Items:
+{%- for item in response_headers_policy.response_header_policy_config.remove_headers_config._items %}
+            - Header: {{ item.header }}
+{%- endfor %}
+{%- endif %}{# END if response_headers_policy.response_header_policy_config.remove_headers_config is defined #}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %}{# BEGIN if response_headers_policy.response_header_policy_config.security_headers_config is defined #}
         SecurityHeadersConfig:
 {%- if response_headers_policy.response_header_policy_config.security_headers_config.content_security_policy is defined %}
           ContentSecurityPolicy:
             ContentSecurityPolicy: {{ response_headers_policy.response_header_policy_config.security_headers_config.content_security_policy.content_security_policy }}
-            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.content_security_policy.override }}
+            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.content_security_policy.override | lower }}
 {%- endif %}
 {%- if response_headers_policy.response_header_policy_config.security_headers_config.content_type_options is defined %}
           ContentTypeOptions:
-            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.content_type_options.override }}
+            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.content_type_options.override | lower }}
 {%- endif %}
 {%- if response_headers_policy.response_header_policy_config.security_headers_config.frame_options is defined %}
           FrameOptions:
             FrameOption: {{ response_headers_policy.response_header_policy_config.security_headers_config.frame_options.frame_option }}
-            Override: {{response_headers_policy.response_header_policy_config.security_headers_config.frame_options.override }}
+            Override: {{response_headers_policy.response_header_policy_config.security_headers_config.frame_options.override | lower }}
 {%- endif %}
 {%- if response_headers_policy.response_header_policy_config.security_headers_config.referrer_policy is defined %}
           ReferrerPolicy:
-            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.referrer_policy.override }}
+            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.referrer_policy.override | lower }}
             ReferrerPolicy: {{ response_headers_policy.response_header_policy_config.security_headers_config.referrer_policy.referrer_policy }}
 {%- endif %}
-{%- if response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security is defined %}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security is defined %}{# BEGIN if response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security is defined #}
           StrictTransportSecurity:
             AccessControlMaxAgeSec: {{ response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.access_control_max_age_sec }}
-            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.override }}
+            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.override | lower }}
 {%- if response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.include_subdomains is defined %}
             IncludeSubdomains: {{ response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.include_subdomains }}
 {%- endif %}
 {%- if response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.preload is defined %}
-            Preload: {{ response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.preload }}
+            Preload: {{ response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security.preload | lower }}
 {%- endif %}
-{%- endif %}
-{%- if response_headers_policy.response_header_policy_config.security_headers_config.xss_protection is defined %}
+{%- endif %}{# END if response_headers_policy.response_header_policy_config.security_headers_config.strict_transport_security is defined #}
+{%- if response_headers_policy.response_header_policy_config.security_headers_config.xss_protection is defined %}{# BEGIN if response_headers_policy.response_header_policy_config.security_headers_config.xss_protection is defined #}
           XSSProtection:
-            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.override }}
-            Protection: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.protection }}
+            Override: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.override | lower }}
+            Protection: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.protection | lower }}
 {%- if response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.mode_block is defined %}
-            ModeBlock: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.mode_block }}
+            ModeBlock: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.mode_block | lower }}
 {%- endif %}
 {%- if response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.report_uri is defined %}
             ReportUri: {{ response_headers_policy.response_header_policy_config.security_headers_config.xss_protection.report_uri }}
 {%- endif %}
+{%- endif %}{# END if response_headers_policy.response_header_policy_config.security_headers_config.xss_protection is defined #}
+{%- endif %}{# END if response_headers_policy.response_header_policy_config.security_headers_config is defined #}
+{%- if response_headers_policy.response_header_policy_config.server_timing_headers_config is defined %}{# BEGIN if response_headers_policy.response_header_policy_config.server_timing_headers_config is defined #}
+        ServerTimingHeadersConfig:
+          Enabled: {{ response_headers_policy.response_header_policy_config.server_timing_headers_config.enabled | lower }}
+{%- if response_headers_policy.response_header_policy_config.server_timing_headers_config.sampling_rate is defined %}
+          SamplingRate: {{ response_headers_policy.response_header_policy_config.server_timing_headers_config.sampling_rate }}
 {%- endif %}
-{%- endif %}{# END {%- if response_headers_policy.response_header_policy_config.security_headers_config is defined %} #}
-
+{%- endif %}{# END if response_headers_policy.response_header_policy_config.server_timing_headers_config is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for response_headers_policy in sceptre_user_data.response_headers_policies %}
 {%- set response_headers_policy_name = response_headers_policy.name %}
   {{ response_headers_policy_name }}:
@@ -113,7 +125,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ response_headers_policy_name }}"
-
   {{ response_headers_policy_name }}Id:
     Description: The unique identifier for the cache policy {{ response_headers_policy_name }}
     Value:
@@ -123,7 +134,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ response_headers_policy_name }}-Id"
-
   {{ response_headers_policy_name }}LastModifiedTime:
     Description: The date and time when the response headers policy was last modified for {{ response_headers_policy_name }}
     Value:
@@ -133,5 +143,61 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ response_headers_policy_name }}-LastModifiedTime"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::ResponseHeadersPolicy
+Properties:
+  ResponseHeadersPolicyConfig:
+    Comment: String
+    CorsConfig:
+      AccessControlAllowCredentials: Boolean
+      AccessControlAllowHeaders:
+        Items:
+          - String
+      AccessControlAllowMethods:
+        Items:
+          - String
+      AccessControlAllowOrigins:
+        Items:
+          - String
+      AccessControlExposeHeaders:
+        Items:
+          - String
+      AccessControlMaxAgeSec: Integer
+      OriginOverride: Boolean
+    CustomHeadersConfig:
+      Items:
+        -
+          Header: String
+          Override: Boolean
+          Value: String
+    Name: String
+    RemoveHeadersConfig:
+      Items:
+        - Header: String
+    SecurityHeadersConfig:
+      ContentSecurityPolicy:
+        ContentSecurityPolicy: String
+        Override: Boolean
+      ContentTypeOptions:
+        Override: Boolean
+      FrameOptions:
+        FrameOption: String
+        Override: Boolean
+      ReferrerPolicy:
+        Override: Boolean
+        ReferrerPolicy: String
+      StrictTransportSecurity:
+        AccessControlMaxAgeSec: Integer
+        IncludeSubdomains: Boolean
+        Override: Boolean
+        Preload: Boolean
+      XSSProtection:
+        ModeBlock: Boolean
+        Override: Boolean
+        Protection: Boolean
+        ReportUri: String
+    ServerTimingHeadersConfig:
+      Enabled: Boolean
+      SamplingRate: Number
+#}

@@ -1,0 +1,95 @@
+---
+template:
+  type: file
+  path: cloudfront/response_headers_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront Response Headers Policy(s) for Security and CORS
+  response_headers_policies:
+    - name: SecurityHeadersPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      response_header_policy_config:
+        name: "security-headers-policy"
+        comment: "Policy with comprehensive security headers for production"
+        security_headers_config:
+          strict_transport_security:
+            access_control_max_age_sec: 63072000
+            include_subdomains: true
+            preload: true
+            override: false
+          content_security_policy:
+            content_security_policy: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+            override: false
+          content_type_options:
+            override: false
+          frame_options:
+            frame_option: "DENY"
+            override: false
+          referrer_policy:
+            referrer_policy: "strict-origin-when-cross-origin"
+            override: false
+          xss_protection:
+            protection: true
+            mode_block: true
+            override: false
+
+    - name: CorsAndCustomHeadersPolicy
+      deletion_policy: Delete
+      response_header_policy_config:
+        name: "cors-custom-headers-policy"
+        comment: "Policy with CORS and custom headers"
+        cors_config:
+          access_control_allow_credentials: true
+          access_control_allow_origins:
+            _items:
+              - "https://example.com"
+              - "https://app.example.com"
+          access_control_allow_methods:
+            _items:
+              - "GET"
+              - "HEAD"
+              - "PUT"
+              - "POST"
+              - "DELETE"
+              - "OPTIONS"
+          access_control_allow_headers:
+            _items:
+              - "Content-Type"
+              - "Authorization"
+              - "X-Custom-Header"
+          access_control_expose_headers:
+            _items:
+              - "X-Total-Count"
+              - "X-Page-Number"
+          access_control_max_age_sec: 3600
+          origin_override: false
+        custom_header_config:
+          _items:
+            - header: "X-Content-Type-Options"
+              value: "nosniff"
+              override: false
+            - header: "X-Frame-Options"
+              value: "SAMEORIGIN"
+              override: false
+            - header: "Cache-Control"
+              value: "public, max-age=3600"
+              override: false
+
+    - name: RemoveHeadersPolicy
+      deletion_policy: Retain
+      response_header_policy_config:
+        name: "remove-headers-policy"
+        remove_headers_config:
+          _items:
+            - header: "Server"
+            - header: "X-Powered-By"
+            - header: "X-AspNet-Version"
+        server_timing_headers_config:
+          enabled: true
+          sampling_rate: 50
+
+stack_tags:
+  Test: cloudfront-response-headers-policy

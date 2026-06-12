@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFront Origin Request 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for origin_request_policy in sceptre_user_data.origin_request_policies %}
 {%- set origin_request_policy_name = origin_request_policy.name %}
   {{ origin_request_policy_name }}:
@@ -14,38 +13,36 @@ Resources:
       OriginRequestPolicyConfig:
         CookiesConfig:
           CookieBehavior: {{ origin_request_policy.origin_request_policy_config.cookies_config.cookie_behavior }}
-{%- if origin_request_policy.origin_request_policy_config.cookies_config.cookies is defined %}
+{%- if origin_request_policy.origin_request_policy_config.cookies_config.cookies is defined %}{# BEGIN if origin_request_policy.origin_request_policy_config.cookies_config.cookies is defined #}
           Cookies:
 {%- for cookie in origin_request_policy.origin_request_policy_config.cookies_config.cookies %}
             - {{ cookie }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END origin_request_policy.origin_request_policy_config.cookies_config.cookies is defined #}
         HeadersConfig:
           HeaderBehavior: {{ origin_request_policy.origin_request_policy_config.headers_config.header_behavior }}
-{%- if origin_request_policy.origin_request_policy_config.headers_config.headers is defined %}
+{%- if origin_request_policy.origin_request_policy_config.headers_config.headers is defined %}{# BEGIN if origin_request_policy.origin_request_policy_config.headers_config.headers is defined #}
           Headers:
 {%- for header in origin_request_policy.origin_request_policy_config.headers_config.headers %}
             - {{ header }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if origin_request_policy.origin_request_policy_config.headers_config.headers is defined #}
         Name: {{ origin_request_policy.origin_request_policy_config.name }}
         QueryStringsConfig:
           QueryStringBehavior:
             {{ origin_request_policy.origin_request_policy_config.query_strings_config.query_string_behavior }}
-{%- if origin_request_policy.origin_request_policy_config.query_strings_config.query_strings is defined %}
+{%- if origin_request_policy.origin_request_policy_config.query_strings_config.query_strings is defined %}{# BEGIN if origin_request_policy.origin_request_policy_config.query_strings_config.query_strings is defined #}
           QueryStrings:
 {%- for query_string in origin_request_policy.origin_request_policy_config.query_strings_config.query_strings %}
             - {{ query_string }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if origin_request_policy.origin_request_policy_config.query_strings_config.query_strings is defined #}
 {%- if origin_request_policy.origin_request_policy_config.comment is defined %}
-        Comment: String
+        Comment: {{ origin_request_policy.origin_request_policy_config.comment }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for origin_request_policy in sceptre_user_data.origin_request_policies %}
 {%- set origin_request_policy_name = origin_request_policy.name %}
   {{ origin_request_policy_name }}:
@@ -55,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ origin_request_policy_name }}"
-
   {{ origin_request_policy_name }}Id:
     Description: The unique identifier for the origin request policy {{ origin_request_policy_name }}
     Value:
@@ -65,7 +61,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ origin_request_policy_name }}-Id"
-
   {{ origin_request_policy_name }}LastModifiedTime:
     Description: The date and time when the origin request policy was last modified for {{ origin_request_policy_name }}
     Value:
@@ -75,5 +70,23 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ origin_request_policy_name }}-LastModifiedTime"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::OriginRequestPolicy
+Properties:
+  OriginRequestPolicyConfig:
+    Comment: String
+    CookiesConfig:
+      CookieBehavior: String
+      Cookies:
+        - String
+    HeadersConfig:
+      HeaderBehavior: String
+      Headers:
+        - String
+    Name: String
+    QueryStringsConfig:
+      QueryStringBehavior: String
+      QueryStrings:
+        - String
+#}

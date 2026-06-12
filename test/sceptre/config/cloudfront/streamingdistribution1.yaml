@@ -1,0 +1,73 @@
+---
+template:
+  type: file
+  path: cloudfront/streaming_distribution.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront Streaming Distribution(s) for RTMP Content Delivery
+  streaming_distributions:
+    - name: PrimaryStreamingDistribution
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      streaming_distribution_config:
+        comment: "Primary RTMP streaming distribution for video content"
+        enabled: true
+        s3_origin:
+          domain_name: "my-video-bucket.s3.amazonaws.com"
+          origin_access_identity: "origin-access-identity/cloudfront/ABCDEFG1234567"
+        trusted_signers:
+          enabled: true
+          aws_account_numbers:
+            - "123456789012"
+            - "210987654321"
+        aliases:
+          - "stream.example.com"
+          - "video.example.com"
+        logging:
+          bucket: "my-logging-bucket.s3.amazonaws.com"
+          enabled: true
+          prefix: "streaming-logs/"
+        price_class: "PriceClass_100"
+      tags:
+        Environment: "Production"
+        ContentType: "Video"
+        Team: "Media"
+
+    - name: SecondaryStreamingDistribution
+      deletion_policy: Delete
+      streaming_distribution_config:
+        comment: "Secondary RTMP streaming distribution"
+        enabled: true
+        s3_origin:
+          domain_name: "backup-video-bucket.s3.us-west-2.amazonaws.com"
+          origin_access_identity: "origin-access-identity/cloudfront/HIJKLMN7890123"
+        trusted_signers:
+          enabled: true
+          aws_account_numbers:
+            - "123456789012"
+        aliases:
+          - "backup-stream.example.com"
+        logging:
+          bucket: "backup-logging-bucket.s3.amazonaws.com"
+          enabled: true
+          prefix: "rtmp-logs/"
+      tags:
+        Environment: "Production"
+        ContentType: "Backup Stream"
+
+    - name: DevelopmentStreamingDistribution
+      deletion_policy: Retain
+      streaming_distribution_config:
+        comment: "Development streaming distribution for testing"
+        enabled: true
+        s3_origin:
+          domain_name: "dev-video-bucket.s3.amazonaws.com"
+          origin_access_identity: "origin-access-identity/cloudfront/QRS12345TUV6789"
+        trusted_signers:
+          enabled: false
+        price_class: "PriceClass_All"
+
+stack_tags:
+  Test: cloudfront-streaming-distribution

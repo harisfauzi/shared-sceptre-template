@@ -1,0 +1,68 @@
+---
+template:
+  type: file
+  path: cloudfront/realtime_log_config.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront Realtime Log Config(s) for Real-time Log Streaming
+  realtime_log_configs:
+    - name: ProductionRealtimeLogConfig
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      realtime_log_config_name: "production-realtime-logs"
+      sampling_rate: 100
+      end_points:
+        - stream_type: "Kinesis"
+          kinesis_stream_config:
+            role_arn: "arn:aws:iam::123456789012:role/CloudFrontRealtimeLogsRole"
+            stream_arn: "arn:aws:kinesis:us-east-1:123456789012:stream/cloudfront-prod-logs"
+      fields:
+        - "timestamp"
+        - "c-ip"
+        - "c-country"
+        - "cs-uri-stem"
+        - "cs-uri-query"
+        - "cs-method"
+        - "sc-status"
+        - "sc-bytes"
+        - "cs-host"
+        - "cs-user-agent"
+        - "cs-referer"
+
+    - name: StagingRealtimeLogConfig
+      deletion_policy: Delete
+      realtime_log_config_name: "staging-realtime-logs"
+      sampling_rate: 50
+      end_points:
+        - stream_type: "Kinesis"
+          kinesis_stream_config:
+            role_arn: "arn:aws:iam::123456789012:role/CloudFrontRealtimeLogsRole"
+            stream_arn: "arn:aws:kinesis:us-east-1:123456789012:stream/cloudfront-staging-logs"
+      fields:
+        - "timestamp"
+        - "c-ip"
+        - "cs-method"
+        - "cs-uri-stem"
+        - "sc-status"
+        - "sc-bytes"
+
+    - name: DevelopmentRealtimeLogConfig
+      deletion_policy: Retain
+      realtime_log_config_name: "development-realtime-logs"
+      sampling_rate: 10
+      end_points:
+        - stream_type: "Kinesis"
+          kinesis_stream_config:
+            role_arn: "arn:aws:iam::123456789012:role/CloudFrontRealtimeLogsRole"
+            stream_arn: "arn:aws:kinesis:us-east-1:123456789012:stream/cloudfront-dev-logs"
+      fields:
+        - "timestamp"
+        - "c-ip"
+        - "cs-method"
+        - "cs-uri-stem"
+        - "sc-status"
+
+stack_tags:
+  Test: cloudfront-realtime-log-config

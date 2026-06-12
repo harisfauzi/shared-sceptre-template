@@ -1,0 +1,86 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFront VPC Origin(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for vpc_origin in sceptre_user_data.vpc_origins %}
+{%- set vpc_origin_name = vpc_origin.name %}
+  {{ vpc_origin_name }}:
+    Type: AWS::CloudFront::VpcOrigin
+    Properties:
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if vpc_origin.tags is defined %}
+{%- for key,value in vpc_origin.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+      VpcOriginEndpointConfig: 
+        Arn: {{ vpc_origin.vpc_origin_endpoint_config.arn | trim }}
+        Name: {{ vpc_origin.vpc_origin_endpoint_config.name }}
+{%- if vpc_origin.vpc_origin_endpoint_config.http_port is defined %}
+        HTTPPort: {{ vpc_origin.vpc_origin_endpoint_config.http_port }}
+{%- endif %}
+{%- if vpc_origin.vpc_origin_endpoint_config.https_port is defined %}
+        HTTPSPort: {{ vpc_origin.vpc_origin_endpoint_config.https_port }}
+{%- endif %}
+{%- if vpc_origin.vpc_origin_endpoint_config.origin_protocol_policy is defined %}
+        OriginProtocolPolicy: {{ vpc_origin.vpc_origin_endpoint_config.origin_protocol_policy }}
+{%- endif %}
+{%- if vpc_origin.vpc_origin_endpoint_config.origin_ssl_protocols is defined %}
+        OriginSSLProtocols: 
+{%- for protocol in vpc_origin.vpc_origin_endpoint_config.origin_ssl_protocols %}
+          - {{ protocol }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for vpc_origin in sceptre_user_data.vpc_origins %}
+{%- set vpc_origin_name = vpc_origin.name %}
+  {{ vpc_origin_name }}Arn:
+    Description: The ARN for {{ vpc_origin_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vpc_origin_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_origin_name }}-Arn"
+  {{ vpc_origin_name }}Id:
+    Description: The unique id of VPC origin for {{ vpc_origin_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vpc_origin_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_origin_name }}-Id"
+  {{ vpc_origin_name }}Status:
+    Description: The current status of the VPC origin {{ vpc_origin_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vpc_origin_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vpc_origin_name }}-Status"
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::VpcOrigin
+Properties:
+  Tags:
+    -
+      Key: String
+      Value: String
+  VpcOriginEndpointConfig: 
+    Arn: String
+    HTTPPort: Integer
+    HTTPSPort: Integer
+    Name: String
+    OriginProtocolPolicy: String
+    OriginSSLProtocols: 
+      - String
+#}

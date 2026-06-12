@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFront Public Key(s) f
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for public_key in sceptre_user_data.public_keys %}
 {%- set public_key_name = public_key.name %}
   {{ public_key_name }}:
@@ -13,16 +12,15 @@ Resources:
     Properties:
       PublicKeyConfig:
         CallerReference: {{ public_key.public_key_config.caller_reference }}
-        EncodedKey: {{ public_key.public_key_config.encoded_key }}
+        EncodedKey: |-
+          {{ public_key.public_key_config.encoded_key | indent(width=10, first=false) }}
         Name: {{ public_key.public_key_config.name }}
 {%- if public_key.public_key_config.comment is defined %}
         Comment: {{ public_key.public_key_config.comment }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for public_key in sceptre_user_data.public_keys %}
 {%- set public_key_name = public_key.name %}
   {{ public_key_name }}:
@@ -32,7 +30,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ public_key_name }}"
-
   {{ public_key_name }}CreatedTime:
     Description: The date and time when the public key was uploaded for {{ public_key_name }}
     Value:
@@ -42,7 +39,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ public_key_name }}-CreatedTime"
-
   {{ public_key_name }}Id:
     Description: The identifier of the public key for {{ public_key_name }}
     Value:
@@ -52,5 +48,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ public_key_name }}-Id"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::PublicKey
+Properties:
+  PublicKeyConfig:
+    CallerReference: String
+    Comment: String
+    EncodedKey: String
+    Name: String
+#}

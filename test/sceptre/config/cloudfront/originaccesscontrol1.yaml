@@ -1,0 +1,39 @@
+---
+template:
+  type: file
+  path: cloudfront/origin_access_control.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront Origin Access Control(s) for Secure S3 Access
+  origin_access_controls:
+    - name: PrimaryS3OriginAccessControl
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      origin_access_control:
+        name: "primary-s3-oac"
+        origin_access_control_origin_type: "s3"
+        signing_behavior: "always"
+        signing_protocol: "sigv4"
+        description: "Origin Access Control for primary S3 bucket access"
+
+    - name: SecondaryS3OriginAccessControl
+      deletion_policy: Delete
+      origin_access_control:
+        name: "secondary-s3-oac"
+        origin_access_control_origin_type: "s3"
+        signing_behavior: "always"
+        signing_protocol: "sigv4"
+
+    - name: MediaServerOriginAccessControl
+      deletion_policy: Retain
+      origin_access_control:
+        name: "media-server-oac"
+        origin_access_control_origin_type: "mediastore"
+        signing_behavior: "never"
+        signing_protocol: "sigv4"
+        description: "Origin Access Control for AWS Elemental MediaStore"
+
+stack_tags:
+  Test: cloudfront-origin-access-control
