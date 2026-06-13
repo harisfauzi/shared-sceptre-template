@@ -12,26 +12,56 @@ Resources:
     Properties:
       Source:
         Owner: {{ config_rule.source.owner }}
+{%- if config_rule.source.custom_policy_details is defined %}{# BEGIN if config_rule.source.custom_policy_details is defined #}
+        CustomPolicyDetails:
+{%- if config_rule.source.custom_policy_details.enable_debug_log_delivery is defined %}
+          EnableDebugLogDelivery: {{ config_rule.source.custom_policy_details.enable_debug_log_delivery | lower }}
+{%- endif %}
+{%- if config_rule.source.custom_policy_details.policy_runtime is defined %}
+          PolicyRuntime: {{ config_rule.source.custom_policy_details.policy_runtime }}
+{%- endif %}
+{%- if config_rule.source.custom_policy_details.policy_text is defined %}
+          PolicyText: |-
+            {{ config_rule.source.custom_policy_details.policy_text | indent(width=12, first=false) }}
+{%- endif %}
+{%- endif %}{# END if config_rule.source.custom_policy_details is defined #}
+{%- if config_rule.source.source_identifier is defined %}
         SourceIdentifier: {{ config_rule.source.source_identifier }}
-{%- if config_rule.source.source_details is defined %}
+{%- endif %}
+{%- if config_rule.source.source_details is defined %}{# BEGIN if config_rule.source.source_details is defined #}
         SourceDetails:
-{%- for source_detail in config_rule.source.source_details %}
+{%- for source_detail in config_rule.source.source_details %}{# BEGIN for source_detail in config_rule.source.source_details #}
           - EventSource: aws.config
             MessageType: {{ source_detail.message_type }}
 {%- if source_detail.maximum_execution_frequency is defined %}
             MaximumExecutionFrequency: {{ source_detail.maximum_execution_frequency }}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{# END for source_detail in config_rule.source.source_details #}
+{%- endif %}{# END if config_rule.source.source_details is defined #}
+{%- if config_rule.compliance is defined %}{# BEGIN if config_rule.compliance is defined #}
+      Compliance:
+{%- if config_rule.compliance.type is defined %}
+        Type: {{ config_rule.compliance.type }}
 {%- endif %}
+{%- endif %}{# END if config_rule.compliance is defined #}
 {%- if config_rule.config_rule_name is defined %}
       ConfigRuleName: {{ config_rule.config_rule_name }}
 {%- endif %}
 {%- if config_rule.description is defined %}
       Description: {{ config_rule.description }}
 {%- endif %}
+{%- if config_rule.evaluation_modes is defined %}{# BEGIN if config_rule.evaluation_modes is defined #}
+      EvaluationModes:
+{%- for evaluation_mode in config_rule.evaluation_modes %}
+        - Mode: {{ evaluation_mode.mode }}
+{%- endfor %}
+{%- endif %}{# END if config_rule.evaluation_modes is defined #}
 {%- if config_rule.input_parameters is defined %}
       InputParameters:
-{{ config_rule.input_parameters | indent(width=8, first=true) }}
+        {{ config_rule.input_parameters | indent(width=8, first=false) }}
+{%- elif config_rule.input_parameters_json is defined %}
+      InputParameters: |-
+        {{ config_rule.input_parameters_json | indent(width=8, first=false) }}
 {%- endif %}
 {%- if config_rule.maximum_execution_frequency is defined %}
       MaximumExecutionFrequency: {{ config_rule.maximum_execution_frequency }}
@@ -55,7 +85,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for config_rule in sceptre_user_data.config_rules %}
 {%- set config_rule_name = config_rule.name %}
   {{ config_rule_name }}:
@@ -65,7 +94,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ config_rule_name }}"
-
   {{ config_rule_name }}Arn:
     Description: The ARN for {{ config_rule_name }}
     Value:
@@ -75,7 +103,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ config_rule_name }}-Arn"
-
   {{ config_rule_name }}ComplianceType:
     Description: The compliance status for {{ config_rule_name }}
     Value:
@@ -85,7 +112,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ config_rule_name }}-ComplianceType"
-
   {{ config_rule_name }}ConfigRuleId:
     Description: The ID of {{ config_rule_name }}
     Value:
@@ -95,5 +121,34 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ config_rule_name }}-ConfigRuleId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::Config::ConfigRule
+Properties:
+  Compliance:
+    Type: String
+  ConfigRuleName: String
+  Description: String
+  EvaluationModes:
+    - Mode: String
+  InputParameters: Json
+  MaximumExecutionFrequency: String
+  Scope:
+    ComplianceResourceId: String
+    ComplianceResourceTypes:
+      - String
+    TagKey: String
+    TagValue: String
+  Source:
+    CustomPolicyDetails:
+      EnableDebugLogDelivery: Boolean
+      PolicyRuntime: String
+      PolicyText: String
+    Owner: String
+    SourceDetails:
+      -
+        EventSource: String
+        MaximumExecutionFrequency: String
+        MessageType: String
+    SourceIdentifier: String
+#}

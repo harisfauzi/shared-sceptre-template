@@ -11,10 +11,12 @@ Resources:
     UpdateReplacePolicy: {{ delivery_channel.update_replace_policy | default('Delete') }}
     Properties:
       S3BucketName: {{ delivery_channel.s3_bucket_name }}
-{%- if delivery_channel.config_snapshot_delivery_properties is defined %}
+{%- if delivery_channel.config_snapshot_delivery_properties is defined %}{# BEGIN if delivery_channel.config_snapshot_delivery_properties is defined #}
       ConfigSnapshotDeliveryProperties:
+{%- if delivery_channel.config_snapshot_delivery_properties.delivery_frequency is defined %}
         DeliveryFrequency: {{ delivery_channel.config_snapshot_delivery_properties.delivery_frequency }}
 {%- endif %}
+{%- endif %}{# END if delivery_channel.config_snapshot_delivery_properties is defined #}
 {%- if delivery_channel.delivery_channel_name is defined %}
       Name: {{ delivery_channel.delivery_channel_name }}
 {%- endif %}
@@ -22,10 +24,10 @@ Resources:
       S3KeyPrefix: {{ delivery_channel.s3_key_prefix }}
 {%- endif %}
 {%- if delivery_channel.s3_kms_key_arn is defined %}
-      S3KmsKeyArn: {{ delivery_channel.s3_kms_key_arn }}
+      S3KmsKeyArn: {{ delivery_channel.s3_kms_key_arn | trim }}
 {%- endif %}
 {%- if delivery_channel.sns_topic_arn is defined %}
-      SnsTopicARN: {{ delivery_channel.sns_topic_arn }}
+      SnsTopicARN: {{ delivery_channel.sns_topic_arn | trim }}
 {%- endif %}
 {%- endfor %}
 
@@ -39,5 +41,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ delivery_channel_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::Config::DeliveryChannel
+Properties:
+  ConfigSnapshotDeliveryProperties:
+    DeliveryFrequency: String
+  Name: String
+  S3BucketName: String
+  S3KeyPrefix: String
+  S3KmsKeyArn: String
+  SnsTopicARN: String
+#}
