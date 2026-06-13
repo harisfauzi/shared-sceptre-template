@@ -3,8 +3,7 @@ Description: {{sceptre_user_data.description|default('Synthetics Canary(s) for '
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
-{%- for canary in sceptre_user_data.canarys %}
+{%- for canary in sceptre_user_data.canaries %}
 {%- set canary_name = canary.name %}
   {{ canary_name }}:
     Type: AWS::Synthetics::Canary
@@ -13,6 +12,22 @@ Resources:
     Properties:
       ArtifactS3Location: {{ canary.artifact_s3_location }}
       Code:
+{%- if canary.code.blue_print_types is defined %}{# BEGIN if canary.code.blue_print_types is defined #}
+        BlueprintTypes:
+{%- for blueprint_type in canary.code.blue_print_types %}
+          - {{ blueprint_type }}
+{%- endfor %}
+{%- endif %}{# END if canary.code.blue_print_types is defined #}
+{%- if canary.code.dependencies is defined %}{# BEGIN if canary.code.dependencies is defined #}
+        Dependencies:
+{%- for dependency in canary.code.dependencies %}{# BEGIN for dependency in canary.code.dependencies #}
+          -
+            Reference: {{ dependency.reference }}
+{%- if dependency.type is defined %}
+            Type: {{ dependency.type }}
+{%- endif %}
+{%- endfor %}{# END for dependency in canary.code.dependencies #}
+{%- endif %}{# END if canary.code.dependencies is defined #}
 {%- if canary.code.handler is defined %}
         Handler: {{ canary.code.handler }}
 {%- endif %}
@@ -26,7 +41,11 @@ Resources:
         S3ObjectVersion: {{ canary.code.s3_object_version }}
 {%- endif %}
 {%- if canary.code.script is defined %}
-        Script: {{ canary.code.script }}
+        Script: |-
+          {{ canary.code.script | indent(width=10, first=false) }}
+{%- endif %}
+{%- if canary.code.source_location_arn is defined %}
+        SourceLocationArn: {{ canary.code.source_location_arn | trim }}
 {%- endif %}
       ExecutionRoleArn: {{ canary.execution_role_arn }}
       Name: {{ canary.canary_name }}
@@ -36,9 +55,13 @@ Resources:
 {%- if canary.schedule.duration_in_seconds is defined %}
         DurationInSeconds: {{ canary.schedule.duration_in_seconds }}
 {%- endif %}
-      StartCanaryAfterCreation: {{ canary.start_canary_after_creation | default('TRUE') }}
-{%- if canary.artifact_config is defined %}
+{%- if canary.schedule.retry_config is defined %}
+        RetryConfig:
+          MaxRetries: {{ canary.schedule.retry_config.max_retries }}
+{%- endif %}
+{%- if canary.artifact_config is defined %}{# BEGIN if canary.artifact_config is defined #}
       ArtifactConfig:
+{%- if canary.artifact_config.s3_encryption is defined %}{# BEGIN if canary.artifact_config.s3_encryption is defined #}
         S3Encryption:
 {%- if canary.artifact_config.s3_encryption.kms_key_arn is defined %}
           EncryptionMode: SSE-KMS
@@ -46,20 +69,42 @@ Resources:
 {%- else %}
           EncryptionMode: SSE_S3
 {%- endif %}
+{%- endif %}{# END if canary.artifact_config.s3_encryption is defined #}
+{%- endif %}{# END if canary.artifact_config is defined #}
+{%- if canary.browser_configs is defined %}{# BEGIN if canary.browser_configs is defined #}
+      BrowserConfigs:
+{%- for browser_config in canary.browser_configs %}
+        - BrowserType: {{ browser_config.browser_type }}
+{%- endfor %}
+{%- endif %}{# END if canary.browser_configs is defined #}
+{%- if canary.dry_run_and_update is defined %}
+      DryRunAndUpdate: {{ canary.dry_run_and_update | lower }}
 {%- endif %}
 {%- if canary.failure_retention_period is defined %}
       FailureRetentionPeriod: {{ canary.failure_retention_period }}
 {%- endif %}
-{%- if canary.run_config is defined %}{# BEGIN {%- if canary.run_config is defined %} #}
+{%- if canary.provisioned_resource_cleanup is defined %}
+      ProvisionedResourceCleanup: {{ canary.provisioned_resource_cleanup }}
+{%- endif %}
+{%- if canary.resources_to_replicate_tags is defined %}{# BEGIN if canary.resources_to_replicate_tags is defined #}
+      ResourcesToReplicateTags:
+{%- for tag in canary.resources_to_replicate_tags %}
+        - {{ tag }}
+{%- endfor %}
+{%- endif %}{# END if canary.resources_to_replicate_tags is defined #}
+{%- if canary.run_config is defined %}{# BEGIN if canary.run_config is defined #}
       RunConfig:
 {%- if canary.run_config.active_tracing is defined %}
-        ActiveTracing: {{ canary.run_config.active_tracing }}
+        ActiveTracing: {{ canary.run_config.active_tracing | lower }}
 {%- endif %}
-{%- if canary.run_config.environment_variables is defined %}
+{%- if canary.run_config.environment_variables is defined %}{# BEGIN if canary.run_config.environment_variables is defined #}
         EnvironmentVariables:
-{%- for key, value in canary.run_config.environment_variables %}
+{%- for key, value in canary.run_config.environment_variables.items() %}
           {{ key }}: {{ value }}
 {%- endfor %}
+{%- endif %}{# END if canary.run_config.environment_variables is defined #}
+{%- if canary.run_config.ephemeral_storage is defined %}
+        EphemeralStorage: {{ canary.run_config.ephemeral_storage }}
 {%- endif %}
 {%- if canary.run_config.memory_in_mb is defined %}
         MemoryInMB: {{ canary.run_config.memory_in_mb }}
@@ -67,29 +112,35 @@ Resources:
 {%- if canary.run_config.timeout_in_seconds is defined %}
         TimeoutInSeconds: {{ canary.run_config.timeout_in_seconds }}
 {%- endif %}
-{%- endif %}{# END {%- if canary.run_config is defined %} #}
+{%- endif %}{# END if canary.run_config is defined #}
+{%- if canary.start_canary_after_creation is defined %}
+      StartCanaryAfterCreation: {{ canary.start_canary_after_creation | default('true') }}
+{%- endif %}
 {%- if canary.success_retention_period is defined %}
       SuccessRetentionPeriod: {{ canary.success_retention_period }}
 {%- endif %}
-{%- if canary.visual_reference is defined %}{# BEGIN {%- if canary.visual_reference is defined %} #}
-      VisualReference:
-{%- if canary.visual_reference.base_canary_run_id is defined %}
-        BaseCanaryRunId: {{ canary.visual_reference.base_canary_run_id }}
-{%- endif %}
-{%- if canary.visual_reference.base_screenshots is defined %}
-        BaseScreenshots:
-{%- for base_screenshot in canary.visual_reference.base_screenshots %}
-          - ScreenshotName: {{ base_screenshot.screenshot_name }}
+{%- if canary.visual_references is defined %}{# BEGIN if canary.visual_references is defined #}
+      VisualReferences:
+{%- for visual_reference in canary.visual_references %}{# BEGIN for visual_reference in canary.visual_references #}
+        -
+          BaseCanaryRunId: {{ visual_reference.base_canary_run_id }}
+{%- if visual_reference.base_screenshots is defined %}{# BEGIN if visual_reference.base_screenshots is defined #}
+          BaseScreenshots:
+{%- for base_screenshot in visual_reference.base_screenshots %}{# BEGIN for base_screenshot in visual_reference.base_screenshots #}
+            -
+              IgnoreCoordinates:
 {%- if base_screenshot.ignore_coordinates is defined %}
-            IgnoreCoordinates:
-{%- for item in base_screenshot.ignore_coordinates %}
-              - {{ item }}
+                - {{ base_screenshot.ignore_coordinates }}
 {%- endif %}
+              ScreenshotName: {{ base_screenshot.screenshot_name }}
+{%- endfor %}{# END for base_screenshot in visual_reference.base_screenshots #}
+{%- endif %}{# END if visual_reference.base_screenshots is defined #}
+{%- if visual_reference.browser_type is defined %}
+          BrowserType: {{ visual_reference.browser_type }}
 {%- endif %}
-{%- endif %}
-{%- endif %}
-{%- endif %}{# END {%- if canary.visual_reference is defined %} #}
-{%- if canary.vpc_config is defined %}{# BEGIN {%- if canary.vpc_config is defined %} #}
+{%- endfor %}{# END for visual_reference in canary.visual_references #}
+{%- endif %}{# END if canary.visual_references is defined #}
+{%- if canary.vpc_config is defined %}{# BEGIN if canary.vpc_config is defined #}
       VPCConfig:
         SecurityGroupIds:
 {%- for security_group_id in canary.vpc_config.security_group_ids %}
@@ -99,10 +150,13 @@ Resources:
 {%- for subnet_id in canary.vpc_config.subnet_ids %}
           - {{ subnet_id }}
 {%- endfor %}
+{%- if canary.vpc_config.ipv6_allowed_for_dual_stack is defined %}
+        Ipv6AllowedForDualStack: {{ canary.vpc_config.ipv6_allowed_for_dual_stack | lower }}
+{%- endif %}
 {%- if canary.vpc_config.vpc_id is defined %}
         VpcId: {{ canary.vpc_config.vpc_id }}
 {%- endif %}
-{%- endif %}{# END {%- if canary.vpc_config is defined %} #}
+{%- endif %}{# END if canary.vpc_config is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -112,12 +166,10 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
-{%- for canary in sceptre_user_data.canarys %}
+{%- for canary in sceptre_user_data.canaries %}
 {%- set canary_name = canary.name %}
   {{ canary_name }}:
     Description: The Name of the canary for {{ canary_name }}
@@ -126,7 +178,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ canary_name }}"
-
   {{ canary_name }}Id:
     Description: The Id of canary for {{ canary_name }}
     Value:
@@ -136,7 +187,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ canary_name }}-Id"
-
   {{ canary_name }}State:
     Description: The state of the canary for {{ canary_name }}
     Value:
@@ -146,5 +196,70 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ canary_name }}-State"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-10:
+Type: AWS::Synthetics::Canary
+Properties:
+  ArtifactConfig:
+    S3Encryption:
+      EncryptionMode: String
+      KmsKeyArn: String
+  ArtifactS3Location: String
+  BrowserConfigs:
+    - BrowserType: String
+  Code:
+    BlueprintTypes:
+      - String
+    Dependencies:
+      -
+        Reference: String
+        Type: String
+    Handler: String
+    S3Bucket: String
+    S3Key: String
+    S3ObjectVersion: String
+    Script: String
+    SourceLocationArn: String
+  DryRunAndUpdate: Boolean
+  ExecutionRoleArn: String
+  FailureRetentionPeriod: Integer
+  Name: String
+  ProvisionedResourceCleanup: String
+  ResourcesToReplicateTags:
+    - String
+  RunConfig:
+    ActiveTracing: Boolean
+    EnvironmentVariables:
+      Key: Value
+    EphemeralStorage: Integer
+    MemoryInMB: Integer
+    TimeoutInSeconds: Integer
+  RuntimeVersion: String
+  Schedule:
+    DurationInSeconds: String
+    Expression: String
+    RetryConfig:
+      MaxRetries: Integer
+  StartCanaryAfterCreation: Boolean
+  SuccessRetentionPeriod: Integer
+  Tags:
+    -
+      Key: String
+      Value: String
+  VisualReferences:
+    -
+      BaseCanaryRunId: String
+      BaseScreenshots:
+        -
+          IgnoreCoordinates:
+            - String
+          ScreenshotName: String
+      BrowserType: String
+  VPCConfig:
+    Ipv6AllowedForDualStack: Boolean
+    SecurityGroupIds:
+      - String
+    SubnetIds:
+      - String
+    VpcId: String
+#}

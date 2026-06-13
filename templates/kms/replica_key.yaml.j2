@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('KMS ReplicaKey(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('KMS Replica Key(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -10,14 +10,19 @@ Resources:
     DeletionPolicy: {{ replica_key.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ replica_key.update_replace_policy | default('Delete') }}
     Properties:
-      PrimaryKeyArn: {{ replica_key.primary_key_arn }}
+      PrimaryKeyArn: {{ replica_key.primary_key_arn | trim }}
+{%- if replica_key.key_policy is defined %}
       KeyPolicy:
-{{ replica_key.replica_key_policy | indent(width=8, first=true) }}
+        {{ replica_key.key_policy | indent(width=8, first=false) }}
+{%- elif replica_key.key_policy_json is defined %}
+      KeyPolicy: |-
+        {{ replica_key.key_policy_json | indent(width=8, first=false) }}
+{%- endif %}
 {%- if replica_key.description is defined %}
       Description: {{ replica_key.description }}
 {%- endif %}
 {%- if replica_key.enabled is defined %}
-      Enabled: {{ replica_key.enabled }}
+      Enabled: {{ replica_key.enabled | lower }}
 {%- endif %}
 {%- if replica_key.pending_window_in_days is defined %}
       PendingWindowInDays: {{ replica_key.pending_window_in_days }}
@@ -25,13 +30,12 @@ Resources:
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
-{%- if function.tags is defined %}
-{%- for replica_key,value in function.tags.items() %}
+{%- if replica_key.tags is defined %}
+{%- for replica_key,value in replica_key.tags.items() %}
         - Key: {{ replica_key }}
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
@@ -44,7 +48,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ replica_key_name }}"
-
   {{ replica_key_name }}Arn:
     Description: The ARN for {{ replica_key_name }}
     Value:
@@ -54,5 +57,25 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ replica_key_name }}-Arn"
-
-{%- endfor %}
+  {{ replica_key_name }}KeyId:
+    Description: The Key ID for {{ replica_key_name }}
+    Value:
+      Fn::GetAtt:
+      - {{ replica_key_name }}
+      - KeyId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replica_key_name }}-KeyId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-10:
+Type: AWS::KMS::ReplicaKey
+Properties:
+  Description: String
+  Enabled: Boolean
+  KeyPolicy: Json
+  PendingWindowInDays: Integer
+  PrimaryKeyArn: String
+  Tags:
+    - Key: String
+      Value: String
+#}

@@ -1,0 +1,45 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFront Origin Access Control(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for origin_access_control in sceptre_user_data.origin_access_controls %}
+{%- set origin_access_control_name = origin_access_control.name %}
+  {{ origin_access_control_name }}:
+    Type: AWS::CloudFront::OriginAccessControl
+    DeletionPolicy: {{ origin_access_control.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ origin_access_control.update_replace_policy | default('Delete') }}
+    Properties:
+      OriginAccessControlConfig:
+        Name: {{ origin_access_control.origin_access_control.name }}
+        OriginAccessControlOriginType: {{ origin_access_control.origin_access_control.origin_access_control_origin_type }}
+        SigningBehavior: {{ origin_access_control.origin_access_control.signing_behavior }}
+        SigningProtocol: {{ origin_access_control.origin_access_control.signing_protocol }}
+{%- if origin_access_control.origin_access_control.description is defined %}
+        Description: {{ origin_access_control.origin_access_control.description }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for origin_access_control in sceptre_user_data.origin_access_controls %}
+{%- set origin_access_control_name = origin_access_control.name %}
+  {{ origin_access_control_name }}Id:
+    Description: The unique identifier for {{ origin_access_control_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ origin_access_control_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ origin_access_control_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::OriginAccessControl
+Properties:
+  OriginAccessControlConfig:
+    Description: String
+    Name: String
+    OriginAccessControlOriginType: String
+    SigningBehavior: String
+    SigningProtocol: String
+#}

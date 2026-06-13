@@ -1,0 +1,63 @@
+---
+template:
+  type: file
+  path: wafregional/byte_match_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFRegional Byte Match Sets for testing purposes"
+  byte_match_sets:
+    - name: SqlInjectionByteMatchSet
+      byte_match_set_name: sql-injection-patterns
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      byte_match_tuples:
+        - field_to_match:
+            type: QUERY_STRING
+          positional_constraint: CONTAINS
+          text_transformation: URL_DECODE
+          target_string: "union select"
+        - field_to_match:
+            type: QUERY_STRING
+          positional_constraint: CONTAINS
+          text_transformation: URL_DECODE
+          target_string: "drop table"
+        - field_to_match:
+            type: BODY
+          positional_constraint: CONTAINS
+          text_transformation: HTML_ENTITY_DECODE
+          target_string: "<script"
+
+    - name: XssPatternByteMatchSet
+      byte_match_set_name: xss-pattern-detection
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      byte_match_tuples:
+        - field_to_match:
+            type: QUERY_STRING
+            data: callback
+          positional_constraint: CONTAINS
+          text_transformation: URL_DECODE
+          target_string: "'javascript:'"
+        - field_to_match:
+            type: URI
+          positional_constraint: CONTAINS
+          text_transformation: LOWERCASE
+          target_string: "<iframe"
+
+    - name: MalformedUriByteMatchSet
+      byte_match_set_name: malformed-uri-detector
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      byte_match_tuples:
+        - field_to_match:
+            type: URI
+          positional_constraint: STARTS_WITH
+          text_transformation: URL_DECODE
+          target_string: "\\x"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: wafregional-byte-match-set

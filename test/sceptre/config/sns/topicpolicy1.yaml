@@ -1,0 +1,118 @@
+---
+template:
+  type: file
+  path: sns/topic_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SNS Topic Policy(s) for testing purposes"
+  topic_policies:
+    - name: PublicPublishPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      topics:
+        - arn:aws:sns:us-east-1:123456789012:standard-notification-topic
+      policy_document_json: |-
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": "*",
+              "Action": "SNS:Publish",
+              "Resource": "*"
+            }
+          ]
+        }
+
+    - name: ServiceAccountPublishPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      topics:
+        - arn:aws:sns:us-east-1:123456789012:encrypted-notification-topic
+        - arn:aws:sns:us-east-1:123456789012:order-processing-topic.fifo
+      policy_document_json: |-
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com"
+              },
+              "Action": "SNS:Publish",
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com"
+              },
+              "Action": "SNS:Publish",
+              "Resource": "*"
+            }
+          ]
+        }
+
+    - name: RoleBasedSubscribePolicy
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      topics:
+        - arn:aws:sns:us-east-1:123456789012:delivery-logging-topic
+      policy_document_json: |-
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowSubscribe",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::123456789012:role/ApplicationRole"
+              },
+              "Action": [
+                "SNS:Subscribe",
+                "SNS:ReceiveMessage"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+
+    - name: RestrictedTopicAccessPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      topics:
+        - arn:aws:sns:us-east-1:123456789012:pre-configured-subscriptions
+      policy_document_json: |-
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowAccountPublish",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::123456789012:root"
+              },
+              "Action": "SNS:Publish",
+              "Resource": "*"
+            },
+            {
+              "Sid": "DenyUnsecuredTransport",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "SNS:*",
+              "Resource": "*",
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": "false"
+                }
+              }
+            }
+          ]
+        }
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: sns-topic-policy

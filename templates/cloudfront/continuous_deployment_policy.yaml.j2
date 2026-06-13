@@ -1,0 +1,102 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFront Continuous Deployment Policy(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for continuous_deployment_policy in sceptre_user_data.continuous_deployment_policies %}
+{%- set continuous_deployment_policy_name = continuous_deployment_policy.name %}
+  {{ continuous_deployment_policy_name }}:
+    Type: AWS::CloudFront::ContinuousDeploymentPolicy
+    DeletionPolicy: {{ continuous_deployment_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ continuous_deployment_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      ContinuousDeploymentPolicyConfig:
+        Enabled: {{ continuous_deployment_policy.continuous_deployment_policy_config.enabled | lower }}
+        StagingDistributionDnsNames:
+{%- for dns_name in continuous_deployment_policy.continuous_deployment_policy_config.staging_distribution_dns_names %}
+          - {{ dns_name }}
+{%- endfor %}
+{%- if continuous_deployment_policy.continuous_deployment_policy_config.single_header_policy_config is defined %}
+        SingleHeaderPolicyConfig:
+          Header: {{ continuous_deployment_policy.continuous_deployment_policy_config.single_header_policy_config.header }}
+          Value: {{ continuous_deployment_policy.continuous_deployment_policy_config.single_header_policy_config.value }}
+{%- endif %}
+{%- if continuous_deployment_policy.continuous_deployment_policy_config.single_weight_policy_config is defined %}{# BEGIN if continuous_deployment_policy.continuous_deployment_policy_config.single_weight_policy_config is defined #}
+        SingleWeightPolicyConfig:
+          Weight: {{ continuous_deployment_policy.continuous_deployment_policy_config.single_weight_policy_config.weight }}
+{%- if continuous_deployment_policy.continuous_deployment_policy_config.single_weight_policy_config.session_stickiness_config is defined %}
+          SessionStickinessConfig:
+            IdleTTL: {{ continuous_deployment_policy.continuous_deployment_policy_config.single_weight_policy_config.session_stickiness_config.idle_ttl }}
+            MaximumTTL: {{ continuous_deployment_policy.continuous_deployment_policy_config.single_weight_policy_config.session_stickiness_config.maximum_ttl }}
+{%- endif %}
+{%- endif %}{# END if continuous_deployment_policy.continuous_deployment_policy_config.single_weight_policy_config is defined #}
+{%- if continuous_deployment_policy.continuous_deployment_policy_config.traffic_config is defined %}{# BEGIN if continuous_deployment_policy.continuous_deployment_policy_config.traffic_config is defined #}
+        TrafficConfig:
+          Type: String
+{%- if continuous_deployment_policy.continuous_deployment_policy_config.traffic_config.single_header_config is defined %}
+          SingleHeaderConfig:
+            Header: {{ continuous_deployment_policy.continuous_deployment_policy_config.traffic_config.single_header_config.header }}
+            Value: {{ continuous_deployment_policy.continuous_deployment_policy_config.traffic_config.single_header_config.value }}
+{%- endif %}
+{%- if continuous_deployment_policy.continuous_deployment_policy_config.traffic_config.single_weight_config is defined %}{# BEGIN if continuous_deployment_policy.continuous_deployment_policy_config.traffic_config.single_weight_config is defined #}
+          SingleWeightConfig:
+            Weight: {{ continuous_deployment_policy.continuous_deployment_policy_config.traffic_config.single_weight_config.weight }}
+{%- if continuous_deployment_policy.continuous_deployment_policy_config.traffic_config.single_weight_config.session_stickiness_config is defined %}
+            SessionStickinessConfig:
+              IdleTTL: {{ continuous_deployment_policy.continuous_deployment_policy_config.traffic_config.single_weight_config.session_stickiness_config.idle_ttl }}
+              MaximumTTL: {{ continuous_deployment_policy.continuous_deployment_policy_config.traffic_config.single_weight_config.session_stickiness_config.maximum_ttl }}
+{%- endif %}
+{%- endif %}{# END if continuous_deployment_policy.continuous_deployment_policy_config.traffic_config.single_weight_config is defined #}
+{%- endif %}{# END if continuous_deployment_policy.continuous_deployment_policy_config.traffic_config is defined #}
+{%- if continuous_deployment_policy.continuous_deployment_policy_config.type is defined %}
+        Type: String
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for continuous_deployment_policy in sceptre_user_data.continuous_deployment_policies %}
+{%- set continuous_deployment_policy_name = continuous_deployment_policy.name %}
+  {{ continuous_deployment_policy_name }}:
+    Description: The unique ID for {{ continuous_deployment_policy_name }}
+    Value:
+      Ref: {{ continuous_deployment_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ continuous_deployment_policy_name }}"
+  {{ continuous_deployment_policy_name }}Id:
+    Description: The identifier of the continuous deployment policy {{ continuous_deployment_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ continuous_deployment_policy_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ continuous_deployment_policy_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::ContinuousDeploymentPolicy
+Properties:
+  ContinuousDeploymentPolicyConfig:
+    Enabled: Boolean
+    SingleHeaderPolicyConfig:
+      Header: String
+      Value: String
+    SingleWeightPolicyConfig:
+      SessionStickinessConfig:
+        IdleTTL: Integer
+        MaximumTTL: Integer
+      Weight: Number
+    StagingDistributionDnsNames:
+      - String
+    TrafficConfig:
+      SingleHeaderConfig:
+        Header: String
+        Value: String
+      SingleWeightConfig:
+        SessionStickinessConfig:
+          IdleTTL: Integer
+          MaximumTTL: Integer
+        Weight: Number
+      Type: String
+    Type: String
+#}

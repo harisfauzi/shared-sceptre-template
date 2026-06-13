@@ -1,0 +1,45 @@
+---
+template:
+  type: file
+  path: sso/application.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test SSO Application with comprehensive Jinja2 template coverage.
+  applications:
+    - name: BasicApplication
+      application_provider_arn: "arn:aws:sso::123456789012:application-provider/aws-account"
+      instance_arn: "arn:aws:sso::123456789012:instance/sso-instance-123abc"
+      application_name: "BasicSSO"
+
+    - name: EnterpriseApplication
+      application_provider_arn: "arn:aws:sso::123456789012:application-provider/aws-account"
+      instance_arn: "arn:aws:sso::123456789012:instance/sso-instance-123abc"
+      application_name: "EnterpriseSSO"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      description: Enterprise SSO Application for secure access
+      status: ENABLED
+      tags:
+        Environment: Production
+        Application: EnterpriseAuth
+        Owner: CloudTeam
+
+    - name: PortalApplication
+      application_provider_arn: "arn:aws:sso::123456789012:application-provider/aws-account"
+      instance_arn: "arn:aws:sso::123456789012:instance/sso-instance-123abc"
+      application_name: "PortalSSO"
+      description: Portal application with sign-in options
+      portal_options:
+        sign_in_options:
+          origin: "https://portal.example.com"
+          application_url: "https://app.example.com"
+        visibility: ENABLED
+      tags:
+        Environment: Production
+        Application: Portal
+        CostCenter: Engineering
+
+stack_tags:
+  Test: sso-application

@@ -1,0 +1,93 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFront Trust Store(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for key_value_store in sceptre_user_data.key_value_stores %}
+{%- set key_value_store_name = key_value_store.name %}
+  {{ key_value_store_name }}:
+    Type: AWS::CloudFront::TrustStore
+    DeletionPolicy: {{ key_value_store.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ key_value_store.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ key_value_store.key_value_store_name }}
+{%- if key_value_store.ca_certificates_bundle_source is defined %}{# BEGIN if key_value_store.ca_certificates_bundle_source is defined #}
+      CaCertificatesBundleSource:
+        CaCertificatesBundleS3Location:
+          Bucket: {{ key_value_store.ca_certificates_bundle_source.ca_certificates_bundle_s3_location.bucket }}
+          Key: {{ key_value_store.ca_certificates_bundle_source.ca_certificates_bundle_s3_location.key }}
+          Region: {{ key_value_store.ca_certificates_bundle_source.ca_certificates_bundle_s3_location.region }}
+{%- if key_value_store.ca_certificates_bundle_source.ca_certificates_bundle_s3_location.version is defined %}
+          Version: {{ key_value_store.ca_certificates_bundle_source.ca_certificates_bundle_s3_location.version }}
+{%- endif %}
+{%- endif %}{# END if key_value_store.ca_certificates_bundle_source is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if key_value_store.tags is defined %}
+{%- for key,value in key_value_store.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if key_value_store.use_client_certificate_ocsp_endpoint is defined %}
+      UseClientCertificateOCSPEndpoint: {{ key_value_store.use_client_certificate_ocsp_endpoint | lower }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for key_value_store in sceptre_user_data.key_value_stores %}
+{%- set key_value_store_name = key_value_store.name %}
+  {{ key_value_store_name }}Arn:
+    Description: The ARN for {{ key_value_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ key_value_store_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_value_store_name }}-Arn"
+  {{ key_value_store_name }}ETag:
+    Description: The version identifier for the current version of the trust store {{ key_value_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ key_value_store_name }}
+        - ETag
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_value_store_name }}-ETag"
+  {{ key_value_store_name }}Id:
+    Description: The unique id of trust store for {{ key_value_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ key_value_store_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_value_store_name }}-Id"
+  {{ key_value_store_name }}Status:
+    Description: The current status of the trust store {{ key_value_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ key_value_store_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_value_store_name }}-Status"
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::TrustStore
+Properties:
+  CaCertificatesBundleSource:
+    CaCertificatesBundleS3Location:
+      Bucket: String
+      Key: String
+      Region: String
+      Version: String
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  UseClientCertificateOCSPEndpoint: Boolean
+#}

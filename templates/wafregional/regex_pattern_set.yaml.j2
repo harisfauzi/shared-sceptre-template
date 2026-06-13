@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('WAFRegional RegexPatternSet(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAFRegional Regex Pattern Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for regex_pattern_set in sceptre_user_data.regex_pattern_sets %}
 {%- set regex_pattern_set_name = regex_pattern_set.name %}
   {{ regex_pattern_set_name }}:
@@ -16,11 +15,9 @@ Resources:
 {%- for item in regex_pattern_set.regex_pattern_strings %}
         - {{ item }}
 {%- endfor %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for regex_pattern_set in sceptre_user_data.regex_pattern_sets %}
 {%- set regex_pattern_set_name = regex_pattern_set.name %}
   {{ regex_pattern_set_name }}:
@@ -30,5 +27,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ regex_pattern_set_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-10
+Type: AWS::WAFRegional::RegexPatternSet
+Properties:
+  Name: String
+  RegexPatternStrings:
+    - String
+#}

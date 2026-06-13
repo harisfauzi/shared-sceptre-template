@@ -1,0 +1,25 @@
+---
+template:
+  type: file
+  path: cloudfront/monitoring_subscription.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront Monitoring Subscription(s) for Real-time Metrics
+  monitoring_subscriptions:
+    - name: PrimaryDistributionMonitoring
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      distribution_id: "E1234567890ABC"
+      monitoring_subscription:
+        realtime_metrics_subscription_status: "Enabled"
+
+    - name: SecondaryDistributionMonitoring
+      deletion_policy: Delete
+      distribution_id: "E9876543210XYZ"
+      monitoring_subscription:
+        realtime_metrics_subscription_status: "Enabled"
+
+stack_tags:
+  Test: cloudfront-monitoring-subscription

@@ -1,0 +1,39 @@
+---
+template:
+  type: file
+  path: cloudfront/anycast_ip_list.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront Anycast IP Lists for Global Edge Protection
+  anycast_ip_lists:
+    - name: PrimaryAnycastIpList
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      anycast_ip_list_name: "primary-edge-protection-list"
+      ip_count: 4
+      ip_address_type: "IPv4"
+      ipam_cidr_configs:
+        - cidr: "10.0.0.0/24"
+          ipam_pool_arn: "arn:aws:ec2:us-east-1:123456789012:ipam-pool/ipam-pool-0123456789abcdef0"
+      tags:
+        Environment: "Production"
+        Purpose: "Global Edge Protection"
+
+    - name: SecondaryAnycastIpList
+      deletion_policy: Delete
+      anycast_ip_list_name: "secondary-edge-protection-list"
+      ip_count: 2
+      ip_address_type: "IPv6"
+      tags:
+        Environment: "Staging"
+        Purpose: "Regional Edge Protection"
+
+    - name: TertiaryAnycastIpList
+      deletion_policy: Retain
+      anycast_ip_list_name: "tertiary-edge-protection-list"
+      ip_count: 8
+
+stack_tags:
+  Test: cloudfront-anycast-ip-list

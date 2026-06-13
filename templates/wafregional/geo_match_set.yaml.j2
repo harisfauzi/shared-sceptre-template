@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('WAFRegional GeoMatchSet(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAFRegional Geo Match Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for geo_match_set in sceptre_user_data.geo_match_sets %}
 {%- set geo_match_set_name = geo_match_set.name %}
   {{ geo_match_set_name }}:
@@ -12,18 +11,16 @@ Resources:
     UpdateReplacePolicy: {{ geo_match_set.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ geo_match_set.geo_match_set_name }}
-{%-if geo_match_set.geo_match_constraints is defined %}
+{%- if geo_match_set.geo_match_constraints is defined %}{# BEGIN if geo_match_set.geo_match_constraints is defined #}
       GeoMatchConstraints:
 {%- for geo_match_constraint in geo_match_set.geo_match_constraints %}
         - Type: Country
           Value: {{ geo_match_constraint.value }}
 {%- endfor %}
-{%- endif %}
-
+{%- endif %}{# END if geo_match_set.geo_match_constraints is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for geo_match_set in sceptre_user_data.geo_match_sets %}
 {%- set geo_match_set_name = geo_match_set.name %}
   {{ geo_match_set_name }}:
@@ -33,5 +30,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ geo_match_set_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-10
+Type: AWS::WAFRegional::GeoMatchSet
+Properties:
+  GeoMatchConstraints:
+    -
+      Type: String
+      Value: String
+  Name: String
+#}

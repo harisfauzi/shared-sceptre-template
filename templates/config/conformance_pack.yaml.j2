@@ -25,11 +25,21 @@ Resources:
       DeliveryS3KeyPrefix: {{ conformance_pack.delivery_s3_key_prefix }}
 {%- endif %}
 {%- if conformance_pack.template_body is defined %}
-      TemplateBody: {{ conformance_pack.template_body }}
+      TemplateBody: |-
+        {{ conformance_pack.template_body | indent(width=8, first=false) }}
 {%- endif %}
 {%- if conformance_pack.template_s3_uri is defined %}
       TemplateS3Uri: {{ conformance_pack.template_s3_uri }}
 {%- endif %}
+{%- if conformance_pack.template_ssm_document_details is defined %}{# BEGIN if conformance_pack.template_ssm_document_details is defined #}
+      TemplateSSMDocumentDetails:
+{%- if conformance_pack.template_ssm_document_details.document_name is defined %}
+        DocumentName: {{ conformance_pack.template_ssm_document_details.document_name }}
+{%- endif %}
+{%- if conformance_pack.template_ssm_document_details.document_version is defined %}
+        DocumentVersion: {{ conformance_pack.template_ssm_document_details.document_version }}
+{%- endif %}
+{%- endif %}{# END if conformance_pack.template_ssm_document_details is defined #}
 {%- endfor %}
 
 Outputs:
@@ -42,5 +52,20 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ conformance_pack_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::Config::ConformancePack
+Properties:
+  ConformancePackInputParameters:
+    -
+      ParameterName: String
+      ParameterValue: String
+  ConformancePackName: String
+  DeliveryS3Bucket: String
+  DeliveryS3KeyPrefix: String
+  TemplateBody: String
+  TemplateS3Uri: String
+  TemplateSSMDocumentDetails:
+    DocumentName: String
+    DocumentVersion: String
+#}

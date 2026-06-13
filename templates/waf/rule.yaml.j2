@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('WAF Rule(s) for '+sceptre_
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for rule in sceptre_user_data.rules %}
 {%- set rule_name = rule.name %}
   {{ rule_name }}:
@@ -13,19 +12,17 @@ Resources:
     Properties:
       MetricName: {{ rule.metric_name }}
       Name: {{ rule.rule_name }}
-{%- if rule.predicates is defined %}
+{%- if rule.predicates is defined %}{# BEGIN if rule.predicates is defined #}
       Predicates:
 {%- for predicate in rule.predicates %}
         - DataId: {{ predicate.data_id }}
           Negated: {{ predicate.negated }}
           Type: {{ predicate.type }}
 {%- endfor %}
-{%- endif %}
-
+{%- endif %}{# END if rule.predicates is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for rule in sceptre_user_data.rules %}
 {%- set rule_name = rule.name %}
   {{ rule_name }}:
@@ -35,5 +32,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ rule_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-11:
+Type: AWS::WAF::Rule
+Properties:
+  MetricName: String
+  Name: String
+  Predicates:
+    -
+      DataId: String
+      Negated: Boolean
+      Type: String
+#}

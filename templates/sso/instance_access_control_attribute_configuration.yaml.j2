@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('SSO InstanceAccessControlAttributeConfiguration(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('SSO Instance Access Control Attribute Configuration(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for instance_access_control_attribute_configuration in sceptre_user_data.instance_access_control_attribute_configurations %}
 {%- set instance_access_control_attribute_configuration_name = instance_access_control_attribute_configuration.name %}
   {{ instance_access_control_attribute_configuration_name }}:
@@ -12,22 +11,20 @@ Resources:
     UpdateReplacePolicy: {{ instance_access_control_attribute_configuration.update_replace_policy | default('Delete') }}
     Properties:
       InstanceArn: {{ instance_access_control_attribute_configuration.instance_arn | trim }}
-{%- if instance_access_control_attribute_configuration.access_control_attributes is defined %}
+{%- if instance_access_control_attribute_configuration.access_control_attributes is defined %}{# BEGIN instance_access_control_attribute_configuration.access_control_attributes is defined #}
       AccessControlAttributes:
-{%- for attribute in instance_access_control_attribute_configuration.access_control_attributes %}
+{%- for attribute in instance_access_control_attribute_configuration.access_control_attributes %}{# BEGIN for attribute in instance_access_control_attribute_configuration.access_control_attributes #}
         - Key: {{ attribute.key }}
           Value:
             Source:
 {%- for source in attribute.value.source %}
               - {{ source }}
 {%- endfor %}
-{%- endfor %}
-{%- endif %}
-
+{%- endfor %}{# END for attribute in instance_access_control_attribute_configuration.access_control_attributes #}
+{%- endif %}{# END instance_access_control_attribute_configuration.access_control_attributes is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for instance_access_control_attribute_configuration in sceptre_user_data.instance_access_control_attribute_configurations %}
 {%- set instance_access_control_attribute_configuration_name = instance_access_control_attribute_configuration.name %}
   {{ instance_access_control_attribute_configuration_name }}:
@@ -37,5 +34,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_access_control_attribute_configuration_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-11
+Type: AWS::SSO::InstanceAccessControlAttributeConfiguration
+Properties:
+  AccessControlAttributes:
+    -
+      Key: String
+      Value:
+        Source:
+          - String
+  InstanceArn: String
+#}

@@ -1,0 +1,56 @@
+---
+template:
+  type: file
+  path: wafregional/rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFRegional Rule(s) for testing purposes"
+  rules:
+    - name: SqlInjectionDetectionRule
+      rule_name: sql-injection-detection-rule
+      metric_name: SqlInjectionDetectionRuleMetric
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      predicates:
+        - data_id: SqlInjectionByteMatchSet
+          negated: false
+          type: ByteMatch
+        - data_id: SqlInjectionPatternSet
+          negated: false
+          type: RegexMatch
+
+    - name: XssDetectionRule
+      rule_name: xss-detection-rule
+      metric_name: XssDetectionRuleMetric
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      predicates:
+        - data_id: XssPatternByteMatchSet
+          negated: false
+          type: ByteMatch
+
+    - name: PathTraversalDetectionRule
+      rule_name: path-traversal-detection-rule
+      metric_name: PathTraversalDetectionRuleMetric
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      predicates:
+        - data_id: PathTraversalPatternSet
+          negated: false
+          type: RegexMatch
+        - data_id: AllowedIpAddressesIpSet
+          negated: true
+          type: IPMatch
+
+    - name: GeoBlockingRule
+      rule_name: geo-blocking-rule
+      metric_name: GeoBlockingRuleMetric
+      deletion_policy: Delete
+      update_replace_policy: Delete
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: wafregional-rule

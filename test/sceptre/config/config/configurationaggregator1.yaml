@@ -1,0 +1,86 @@
+---
+template:
+  type: file
+  path: config/configuration_aggregator.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "AWS Config Configuration Aggregator(s) for testing purposes"
+  configuration_aggregators:
+    - name: MultiAccountAggregator
+      configuration_aggregator_name: multi-account-aggregator
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      account_aggregation_sources:
+        - account_ids:
+            - "111111111111"
+            - "222222222222"
+            - "333333333333"
+          all_aws_regions: true
+      tags:
+        Environment: Production
+        Purpose: ConfigAggregation
+        Team: CloudOps
+
+    - name: RegionalAggregator
+      configuration_aggregator_name: regional-aggregator
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      account_aggregation_sources:
+        - account_ids:
+            - "444444444444"
+            - "555555555555"
+          all_aws_regions: false
+          aws_regions:
+            - us-east-1
+            - us-west-2
+            - eu-west-1
+      tags:
+        Environment: Staging
+        Purpose: ConfigAggregation
+        Team: CloudOps
+
+    - name: OrganizationAggregator
+      configuration_aggregator_name: organization-aggregator
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      organization_aggregation_source:
+        role_arn: arn:aws:iam::123456789012:role/AWSConfigOrganizationRole
+        all_aws_regions: true
+      tags:
+        Environment: Production
+        Purpose: OrganizationWideAggregation
+        Team: Security
+        CriticalInfrastructure: "true"
+
+    - name: DevelopmentAccountAggregator
+      configuration_aggregator_name: development-account-aggregator
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      account_aggregation_sources:
+        - account_ids:
+            - "666666666666"
+          all_aws_regions: false
+          aws_regions:
+            - us-east-1
+      tags:
+        Environment: Development
+        Purpose: ConfigAggregation
+        Team: Development
+
+    - name: ComplianceAuditAggregator
+      configuration_aggregator_name: compliance-audit-aggregator
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      organization_aggregation_source:
+        role_arn: arn:aws:iam::123456789012:role/ComplianceAuditRole
+        all_aws_regions: false
+        aws_regions:
+          - us-east-1
+          - us-west-2
+      tags:
+        Environment: Compliance
+        Purpose: AuditAggregation
+        Team: Security
+        Compliance: Required

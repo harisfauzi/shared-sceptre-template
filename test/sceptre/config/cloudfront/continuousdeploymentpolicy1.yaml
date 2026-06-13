@@ -1,0 +1,51 @@
+---
+template:
+  type: file
+  path: cloudfront/continuous_deployment_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront Continuous Deployment Policy(s) for Canary Deployments
+  continuous_deployment_policies:
+    - name: PrimaryDeploymentPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      continuous_deployment_policy_config:
+        enabled: true
+        staging_distribution_dns_names:
+          - "d1234567890abc.cloudfront.net"
+          - "staging.example.com"
+        single_header_policy_config:
+          header: "CloudFront-Deployment"
+          value: "canary-v1"
+
+    - name: StagingDeploymentPolicy
+      deletion_policy: Delete
+      continuous_deployment_policy_config:
+        enabled: true
+        staging_distribution_dns_names:
+          - "d9876543210xyz.cloudfront.net"
+        single_weight_policy_config:
+          weight: 0.25
+          session_stickiness_config:
+            idle_ttl: 300
+            maximum_ttl: 3600
+
+    - name: ProductionDeploymentPolicy
+      deletion_policy: Retain
+      continuous_deployment_policy_config:
+        enabled: true
+        staging_distribution_dns_names:
+          - "d5555555555555.cloudfront.net"
+          - "canary.example.com"
+        traffic_config:
+          type: "SingleWeightConfig"
+          single_weight_config:
+            weight: 0.10
+            session_stickiness_config:
+              idle_ttl: 600
+              maximum_ttl: 7200
+
+stack_tags:
+  Test: cloudfront-continuous-deployment-policy

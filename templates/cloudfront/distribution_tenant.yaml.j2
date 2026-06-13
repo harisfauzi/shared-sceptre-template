@@ -1,0 +1,159 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFront Distribution Tenant(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for distribution_tenant in sceptre_user_data.distribution_tenants %}
+{%- set distribution_tenant_name = distribution_tenant.name %}
+  {{ distribution_tenant_name }}:
+    Type: AWS::CloudFront::DistributionTenant
+    DeletionPolicy: {{ distribution_tenant.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ distribution_tenant.update_replace_policy | default('Delete') }}
+    Properties:
+      DistributionId: {{ distribution_tenant.distribution_id | trim }}
+      Domains:
+{%- for domain in distribution_tenant.domains %}
+        - {{ domain }}
+{%- endfor %}
+      ConnectionGroupId: {{ distribution_tenant.connection_group_id | trim }}
+      Name: {{ distribution_tenant.distribution_tenant_name }}
+{%- if distribution_tenant.customizations is defined %}{# BEGIN if distribution_tenant.customizations is defined #}
+      Customizations:
+{%- if distribution_tenant.customizations.certificate is defined %}{# BEGIN if distribution_tenant.customizations.certificate is defined #}
+        Certificate:
+{%- if distribution_tenant.customizations.certificate.arn is defined %}
+          Arn: {{ distribution_tenant.customizations.certificate.arn | trim }}
+{%- endif %}
+{%- endif %}{# END if distribution_tenant.customizations.certificate is defined #}
+{%- if distribution_tenant.customizations.geo_restrictions is defined %}{# BEGIN distribution_tenant.customizations.geo_restrictions is defined #}
+        GeoRestrictions:
+{%- if distribution_tenant.customizations.geo_restrictions.locations is defined %}{# BEGIN if distribution_tenant.customizations.geo_restrictions.locations is defined #}
+          Locations:
+{%- for location in distribution_tenant.customizations.geo_restrictions.locations %}
+            - {{ location }}
+{%- endfor %}
+{%- endif %}{# END if distribution_tenant.customizations.geo_restrictions.locations is defined #}
+{%- if distribution_tenant.customizations.geo_restrictions.restriction_type is defined %}
+          RestrictionType: {{ distribution_tenant.customizations.geo_restrictions.restriction_type }}
+{%- endif %}
+{%- endif %}{# END distribution_tenant.customizations.geo_restrictions is defined #}
+{%- if distribution_tenant.customizations.web_acl is defined %}{# BEGIN if distribution_tenant.customizations.web_acl is defined #}
+        WebAcl:
+{%- if distribution_tenant.customizations.web_acl.action is defined %}
+          Action: {{ distribution_tenant.customizations.web_acl.action }}
+{%- endif %}
+{%- if distribution_tenant.customizations.web_acl.arn is defined %}
+          Arn: {{ distribution_tenant.customizations.web_acl.arn | trim }}
+{%- endif %}
+{%- endif %}{# END if distribution_tenant.customizations.web_acl is defined #}
+{%- endif %}{# END if distribution_tenant.customizations is defined #}
+{%- if distribution_tenant.enabled is defined %}
+      Enabled: {{ distribution_tenant.enabled | lower }}
+{%- endif %}
+{%- if distribution_tenant.managed_certificate_request is defined %}{# BEGIN if distribution_tenant.managed_certificate_request is defined #}
+      ManagedCertificateRequest:
+{%- if distribution_tenant.managed_certificate_request.certificate_transparency_logging_preference is defined %}
+        CertificateTransparencyLoggingPreference: {{ distribution_tenant.managed_certificate_request.certificate_transparency_logging_preference }}
+{%- endif %}
+{%- if distribution_tenant.managed_certificate_request.primary_domain_name is defined %}
+        PrimaryDomainName: {{ distribution_tenant.managed_certificate_request.primary_domain_name }}
+{%- endif %}
+{%- if distribution_tenant.managed_certificate_request.validation_token_host is defined %}
+        ValidationTokenHost: {{ distribution_tenant.managed_certificate_request.validation_token_host }}
+{%- endif %}
+{%- endif %}{# END if distribution_tenant.managed_certificate_request is defined #}
+{%- if distribution_tenant.parameters is defined %}{# BEGIN if distribution_tenant.parameters is defined #}
+      Parameters:
+{%- for parameter in distribution_tenant.parameters %}{# BEGIN for parameter in distribution_tenant.parameters #}
+        -
+{%- if parameter.name is defined %}
+          Name: {{ parameter.name }}
+{%- endif %}
+{%- if parameter.value is defined %}
+          Value: {{ parameter.value }}
+{%- endif %}
+{%- endfor %}{# END for parameter in distribution_tenant.parameters #}
+{%- endif %}{# END if distribution_tenant.parameters is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if distribution_tenant.tags is defined %}
+{%- for key,value in distribution_tenant.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for distribution_tenant in sceptre_user_data.distribution_tenants %}
+{%- set distribution_tenant_name = distribution_tenant.name %}
+  {{ distribution_tenant_name }}Arn:
+    Description: The distribution tenant ARN for {{ distribution_tenant_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ distribution_tenant_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_tenant_name }}-Arn"
+  {{ distribution_tenant_name }}CreatedTime:
+    Description: The date and time when the distribution tenant was created for {{ distribution_tenant_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ distribution_tenant_name }}
+        - CreatedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_tenant_name }}-CreatedTime"
+  {{ distribution_tenant_name }}Id:
+    Description: The identifier of the distribution tenant for {{ distribution_tenant_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ distribution_tenant_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_tenant_name }}-Id"
+  {{ distribution_tenant_name }}ETag:
+    Description: The current version of the distribution tenant {{ distribution_tenant_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ distribution_tenant_name }}
+        - ETag
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_tenant_name }}-ETag"
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::DistributionTenant
+Properties:
+  ConnectionGroupId: String
+  Customizations:
+    Certificate:
+      Arn: String
+    GeoRestrictions:
+      Locations:
+        - String
+      RestrictionType: String
+    WebAcl:
+      Action: String
+      Arn: String
+  DistributionId: String
+  Domains:
+    - String
+  Enabled: Boolean
+  ManagedCertificateRequest:
+    CertificateTransparencyLoggingPreference: String
+    PrimaryDomainName: String
+    ValidationTokenHost: String
+  Name: String
+  Parameters:
+    -
+      Name: String
+      Value: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

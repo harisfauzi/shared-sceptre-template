@@ -1,0 +1,76 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFront Key Value Store(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for key_value_store in sceptre_user_data.key_value_stores %}
+{%- set key_value_store_name = key_value_store.name %}
+  {{ key_value_store_name }}:
+    Type: AWS::CloudFront::KeyValueStore
+    DeletionPolicy: {{ key_value_store.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ key_value_store.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ key_value_store.key_value_store_name }}
+{%- if key_value_store.comment is defined %}
+      Comment: {{ key_value_store.comment }}
+{%- endif %}
+{%- if key_value_store.import_source is defined %}
+      ImportSource:
+        SourceArn: {{ key_value_store.import_source.source_arn | trim }}
+        SourceType: {{ key_value_store.import_source.source_type }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if key_value_store.tags is defined %}
+{%- for key,value in key_value_store.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for key_value_store in sceptre_user_data.key_value_stores %}
+{%- set key_value_store_name = key_value_store.name %}
+  {{ key_value_store_name }}Arn:
+    Description: The ARN for {{ key_value_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ key_value_store_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_value_store_name }}-Arn"
+  {{ key_value_store_name }}Id:
+    Description: The unique id of key value store for {{ key_value_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ key_value_store_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_value_store_name }}-Id"
+  {{ key_value_store_name }}Status:
+    Description: The current status of the key value store {{ key_value_store_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ key_value_store_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ key_value_store_name }}-Status"
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::KeyValueStore
+Properties:
+  Comment: String
+  ImportSource:
+    SourceArn: String
+    SourceType: String
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

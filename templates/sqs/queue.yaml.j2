@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('SQS Queue(s) for '+sceptre
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for queue in sceptre_user_data.queues %}
 {%- set queue_name = queue.name %}
   {{ queue_name }}:
@@ -12,7 +11,7 @@ Resources:
     UpdateReplacePolicy: {{ queue.update_replace_policy | default('Delete') }}
     Properties:
 {%- if queue.content_based_deduplication is defined %}
-      ContentBasedDeduplication: {{ queue.content_based_deduplication }}
+      ContentBasedDeduplication: {{ queue.content_based_deduplication | lower }}
 {%- endif %}
 {%- if queue.deduplication_scope is defined %}
       DeduplicationScope: {{ queue.deduplication_scope }}
@@ -21,7 +20,7 @@ Resources:
       DelaySeconds: {{ queue.delay_seconds }}
 {%- endif %}
 {%- if queue.fifo_queue is defined %}
-      FifoQueue: {{ queue.fifo_queue }}
+      FifoQueue: {{ queue.fifo_queue | lower }}
 {%- endif %}
 {%- if queue.fifo_throughput_limit is defined %}
       FifoThroughputLimit: {{ queue.fifo_throughput_limit }}
@@ -46,11 +45,20 @@ Resources:
 {%- endif %}
 {%- if queue.redrive_allow_policy is defined %}
       RedriveAllowPolicy:
-{{ queue.redrive_allow_policy | indent(width=8, first=true) }}
+        {{ queue.redrive_allow_policy | indent(width=8, first=false) }}
+{%- elif queue.redrive_allow_policy_json is defined %}
+      RedriveAllowPolicy: |-
+        {{ queue.redrive_allow_policy_json | indent(width=8, first=false) }}
 {%- endif %}
 {%- if queue.redrive_policy is defined %}
       RedrivePolicy:
-{{ queue.redrive_policy | indent(width=8, first=true) }}
+        {{ queue.redrive_policy | indent(width=8, first=false) }}
+{%- elif queue.redrive_policy_json is defined %}
+      RedrivePolicy: |-
+        {{ queue.redrive_policy_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if queue.sqs_managed_sse_enabled is defined %}
+      SqsManagedSseEnabled: {{ queue.sqs_managed_sse_enabled | lower }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -67,7 +75,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for queue in sceptre_user_data.queues %}
 {%- set queue_name = queue.name %}
   {{ queue_name }}:
@@ -77,7 +84,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ queue_name }}"
-
   {{ queue_name }}Arn:
     Description: The ARN for {{ queue_name }}
     Value:
@@ -87,7 +93,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ queue_name }}-Arn"
-
   {{ queue_name }}QueueName:
     Description: The Name for {{ queue_name }}
     Value:
@@ -97,5 +102,26 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ queue_name }}-QueueName"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-10:
+Type: AWS::SQS::Queue
+Properties:
+  ContentBasedDeduplication: Boolean
+  DeduplicationScope: String
+  DelaySeconds: Integer
+  FifoQueue: Boolean
+  FifoThroughputLimit: String
+  KmsDataKeyReusePeriodSeconds: Integer
+  KmsMasterKeyId: String
+  MaximumMessageSize: Integer
+  MessageRetentionPeriod: Integer
+  QueueName: String
+  ReceiveMessageWaitTimeSeconds: Integer
+  RedriveAllowPolicy: Json
+  RedrivePolicy: Json
+  SqsManagedSseEnabled: Boolean
+  Tags:
+    - Key: String
+      Value: String
+  VisibilityTimeout: Integer
+#}

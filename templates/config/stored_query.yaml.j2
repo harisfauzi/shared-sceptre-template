@@ -10,7 +10,8 @@ Resources:
     DeletionPolicy: {{ stored_query.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ stored_query.update_replace_policy | default('Delete') }}
     Properties:
-      QueryExpression: {{ stored_query.query_expression }}
+      QueryExpression: |-
+        {{ stored_query.query_expression | indent(width=8, first=false) }}
       QueryName: {{ stored_query.query_name }}
 {%- if stored_query.query_description is defined %}
       QueryDescription: {{ stored_query.query_description }}
@@ -36,5 +37,33 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ stored_query_name }}"
-
-{%- endfor %}
+  {{ stored_query_name }}QueryArn:
+    Description: The ARN of {{ stored_query_name }}
+    Value:
+      Fn::GetAtt:
+      - {{ stored_query_name }}
+      - QueryArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stored_query_name }}-QueryArn"
+  {{ stored_query_name }}QueryId:
+    Description: The ID of the query {{ stored_query_name }}
+    Value:
+      Fn::GetAtt:
+      - {{ stored_query_name }}
+      - QueryId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ stored_query_name }}-QueryId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::Config::StoredQuery
+Properties:
+  QueryDescription: String
+  QueryExpression: String
+  QueryName: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

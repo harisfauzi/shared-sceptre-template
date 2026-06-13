@@ -10,25 +10,54 @@ Resources:
     DeletionPolicy: {{ configuration_recorder.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ configuration_recorder.update_replace_policy | default('Delete') }}
     Properties:
-      RoleARN: {{ configuration_recorder.role_arn }}
+      RoleARN: {{ configuration_recorder.role_arn | trim }}
 {%- if configuration_recorder.name is defined %}
       Name: {{ configuration_recorder.configuration_recorder_name }}
 {%- endif %}
-{%- if configuration_recorder.recording_group is defined %}
+{%- if configuration_recorder.recording_group is defined %}{# BEGIN if configuration_recorder.recording_group is defined #}
       RecordingGroup:
 {%- if configuration_recorder.recording_group.all_supported is defined %}
-        AllSupported: {{ configuration_recorder.recording_group.all_supported }}
+        AllSupported: {{ configuration_recorder.recording_group.all_supported | lower }}
 {%- endif %}
+{%- if configuration_recorder.recording_group.exclusion_by_resource_types is defined %}{# BEGIN if configuration_recorder.recording_group.exclusion_by_resource_types is defined #}
+        ExclusionByResourceTypes:
+          ResourceTypes:
+{%- for resource_type in configuration_recorder.recording_group.exclusion_by_resource_types.resource_types %}
+            - {{ resource_type }}
+{%- endfor %}
+{%- endif %}{# END if configuration_recorder.recording_group.exclusion_by_resource_types is defined #}
 {%- if configuration_recorder.recording_group.include_global_resource_types is defined %}
-        IncludeGlobalResourceTypes: {{ configuration_recorder.recording_group.include_global_resource_types }}
+        IncludeGlobalResourceTypes: {{ configuration_recorder.recording_group.include_global_resource_types | lower }}
 {%- endif %}
-{%- if configuration_recorder.recording_group.resource_types is defined %}
+{%- if configuration_recorder.recording_group.recording_strategy is defined %}
+        RecordingStrategy:
+          UseOnly: {{ configuration_recorder.recording_group.recording_strategy.use_only }}
+{%- endif %}
+{%- if configuration_recorder.recording_group.resource_types is defined %}{# BEGIN if configuration_recorder.recording_group.resource_types is defined #}
         ResourceTypes:
 {%- for resource_type in configuration_recorder.recording_group.resource_types %}
           - {{ resource_type }}
 {%- endfor %}
+{%- endif %}{# END if configuration_recorder.recording_group.resource_types is defined #}
+{%- endif %}{# END if configuration_recorder.recording_group is defined #}
+{%- if configuration_recorder.recording_mode is defined %}{# BEGIN if configuration_recorder.recording_mode is defined #}
+      RecordingMode:
+        RecordingFrequency: {{ configuration_recorder.recording_mode.recording_frequency }}
+{%- if configuration_recorder.recording_mode.recording_mode_overrides is defined %}{# BEGIN if configuration_recorder.recording_mode.recording_mode_overrides is defined #}
+        RecordingModeOverrides:
+{%- for override in configuration_recorder.recording_mode.recording_mode_overrides %}{# BEGIN for override in configuration_recorder.recording_mode.recording_mode_overrides #}
+          -
+            RecordingFrequency: {{ override.recording_frequency }}
+            ResourceTypes:
+{%- for resource_type in override.resource_types %}
+              - {{ resource_type }}
+{%- endfor %}
+{%- if override.description is defined %}
+            Description: {{ override.description }}
 {%- endif %}
-{%- endif %}
+{%- endfor %}{# END for override in configuration_recorder.recording_mode.recording_mode_overrides #}
+{%- endif %}{# END if configuration_recorder.recording_mode.recording_mode_overrides is defined #}
+{%- endif %}{# END if configuration_recorder.recording_mode is defined #}
 {%- endfor %}
 
 Outputs:
@@ -41,5 +70,28 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ configuration_recorder_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::Config::ConfigurationRecorder
+Properties:
+  Name: String
+  RecordingGroup:
+    AllSupported: Boolean
+    ExclusionByResourceTypes:
+      ResourceTypes:
+        - String
+    IncludeGlobalResourceTypes: Boolean
+    RecordingStrategy:
+      UseOnly: String
+    ResourceTypes:
+      - String
+  RecordingMode:
+    RecordingFrequency: String
+    RecordingModeOverrides:
+      -
+        Description: String
+        RecordingFrequency: String
+        ResourceTypes:
+          - String
+  RoleARN: String
+#}

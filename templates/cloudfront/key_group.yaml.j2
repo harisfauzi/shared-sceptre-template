@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFront Key Group(s) fo
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for key_group in sceptre_user_data.key_groups %}
 {%- set key_group_name = key_group.name %}
   {{ key_group_name }}:
@@ -13,18 +12,16 @@ Resources:
     Properties:
       KeyGroupConfig:
         Items:
-{%- for item in key_group.key_group_config.items %}
+{%- for item in key_group.key_group_config._items %}
           - {{ item }}
 {%- endfor %}
         Name: {{ key_group.key_group_config.name }}
 {%- if key_group.key_group_config.comment is defined %}
         Comment: {{ key_group.key_group_config.comment }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for key_group in sceptre_user_data.key_groups %}
 {%- set key_group_name = key_group.name %}
   {{ key_group_name }}:
@@ -34,7 +31,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ key_group_name }}"
-
   {{ key_group_name }}Id:
     Description: The identifier for the key group {{ key_group_name }}
     Value:
@@ -44,7 +40,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ key_group_name }}-Id"
-
   {{ key_group_name }}LastModifiedTime:
     Description: The date and time when the key group was last modified for {{ key_group_name }}
     Value:
@@ -54,5 +49,13 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ key_group_name }}-LastModifiedTime"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::KeyGroup
+Properties:
+  KeyGroupConfig:
+    Comment: String
+    Items:
+      - String
+    Name: String
+#}

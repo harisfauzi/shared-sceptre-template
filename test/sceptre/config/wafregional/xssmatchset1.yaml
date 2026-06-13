@@ -1,0 +1,61 @@
+---
+template:
+  type: file
+  path: wafregional/xss_match_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "WAFRegional XSS Match Set(s) for testing purposes"
+  xss_match_sets:
+    - name: GeneralXssMatchSet
+      xss_match_set_name: general-xss-detection
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      xss_match_tuples:
+        - field_to_match:
+            type: QUERY_STRING
+          text_transformation: URL_DECODE
+        - field_to_match:
+            type: BODY
+          text_transformation: HTML_ENTITY_DECODE
+        - field_to_match:
+            type: URI
+          text_transformation: URL_DECODE
+
+    - name: HeaderXssMatchSet
+      xss_match_set_name: header-xss-detection
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      xss_match_tuples:
+        - field_to_match:
+            type: HEADER
+            data: Referer
+          text_transformation: LOWERCASE
+        - field_to_match:
+            type: HEADER
+            data: User-Agent
+          text_transformation: NONE
+        - field_to_match:
+            type: HEADER
+            data: X-Forwarded-For
+          text_transformation: URL_DECODE
+
+    - name: FormParameterXssMatchSet
+      xss_match_set_name: form-parameter-xss-detection
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      xss_match_tuples:
+        - field_to_match:
+            type: ARGS
+            data: comment
+          text_transformation: HTML_ENTITY_DECODE
+        - field_to_match:
+            type: ARGS
+            data: message
+          text_transformation: URL_DECODE
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: wafregional-xss-match-set

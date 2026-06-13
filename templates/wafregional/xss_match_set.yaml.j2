@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('WAFRegional XssMatchSet(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('WAFRegional XSS Match Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for xss_match_set in sceptre_user_data.xss_match_sets %}
 {%- set xss_match_set_name = xss_match_set.name %}
   {{ xss_match_set_name }}:
@@ -12,9 +11,9 @@ Resources:
     UpdateReplacePolicy: {{ xss_match_set.update_replace_policy | default('Delete') }}
     Properties:
       Name: {{ xss_match_set.xss_match_set_name }}
-{%- if xss_match_set.xss_match_tuples is defined %}
+{%- if xss_match_set.xss_match_tuples is defined %}{# BEGIN if xss_match_set.xss_match_tuples is defined #}
       XssMatchTuples:
-{%- for xss_match_tuple in xss_match_set.xss_match_tuples %}
+{%- for xss_match_tuple in xss_match_set.xss_match_tuples %}{# BEGIN for xss_match_tuple in xss_match_set.xss_match_tuples #}
         -
           FieldToMatch:
             Type: {{ xss_match_tuple.field_to_match.type }}
@@ -22,13 +21,11 @@ Resources:
             Data: {{ xss_match_tuple.field_to_match.data }}
 {%- endif %}
           TextTransformation: {{ xss_match_tuple.text_transformation }}
-{%- endfor %}
-{%- endif %}
-
+{%- endfor %}{# END for xss_match_tuple in xss_match_set.xss_match_tuples #}
+{%- endif %}{# END if xss_match_set.xss_match_tuples is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for xss_match_set in sceptre_user_data.xss_match_sets %}
 {%- set xss_match_set_name = xss_match_set.name %}
   {{ xss_match_set_name }}:
@@ -38,5 +35,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ xss_match_set_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-10
+Type: AWS::WAFRegional::XssMatchSet
+Properties:
+  Name: String
+  XssMatchTuples:
+    -
+      FieldToMatch:
+        Data: String
+        Type: String
+      TextTransformation: String
+#}

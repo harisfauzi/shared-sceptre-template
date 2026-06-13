@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: cloudfront/trust_store.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront Trust Store(s) for Mutual TLS Authentication
+  key_value_stores:
+    - name: PrimaryTrustStore
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      key_value_store_name: "primary-mtls-trust-store"
+      ca_certificates_bundle_source:
+        ca_certificates_bundle_s3_location:
+          bucket: "my-ca-certificates-bucket"
+          key: "ca-bundles/production-ca-bundle.crt"
+          region: "us-east-1"
+          version: "v1.2.3"
+      use_client_certificate_ocsp_endpoint: true
+      tags:
+        Environment: "Production"
+        Purpose: "Mutual TLS Authentication"
+        CertificateManagement: "Automated"
+
+    - name: StagingTrustStore
+      deletion_policy: Delete
+      key_value_store_name: "staging-mtls-trust-store"
+      ca_certificates_bundle_source:
+        ca_certificates_bundle_s3_location:
+          bucket: "staging-ca-certificates-bucket"
+          key: "ca-bundles/staging-ca-bundle.crt"
+          region: "us-east-1"
+      use_client_certificate_ocsp_endpoint: false
+      tags:
+        Environment: "Staging"
+        Purpose: "Staging MTLS"
+
+    - name: DevelopmentTrustStore
+      deletion_policy: Retain
+      key_value_store_name: "development-mtls-trust-store"
+      ca_certificates_bundle_source:
+        ca_certificates_bundle_s3_location:
+          bucket: "dev-ca-certificates-bucket"
+          key: "ca-bundles/dev-ca-bundle.crt"
+          region: "us-east-1"
+
+stack_tags:
+  Test: cloudfront-trust-store

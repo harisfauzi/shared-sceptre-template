@@ -11,15 +11,58 @@ Resources:
     UpdateReplacePolicy: {{ organization_config_rule.update_replace_policy | default('Delete') }}
     Properties:
       OrganizationConfigRuleName: {{ organization_config_rule.organization_config_rule_name }}
-{%- if organization_config_rule.excluded_accounts is defined %}
+{%- if organization_config_rule.excluded_accounts is defined %}{# BEGIN if organization_config_rule.excluded_accounts is defined #}
       ExcludedAccounts:
 {%- for excluded_account in organization_config_rule.excluded_accounts %}
         - {{ excluded_account }}
 {%- endfor %}
+{%- endif %}{# END if organization_config_rule.excluded_accounts is defined #}
+{%- if organization_config_rule.organization_custom_policy_rule_metadata is defined %}{# BEGIN if organization_config_rule.organization_custom_policy_rule_metadata is defined #}
+      OrganizationCustomPolicyRuleMetadata:
+        Runtime: {{ organization_config_rule.organization_custom_policy_rule_metadata.runtime }}
+        PolicyText: |-
+          {{ organization_config_rule.organization_custom_policy_rule_metadata.policy_text | indent(width=10, first=false) }}
+{%- if organization_config_rule.organization_custom_policy_rule_metadata.debug_log_delivery_accounts is defined %}{# BEGIN if organization_config_rule.organization_custom_policy_rule_metadata.debug_log_delivery_accounts is defined #}
+        DebugLogDeliveryAccounts:
+{%- for account in organization_config_rule.organization_custom_policy_rule_metadata.debug_log_delivery_accounts %}
+          - {{ account }}
+{%- endfor %}
+{%- endif %}{# END if organization_config_rule.organization_custom_policy_rule_metadata.debug_log_delivery_accounts is defined #}
+{%- if organization_config_rule.organization_custom_policy_rule_metadata.description is defined %}
+        Description: {{ organization_config_rule.organization_custom_policy_rule_metadata.description }}
 {%- endif %}
-{%- if organization_config_rule.organization_custom_rule_metadata is defined %}{# BEGIN {%- if organization_config_rule.organization_custom_rule_metadata is defined %} #}
+{%- if organization_config_rule.organization_custom_policy_rule_metadata.input_parameters is defined %}
+        InputParameters: |-
+          {{ organization_config_rule.organization_custom_policy_rule_metadata.input_parameters | indent(width=10, first=false) }}
+{%- endif %}
+{%- if organization_config_rule.organization_custom_policy_rule_metadata.maximum_execution_frequency is defined %}
+        MaximumExecutionFrequency: {{ organization_config_rule.organization_custom_policy_rule_metadata.maximum_execution_frequency }}
+{%- endif %}
+{%- if organization_config_rule.organization_custom_policy_rule_metadata.organization_config_rule_trigger_types is defined %}{# BEGIN if organization_config_rule.organization_custom_policy_rule_metadata.organization_config_rule_trigger_types is defined #}
+        OrganizationConfigRuleTriggerTypes:
+{%- for trigger_type in organization_config_rule.organization_custom_policy_rule_metadata.organization_config_rule_trigger_types %}
+          - {{ trigger_type }}
+{%- endfor %}
+{%- endif %}{# END if organization_config_rule.organization_custom_policy_rule_metadata.organization_config_rule_trigger_types is defined #}
+{%- if organization_config_rule.organization_custom_policy_rule_metadata.resource_id_scope is defined %}
+        ResourceIdScope: {{ organization_config_rule.organization_custom_policy_rule_metadata.resource_id_scope }}
+{%- endif %}
+{%- if organization_config_rule.organization_custom_policy_rule_metadata.resource_types_scope is defined %}{# BEGIN if organization_config_rule.organization_custom_policy_rule_metadata.resource_types_scope is defined #}
+        ResourceTypesScope:
+{%- for resource_type in organization_config_rule.organization_custom_policy_rule_metadata.resource_types_scope %}
+          - {{ resource_type }}
+{%- endfor %}
+{%- endif %}{# END if organization_config_rule.organization_custom_policy_rule_metadata.resource_types_scope is defined #}
+{%- if organization_config_rule.organization_custom_policy_rule_metadata.tag_key_scope is defined %}
+        TagKeyScope: {{ organization_config_rule.organization_custom_policy_rule_metadata.tag_key_scope }}
+{%- endif %}
+{%- if organization_config_rule.organization_custom_policy_rule_metadata.tag_value_scope is defined %}
+        TagValueScope: {{ organization_config_rule.organization_custom_policy_rule_metadata.tag_value_scope }}
+{%- endif %}
+{%- endif %}{# END if organization_config_rule.organization_custom_policy_rule_metadata is defined #}
+{%- if organization_config_rule.organization_custom_rule_metadata is defined %}{# BEGIN if organization_config_rule.organization_custom_rule_metadata is defined #}
       OrganizationCustomRuleMetadata:
-        LambdaFunctionArn: {{ organization_config_rule.organization_custom_rule_metadata.lambda_function_arn }}
+        LambdaFunctionArn: {{ organization_config_rule.organization_custom_rule_metadata.lambda_function_arn | trim }}
         OrganizationConfigRuleTriggerTypes:
 {%- for trigger_type in organization_config_rule.organization_custom_rule_metadata.organization_config_rule_trigger_types %}
           - {{ trigger_type }}
@@ -28,7 +71,8 @@ Resources:
         Description: {{ organization_config_rule.organization_custom_rule_metadata.description }}
 {%- endif %}
 {%- if organization_config_rule.organization_custom_rule_metadata.input_parameters is defined %}
-        InputParameters: {{ organization_config_rule.organization_custom_rule_metadata.input_parameters }}
+        InputParameters: |-
+          {{ organization_config_rule.organization_custom_rule_metadata.input_parameters | indent(width=10, first=false) }}
 {%- endif %}
 {%- if organization_config_rule.organization_custom_rule_metadata.maximum_execution_frequency is defined %}
         MaximumExecutionFrequency: {{ organization_config_rule.organization_custom_rule_metadata.maximum_execution_frequency }}
@@ -36,27 +80,28 @@ Resources:
 {%- if organization_config_rule.organization_custom_rule_metadata.resource_id_scope is defined %}
         ResourceIdScope: {{ organization_config_rule.organization_custom_rule_metadata.resource_id_scope }}
 {%- endif %}
-{%- if organization_config_rule.organization_custom_rule_metadata.resource_types_scope is defined %}
+{%- if organization_config_rule.organization_custom_rule_metadata.resource_types_scope is defined %}{# BEGIN if organization_config_rule.organization_custom_rule_metadata.resource_types_scope is defined #}
         ResourceTypesScope:
 {%- for scope in organization_config_rule.organization_custom_rule_metadata.resource_types_scope %}
           - {{ scope }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if organization_config_rule.organization_custom_rule_metadata.resource_types_scope is defined #}
 {%- if organization_config_rule.organization_custom_rule_metadata.tag_key_scope is defined %}
         TagKeyScope: {{ organization_config_rule.organization_custom_rule_metadata.tag_key_scope }}
 {%- endif %}
 {%- if organization_config_rule.organization_custom_rule_metadata.tag_value_scope is defined %}
         TagValueScope: {{ organization_config_rule.organization_custom_rule_metadata.tag_value_scope }}
 {%- endif %}
-{%- endif %}{# END {%- if organization_config_rule.organization_custom_rule_metadata is defined %} #}
-{%- if organization_config_rule.organization_managed_rule_metadata is defined %}{# BEGIN {%- if organization_config_rule.organization_managed_rule_metadata is defined %} #}
+{%- endif %}{# END  if organization_config_rule.organization_custom_rule_metadata is defined #}
+{%- if organization_config_rule.organization_managed_rule_metadata is defined %}{# BEGIN if organization_config_rule.organization_managed_rule_metadata is defined #}
       OrganizationManagedRuleMetadata:
         RuleIdentifier: {{ organization_config_rule.organization_managed_rule_metadata.rule_identifier }}
 {%- if organization_config_rule.organization_managed_rule_metadata.description is defined %}
         Description: {{ organization_config_rule.organization_managed_rule_metadata.description }}
 {%- endif %}
 {%- if organization_config_rule.organization_managed_rule_metadata.input_parameters is defined %}
-        InputParameters: {{ organization_config_rule.organization_managed_rule_metadata.input_parameters }}
+        InputParameters: |-
+          {{ organization_config_rule.organization_managed_rule_metadata.input_parameters | indent(width=10, first=false) }}
 {%- endif %}
 {%- if organization_config_rule.organization_managed_rule_metadata.maximum_execution_frequency is defined %}
         MaximumExecutionFrequency: {{ organization_config_rule.organization_managed_rule_metadata.maximum_execution_frequency }}
@@ -64,43 +109,19 @@ Resources:
 {%- if organization_config_rule.organization_managed_rule_metadata.resource_id_scope is defined %}
         ResourceIdScope: {{ organization_config_rule.organization_managed_rule_metadata.resource_id_scope }}
 {%- endif %}
-{%- if organization_config_rule.organization_managed_rule_metadata.resource_types_scope is defined %}
-        ResourceTypesScope:
-{%- for scope inorganization_config_rule.organization_managed_rule_metadata.resource_types_scope %}
-          - {{ scope }}
-{%- endfor %}
-{%- endif %}
-{%- if organization_config_rule.organization_managed_rule_metadata.tag_key_scope is defined %}
-        TagKeyScope: {{ organization_config_rule.organization_managed_rule_metadata.tag_key_scope }}
-{%- endif %}
-{%- if organization_config_rule.organization_managed_rule_metadata.tag_value_scope is defined %}
-        TagValueScope: {{ organization_config_rule.organization_managed_rule_metadata.tag_value_scope }}
-{%- endif %}
-{%- if organization_config_rule.organization_managed_rule_metadata.description is defined %}
-        Description: {{ organization_config_rule.organization_managed_rule_metadata.description }}
-{%- endif %}
-{%- if organization_config_rule.organization_managed_rule_metadata.input_parameters is defined %}
-        InputParameters: {{ organization_config_rule.organization_managed_rule_metadata.input_parameters }}
-{%- endif %}
-{%- if organization_config_rule.organization_managed_rule_metadata.maximum_execution_frequency is defined %}
-        MaximumExecutionFrequency: {{ organization_config_rule.organization_managed_rule_metadata.maximum_execution_frequency }}
-{%- endif %}
-{%- if organization_config_rule.organization_managed_rule_metadata.resource_id_scope is defined %}
-        ResourceIdScope: {{ organization_config_rule.organization_managed_rule_metadata.resource_id_scope }}
-{%- endif %}
-{%- if organization_config_rule.organization_managed_rule_metadata.resource_types_scope is defined %}
+{%- if organization_config_rule.organization_managed_rule_metadata.resource_types_scope is defined %}{# BEGIN if organization_config_rule.organization_managed_rule_metadata.resource_types_scope is defined #}
         ResourceTypesScope:
 {%- for scope in organization_config_rule.organization_managed_rule_metadata.resource_types_scope %}
           - {{ scope }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if organization_config_rule.organization_managed_rule_metadata.resource_types_scope is defined #}
 {%- if organization_config_rule.organization_managed_rule_metadata.tag_key_scope is defined %}
         TagKeyScope: {{ organization_config_rule.organization_managed_rule_metadata.tag_key_scope }}
 {%- endif %}
 {%- if organization_config_rule.organization_managed_rule_metadata.tag_value_scope is defined %}
         TagValueScope: {{ organization_config_rule.organization_managed_rule_metadata.tag_value_scope }}
 {%- endif %}
-{%- endif %}{# END {%- if organization_config_rule.organization_managed_rule_metadata is defined %} #}
+{%- endif %}{# END  if organization_config_rule.organization_managed_rule_metadata is defined #}
 {%- endfor %}
 
 Outputs:
@@ -113,5 +134,48 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ organization_config_rule_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::Config::OrganizationConfigRule
+Properties:
+  ExcludedAccounts:
+    - String
+  OrganizationConfigRuleName: String
+  OrganizationCustomPolicyRuleMetadata:
+    DebugLogDeliveryAccounts:
+      - String
+    Description: String
+    InputParameters: String
+    MaximumExecutionFrequency: String
+    OrganizationConfigRuleTriggerTypes:
+      - String
+    PolicyText: String
+    ResourceIdScope: String
+    ResourceTypesScope:
+      - String
+    Runtime: String
+    TagKeyScope: String
+    TagValueScope: String
+  OrganizationCustomRuleMetadata:
+    Description: String
+    InputParameters: String
+    LambdaFunctionArn: String
+    MaximumExecutionFrequency: String
+    OrganizationConfigRuleTriggerTypes:
+      - String
+    ResourceIdScope: String
+    ResourceTypesScope:
+      - String
+    TagKeyScope: String
+    TagValueScope: String
+  OrganizationManagedRuleMetadata:
+    Description: String
+    InputParameters: String
+    MaximumExecutionFrequency: String
+    ResourceIdScope: String
+    ResourceTypesScope:
+      - String
+    RuleIdentifier: String
+    TagKeyScope: String
+    TagValueScope: String
+#}

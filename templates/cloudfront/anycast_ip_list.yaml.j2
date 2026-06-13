@@ -1,0 +1,81 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFront Anycast IP List(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for anycast_ip_list in sceptre_user_data.anycast_ip_lists %}
+{%- set anycast_ip_list_name = anycast_ip_list.name %}
+  {{ anycast_ip_list_name }}:
+    Type: AWS::CloudFront::AnycastIpList
+    DeletionPolicy: {{ anycast_ip_list.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ anycast_ip_list.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ anycast_ip_list.anycast_ip_list_name }}
+      IpCount: {{ anycast_ip_list.ip_count }}
+{%- if anycast_ip_list.ip_address_type is defined %}
+      IpAddressType: {{ anycast_ip_list.ip_address_type }}
+{%- endif %}
+{%- if anycast_ip_list.ipam_cidr_configs is defined %}{# BEGIN if anycast_ip_list.ipam_cidr_configs is defined #}
+      IpamCidrConfigs:
+{%- for cidr_config in anycast_ip_list.ipam_cidr_configs %}
+        -
+          Cidr: {{ cidr_config.cidr }}
+          IpamPoolArn: {{ cidr_config.ipam_pool_arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if anycast_ip_list.ipam_cidr_configs is defined #}
+      Tags:
+        Items:
+          - Key: SourceRepoURL
+            Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if anycast_ip_list.tags is defined %}
+{%- for key,value in anycast_ip_list.tags.items() %}
+          - Key: {{ key }}
+            Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for anycast_ip_list in sceptre_user_data.anycast_ip_lists %}
+{%- set anycast_ip_list_name = anycast_ip_list.name %}
+  {{ anycast_ip_list_name }}:
+    Description: The ID of the Anycast IP List for {{ anycast_ip_list_name }}
+    Value:
+      Ref: {{ anycast_ip_list_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ anycast_ip_list_name }}"
+  {{ anycast_ip_list_name }}ETag:
+    Description: A complex type that contains Tag key and Tag value for {{ anycast_ip_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ anycast_ip_list_name }}
+        - ETag
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ anycast_ip_list_name }}-ETag"
+  {{ anycast_ip_list_name }}Id:
+    Description: The ID of the Anycast IP List for {{ anycast_ip_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ anycast_ip_list_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ anycast_ip_list_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::AnycastIpList
+Properties:
+  IpAddressType: String
+  IpamCidrConfigs:
+    -
+      Cidr: String
+      IpamPoolArn: String
+  IpCount: Integer
+  Name: String
+  Tags:
+    Items:
+      - Key: String
+        Value: String
+#}

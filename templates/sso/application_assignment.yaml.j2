@@ -1,0 +1,35 @@
+---
+Description: {{sceptre_user_data.description|default('SSO Application Assignment(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for application_assignment in sceptre_user_data.application_assignments %}
+{%- set application_assignment_name = application_assignment.name %}
+  {{ application_assignment_name }}:
+    Type: AWS::SSO::ApplicationAssignment
+    DeletionPolicy: {{ application_assignment.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ application_assignment.update_replace_policy | default('Delete') }}
+    Properties:
+      ApplicationArn: {{ application_assignment.application_arn | trim }}
+      PrincipalId: {{ application_assignment.principal_id | trim }}
+      PrincipalType: {{ application_assignment.principal_type }}
+{%- endfor %}
+
+Outputs:
+{%- for application_assignment in sceptre_user_data.application_assignments %}
+{%- set application_assignment_name = application_assignment.name %}
+  {{ application_assignment_name }}:
+    Description: Generated Id for {{ application_assignment_name }}
+    Value:
+      Ref: {{ application_assignment_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_assignment_name }}"
+{%- endfor %}{#
+# Supported structure as of 2026-06-11
+Type: AWS::SSO::ApplicationAssignment
+Properties:
+  ApplicationArn: String
+  PrincipalId: String
+  PrincipalType: String
+#}
