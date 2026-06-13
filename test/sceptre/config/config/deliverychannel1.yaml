@@ -1,0 +1,53 @@
+---
+template:
+  type: file
+  path: config/delivery_channel.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "AWS Config Delivery Channel(s) for testing purposes"
+  delivery_channels:
+    - name: DefaultDeliveryChannel
+      delivery_channel_name: default-delivery-channel
+      s3_bucket_name: my-config-bucket
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      config_snapshot_delivery_properties:
+        delivery_frequency: Twenty_Four_Hours
+
+    - name: EncryptedDeliveryChannel
+      delivery_channel_name: encrypted-delivery-channel
+      s3_bucket_name: my-config-bucket-encrypted
+      s3_key_prefix: config-snapshots/encrypted/
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      s3_kms_key_arn: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
+      config_snapshot_delivery_properties:
+        delivery_frequency: Six_Hours
+
+    - name: SnsNotificationChannel
+      delivery_channel_name: sns-notification-channel
+      s3_bucket_name: my-config-bucket
+      s3_key_prefix: config-snapshots/with-notifications/
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      sns_topic_arn: arn:aws:sns:us-east-1:123456789012:config-notifications
+      config_snapshot_delivery_properties:
+        delivery_frequency: Twelve_Hours
+
+    - name: FullyConfiguredChannel
+      delivery_channel_name: fully-configured-channel
+      s3_bucket_name: my-config-bucket-prod
+      s3_key_prefix: config-snapshots/production/
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      s3_kms_key_arn: arn:aws:kms:us-east-1:123456789012:key/87654321-4321-4321-4321-210987654321
+      sns_topic_arn: arn:aws:sns:us-east-1:123456789012:config-alerts-prod
+      config_snapshot_delivery_properties:
+        delivery_frequency: One_Hour
+
+    - name: MinimalDeliveryChannel
+      s3_bucket_name: my-simple-config-bucket
+      deletion_policy: Delete
+      update_replace_policy: Delete

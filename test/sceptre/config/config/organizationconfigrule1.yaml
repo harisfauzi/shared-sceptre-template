@@ -1,0 +1,108 @@
+---
+template:
+  type: file
+  path: config/organization_config_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "AWS Config Organization Config Rule(s) for testing purposes"
+  organization_config_rules:
+    - name: S3BucketPublicReadProhibitedRule
+      organization_config_rule_name: s3-bucket-public-read-prohibited
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      organization_managed_rule_metadata:
+        rule_identifier: S3_BUCKET_PUBLIC_READ_PROHIBITED
+        description: Checks that S3 buckets do not allow public read access
+
+    - name: IamPolicyBlacklistedCheckRule
+      organization_config_rule_name: iam-policy-blacklisted-check
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      organization_managed_rule_metadata:
+        rule_identifier: IAM_POLICY_BLACKLISTED_CHECK
+        description: Checks for blacklisted IAM policy actions
+        resource_types_scope:
+          - AWS::IAM::Policy
+        maximum_execution_frequency: TwentyFour_Hours
+
+    - name: CustomLambdaComplianceRule
+      organization_config_rule_name: custom-lambda-compliance-rule
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      excluded_accounts:
+        - "111111111111"
+      organization_custom_rule_metadata:
+        lambda_function_arn: arn:aws:lambda:us-east-1:123456789012:function:ConfigRuleFunction
+        organization_config_rule_trigger_types:
+          - ConfigurationItemChangeNotification
+        description: Custom Lambda-based compliance rule
+        resource_types_scope:
+          - AWS::EC2::SecurityGroup
+          - AWS::EC2::Instance
+        input_parameters: |-
+          {
+            "allowedPorts": "22,443"
+          }
+        maximum_execution_frequency: Six_Hours
+        tag_key_scope: Environment
+        tag_value_scope: Production
+
+    - name: CustomPolicySecurityRule
+      organization_config_rule_name: custom-policy-security-rule
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      organization_custom_policy_rule_metadata:
+        runtime: guard-2.0.0
+        policy_text: |
+          {
+            "ResourceType": "AWS::EC2::SecurityGroup",
+            "ResourceIdTemplate": "arn:partition:ec2:region:account-id:security-group/sg-*",
+            "ComplianceResourceTypes": ["AWS::EC2::SecurityGroup"],
+            "Conditions": {
+              "Properties": {
+                "GroupIngressRules[*].IpProtocol": ["tcp"],
+                "GroupIngressRules[*].FromPort": [22]
+              }
+            },
+            "Evaluation": {
+              "ComplianceType": "NON_COMPLIANT"
+            }
+          }
+        description: Custom policy to check security group SSH access
+        organization_config_rule_trigger_types:
+          - ConfigurationItemChangeNotification
+          - OversizedChangeNotification
+        debug_log_delivery_accounts:
+          - "222222222222"
+          - "333333333333"
+        input_parameters: |-
+          {
+            "restrictedPorts": "22,3389"
+          }
+        maximum_execution_frequency: TwentyFour_Hours
+        resource_types_scope:
+          - AWS::EC2::SecurityGroup
+        tag_key_scope: Compliance
+        tag_value_scope: Required
+
+    - name: TagComplianceOrganizationRule
+      organization_config_rule_name: tag-compliance-organization-rule
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      organization_managed_rule_metadata:
+        rule_identifier: REQUIRED_TAGS
+        description: Checks for required tags on all organization resources
+        resource_types_scope:
+          - AWS::EC2::Instance
+          - AWS::RDS::DBInstance
+          - AWS::S3::Bucket
+        input_parameters: |-
+          {
+            "tag1Key": "Environment",
+            "tag2Key": "Owner",
+            "tag3Key": "CostCenter"
+          }
+        maximum_execution_frequency: Twenty_Four_Hours
+        resource_id_scope: null

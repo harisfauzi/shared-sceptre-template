@@ -33,5 +33,14 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ aggregation_authorization_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::Config::AggregationAuthorization
+Properties:
+  AuthorizedAccountId: String
+  AuthorizedAwsRegion: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

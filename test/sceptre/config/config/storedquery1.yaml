@@ -1,0 +1,113 @@
+---
+template:
+  type: file
+  path: config/stored_query.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "AWS Config Stored Query(s) for testing purposes"
+  stored_queries:
+    - name: AllNonCompliantResources
+      query_name: all-non-compliant-resources
+      query_description: "Find all resources that are currently non-compliant with Config rules"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      query_expression: |-
+        SELECT
+          resourceId,
+          resourceType,
+          resourceName,
+          complianceType
+        WHERE
+          complianceType = 'NON_COMPLIANT'
+      tags:
+        Purpose: ComplianceTracking
+        Team: Security
+
+    - name: Ec2InstancesWithoutTags
+      query_name: ec2-instances-without-tags
+      query_description: "Find all EC2 instances that are missing required tags"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      query_expression: |-
+        SELECT
+          resourceId,
+          resourceName,
+          configuration.tags
+        WHERE
+          resourceType = 'AWS::EC2::Instance'
+          AND
+          (
+            configuration.tags.Environment IS MISSING
+            OR
+            configuration.tags.Owner IS MISSING
+          )
+      tags:
+        Purpose: TagCompliance
+        Team: CloudOps
+
+    - name: PublicS3Buckets
+      query_name: public-s3-buckets
+      query_description: "Identify all S3 buckets with public access"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      query_expression: |-
+        SELECT
+          resourceId,
+          resourceName,
+          configuration.bucketAcl,
+          configuration.bucketPolicy
+        WHERE
+          resourceType = 'AWS::S3::Bucket'
+          AND
+          (
+            configuration.bucketAcl IN ('public-read', 'public-read-write')
+            OR
+            configuration.bucketPolicy LIKE '%"Effect":"Allow"%"Principal":"\*"%'
+          )
+      tags:
+        Purpose: SecurityAudit
+        Team: Security
+        Compliance: Critical
+
+    - name: SecurityGroupsWithOpenPorts
+      query_name: security-groups-with-open-ports
+      query_description: "Find security groups allowing unrestricted access on sensitive ports"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      query_expression: |-
+        SELECT
+          resourceId,
+          resourceName,
+          configuration.groupIngressRules
+        WHERE
+          resourceType = 'AWS::EC2::SecurityGroup'
+          AND
+          configuration.groupIngressRules[*].cidrIp = '0.0.0.0/0'
+          AND
+          configuration.groupIngressRules[*].fromPort IN (22, 3389, 1433, 5432)
+      tags:
+        Purpose: SecurityCompliance
+        Team: Security
+        Severity: High
+
+    - name: RdsInstancesUnencrypted
+      query_name: rds-instances-unencrypted
+      query_description: "Find RDS instances that do not have encryption at rest enabled"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      query_expression: |-
+        SELECT
+          resourceId,
+          resourceName,
+          configuration.storageEncrypted,
+          configuration.kmsKeyId
+        WHERE
+          resourceType = 'AWS::RDS::DBInstance'
+          AND
+          configuration.storageEncrypted = false
+      tags:
+        Purpose: DataProtection
+        Team: Database
+        Compliance: Required

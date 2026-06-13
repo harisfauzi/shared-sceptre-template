@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('Config Config Rule(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Config Configuration Aggregator(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -10,40 +10,40 @@ Resources:
     DeletionPolicy: {{ configuration_aggregator.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ configuration_aggregator.update_replace_policy | default('Delete') }}
     Properties:
-{%- if configuration_aggregator.account_aggregation_sources is defined %}
+{%- if configuration_aggregator.account_aggregation_sources is defined %}{# BEGIN if configuration_aggregator.account_aggregation_sources is defined #}
       AccountAggregationSources:
-{%- for account_aggregation_source in configuration_aggregator.account_aggregation_sources %}
+{%- for account_aggregation_source in configuration_aggregator.account_aggregation_sources %}{# BEGIN for account_aggregation_source in configuration_aggregator.account_aggregation_sources #}
         - AccountIds:
 {%- for account_id in account_aggregation_source.account_ids %}
             - {{ account_id | trim }}
 {%- endfor %}
 {%- if account_aggregation_source.all_aws_regions is defined %}
-          AllAwsRegions: {{ account_aggregation_source.all_aws_regions }}
+          AllAwsRegions: {{ account_aggregation_source.all_aws_regions | lower }}
 {%- endif %}
-{%- if account_aggregation_source.aws_regions is defined %}
+{%- if account_aggregation_source.aws_regions is defined %}{# BEGIN if account_aggregation_source.aws_regions is defined #}
           AwsRegions:
 {%- for aws_region in account_aggregation_source.aws_regions %}
             - {{ aws_region }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endif %}{# END if account_aggregation_source.aws_regions is defined #}
+{%- endfor %}{# END for account_aggregation_source in configuration_aggregator.account_aggregation_sources #}
+{%- endif %}{# END if configuration_aggregator.account_aggregation_sources is defined #}
 {%- if configuration_aggregator.configuration_aggregator_name is defined %}
       ConfigurationAggregatorName: {{ configuration_aggregator.configuration_aggregator_name }}
 {%- endif %}
-{%- if configuration_aggregator.organization_aggregation_source is defined %}
+{%- if configuration_aggregator.organization_aggregation_source is defined %}{# BEGIN if configuration_aggregator.organization_aggregation_source is defined #}
       OrganizationAggregationSource:
         RoleArn: {{ configuration_aggregator.organization_aggregation_source.role_arn }}
 {%- if configuration_aggregator.organization_aggregation_source.all_aws_regions is defined %}
-        AllAwsRegions: {{ configuration_aggregator.organization_aggregation_source.all_aws_regions }}
+        AllAwsRegions: {{ configuration_aggregator.organization_aggregation_source.all_aws_regions | lower }}
 {%- endif %}
-{%- if configuration_aggregator.organization_aggregation_source.all_aws_regions is defined %}
+{%- if configuration_aggregator.organization_aggregation_source.aws_regions is defined %}{# BEGIN if configuration_aggregator.organization_aggregation_source.aws_regions is defined #}
         AwsRegions:
-{%- for aws_region in configuration_aggregator.organization_aggregation_source.all_aws_regions %}
+{%- for aws_region in configuration_aggregator.organization_aggregation_source.aws_regions %}
           - {{ aws_region }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}
+{%- endif %}{# END if configuration_aggregator.organization_aggregation_source.aws_regions is defined #}
+{%- endif %}{# END if configuration_aggregator.organization_aggregation_source is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -66,4 +66,25 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ configuration_aggregator_name }}"
 
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::Config::ConfigurationAggregator
+Properties:
+  AccountAggregationSources:
+    -
+      AccountIds:
+        - String
+      AllAwsRegions: Boolean
+      AwsRegions:
+        - String
+  ConfigurationAggregatorName: String
+  OrganizationAggregationSource:
+    AllAwsRegions: Boolean
+    AwsRegions:
+      - String
+    RoleArn: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

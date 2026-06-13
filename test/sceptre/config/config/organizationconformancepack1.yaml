@@ -1,0 +1,95 @@
+---
+template:
+  type: file
+  path: config/organization_conformance_pack.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "AWS Config Organization Conformance Pack(s) for testing purposes"
+  organization_conformance_packs:
+    - name: SecurityBestPracticesPack
+      organization_conformance_pack_name: security-best-practices-pack
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      template_s3_uri: s3://aws-config-conforms-packs-123456789012-us-east-1/conformance-packs/SECURITY_BEST_PRACTICES.json
+      delivery_s3_bucket: my-organization-config-bucket
+      delivery_s3_key_prefix: conformance-packs/security/
+
+    - name: PciDssCompliancePack
+      organization_conformance_pack_name: pci-dss-compliance-pack
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      template_s3_uri: s3://aws-config-conforms-packs-123456789012-us-east-1/conformance-packs/PCI_DSS.json
+      delivery_s3_bucket: my-organization-config-bucket
+      delivery_s3_key_prefix: conformance-packs/pci-dss/
+      excluded_accounts:
+        - "111111111111"
+        - "222222222222"
+      organization_conformance_pack_input_parameters:
+        - parameter_name: RequiredTagKey
+          parameter_value: Environment
+        - parameter_name: RequiredTagValue
+          parameter_value: Production
+
+    - name: InlineOrganizationConformancePack
+      organization_conformance_pack_name: inline-organization-pack
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      delivery_s3_bucket: my-organization-config-bucket
+      delivery_s3_key_prefix: conformance-packs/inline/
+      template_body: |-
+        {
+          "Resources": {
+            "S3BucketVersioning": {
+              "Type": "AWS::Config::ConfigRule",
+              "Properties": {
+                "ConfigRuleName": "s3-bucket-versioning-enabled",
+                "Description": "Checks if S3 bucket versioning is enabled",
+                "Source": {
+                  "Owner": "AWS",
+                  "SourceIdentifier": "S3_BUCKET_VERSIONING_ENABLED"
+                }
+              }
+            }
+          }
+        }
+
+    - name: ComprehensiveOrganizationPack
+      organization_conformance_pack_name: comprehensive-organization-pack
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      template_s3_uri: s3://aws-config-conforms-packs-123456789012-us-east-1/conformance-packs/ENTERPRISE_CONTROLS.json
+      delivery_s3_bucket: my-organization-config-bucket-prod
+      delivery_s3_key_prefix: conformance-packs/enterprise/
+      excluded_accounts:
+        - "333333333333"
+      organization_conformance_pack_input_parameters:
+        - parameter_name: CidrBlock
+          parameter_value: "10.0.0.0/8"
+        - parameter_name: MaximumAcceptableRotationDays
+          parameter_value: "90"
+        - parameter_name: AllowedAmiOwners
+          parameter_value: "self,amazon"
+        - parameter_name: RequiredEncryption
+          parameter_value: "true"
+
+    - name: HipaaComplianceOrganizationPack
+      organization_conformance_pack_name: hipaa-compliance-organization-pack
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      template_s3_uri: s3://aws-config-conforms-packs-123456789012-us-east-1/conformance-packs/HIPAA.json
+      delivery_s3_bucket: my-organization-config-bucket-prod
+      delivery_s3_key_prefix: conformance-packs/hipaa/
+      excluded_accounts:
+        - "444444444444"
+        - "555555555555"
+      organization_conformance_pack_input_parameters:
+        - parameter_name: EnableLogFileValidation
+          parameter_value: "true"
+        - parameter_name: RequireEncryption
+          parameter_value: "true"
+        - parameter_name: MinimumRetentionDays
+          parameter_value: "90"
+        - parameter_name: AllowedCmkArns
+          parameter_value: "arn:aws:kms:us-east-1:123456789012:key/*"

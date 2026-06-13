@@ -14,10 +14,11 @@ Resources:
       TargetId: {{ remediation_configuration.target_id | trim }}
       TargetType: {{ remediation_configuration.target_type }}
 {%- if remediation_configuration.automatic is defined %}
-      Automatic: {{ remediation_configuration.automatic }}
+      Automatic: {{ remediation_configuration.automatic | lower }}
 {%- endif %}
-{%- if remediation_configuration.execution_controls is defined %}
+{%- if remediation_configuration.execution_controls is defined %}{# BEGIN if remediation_configuration.execution_controls is defined #}
       ExecutionControls:
+{%- if remediation_configuration.execution_controls.ssm_controls is defined %}{# BEGIN if remediation_configuration.execution_controls.ssm_controls is defined #}
         SsmControls:
 {%- if remediation_configuration.execution_controls.ssm_controls.concurrent_execution_rate_percentage is defined %}
           ConcurrentExecutionRatePercentage: {{ remediation_configuration.execution_controls.ssm_controls.concurrent_execution_rate_percentage }}
@@ -25,13 +26,14 @@ Resources:
 {%- if remediation_configuration.execution_controls.ssm_controls.error_percentage is defined %}
           ErrorPercentage: {{ remediation_configuration.execution_controls.ssm_controls.error_percentage }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if remediation_configuration.execution_controls.ssm_controls is defined #}
+{%- endif %}{# END if remediation_configuration.execution_controls is defined #}
 {%- if remediation_configuration.maximum_automatic_attempts is defined %}
       MaximumAutomaticAttempts: {{ remediation_configuration.maximum_automatic_attempts }}
 {%- endif %}
 {%- if remediation_configuration.parameters is defined %}
       Parameters:
-{{ remediation_configuration.parameters | indent(width=8, first=true) }}
+        {{ remediation_configuration.parameters | indent(width=8, first=false) }}
 {%- endif %}
 {%- if remediation_configuration.resource_type is defined %}
       ResourceType: {{ remediation_configuration.resource_type }}
@@ -55,5 +57,22 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ remediation_configuration_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::Config::RemediationConfiguration
+Properties:
+  Automatic: Boolean
+  ConfigRuleName: String
+  ExecutionControls:
+    SsmControls:
+      ConcurrentExecutionRatePercentage: Integer
+      ErrorPercentage: Integer
+  MaximumAutomaticAttempts: Integer
+  Parameters:
+    Key: Value
+  ResourceType: String
+  RetryAttemptSeconds: Integer
+  TargetId: String
+  TargetType: String
+  TargetVersion: String
+#}

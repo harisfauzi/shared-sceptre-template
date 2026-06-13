@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: config/aggregation_authorization.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "AWS Config Aggregation Authorization(s) for testing purposes"
+  aggregation_authorizations:
+    - name: DevelopmentAccountAuthorization
+      authorized_account_id: "111111111111"
+      authorized_aws_region: us-east-1
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Development
+        Purpose: ConfigAggregation
+        Team: CloudOps
+
+    - name: StagingAccountAuthorization
+      authorized_account_id: "222222222222"
+      authorized_aws_region: us-east-1
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Staging
+        Purpose: ConfigAggregation
+        Team: CloudOps
+
+    - name: ProductionAccountMultiRegionAuthorization
+      authorized_account_id: "333333333333"
+      authorized_aws_region: us-west-2
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        Purpose: ConfigAggregation
+        Team: CloudOps
+        CriticalInfrastructure: "true"
+
+    - name: ComplianceAuditAccountAuthorization
+      authorized_account_id: "444444444444"
+      authorized_aws_region: us-east-1
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Compliance
+        Purpose: ConfigAggregation
+        Team: Security
