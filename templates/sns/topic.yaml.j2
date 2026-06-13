@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('SNS Topic(s) for '+sceptre
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for topic in sceptre_user_data.topics %}
 {%- set topic_name = topic.name %}
   {{ topic_name }}:
@@ -14,17 +13,53 @@ Resources:
 {%- if topic.topic_name is defined %}
       TopicName: {{ topic.topic_name }}
 {%- endif %}
-{%- if topic.content_base_deduplication is defined %}
-      ContentBasedDeduplication: {{ topic.content_base_deduplication }}
+{%- if topic.archive_policy is defined %}
+      ArchivePolicy:
+        {{ topic.archive_policy | indent(width=8, first=false) }}
+{%- elif topic.archive_policy_json is defined %}
+      ArchivePolicy: |-
+        {{ topic.archive_policy_json | indent(width=8, first=false) }}
 {%- endif %}
+{%- if topic.content_base_deduplication is defined %}
+      ContentBasedDeduplication: {{ topic.content_base_deduplication | lower }}
+{%- endif %}
+{%- if topic.data_protection_policy is defined %}
+      DataProtectionPolicy:
+        {{ topic.data_protection_policy | indent(width=8, first=false) }}
+{%- elif topic.data_protection_policy_json is defined %}
+      DataProtectionPolicy: |-
+        {{ topic.data_protection_policy_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if topic.delivery_status_logging is defined %}{# BEGIN if topic.delivery_status_logging is defined #}
+      DeliveryStatusLogging:
+{%- for logging_config in topic.delivery_status_logging %}{# BEGIN for logging_config in topic.delivery_status_logging #}
+        -
+          Protocol: {{ logging_config.protocol }}
+{%- if logging_config.failure_feedback_role_arn is defined %}
+          FailureFeedbackRoleArn: {{ logging_config.failure_feedback_role_arn | trim }}
+{%- endif %}
+{%- if logging_config.success_feedback_role_arn is defined %}
+          SuccessFeedbackRoleArn: {{ logging_config.success_feedback_role_arn | trim }}
+{%- endif %}
+{%- if logging_config.success_feedback_sample_rate is defined %}
+          SuccessFeedbackSampleRate: {{ logging_config.success_feedback_sample_rate }}
+{%- endif %}
+{%- endfor %}{# END for logging_config in topic.delivery_status_logging #}
+{%- endif %}{# END if topic.delivery_status_logging is defined #}
 {%- if topic.display_name is defined %}
       DisplayName: {{ topic.display_name }}
 {%- endif %}
+{%- if topic.fifo_throughput_scope is defined %}
+      FifoThroughputScope: {{ topic.fifo_throughput_scope }}
+{%- endif %}
 {%- if topic.fifo_topic is defined %}
-      FifoTopic: {{ topic.fifo_topic }}
+      FifoTopic: {{ topic.fifo_topic | lower }}
 {%- endif %}
 {%- if topic.kms_master_key_id is defined %}
       KmsMasterKeyId: {{ topic.kms_master_key_id | trim }}
+{%- endif %}
+{%- if topic.signature_version is defined %}
+      SignatureVersion: {{ topic.signature_version }}
 {%- endif %}
 {%- if topic.subscription is defined %}
       Subscription:
@@ -42,10 +77,12 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
+{%- if topic.tracing_config is defined %}
+      TracingConfig: {{ topic.tracing_config }}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for topic in sceptre_user_data.topics %}
 {%- set topic_name = topic.name %}
   {{ topic_name }}:
@@ -55,7 +92,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ topic_name }}"
-
+  {{ topic_name }}TopicArn:
+    Description: The Topic ARN for {{ topic_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ topic_name }}
+        - TopicArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ topic_name }}-TopicArn"
   {{ topic_name }}TopicName:
     Description: The Topic Name for {{ topic_name }}
     Value:
@@ -65,5 +110,32 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ topic_name }}-TopicName"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::SNS::Topic
+Properties:
+  ArchivePolicy: Json
+  ContentBasedDeduplication: Boolean
+  DataProtectionPolicy: Json
+  DeliveryStatusLogging:
+    -
+      FailureFeedbackRoleArn: String
+      Protocol: String
+      SuccessFeedbackRoleArn: String
+      SuccessFeedbackSampleRate: String
+  DisplayName: String
+  FifoThroughputScope: String
+  FifoTopic: Boolean
+  KmsMasterKeyId: String
+  SignatureVersion: String
+  Subscription:
+    -
+      Endpoint: String
+      Protocol: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TopicName: String
+  TracingConfig: String
+#}
