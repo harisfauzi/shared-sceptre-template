@@ -1,0 +1,61 @@
+---
+template:
+  type: file
+  path: cloudfront/origin_request_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront Origin Request Policy(s) for Header and Cookie Forwarding
+  origin_request_policies:
+    - name: AllowAllOriginRequestPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      origin_request_policy_config:
+        name: "allow-all-origin-request-policy"
+        comment: "Forwards all headers, cookies, and query strings to origin"
+        cookies_config:
+          cookie_behavior: "all"
+        headers_config:
+          header_behavior: "allViewerAndCloudFrontHeaders"
+        query_strings_config:
+          query_string_behavior: "all"
+
+    - name: SelectiveHeaderOriginRequestPolicy
+      deletion_policy: Delete
+      origin_request_policy_config:
+        name: "selective-header-origin-request-policy"
+        comment: "Forwards selected headers and whitelist cookies to origin"
+        cookies_config:
+          cookie_behavior: "whitelist"
+          cookies:
+            - "session_id"
+            - "user_token"
+            - "tracking_id"
+        headers_config:
+          header_behavior: "whitelist"
+          headers:
+            - "Authorization"
+            - "Host"
+            - "X-Custom-Header"
+            - "X-API-Key"
+        query_strings_config:
+          query_string_behavior: "whitelist"
+          query_strings:
+            - "api_version"
+            - "tenant_id"
+            - "request_id"
+
+    - name: MinimalOriginRequestPolicy
+      deletion_policy: Retain
+      origin_request_policy_config:
+        name: "minimal-origin-request-policy"
+        cookies_config:
+          cookie_behavior: "none"
+        headers_config:
+          header_behavior: "none"
+        query_strings_config:
+          query_string_behavior: "none"
+
+stack_tags:
+  Test: cloudfront-origin-request-policy

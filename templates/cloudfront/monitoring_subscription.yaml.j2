@@ -1,0 +1,37 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFront Monitoring Subscription(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for monitoring_subscription in sceptre_user_data.monitoring_subscriptions %}
+{%- set monitoring_subscription_name = monitoring_subscription.name %}
+  {{ monitoring_subscription_name }}:
+    Type: AWS::CloudFront::MonitoringSubscription
+    DeletionPolicy: {{ monitoring_subscription.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ monitoring_subscription.update_replace_policy | default('Delete') }}
+    Properties:
+      DistributionId: {{ monitoring_subscription.distribution_id | trim }}
+      MonitoringSubscription:
+        RealtimeMetricsSubscriptionConfig:
+          RealtimeMetricsSubscriptionStatus: {{ monitoring_subscription.monitoring_subscription.realtime_metrics_subscription_status }}
+{%- endfor %}
+
+Outputs:
+{%- for monitoring_subscription in sceptre_user_data.monitoring_subscriptions %}
+{%- set monitoring_subscription_name = monitoring_subscription.name %}
+  {{ monitoring_subscription_name }}:
+    Description: The unique identifier for {{ monitoring_subscription_name }}
+    Value:
+      Ref: {{ monitoring_subscription_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ monitoring_subscription_name }}"
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::MonitoringSubscription
+Properties:
+  DistributionId: String
+  MonitoringSubscription:
+    RealtimeMetricsSubscriptionConfig:
+      RealtimeMetricsSubscriptionStatus: String
+#}

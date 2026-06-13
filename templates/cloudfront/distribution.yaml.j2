@@ -13,31 +13,50 @@ Resources:
     Properties:
       DistributionConfig:
         Enabled: {{ distribution.distribution_config.enabled }}
-{%- if distribution.distribution_config.aliases is defined %}
+        DefaultCacheBehavior:
+          {{- macro_distribution_cache_behavior.prep(distribution.distribution_config.default_cache_behavior) | indent(width=10, first=false) }}
+{%- if distribution.distribution_config.aliases is defined %}{# BEGIN if distribution.distribution_config.aliases is defined #}
         Aliases:
 {%- for alias in distribution.distribution_config.aliases %}
           - {{ alias }}
 {%- endfor %}
+{%- endif %}{# END if distribution.distribution_config.aliases is defined #}
+{%- if distribution.distribution_config.anycast_ip_list_id is defined %}
+        AnycastIpListId: {{ distribution.distribution_config.anycast_ip_list_id }}
 {%- endif %}
-{%- if distribution.distribution_config.cache_behaviors is defined %}{# BEGIN {%- if distribution.distribution_config.cache_behaviors is defined %} #}
+{%- if distribution.distribution_config.cache_behaviors is defined %}{# BEGIN if distribution.distribution_config.cache_behaviors is defined #}
         CacheBehaviors:
 {%- for cache_behavior in distribution.distribution_config.cache_behaviors %}
           -
             {{- macro_distribution_cache_behavior.prep(cache_behavior) | indent(width=12, first=false) }}
 {%- endfor %}
-{%- endif %}{# END {%- if distribution.distribution_config.cache_behaviors is defined %} #}
-{%- if distribution.distribution_config.cnames is defined %}
+{%- endif %}{# END if distribution.distribution_config.cache_behaviors is defined #}
+{%- if distribution.distribution_config.cache_tag_config is defined %}
+        CacheTagConfig:
+          HeaderName: {{ distribution.distribution_config.cache_tag_config.header_name }}
+{%- endif %}
+{%- if distribution.distribution_config.cnames is defined %}{# BEGIN if distribution.distribution_config.cnames is defined #}
         CNAMEs:
 {%- for cname in distribution.distribution_config.cnames %}
           - {{ cname }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if distribution.distribution_config.cnames is defined #}
 {%- if distribution.distribution_config.comment is defined %}
         Comment: {{ distribution.distribution_config.comment }}
 {%- endif %}
-{%- if distribution.distribution_config.custom_error_response is defined %}
+{%- if distribution.distribution_config.connection_function_association is defined %}
+        ConnectionFunctionAssociation:
+          Id: {{ distribution.distribution_config.connection_function_association.id }}
+{%- endif %}
+{%- if distribution.distribution_config.connection_mode is defined %}
+        ConnectionMode: {{ distribution.distribution_config.connection_mode }}
+{%- endif %}
+{%- if distribution.distribution_config.continuous_deployment_policy_id is defined %}
+        ContinuousDeploymentPolicyId: {{ distribution.distribution_config.continuous_deployment_policy_id }}
+{%- endif %}
+{%- if distribution.distribution_config.custom_error_response is defined %}{# BEGIN if distribution.distribution_config.custom_error_response is defined #}
         CustomErrorResponses:
-{%- for custom_error_response in distribution.distribution_config.custom_error_response %}
+{%- for custom_error_response in distribution.distribution_config.custom_error_response %}{# BEGIN for custom_error_response in distribution.distribution_config.custom_error_response #}
           - ErrorCode: {{ custom_error_response.error_code }}
 {%- if custom_error_response.error_caching_min_ttl is defined %}
             ErrorCachingMinTTL: {{ custom_error_response.error_caching_min_ttl }}
@@ -48,9 +67,9 @@ Resources:
 {%- if custom_error_response.response_page_path is defined %}
             ResponsePagePath: {{ custom_error_response.response_page_path }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if distribution.distribution_config.custom_origin is defined %}
+{%- endfor %}{# END for custom_error_response in distribution.distribution_config.custom_error_response #}
+{%- endif %}{# END if distribution.distribution_config.custom_error_response is defined #}
+{%- if distribution.distribution_config.custom_origin is defined %}{# BEGIN if distribution.distribution_config.custom_origin is defined #}
         CustomOrigin:
           DNSName: {{ distribution.distribution_config.custom_origin.dns_name }}
           OriginProtocolPolicy: {{ distribution.distribution_config.custom_origin.origin_protocol_policy }}
@@ -64,11 +83,7 @@ Resources:
 {%- if distribution.distribution_config.custom_origin.https_port is defined %}
           HTTPSPort: {{ distribution.distribution_config.custom_origin.https_port }}
 {%- endif %}
-{%- endif %}
-{%- if distribution.distribution_config.default_cache_behavior is defined %}
-        DefaultCacheBehavior:
-          {{- macro_distribution_cache_behavior.prep(distribution.distribution_config.default_cache_behavior) | indent(width=10, first=false) }}
-{%- endif %}
+{%- endif %}{# END if distribution.distribution_config.custom_origin is defined #}
 {%- if distribution.distribution_config.default_root_object is defined %}
         DefaultRootObject: {{ distribution.distribution_config.default_root_object }}
 {%- endif %}
@@ -76,24 +91,26 @@ Resources:
         HttpVersion: {{ distribution.distribution_config.http_version }}
 {%- endif %}
 {%- if distribution.distribution_config.ipv6_enabled is defined %}
-        IPV6Enabled: {{ distribution.distribution_config.ipv6_enabled }}
+        IPV6Enabled: {{ distribution.distribution_config.ipv6_enabled | lower }}
 {%- endif %}
-{%- if distribution.distribution_config.logging is defined %}
+{%- if distribution.distribution_config.logging is defined %}{# BEGIN if distribution.distribution_config.logging is defined #}
         Logging:
+{%- if distribution.distribution_config.logging.bucket is defined %}
           Bucket: {{ distribution.distribution_config.logging.bucket }}
+{%- endif %}
 {%- if distribution.distribution_config.logging.include_cookies is defined %}
-          IncludeCookies: {{ distribution.distribution_config.logging.include_cookies }}
+          IncludeCookies: {{ distribution.distribution_config.logging.include_cookies | lower }}
 {%- endif %}
 {%- if distribution.distribution_config.logging.include_cookies is defined %}
           Prefix: {{ distribution.distribution_config.logging.include_cookies }}
 {%- endif %}
-{%- endif %}
-{%- if distribution.distribution_config.origin_groups is defined %}{# BEGIN {%- if distribution.distribution_config.origin_groups is defined %} #}
+{%- endif %}{# END if distribution.distribution_config.logging is defined #}
+{%- if distribution.distribution_config.origin_groups is defined %}{# BEGIN if distribution.distribution_config.origin_groups is defined #}
         OriginGroups:
           Quantity: {{ distribution.distribution_config.origin_groups.quantity }}
-{%- if distribution.distribution_config.origin_groups.items is defined %}
+{%- if distribution.distribution_config.origin_groups.items is defined %}{# BEGIN if distribution.distribution_config.origin_groups.items #}
           Items:
-{%- for item in distribution.distribution_config.origin_groups.items %}
+{%- for item in distribution.distribution_config.origin_groups.items %}{# BEGIN for item in distribution.distribution_config.origin_groups.items #}
             - FailoverCriteria:
                 StatusCodes:
                   Items:
@@ -101,20 +118,24 @@ Resources:
                     - {{ sub_item }}
 {%- endfor %}
                   Quantity: {{ item.failover_criteria.status_codes.quantity }}
-              Id: {{ item.failover_criteria.id }}
+              Id: {{ item.id }}
               Members:
                 Items:
 {%- for sub_item in item.members.items %}
                   - OriginId: {{ sub_item.origin_id | trim }}
 {%- endfor %}
                 Quantity: {{ item.members.quantity }}
-{%- endfor %}
+{%- if item.selection_criteria is defined %}
+              SelectionCriteria: {{ item.selection_criteria }}
 {%- endif %}
-{%- endif %}{# END {%- if distribution.distribution_config.origin_groups is defined %} #}
-{%- if distribution.distribution_config.origins is defined %}{# {%- if distribution.distribution_config.origins is defined %} #}
+{%- endfor %}{# END for item in distribution.distribution_config.origin_groups.items #}
+{%- endif %}{# END if distribution.distribution_config.origin_groups.items #}
+{%- endif %}{# END if distribution.distribution_config.origin_groups is defined #}
+{%- if distribution.distribution_config.origins is defined %}{# BEGIN if distribution.distribution_config.origins is defined #}
         Origins:
-{%- for origin in distribution.distribution_config.origins %}
-          - DomainName: {{ origin.domain_name }}
+{%- for origin in distribution.distribution_config.origins %}{# BEGIN for origin in distribution.distribution_config.origins #}
+          -
+            DomainName: {{ origin.domain_name }}
             Id: {{ origin.id }}
 {%- if origin.connection_attempts is defined %}
             ConnectionAttempts: {{ origin.connection_attempts }}
@@ -122,7 +143,7 @@ Resources:
 {%- if origin.connection_timeout is defined %}
             ConnectionTimeout: {{ origin.connection_timeout }}
 {%- endif %}
-{%- if origin.custom_origin_config is defined %}
+{%- if origin.custom_origin_config is defined %}{# BEGIN if origin.custom_origin_config is defined #}
             CustomOriginConfig:
               OriginProtocolPolicy: {{ origin.custom_origin_config.origin_protocol_policy }}
 {%- if origin.custom_origin_config.http_port is defined %}
@@ -131,8 +152,15 @@ Resources:
 {%- if origin.custom_origin_config.https_port is defined %}
               HTTPSPort: {{ origin.custom_origin_config.https_port }}
 {%- endif %}
+{%- if origin.custom_origin_config.ip_address_type is defined %}
+              IpAddressType: {{ origin.custom_origin_config.ip_address_type }}
+{%- endif %}
 {%- if origin.custom_origin_config.origin_keepalive_timeout is defined %}
               OriginKeepaliveTimeout: {{ origin.custom_origin_config.origin_keepalive_timeout }}
+{%- endif %}
+{%- if origin.custom_origin_config.origin_mtls_config is defined %}
+              OriginMtlsConfig:
+                ClientCertificateArn: {{ origin.custom_origin_config.origin_mtls_config.client_certificate_arn | trim }}
 {%- endif %}
 {%- if origin.custom_origin_config.origin_read_timeout is defined %}
               OriginReadTimeout: {{ origin.custom_origin_config.origin_read_timeout }}
@@ -143,54 +171,104 @@ Resources:
                 - {{ origin_ssl_protocol }}
 {%- endfor %}
 {%- endif %}
+{%- endif %}{# END if origin.custom_origin_config is defined #}
+{%- if origin.origin_access_control_id is defined %}
+            OriginAccessControlId: {{ origin.origin_access_control_id | trim }}
 {%- endif %}
-{%- if origin.origin_custom_headers is defined %}
+{%- if origin.origin_custom_headers is defined %}{# BEGIN if origin.origin_custom_headers is defined #}
             OriginCustomHeaders:
 {%- for custom_header in origin.origin_custom_headers %}
               - HeaderName: {{ custom_header.header_name }}
                 HeaderValue: {{ custom_header.header_value }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if origin.origin_custom_headers is defined #}
 {%- if origin.origin_path is defined %}
             OriginPath: {{ origin.origin_path }}
 {%- endif %}
-{%- if origin.origin_shield is defined %}{## BEGIN {%- if origin.origin_shield is defined %} #}
+{%- if origin.origin_shield is defined %}{## BEGIN if origin.origin_shield is defined #}
             OriginShield:
 {%- if origin.origin_shield.enabled is defined %}
-              Enabled: {{ origin.origin_shield.enabled }}
+              Enabled: {{ origin.origin_shield.enabled | lower }}
 {%- endif %}
 {%- if origin.origin_shield.origin_shield_region is defined %}
               OriginShieldRegion: {{ origin.origin_shield.origin_shield_region }}
 {%- endif %}
-{%- endif %}{## END {%- if origin.origin_shield is defined %} #}
-{%- if origin.s3_origin_config is defined %}
-            S3OriginConfig:
-              OriginAccessIdentity: {{ origin.s3_origin_config.origin_access_identity }}
+{%- endif %}{## END if origin.origin_shield is defined #}
+{%- if origin.response_completion_timeout is defined %}
+            ResponseCompletionTimeout: {{ origin.response_completion_timeout }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}{# END {%- if distribution.distribution_config.origins is defined %} #}
+{%- if origin.s3_origin_config is defined %}{# BEGIN if origin.s3_origin_config is defined #}
+            S3OriginConfig:
+{%- if origin.s3_origin_config.origin_access_identity is defined %}
+              OriginAccessIdentity: {{ origin.s3_origin_config.origin_access_identity | trim }}
+{%- endif %}
+{%- if origin.s3_origin_config.origin_read_timeout is defined %}
+              OriginReadTimeout: {{ origin.s3_origin_config.origin_read_timeout }}
+{%- endif %}
+{%- endif %}{# END if origin.s3_origin_config is defined #}
+{%- if origin.vpc_origin_config is defined %}{# BEGIN if origin.vpc_origin_config is defined #}
+            VpcOriginConfig:
+{%- if origin.vpc_origin_config.origin_keepalive_timeout is defined %}
+              OriginKeepaliveTimeout: {{ origin.vpc_origin_config.origin_keepalive_timeout }}
+{%- endif %}
+{%- if origin.vpc_origin_config.origin_read_timeout is defined %}
+              OriginReadTimeout: {{ origin.vpc_origin_config.origin_read_timeout }}
+{%- endif %}
+{%- if origin.vpc_origin_config.owner_account_id is defined %}
+              OwnerAccountId: {{ origin.vpc_origin_config.owner_account_id | trim }}
+{%- endif %}
+{%- if origin.vpc_origin_config.vpc_origin_id is defined %}
+              VpcOriginId: {{ origin.vpc_origin_config.vpc_origin_id | trim }}
+{%- endif %}
+{%- endif %}{# END if origin.vpc_origin_config is defined #}
+{%- endfor %}{# END for origin in distribution.distribution_config.origins #}
+{%- endif %}{# END if distribution.distribution_config.origins is defined #}
 {%- if distribution.distribution_config.price_class is defined %}
         PriceClass: {{ distribution.distribution_config.price_class }}
 {%- endif %}
-{%- if distribution.distribution_config.restrictions is defined %}
+{%- if distribution.distribution_config.restrictions is defined %}{# BEGIN if distribution.distribution_config.restrictions is defined #}
         Restrictions:
           GeoRestriction:
             RestrictionType: {{ distribution.distribution_config.restrictions.geo_restriction.restriction_type }}
-{%- if distribution.distribution_config.restrictions.geo_restriction.locations is defined %}
+{%- if distribution.distribution_config.restrictions.geo_restriction.locations is defined %}{# BEGIN if distribution.distribution_config.restrictions.geo_restriction.locations is defined #}
             Locations:
 {%- for location in distribution.distribution_config.restrictions.geo_restriction.locations %}
               - {{ location }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}
-{%- if distribution.distribution_config.s3_origin is defined %}
+{%- endif %}{# END if distribution.distribution_config.restrictions.geo_restriction.locations is defined #}
+{%- endif %}{# END if distribution.distribution_config.restrictions is defined #}
+{%- if distribution.distribution_config.s3_origin is defined %}{# BEGIN if distribution.distribution_config.s3_origin is defined #}
         S3Origin:
           DNSName: {{ distribution.distribution_config.s3_origin.dns_name }}
 {%- if distribution.distribution_config.s3_origin.origin_access_identity is defined %}
           OriginAccessIdentity: {{ distribution.distribution_config.s3_origin.origin_access_identity }}
 {%- endif %}
+{%- endif %}{# END if distribution.distribution_config.s3_origin is defined #}
+{%- if distribution.distribution_config.staging is defined %}
+        Staging: {{ distribution.distribution_config.staging | lower }}
 {%- endif %}
-{%- if distribution.distribution_config.viewer_certificate is defined %}{## BEGIN {%- if distribution.distribution_config.viewer_certificate is defined %} #}
+{%- if distribution.distribution_config.tenant_config is defined %}{# BEGIN if distribution.distribution_config.tenant_config is defined #}
+        TenantConfig:
+{%- if distribution.distribution_config.tenant_config.parameter_definitions is defined %}{# BEGIN if distribution.distribution_config.tenant_config.parameter_definitions is defined #}
+          ParameterDefinitions:
+{%- for definition in distribution.distribution_config.tenant_config.parameter_definitions %}{# BEGIN for definition in distribution.distribution_config.tenant_config.parameter_definitions #}
+            -
+              Definition:
+{%- if definition.string_schema is defined %}{# BEGIN if definition.string_schema is defined #}
+                StringSchema:
+{%- if definition.string_schema.comment is defined %}
+                  Comment: {{ definition.string_schema.comment }}
+{%- endif %}
+{%- if definition.string_schema.default_value is defined %}
+                  DefaultValue: {{ definition.string_schema.default_value }}
+{%- endif %}
+                  Required: {{ definition.string_schema.required }}
+{%- endif %}{# END if definition.string_schema is defined #}
+              Name: {{ definition.name }}
+{%- endfor %}{# END for definition in distribution.distribution_config.tenant_config.parameter_definitions #}
+{%- endif %}{# END if distribution.distribution_config.tenant_config.parameter_definitions is defined #}
+{%- endif %}{# END if distribution.distribution_config.tenant_config is defined #}
+{%- if distribution.distribution_config.viewer_certificate is defined %}{## BEGIN if distribution.distribution_config.viewer_certificate is defined #}
         ViewerCertificate:
 {%- if distribution.distribution_config.viewer_certificate.acm_certificate_arn is defined %}
           AcmCertificateArn: {{ distribution.distribution_config.viewer_certificate.acm_certificate_arn | trim }}
@@ -207,7 +285,23 @@ Resources:
 {%- if distribution.distribution_config.viewer_certificate.ssl_support_method is defined %}
           SslSupportMethod: {{ distribution.distribution_config.viewer_certificate.ssl_support_method }}
 {%- endif %}
-{%- endif %}{## END {%- if distribution.distribution_config.viewer_certificate is defined %} #}
+{%- endif %}{## END if distribution.distribution_config.viewer_certificate is defined #}
+{%- if distribution.distribution_config.viewer_certificate.viewer_mtls_config is defined %}{# BEGIN if distribution.distribution_config.viewer_certificate.viewer_mtls_config is defined #}
+        ViewerMtlsConfig:
+{%- if distribution.distribution_config.viewer_certificate.viewer_mtls_config.mode is defined %}
+          Mode: {{ distribution.distribution_config.viewer_certificate.viewer_mtls_config.mode }}
+{%- endif %}
+{%- if distribution.distribution_config.viewer_certificate.viewer_mtls_config.trust_store_config is defined %}{# BEGIN if distribution.distribution_config.viewer_certificate.viewer_mtls_config.trust_store_config is defined #}
+          TrustStoreConfig:
+            TrustStoreId: {{ distribution.distribution_config.viewer_certificate.viewer_mtls_config.trust_store_config.trust_store_id }}
+{%- if distribution.distribution_config.viewer_certificate.viewer_mtls_config.trust_store_config.advertise_trust_store_ca_names is defined %}
+            AdvertiseTrustStoreCaNames: {{ distribution.distribution_config.viewer_certificate.viewer_mtls_config.trust_store_config.advertise_trust_store_ca_names }}
+{%- endif %}
+{%- if distribution.distribution_config.viewer_certificate.viewer_mtls_config.trust_store_config.ignore_certificate_expiry is defined %}
+            IgnoreCertificateExpiry: {{ distribution.distribution_config.viewer_certificate.viewer_mtls_config.trust_store_config.ignore_certificate_expiry }}
+{%- endif %}
+{%- endif %}{# END if distribution.distribution_config.viewer_certificate.viewer_mtls_config.trust_store_config is defined #}
+{%- endif %}{# END if distribution.distribution_config.viewer_certificate.viewer_mtls_config is defined #}
 {%- if distribution.distribution_config.web_acl_id is defined %}
         WebACLId: {{ distribution.distribution_config.web_acl_id | trim }}
 {%- endif %}
@@ -241,4 +335,222 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ distribution_name }}-DomainName"
-{%- endfor %}
+  {{ distribution_name }}Id:
+    Description: The CloudFront distribution ID for {{ distribution_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ distribution_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ distribution_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-06-11:
+Type: AWS::CloudFront::Distribution
+Properties:
+  DistributionConfig:
+    Aliases:
+      - String
+    AnycastIpListId: String
+    CacheBehaviors:
+      -
+        AllowedMethods:
+          - String
+        CachedMethods:
+          - String
+        CachePolicyId: String
+        Compress: Boolean
+        DefaultTTL: Number
+        FieldLevelEncryptionId: String
+        ForwardedValues:
+          Cookies:
+            Forward: String
+            WhitelistedNames:
+              - String
+          Headers:
+            - String
+          QueryString: Boolean
+          QueryStringCacheKeys:
+            - String
+        FunctionAssociations:
+          -
+            EventType: String
+            FunctionARN: String
+        GrpcConfig:
+          Enabled: Boolean
+        LambdaFunctionAssociations:
+          -
+            EventType: String
+            IncludeBody: Boolean
+            LambdaFunctionARN: String
+        MaxTTL: Number
+        MinTTL: Number
+        OriginRequestPolicyId: String
+        PathPattern: String
+        RealtimeLogConfigArn: String
+        ResponseHeadersPolicyId: String
+        SmoothStreaming: Boolean
+        TargetOriginId: String
+        TrustedKeyGroups:
+          - String
+        TrustedSigners:
+          - String
+        ViewerProtocolPolicy: String
+    CacheTagConfig:
+      HeaderName: String
+    CNAMEs:
+      - String
+    Comment: String
+    ConnectionFunctionAssociation:
+      Id: String
+    ConnectionMode: String
+    ContinuousDeploymentPolicyId: String
+    CustomErrorResponses:
+      -
+        ErrorCachingMinTTL: Number
+        ErrorCode: Integer
+        ResponseCode: Integer
+        ResponsePagePath: String
+    CustomOrigin:
+      DNSName: String
+      HTTPPort: Integer
+      HTTPSPort: Integer
+      OriginProtocolPolicy: String
+      OriginSSLProtocols:
+        - String
+    DefaultCacheBehavior:
+      AllowedMethods:
+        - String
+      CachedMethods:
+        - String
+      CachePolicyId: String
+      Compress: Boolean
+      DefaultTTL: Number
+      FieldLevelEncryptionId: String
+      ForwardedValues:
+        Cookies:
+          Forward: String
+          WhitelistedNames:
+            - String
+        Headers:
+          - String
+        QueryString: Boolean
+        QueryStringCacheKeys:
+          - String
+      FunctionAssociations:
+        -
+          EventType: String
+          FunctionARN: String
+      GrpcConfig:
+        GrpcConfig
+      LambdaFunctionAssociations:
+        -
+          EventType: String
+          IncludeBody: Boolean
+          LambdaFunctionARN: String
+      MaxTTL: Number
+      MinTTL: Number
+      OriginRequestPolicyId: String
+      RealtimeLogConfigArn: String
+      ResponseHeadersPolicyId: String
+      SmoothStreaming: Boolean
+      TargetOriginId: String
+      TrustedKeyGroups:
+        - String
+      TrustedSigners:
+        - String
+      ViewerProtocolPolicy: String
+    DefaultRootObject: String
+    Enabled: Boolean
+    HttpVersion: String
+    IPV6Enabled: Boolean
+    Logging:
+      Bucket: String
+      IncludeCookies: Boolean
+      Prefix: String
+    OriginGroups:
+      Items:
+        -
+          FailoverCriteria:
+            StatusCodes:
+              Items:
+                - Integer
+              Quantity: Integer
+          Id: String
+          Members:
+            Items:
+              - OriginId: String
+            Quantity: Integer
+          SelectionCriteria: String
+      Quantity: Integer
+    Origins:
+      -
+        ConnectionAttempts: Integer
+        ConnectionTimeout: Integer
+        CustomOriginConfig:
+          HTTPPort: Integer
+          HTTPSPort: Integer
+          IpAddressType: String
+          OriginKeepaliveTimeout: Integer
+          OriginMtlsConfig:
+            ClientCertificateArn: String
+          OriginProtocolPolicy: String
+          OriginReadTimeout: Integer
+          OriginSSLProtocols:
+            - String
+        DomainName: String
+        Id: String
+        OriginAccessControlId: String
+        OriginCustomHeaders:
+          -
+            HeaderName: String
+            HeaderValue: String
+        OriginPath: String
+        OriginShield:
+          Enabled: Boolean
+          OriginShieldRegion: String
+        ResponseCompletionTimeout: Integer
+        S3OriginConfig:
+          OriginAccessIdentity: String
+          OriginReadTimeout: Integer
+        VpcOriginConfig:
+          OriginKeepaliveTimeout: Integer
+          OriginReadTimeout: Integer
+          OwnerAccountId: String
+          VpcOriginId: String
+    PriceClass: String
+    Restrictions:
+      GeoRestriction:
+        Locations:
+          - String
+        RestrictionType: String
+    S3Origin:
+      DNSName: String
+      OriginAccessIdentity: String
+    Staging: Boolean
+    TenantConfig:
+      ParameterDefinitions:
+        -
+          Definition:
+            StringSchema:
+              Comment: String
+              DefaultValue: String
+              Required: Boolean
+          Name: String
+    ViewerCertificate:
+      AcmCertificateArn: String
+      CloudFrontDefaultCertificate: Boolean
+      IamCertificateId: String
+      MinimumProtocolVersion: String
+      SslSupportMethod: String
+    ViewerMtlsConfig:
+      Mode: String
+      TrustStoreConfig:
+        AdvertiseTrustStoreCaNames: Boolean
+        IgnoreCertificateExpiry: Boolean
+        TrustStoreId: String
+    WebACLId: String
+  Tags:
+    - Key: String
+      Value: String
+#}

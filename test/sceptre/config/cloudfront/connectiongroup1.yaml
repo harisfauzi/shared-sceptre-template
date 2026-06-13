@@ -1,0 +1,38 @@
+---
+template:
+  type: file
+  path: cloudfront/connection_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront Connection Group(s) for Edge Network Management
+  connection_groups:
+    - name: PrimaryConnectionGroup
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      connection_group_name: "primary-edge-connections"
+      anycast_ip_list_id: "12a3b456-7890-1c2d-e34f-567g890h1i23"
+      enabled: true
+      ipv6_enabled: true
+      tags:
+        Environment: "Production"
+        Purpose: "Primary Edge Connectivity"
+        Team: "CloudFront Infrastructure"
+
+    - name: SecondaryConnectionGroup
+      deletion_policy: Delete
+      connection_group_name: "secondary-edge-connections"
+      enabled: true
+      ipv6_enabled: false
+      tags:
+        Environment: "Staging"
+        Purpose: "Secondary Edge Connectivity"
+
+    - name: TertiaryConnectionGroup
+      deletion_policy: Retain
+      connection_group_name: "tertiary-edge-connections"
+      enabled: false
+
+stack_tags:
+  Test: cloudfront-connection-group

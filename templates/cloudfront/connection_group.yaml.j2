@@ -1,0 +1,84 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFront Connection Group(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for connection_group in sceptre_user_data.connection_groups %}
+{%- set connection_group_name = connection_group.name %}
+  {{ connection_group_name }}:
+    Type: AWS::CloudFront::ConnectionGroup
+    DeletionPolicy: {{ connection_group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ connection_group.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ connection_group.connection_group_name }}
+{%- if connection_group.anycast_ip_list_id is defined %}
+      AnycastIpListId: {{ connection_group.anycast_ip_list_id | trim }}
+{%- endif %}
+{%- if connection_group.enabled is defined %}
+      Enabled: {{ connection_group.enabled | lower }}
+{%- endif %}
+{%- if connection_group.ipv6_enabled is defined %}
+      Ipv6Enabled: {{ connection_group.ipv6_enabled | lower }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if connection_group.tags is defined %}
+{%- for key,value in connection_group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for connection_group in sceptre_user_data.connection_groups %}
+{%- set connection_group_name = connection_group.name %}
+  {{ connection_group_name }}Arn:
+    Description: The connection group ARN for {{ connection_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_group_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_group_name }}-Arn"
+  {{ connection_group_name }}CreatedTime:
+    Description: The date and time when the connection group was created for {{ connection_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_group_name }}
+        - CreatedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_group_name }}-CreatedTime"
+  {{ connection_group_name }}Id:
+    Description: The identifier of the connection group for {{ connection_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_group_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_group_name }}-Id"
+  {{ connection_group_name }}IsDefault:
+    Description: Whether the connection group is the default connection group for the distribution tenants for {{ connection_group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_group_name }}
+        - IsDefault
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_group_name }}-IsDefault"
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::ConnectionGroup
+Properties:
+  AnycastIpListId: String
+  Enabled: Boolean
+  Ipv6Enabled: Boolean
+  Name: String
+  Tags:
+    - Key: String
+      Value: String
+#}

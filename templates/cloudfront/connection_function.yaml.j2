@@ -1,0 +1,84 @@
+---
+Description: {{sceptre_user_data.description|default('CloudFront Connection Function(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for connection_function in sceptre_user_data.connection_functions %}
+{%- set connection_function_name = connection_function.name %}
+  {{ connection_function_name }}:
+    Type: AWS::CloudFront::ConnectionFunction
+    DeletionPolicy: {{ connection_function.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ connection_function.update_replace_policy | default('Delete') }}
+    Properties:
+      ConnectionFunctionCode: |-
+        {{ connection_function.connection_function_code | indent(width=8, first=false) }}
+      ConnectionFunctionConfig:
+        Comment: {{ connection_function.connection_function_config.comment }}
+        Runtime: {{ connection_function.connection_function_config.runtime }}
+{%- if connection_function.connection_function_config.key_value_store_associations is defined %}
+        KeyValueStoreAssociations:
+{%- for association in connection_function.connection_function_config.key_value_store_associations %}
+          - KeyValueStoreARN: {{ association.key_value_store_arn }}
+{%- endfor %}
+{%- endif %}
+      Name: {{ connection_function.connection_function_name }}
+{%- if connection_function.auto_publish is defined %}
+      AutoPublish: {{ connection_function.auto_publish | lower }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if connection_function.tags is defined %}
+{%- for key,value in connection_function.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for connection_function in sceptre_user_data.connection_functions %}
+{%- set connection_function_name = connection_function.name %}
+  {{ connection_function_name }}ConnectionFunctionArn:
+    Description: The connection function ARN for {{ connection_function_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_function_name }}
+        - ConnectionFunctionArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_function_name }}-ConnectionFunctionArn"
+  {{ connection_function_name }}CreatedTime:
+    Description: The date and time when the connection function was created for {{ connection_function_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_function_name }}
+        - CreatedTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_function_name }}-CreatedTime"
+  {{ connection_function_name }}Id:
+    Description: The identifier of the connection function for {{ connection_function_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connection_function_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connection_function_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::ConnectionFunction
+Properties:
+  AutoPublish: Boolean
+  ConnectionFunctionCode: String
+  ConnectionFunctionConfig:
+    Comment: String
+    KeyValueStoreAssociations:
+      - KeyValueStoreARN: String
+    Runtime: String
+  Name: String
+  Tags:
+    - Key: String
+      Value: String
+#}

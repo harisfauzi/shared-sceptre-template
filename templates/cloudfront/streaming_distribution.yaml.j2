@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFront Streaming Distr
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for streaming_distribution in sceptre_user_data.streaming_distributions %}
 {%- set streaming_distribution_name = streaming_distribution.name %}
   {{ streaming_distribution_name }}:
@@ -13,12 +12,12 @@ Resources:
     Properties:
       StreamingDistributionConfig:
         Comment: {{ streaming_distribution.streaming_distribution_config.comment | default('') }}
-        Enabled: {{ streaming_distribution.streaming_distribution_config.enabled }}
+        Enabled: {{ streaming_distribution.streaming_distribution_config.enabled | lower }}
         S3Origin:
           DomainName: {{ streaming_distribution.streaming_distribution_config.s3_origin.domain_name }}
           OriginAccessIdentity: {{ streaming_distribution.streaming_distribution_config.s3_origin.origin_access_identity }}
         TrustedSigners:
-          Enabled: {{ streaming_distribution.streaming_distribution_config.trusted_signers.enabled }}
+          Enabled: {{ streaming_distribution.streaming_distribution_config.trusted_signers.enabled | lower }}
 {%- if streaming_distribution.streaming_distribution_config.trusted_signers.aws_account_numbers is defined %}
           AwsAccountNumbers:
 {%- for aws_account_number in streaming_distribution.streaming_distribution_config.trusted_signers.aws_account_numbers %}
@@ -34,7 +33,7 @@ Resources:
 {%- if streaming_distribution.streaming_distribution_config.logging is defined %}
         Logging:
           Bucket: {{ streaming_distribution.streaming_distribution_config.logging.bucket }}
-          Enabled: {{ streaming_distribution.streaming_distribution_config.logging.enabled }}
+          Enabled: {{ streaming_distribution.streaming_distribution_config.logging.enabled | lower }}
           Prefix: {{ streaming_distribution.streaming_distribution_config.logging.prefix }}
 {%- endif %}
 {%- if streaming_distribution.streaming_distribution_config.price_class is defined %}
@@ -49,11 +48,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for streaming_distribution in sceptre_user_data.streaming_distributions %}
 {%- set streaming_distribution_name = streaming_distribution.name %}
   {{ streaming_distribution_name }}:
@@ -63,7 +60,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ streaming_distribution_name }}"
-
   {{ streaming_distribution_name }}DomainName:
     Description: The domain name of the resource for {{ streaming_distribution_name }}
     Value:
@@ -73,5 +69,28 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ streaming_distribution_name }}-DomainName"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-12:
+Type: AWS::CloudFront::StreamingDistribution
+Properties:
+  StreamingDistributionConfig:
+    Aliases:
+      - String
+    Comment: String
+    Enabled: Boolean
+    Logging:
+      Bucket: String
+      Enabled: Boolean
+      Prefix: String
+    PriceClass: String
+    S3Origin:
+      DomainName: String
+      OriginAccessIdentity: String
+    TrustedSigners:
+      AwsAccountNumbers:
+        - String
+      Enabled: Boolean
+  Tags:
+    - Key: String
+      Value: String
+#}

@@ -1,0 +1,45 @@
+---
+template:
+  type: file
+  path: cloudfront/vpc_origin.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront VPC Origin(s) for Private VPC Endpoint Access
+  vpc_origins:
+    - name: PrimaryVpcOrigin
+      vpc_origin_endpoint_config:
+        arn: "arn:aws:ec2:us-east-1:123456789012:vpc-endpoint/vpce-0123456789abcdef0 "
+        name: "primary-vpc-endpoint"
+        http_port: 80
+        https_port: 443
+        origin_protocol_policy: "https-only"
+        origin_ssl_protocols:
+          - "TLSv1.2"
+          - "TLSv1.3"
+      tags:
+        Environment: "Production"
+        Purpose: "Primary VPC Endpoint"
+        Team: "Platform"
+
+    - name: SecondaryVpcOrigin
+      vpc_origin_endpoint_config:
+        arn: "arn:aws:ec2:us-east-1:123456789012:vpc-endpoint/vpce-9876543210fedcba0 "
+        name: "secondary-vpc-endpoint"
+        origin_protocol_policy: "http-only"
+      tags:
+        Environment: "Staging"
+        Purpose: "Secondary VPC Endpoint"
+
+    - name: CustomPortVpcOrigin
+      vpc_origin_endpoint_config:
+        arn: "arn:aws:ec2:us-east-1:123456789012:vpc-endpoint/vpce-1111222233334444 "
+        name: "custom-port-vpc-endpoint"
+        http_port: 8080
+        https_port: 8443
+        origin_ssl_protocols:
+          - "TLSv1.3"
+
+stack_tags:
+  Test: cloudfront-vpc-origin

@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('CloudFront CloudFrontOriginAccessIdentity(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('CloudFront Cloud Front Origin Access Identity(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for cloud_front_origin_access_identity in sceptre_user_data.cloud_front_origin_access_identitys %}
 {%- set cloud_front_origin_access_identity_name = cloud_front_origin_access_identity.name %}
   {{ cloud_front_origin_access_identity_name }}:
@@ -13,11 +12,9 @@ Resources:
     Properties:
       CloudFrontOriginAccessIdentityConfig:
         Comment: {{ cloud_front_origin_access_identity.cloud_front_origin_access_identity.comment }}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for cloud_front_origin_access_identity in sceptre_user_data.cloud_front_origin_access_identitys %}
 {%- set cloud_front_origin_access_identity_name = cloud_front_origin_access_identity.name %}
   {{ cloud_front_origin_access_identity_name }}:
@@ -27,7 +24,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cloud_front_origin_access_identity_name }}"
-
   {{ cloud_front_origin_access_identity_name }}S3OriginConfigId:
     Description: The id in the format 'origin-access-identity/cloudfront/ID-of-origin-access-identity' for {{ cloud_front_origin_access_identity_name }}
     Value:
@@ -35,7 +31,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cloud_front_origin_access_identity_name }}-S3OriginConfigId"
-
   {{ cloud_front_origin_access_identity_name }}S3CanonicalUserId:
     Description: The Amazon S3 canonical user ID for the origin access identity for {{ cloud_front_origin_access_identity_name }}
     Value:
@@ -45,5 +40,10 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cloud_front_origin_access_identity_name }}-S3CanonicalUserId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-11:
+Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+Properties:
+  CloudFrontOriginAccessIdentityConfig:
+    Comment: String
+#}

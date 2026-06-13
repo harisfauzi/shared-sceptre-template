@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('CloudFront Function(s) for
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for function in sceptre_user_data.functions %}
 {%- set function_name = function.name %}
   {{ function_name }}:
@@ -13,22 +12,41 @@ Resources:
     Properties:
       Name: {{ function.function_name }}
 {%- if function.auto_publish is defined %}
-      AutoPublish: {{ function.auto_publish }}
+      AutoPublish: {{ function.auto_publish | lower }}
 {%- endif %}
 {%- if function.function_code is defined %}
-      FunctionCode: {{ function.function_code }}
+      FunctionCode: |-
+        {{ function.function_code | indent(width=8, first=false) }}
 {%- endif %}
-{%- if function.function_config is defined %}
+{%- if function.function_config is defined %}{# BEGIN if function.function_config is defined #}
       FunctionConfig:
         Comment: {{ function.function_config.comment }}
         Runtime: {{ function.function_config.runtime }}
+{%- if function.function_config.key_value_store_associations is defined %}{# BEGIN if function.function_config.key_value_store_associations is defined #}
+        KeyValueStoreAssociations:
+{%- for association in function.function_config.key_value_store_associations %}
+          - KeyValueStoreARN: {{ association.key_value_store_arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if function.function_config.key_value_store_associations is defined #}
+{%- endif %}{# END if function.function_config is defined #}
+{%- if function.function_metadata is defined %}
+      FunctionMetadata:
+        FunctionARN: {{ function.function_metadata.function_arn | trim }}
 {%- endif %}
-
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if function.tags is defined %}
+{%- for key,value in function.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for function in sceptre_user_data.functions %}
+{%- set function_name = function.name %}
   {{ function_name }}FunctionARN:
     Description: The ARN of the function for {{ function_name }}
     Value:
@@ -38,5 +56,21 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ function_name }}-FunctionARN"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-11:
+Type: AWS::CloudFront::Function
+Properties:
+  AutoPublish: Boolean
+  FunctionCode: String
+  FunctionConfig:
+    Comment: String
+    KeyValueStoreAssociations:
+      - KeyValueStoreARN: String
+    Runtime: String
+  FunctionMetadata:
+    FunctionARN: String
+  Name: String
+  Tags:
+    - Key: String
+      Value: String
+#}

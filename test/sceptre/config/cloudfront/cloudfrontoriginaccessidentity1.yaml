@@ -1,0 +1,32 @@
+---
+template:
+  type: file
+  path: cloudfront/cloud_front_origin_access_identity.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: CloudFront Origin Access Identities
+  cloud_front_origin_access_identitys:
+    - name: BasicOriginAccessIdentity
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      cloud_front_origin_access_identity:
+        comment: "Basic OAI for S3 bucket access"
+
+    - name: ProductionOriginAccessIdentity
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      cloud_front_origin_access_identity:
+        comment: "Production OAI for main S3 bucket with restricted CloudFront access"
+
+    - name: DevelopmentOriginAccessIdentity
+      cloud_front_origin_access_identity:
+        comment: "Development OAI for development S3 bucket"
+
+    - name: ApiOriginAccessIdentity
+      cloud_front_origin_access_identity:
+        comment: "OAI for API content distribution via CloudFront"
+
+stack_tags:
+  Test: cloudfront-origin-access-identity
