@@ -1,0 +1,39 @@
+---
+Description: {{sceptre_user_data.description|default('SNS Topicy Inline Policy(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for topic_inline_policy in sceptre_user_data.topic_policies %}
+{%- set topic_inline_policy_name = topic_inline_policy.name %}
+  {{ topic_inline_policy_name }}:
+    Type: AWS::SNS::TopicInlinePolicy
+    DeletionPolicy: {{ topic_inline_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ topic_inline_policy.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if topic_inline_policy.policy_document_json is defined %}
+      PolicyDocument: |-
+        {{ topic_inline_policy.policy_document_json | indent(width=8, first=false) }}
+{%- else %}
+      PolicyDocument:
+        {{ topic_inline_policy.policy_document | indent(width=8, first=false) }}
+{%- endif %}
+      TopicArn: {{ topic_inline_policy.topic_arn | trim }}
+{%- endfor %}
+
+Outputs:
+{%- for topic_inline_policy in sceptre_user_data.topic_policies %}
+{%- set topic_inline_policy_name = topic_inline_policy.name %}
+  {{ topic_inline_policy_name }}:
+    Description: The topic ARN for {{ topic_inline_policy_name }}
+    Value:
+      Ref: {{ topic_inline_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ topic_inline_policy_name }}"
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::SNS::TopicInlinePolicy
+Properties:
+  PolicyDocument: Json
+  TopicArn: String
+#}

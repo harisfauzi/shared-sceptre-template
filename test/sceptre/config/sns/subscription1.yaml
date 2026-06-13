@@ -1,0 +1,58 @@
+---
+template:
+  type: file
+  path: sns/subscription.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SNS Subscription(s) for testing purposes"
+  subscriptions:
+    - name: HttpsEndpointSubscription
+      protocol: https
+      topic_arn: "arn:aws:sns:us-east-1:123456789012:notification-topic"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      endpoint: "https://example.com/webhook"
+      raw_message_delivery: true
+
+    - name: EmailSubscription
+      protocol: email
+      topic_arn: "arn:aws:sns:us-east-1:123456789012:notification-topic"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      endpoint: "admin@example.com"
+      filter_policy_json: |-
+        {
+          "event_type": ["order", "payment"],
+          "priority": ["high", "critical"]
+        }
+
+    - name: LambdaFunctionSubscription
+      protocol: lambda
+      topic_arn: "arn:aws:sns:us-east-1:123456789012:notification-topic"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      endpoint: "arn:aws:lambda:us-east-1:123456789012:function:ProcessNotification"
+      raw_message_delivery: false
+      filter_policy_json: |-
+        {
+          "event_type": ["order"],
+          "priority": ["high"]
+        }
+
+    - name: SqsQueueSubscription
+      protocol: sqs
+      topic_arn: "arn:aws:sns:us-east-1:123456789012:notification-topic"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      endpoint: "arn:aws:sqs:us-east-1:123456789012:process-queue"
+      redrive_policy_json: |-
+        {
+          "deadLetterTargetArn": "arn:aws:sqs:us-east-1:123456789012:dlq"
+        }
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: sns-subscription

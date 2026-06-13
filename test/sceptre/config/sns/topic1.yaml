@@ -1,0 +1,79 @@
+---
+template:
+  type: file
+  path: sns/topic.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SNS Topic(s) for testing purposes"
+  topics:
+    - name: StandardNotificationTopic
+      topic_name: standard-notification-topic
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      display_name: "Standard Notification Topic"
+      tags:
+        Environment: Production
+        Application: Notifications
+        Type: Standard
+
+    - name: EncryptedTopic
+      topic_name: encrypted-notification-topic
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      display_name: "Encrypted Notification Topic"
+      kms_master_key_id: "alias/sns-default-key"
+      tags:
+        Environment: Production
+        Encryption: KMS
+        Compliance: HIPAA
+
+    - name: FifoTopic
+      topic_name: order-processing-topic.fifo
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      fifo_topic: true
+      content_based_deduplication: true
+      fifo_throughput_scope: PerMessageGroupId
+      display_name: "FIFO Order Processing Topic"
+      tags:
+        Environment: Production
+        Application: OrderProcessing
+        Type: FIFO
+
+    - name: TopicWithDeliveryLogging
+      topic_name: delivery-logging-topic
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      display_name: "Topic with Delivery Status Logging"
+      delivery_status_logging:
+        - protocol: http
+          success_feedback_role_arn: "arn:aws:iam::123456789012:role/SNSSuccessRole"
+          failure_feedback_role_arn: "arn:aws:iam::123456789012:role/SNSFailureRole"
+          success_feedback_sample_rate: "50"
+        - protocol: sqs
+          success_feedback_role_arn: "arn:aws:iam::123456789012:role/SNSSuccessRole"
+          failure_feedback_role_arn: "arn:aws:iam::123456789012:role/SNSFailureRole"
+      tags:
+        Environment: Production
+        Feature: DeliveryLogging
+
+    - name: TopicWithSubscriptions
+      topic_name: pre-configured-subscriptions
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      display_name: "Topic with Pre-configured Subscriptions"
+      subscription:
+        - protocol: email
+          endpoint: "alerts@example.com"
+        - protocol: sqs
+          endpoint: "arn:aws:sqs:us-east-1:123456789012:alert-queue"
+      tags:
+        Environment: Production
+        Type: WithSubscriptions
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: sns-topic

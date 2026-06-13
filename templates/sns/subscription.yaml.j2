@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('SNS Subscription(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for subscription in sceptre_user_data.subscriptions %}
 {%- set subscription_name = subscription.name %}
   {{ subscription_name }}:
@@ -12,29 +11,75 @@ Resources:
     UpdateReplacePolicy: {{ subscription.update_replace_policy | default('Delete') }}
     Properties:
       Protocol: {{ subscription.protocol }}
-      TopicArn: {{ subscription.topic_arn }}
+      TopicArn: {{ subscription.topic_arn | trim }}
 {%- if subscription.delivery_policy is defined %}
       DeliveryPolicy:
-{{ subscription.delivery_policy | indent(width=8, first=true) }}
+        {{ subscription.delivery_policy | indent(width=8, first=false) }}
+{%- elif subscription.delivery_policy_json is defined %}
+      DeliveryPolicy: |-
+        {{ subscription.delivery_policy_json | indent(width=8, first=false) }}
 {%- endif %}
 {%- if subscription.endpoint is defined %}
       Endpoint: {{ subscription.endpoint }}
 {%- endif %}
 {%- if subscription.filter_policy is defined %}
       FilterPolicy:
-{{ subscription.filter_policy | indent(width=8, first=true) }}
+        {{ subscription.filter_policy | indent(width=8, first=false) }}
+{%- elif subscription.filter_policy_json is defined %}
+      FilterPolicy: |-
+        {{ subscription.filter_policy_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if subscription.filter_policy_scope is defined %}
+      FilterPolicyScope: {{ subscription.filter_policy_scope }}
 {%- endif %}
 {%- if subscription.raw_message_delivery is defined %}
-      RawMessageDelivery: {{ subscription.raw_message_delivery }}
+      RawMessageDelivery: {{ subscription.raw_message_delivery | lower }}
 {%- endif %}
 {%- if subscription.redrive_policy is defined %}
       RedrivePolicy:
-{{ subscription.redrive_policy | indent(width=8, first=true) }}
+        {{ subscription.redrive_policy | indent(width=8, first=false) }}
+{%- elif subscription.redrive_policy_json is defined %}
+      RedrivePolicy: |-
+        {{ subscription.redrive_policy_json | indent(width=8, first=false) }}
 {%- endif %}
 {%- if subscription.region is defined %}
       Region: {{ subscription.region }}
 {%- endif %}
+{%- if subscription.replay_policy is defined %}
+      ReplayPolicy:
+        {{ subscription.replay_policy | indent(width=8, first=false) }}
+{%- elif subscription.replay_policy_json is defined %}
+      ReplayPolicy: |-
+        {{ subscription.replay_policy_json | indent(width=8, first=false) }}
+{%- endif %}
 {%- if subscription.subscription_role_arn is defined %}
-      SubscriptionRoleArn: {{ subscription.subscription_role_arn }}
+      SubscriptionRoleArn: {{ subscription.subscription_role_arn | trim }}
 {%- endif %}
 {%- endfor %}
+
+Outputs:
+{%- for subscription in sceptre_user_data.subscriptions %}
+{%- set subscription_name = subscription.name %}
+  {{ subscription_name }}:
+    Description: ARN for {{ subscription_name }}
+    Value:
+      Ref: {{ subscription_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ subscription_name }}"
+{%- endfor %}{#
+# Supported structure as of 2026-06-13:
+Type: AWS::SNS::Subscription
+Properties:
+  DeliveryPolicy: Json
+  Endpoint: String
+  FilterPolicy: Json
+  FilterPolicyScope: String
+  Protocol: String
+  RawMessageDelivery: Boolean
+  RedrivePolicy: Json
+  Region: String
+  ReplayPolicy: Json
+  SubscriptionRoleArn: String
+  TopicArn: String
+#}
