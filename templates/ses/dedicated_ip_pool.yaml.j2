@@ -1,0 +1,49 @@
+---
+Description: {{sceptre_user_data.description|default('SES Dedicated IP Pool(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for dedicated_ip_pool in sceptre_user_data.dedicated_ip_pools %}
+{%- set dedicated_ip_pool_name = dedicated_ip_pool.name %}
+  {{ dedicated_ip_pool_name }}:
+    Type: AWS::SES::DedicatedIpPool
+    DeletionPolicy: {{ dedicated_ip_pool.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ dedicated_ip_pool.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if dedicated_ip_pool.pool_name is defined %}
+      PoolName: {{ dedicated_ip_pool.pool_name }}
+{%- endif %}
+{%- if dedicated_ip_pool.scaling_mode is defined %}
+      ScalingMode: {{ dedicated_ip_pool.scaling_mode }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if dedicated_ip_pool.tags is defined %}
+{%- for key,value in dedicated_ip_pool.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for dedicated_ip_pool in sceptre_user_data.dedicated_ip_pools %}
+{%- set dedicated_ip_pool_name = dedicated_ip_pool.name %}
+  {{ dedicated_ip_pool_name }}:
+    Description: Dedicated IP Pool name for {{ dedicated_ip_pool_name }}
+    Value:
+      Ref: {{ dedicated_ip_pool_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ dedicated_ip_pool_name }}"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::DedicatedIpPool
+Properties:
+  PoolName: String
+  ScalingMode: String
+  Tags:
+    - Key: String
+      Value: String
+#}

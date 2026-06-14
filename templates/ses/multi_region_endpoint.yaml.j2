@@ -1,0 +1,41 @@
+---
+Description: {{sceptre_user_data.description|default('SES Multi Region Endpoint(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for multi_region_endpoint in sceptre_user_data.multi_region_endpoints %}
+{%- set multi_region_endpoint_name = multi_region_endpoint.name %}
+  {{ multi_region_endpoint_name }}:
+    Type: AWS::SES::MultiRegionEndpoint
+    DeletionPolicy: {{ multi_region_endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ multi_region_endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      Details:
+        RouteDetails:
+{%- for route_detail in multi_region_endpoint.details.route_details %}
+          -
+            Region: {{ route_detail.region }}
+{%- endfor %}
+      EndpointName: {{ multi_region_endpoint.endpoint_name }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if multi_region_endpoint.tags is defined %}
+{%- for key,value in multi_region_endpoint.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::MultiRegionEndpoint
+Properties:
+  Details:
+    RouteDetails:
+      -
+        Region: String
+  EndpointName: String
+  Tags:
+    - Key: String
+      Value: String
+#}

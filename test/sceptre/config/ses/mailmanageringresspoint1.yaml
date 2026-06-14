@@ -1,0 +1,100 @@
+---
+template:
+  type: file
+  path: ses/mail_manager_ingress_point.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Mail Manager Ingress Point(s) for testing purposes"
+  mail_manager_ingress_points:
+    - name: SmtpIngressPoint
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      rule_set_id: "ruleset-0123456789abcdef0"
+      traffic_policy_id: "trafficpolicy-0123456789abcdef0"
+      type: "SMTP"
+      ingress_point_name: "smtp-ingress"
+      ingress_point_configuration:
+        tls_auth_configuration:
+          trust_store:
+            ca_content: |-
+              -----BEGIN CERTIFICATE-----
+              MIIDXTCCAkWgAwIBAgIJAKx0pefZ1f4JMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
+              BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
+              aWRnaXRzIFB0eSBMdGQwHhcNMjQwMTAxMDAwMDAwWhcNMjUwMTAxMDAwMDAwWjBF
+              MQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50
+              ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+              CgKCAQEA1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUV
+              WXYZabcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ
+              -----END CERTIFICATE-----
+            kms_key_arn: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+      status_to_update: "ACTIVE"
+      tls_policy: "Require"
+      tags:
+        Application: "EmailIngressManagement"
+        Type: "SMTP"
+        Environment: "Production"
+
+    - name: HttpIngressPoint
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      rule_set_id: "ruleset-0123456789abcdef1"
+      traffic_policy_id: "trafficpolicy-0123456789abcdef1"
+      type: "HTTP"
+      ingress_point_name: "http-ingress"
+      status_to_update: "ACTIVE"
+      tags:
+        Application: "EmailIngressManagement"
+        Type: "HTTP"
+        Environment: "Production"
+
+    - name: SecureSmtpIngressPoint
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      rule_set_id: "ruleset-0123456789abcdef2"
+      traffic_policy_id: "trafficpolicy-0123456789abcdef2"
+      type: "SMTP"
+      ingress_point_name: "secure-smtp-ingress"
+      ingress_point_configuration:
+        tls_auth_configuration:
+          trust_store:
+            ca_content: |-
+              -----BEGIN CERTIFICATE-----
+              MIIDXTCCAkWgAwIBAgIJAKx0pefZ1f4JMA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
+              BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
+              aWRnaXRzIFB0eSBMdGQwHhcNMjQwMTAxMDAwMDAwWhcNMjUwMTAxMDAwMDAwWjBF
+              MQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50
+              ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+              CgKCAQEA1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUV
+              -----END CERTIFICATE-----
+            crl_content: |-
+              -----BEGIN X509 CRL-----
+              MIICljCCAX4CCQDM5K8gVx3AjTANBgkqhkiG9w0BAQsFADBFMQswCQYDVQQGEwJB
+              VTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50ZXJuZXQgV2lkZ2l0
+              -----END X509 CRL-----
+        secret_arn: "arn:aws:secretsmanager:us-east-1:123456789012:secret:smtp-auth-secret-abcdef"
+      tls_policy: "Require"
+      tags:
+        Application: "EmailIngressManagement"
+        Type: "SMTP"
+        Security: "Enhanced"
+
+    - name: WebhookIngressPoint
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      rule_set_id: "ruleset-0123456789abcdef3"
+      traffic_policy_id: "trafficpolicy-0123456789abcdef3"
+      type: "HTTP"
+      ingress_point_name: "webhook-ingress"
+      status_to_update: "ACTIVE"
+      tls_policy: "Optional"
+      tags:
+        Application: "EmailIngressManagement"
+        Type: "HTTP"
+        Purpose: "WebhookIntegration"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-mail-manager-ingress-point

@@ -1,0 +1,88 @@
+---
+template:
+  type: file
+  path: ses/configuration_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Configuration Set(s) for testing purposes"
+  configuration_sets:
+    - name: TransactionalEmailConfigSet
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      configuration_set_name: "transactional-email"
+      delivery_options:
+        max_delivery_seconds: 900
+        tls_policy: "Require"
+      sending_options:
+        sending_enabled: true
+      reputation_options:
+        reputation_metrics_enabled: true
+      vdm_options:
+        dashboard_options:
+          engagement_metrics: "Enabled"
+      tags:
+        Application: "TransactionalEmailer"
+        Department: "Engineering"
+
+    - name: MarketingEmailConfigSet
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      configuration_set_name: "marketing-email"
+      delivery_options:
+        max_delivery_seconds: 1200
+        sending_pool_name: "marketing-sending-pool"
+        tls_policy: "Optional"
+      sending_options:
+        sending_enabled: true
+      tracking_options:
+        custom_redirect_domain: "bounce.marketing.example.com"
+        https_policy: "Require"
+      vdm_options:
+        guardian_options:
+          optimized_shared_delivery: "Enabled"
+      tags:
+        Application: "MarketingCampaigns"
+        Department: "Marketing"
+
+    - name: AuditEmailConfigSet
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      configuration_set_name: "audit-email"
+      archiving_options:
+        archive_arn: "arn:aws:s3:::ses-email-archive-bucket/audit"
+      sending_options:
+        sending_enabled: true
+      suppression_options:
+        suppressed_reasons:
+          - "Bounce"
+          - "Complaint"
+        validation_options:
+          condition_threshold:
+            condition_threshold_enabled: true
+            overall_confidence_threshold:
+              confidence_verdict_threshold: 95
+      tags:
+        Application: "AuditLog"
+        Department: "Compliance"
+
+    - name: NotificationEmailConfigSet
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      configuration_set_name: "notification-email"
+      delivery_options:
+        max_delivery_seconds: 600
+      reputation_options:
+        reputation_metrics_enabled: false
+      suppression_options:
+        suppressed_reasons:
+          - "Bounce"
+      tags:
+        Application: "SystemNotifications"
+        Department: "Operations"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-configuration-set

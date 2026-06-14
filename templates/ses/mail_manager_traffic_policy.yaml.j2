@@ -1,0 +1,180 @@
+---
+{# Supported structure of IngressAnalysis as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-ses-mailmanagertrafficpolicy-ingressanalysis.html
+Analyzer: String
+ResultField: String
+#}
+{%- macro prep_ingress_analysis(analysis) %}
+Analyzer: {{ analysis.analyzer }}
+ResultField: {{ analysis.result_field }}
+{%- endmacro %}
+Description: {{sceptre_user_data.description|default('SES Mail Manager Traffic Policy(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for mail_manager_traffic_policy in sceptre_user_data.mail_manager_traffic_policies %}
+{%- set mail_manager_traffic_policy_name = mail_manager_traffic_policy.name %}
+  {{ mail_manager_traffic_policy_name }}:
+    Type: AWS::SES::MailManagerTrafficPolicy
+    DeletionPolicy: {{ mail_manager_traffic_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ mail_manager_traffic_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      DefaultAction: {{ mail_manager_traffic_policy.default_action }}
+      PolicyStatements:
+{%- for statement in mail_manager_traffic_policy.policy_statements %}{# BEGIN for statement in mail_manager_traffic_policy.policy_statements #}
+        -
+          Action: {{ statement.action }}
+          Conditions:
+{%- for condition in statement.conditions %}{# BEGIN for condition in statement.conditions #}
+            -
+{%- if condition.boolean_expression is defined %}{# BEGIN if condition.boolean_expression is defined #}
+              BooleanExpression:
+                Evaluate:
+{%- if condition.boolean_expression.evaluate.analysis is defined %}
+                  Analysis:
+                    {{- prep_ingress_analysis(condition.boolean_expression.evaluate.analysis) | indent(width=20, first=false) }}
+{%- endif %}
+{%- if condition.boolean_expression.evaluate.is_in_address_list is defined %}{# BEGIN if condition.boolean_expression.evaluate.is_in_address_list is defined #}
+                  IsInAddressList:
+                    AddressLists:
+{%- for address in condition.boolean_expression.evaluate.is_in_address_list.address_lists %}
+                      - {{ address }}
+{%- endfor %}
+                    Attribute: RECIPIENT
+{%- endif %}{# END if condition.boolean_expression.evaluate.is_in_address_list is defined #}
+                Operator: {{ condition.boolean_expression.operator }}
+{%- endif %}{# END if condition.boolean_expression is defined #}
+{%- if condition.ip_expression is defined %}{# BEGIN if condition.ip_expression is defined #}
+              IpExpression:
+                Evaluate:
+                  Attribute: SENDER_IP
+                Operator: {{ condition.ip_expression.operator }}
+                Values:
+{%- for item in condition.ip_expression._values %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if condition.ip_expression is defined #}
+{%- if condition.ipv6_expression is defined %}{# BEGIN if condition.ipv6_expression is defined #}
+              Ipv6Expression:
+                Evaluate:
+                  Attribute: SENDER_IPV6
+                Operator: {{ condition.ipv6_expression.operator }}
+                Values:
+{%- for item in condition.ipv6_expression._values %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if condition.ipv6_expression is defined #}
+{%- if condition.string_expression is defined %}{# BEGIN if condition.string_expression is defined #}
+              StringExpression:
+                Evaluate:
+{%- if condition.string_expression.evaluate.analysis is defined %}
+                  Analysis:
+                    {{- prep_ingress_analysis(condition.string_expression.evaluate.analysis) | indent(width=20, first=false) }}
+{%- endif %}
+{%- if condition.string_expression.evaluate.attribute is defined %}
+                  Attribute: RECIPIENT
+{%- endif %}
+                Operator: {{ condition.string_expression.operator }}
+                Values:
+{%- for item in condition.string_expression._values %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if condition.string_expression is defined #}
+{%- if condition.tls_expression is defined %}{# BEGIN if condition.tls_expression is defined #}
+              TlsExpression:
+                Evaluate:
+                  Attribute: TLS_PROTOCOL
+                Operator: {{ condition.tls_expression.operator }}
+                Value: {{ condition.tls_expression.value }}
+{%- endif %}{# END if condition.tls_expression is defined #}
+{%- endfor %}{# END for condition in statement.conditions #}
+{%- endfor %}{# END for statement in mail_manager_traffic_policy.policy_statements #}
+{%- if mail_manager_traffic_policy.max_message_size_bytes is defined %}
+      MaxMessageSizeBytes: {{ mail_manager_traffic_policy.max_message_size_bytes }}
+{%- endif %}
+{%- if mail_manager_traffic_policy.traffic_policy_name is defined %}
+      TrafficPolicyName: {{ mail_manager_traffic_policy.traffic_policy_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if mail_manager_traffic_policy.tags is defined %}
+{%- for key,value in mail_manager_traffic_policy.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for mail_manager_traffic_policy in sceptre_user_data.mail_manager_traffic_policies %}
+{%- set mail_manager_traffic_policy_name = mail_manager_traffic_policy.name %}
+  {{ mail_manager_traffic_policy_name }}TrafficPolicyArn:
+    Description: The ARN for {{ mail_manager_traffic_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_traffic_policy_name }}
+        - TrafficPolicyArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_traffic_policy_name }}-TrafficPolicyArn"
+  {{ mail_manager_traffic_policy_name }}TrafficPolicyId:
+    Description: The ID for {{ mail_manager_traffic_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_traffic_policy_name }}
+        - TrafficPolicyId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_traffic_policy_name }}-TrafficPolicyId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::MailManagerTrafficPolicy
+Properties:
+  DefaultAction: String
+  MaxMessageSizeBytes: Number
+  PolicyStatements:
+    -
+      Action: String
+      Conditions:
+        -
+          BooleanExpression:
+            Evaluate:
+              Analysis:
+                Analyzer: String
+                ResultField: String
+              IsInAddressList:
+                AddressLists:
+                  - String
+                Attribute: String
+            Operator: String
+          IpExpression:
+            Evaluate:
+              Attribute: String
+            Operator: String
+            Values:
+              - String
+          Ipv6Expression:
+            Evaluate:
+              Attribute: String
+            Operator: String
+            Values:
+              - String
+          StringExpression:
+            Evaluate:
+              Analysis:
+                Analyzer: String
+                ResultField: String
+              Attribute: String
+            Operator: String
+            Values:
+              - String
+          TlsExpression:
+            Evaluate:
+              Attribute: String
+            Operator: String
+            Value: String
+  Tags:
+    - Key: String
+      Value: String
+  TrafficPolicyName: String
+#}

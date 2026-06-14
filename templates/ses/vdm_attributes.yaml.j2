@@ -1,0 +1,54 @@
+---
+Description: {{sceptre_user_data.description|default('SES VDM Attributes for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for vdm_attributes in sceptre_user_data.vdm_attributess %}
+{%- set vdm_attributes_name = vdm_attributes.name %}
+  {{ vdm_attributes_name }}:
+    Type: AWS::SES::VdmAttributes
+    DeletionPolicy: {{ vdm_attributes.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vdm_attributes.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if vdm_attributes.dashboard_attributes is defined %}{# BEGIN if vdm_attributes.dashboard_attributes is defined #}
+      DashboardAttributes:
+{%- if vdm_attributes.dashboard_attributes.engagement_metrics is defined %}
+        EngagementMetrics: {{ vdm_attributes.dashboard_attributes.engagement_metrics }}
+{%- endif %}
+{%- endif %}{# END if vdm_attributes.dashboard_attributes is defined #}
+{%- if vdm_attributes.guardian_attributes is defined %}{# BEGIN if vdm_attributes.guardian_attributes is defined #}
+      GuardianAttributes:
+{%- if vdm_attributes.guardian_attributes.optimized_shared_delivery is defined %}
+        OptimizedSharedDelivery: {{ vdm_attributes.guardian_attributes.optimized_shared_delivery }}
+{%- endif %}
+{%- endif %}{# END if vdm_attributes.guardian_attributes is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for vdm_attributes in sceptre_user_data.vdm_attributess %}
+{%- set vdm_attributes_name = vdm_attributes.name %}
+  {{ vdm_attributes_name }}:
+    Description: Resource name for {{ vdm_attributes_name }}
+    Value:
+      Ref: {{ vdm_attributes_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vdm_attributes_name }}"
+  {{ vdm_attributes_name }}VdmAttributesResourceId:
+    Description: Resource ID for {{ vdm_attributes_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vdm_attributes_name }}
+        - VdmAttributesResourceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vdm_attributes_name }}-VdmAttributesResourceId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::VdmAttributes
+Properties:
+  DashboardAttributes:
+    EngagementMetrics: String
+  GuardianAttributes:
+    OptimizedSharedDelivery: String
+#}

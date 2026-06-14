@@ -1,0 +1,79 @@
+---
+template:
+  type: file
+  path: ses/configuration_set_event_destination.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Configuration Set Event Destination(s) for testing purposes"
+  configuration_set_event_destinations:
+    - name: DeliveryMetricsDestination
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      configuration_set_name: "transactional-email"
+      event_destination:
+        name: DeliveryMetricsEventDestination
+        enabled: true
+        matching_event_types:
+          - send
+          - delivery
+          - open
+          - click
+        cloud_watch_destination:
+          dimension_configurations:
+            - default_dimension_value: "Transactional"
+              dimension_name: "MessageCategory"
+              dimension_value_source: "messageTag"
+            - default_dimension_value: "Primary"
+              dimension_name: "Tenant"
+              dimension_value_source: "emailHeader"
+
+    - name: EngagementEventsDestination
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      configuration_set_name: "marketing-email"
+      event_destination:
+        name: EngagementEventsEventDestination
+        enabled: true
+        matching_event_types:
+          - send
+          - reject
+          - bounce
+          - complaint
+        event_bridge_destination:
+          event_bus_arn: "arn:aws:events:us-east-1:123456789012:event-bus/customer-engagement"
+
+    - name: FirehoseArchiveDestination
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      configuration_set_name: "audit-email"
+      event_destination:
+        name: FirehoseArchiveEventDestination
+        enabled: false
+        matching_event_types:
+          - send
+          - renderingFailure
+          - deliveryDelay
+        kinesis_firehose_destination:
+          delivery_stream_arn: "arn:aws:firehose:us-east-1:123456789012:deliverystream/ses-event-archive"
+          iam_role_arn: "arn:aws:iam::123456789012:role/SesEventArchiveRole"
+
+    - name: FeedbackNotificationsDestination
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      configuration_set_name: "support-email"
+      event_destination:
+        name: FeedbackNotificationsEventDestination
+        enabled: true
+        matching_event_types:
+          - bounce
+          - complaint
+          - reject
+        sns_destination:
+          topic_arn: "arn:aws:sns:us-east-1:123456789012:ses-feedback-notifications"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-configuration-set-event-destination

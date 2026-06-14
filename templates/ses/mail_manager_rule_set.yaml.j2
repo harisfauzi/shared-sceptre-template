@@ -1,0 +1,485 @@
+---
+{# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-ses-mailmanagerruleset-analysis.html
+Analyzer: String
+ResultField: String
+#}{%- macro prep_analysis(analysis) %}
+Analyzer: {{ analysis.analyzer }}
+ResultField: {{ analysis.result_field }}
+{%- endmacro %}
+{# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-ses-mailmanagerruleset-rulecondition.html
+BooleanExpression:
+  Evaluate:
+    Analysis:
+      Analyzer: String
+      ResultField: String
+    Attribute: String
+    IsInAddressList:
+      AddressLists:
+        - String
+      Attribute: String
+  Operator: String
+DmarcExpression:
+  Operator: String
+  Values:
+    - String
+IpExpression:
+  Evaluate:
+    Attribute: String
+  Operator: String
+  Values:
+    - String
+NumberExpression:
+  Evaluate:
+    Attribute: String
+  Operator: String
+  Value: Number
+StringExpression:
+  Evaluate:
+    Analysis:
+      Analyzer: String
+      ResultField: String
+    Attribute: String
+    ClientCertificateAttribute: String
+    MimeHeaderAttribute: String
+  Operator: String
+  Values:
+    - String
+VerdictExpression:
+  Evaluate:
+    Analysis:
+      Analyzer: String
+      ResultField: String
+    Attribute: String
+  Operator: String
+  Values:
+    - String
+#}{%- macro prep_rule_condition(condition) %}
+{%- if condition.boolean_expression is defined %}{# BEGIN if condition.boolean_expression is defined #}
+BooleanExpression:
+  Evaluate:
+{%- if condition.boolean_expression.evaluate.analysis is defined %}
+    Analysis:
+      {{- prep_analysis(condition.boolean_expression.evaluate.analysis) | indent(width=6, first=false) }}
+{%- endif %}
+{%- if condition.boolean_expression.evaluate.attribute is defined %}
+    Attribute: {{ condition.boolean_expression.evaluate.attribute }}
+{%- endif %}
+{%- if condition.boolean_expression.evaluate.is_in_address_list is defined %}{# BEGIN if condition.boolean_expression.evaluate.is_in_address_list is defined #}
+    IsInAddressList:
+      AddressLists:
+{%- for address_list in condition.boolean_expression.evaluate.is_in_address_list.address_lists %}
+        - {{ address_list }}
+{%- endfor %}
+      Attribute: {{ condition.boolean_expression.evaluate.is_in_address_list.attribute }}
+{%- endif %}{# END if condition.boolean_expression.evaluate.is_in_address_list is defined #}
+  Operator: {{ condition.boolean_expression.operator }}
+{%- endif %}{# END if condition.boolean_expression is defined #}
+{%- if condition.dmarc_expression is defined %}{# BEGIN if condition.dmarc_expression is defined #}
+DmarcExpression:
+  Operator: {{ condition.dmarc_expression.operator }}
+  Values:
+{%- for item in condition.dmarc_expression._values %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if condition.dmarc_expression is defined #}
+{%- if condition.ip_expression is defined %}{# BEGIN if condition.ip_expression is defined #}
+IpExpression:
+  Evaluate:
+    Attribute: SOURCE_IP
+  Operator: {{ condition.ip_expression.operator }}
+  Values:
+{%- for item in condition.ip_expression._values %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if condition.ip_expression is defined #}
+{%- if condition.number_expression is defined %}{# BEGIN if condition.number_expression is defined #}
+NumberExpression:
+  Evaluate:
+    Attribute: MESSAGE_SIZE
+  Operator: {{ condition.number_expression.operator }}
+  Value: {{ condition.number_expression._value }}
+{%- endif %}{# END if condition.number_expression is defined #}
+{%- if condition.string_expression is defined %}{# BEGIN if condition.string_expression is defined #}
+StringExpression:
+  Evaluate:
+{%- if condition.string_expression.evaluate.analysis is defined %}
+    Analysis:
+      {{- prep_analysis(condition.string_expression.evaluate.analysis) | indent(width=6, first=false) }}
+{%- endif %}
+{%- if condition.string_expression.evaluate.attribute is defined %}
+    Attribute: {{ condition.string_expression.evaluate.attribute }}
+{%- endif %}
+{%- if condition.string_expression.evaluate.client_certificate_attribute is defined %}
+    ClientCertificateAttribute: {{ condition.string_expression.evaluate.client_certificate_attribute }}
+{%- endif %}
+{%- if condition.string_expression.evaluate.mime_header_attribute is defined %}
+    MimeHeaderAttribute: {{ condition.string_expression.evaluate.mime_header_attribute }}
+{%- endif %}
+  Operator: {{ condition.string_expression.operator }}
+  Values:
+{%- for item in condition.string_expression._values %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if condition.string_expression is defined #}
+{%- if condition.verdict_expression is defined %}{# BEGIN if condition.verdict_expression is defined #}
+VerdictExpression:
+  Evaluate:
+{%- if condition.verdict_expression.evaluate.analysis is defined %}
+    Analysis:
+      {{- prep_analysis(condition.verdict_expression.evaluate.analysis) | indent(width=6, first=false) }}
+{%- endif %}
+{%- if condition.verdict_expression.evaluate.attribute is defined %}
+    Attribute: {{ condition.verdict_expression.evaluate.attribute }}
+{%- endif %}
+  Operator: {{ condition.verdict_expression.operator }}
+  Values:
+{%- for item in condition.verdict_expression._values %}
+    - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if condition.verdict_expression is defined #}
+{%- endmacro %}
+Description: {{sceptre_user_data.description|default('SES Mail Manager Rule Set(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for mail_manager_rule_set in sceptre_user_data.mail_manager_rule_sets %}
+{%- set mail_manager_rule_set_name = mail_manager_rule_set.name %}
+  {{ mail_manager_rule_set_name }}:
+    Type: AWS::SES::MailManagerRuleSet
+    Properties:
+      Rules:
+{%- for rule in mail_manager_rule_set.rules %}{# BEGIN for rule in mail_manager_rule_set.rules #}
+        -
+          Actions:
+{%- for action in rule.actions %}{# BEGIN for action in rule.actions #}
+            -
+{%- if action.add_header is defined %}
+              AddHeader:
+                HeaderName: {{ action.add_header.header_name }}
+                HeaderValue: {{ action.add_header.header_value }}
+{%- endif %}
+{%- if action.archive is defined %}{# BEGIN if action.archive is defined #}
+              Archive:
+{%- if action.archive.action_failure_policy is defined %}
+                ActionFailurePolicy: {{ action.archive.action_failure_policy }}
+{%- endif %}
+                TargetArchive: {{ action.archive.target_archive }}
+{%- endif %}{# END if action.archive is defined #}
+{%- if action.bounce is defined %}{# BEGIN if action.bounce is defined #}
+              Bounce:
+                DiagnosticMessage: |-
+                  {{ action.bounce.diagnostic_message | indent(width=18, first=false) }}
+                RoleArn: {{ action.bounce.role_arn | trim }}
+                Sender: {{ action.bounce.sender }}
+                SmtpReplyCode: {{ action.bounce.smtp_reply_code }}
+                StatusCode: {{ action.bounce.status_code }}
+{%- if action.bounce.action_failure_policy is defined %}
+                ActionFailurePolicy: {{ action.bounce.action_failure_policy }}
+{%- endif %}
+{%- if action.bounce.message is defined %}
+                Message: |-
+                  {{ action.bounce.message | indent(width=18, first=false) }}
+{%- endif %}
+{%- endif %}{# END if action.bounce is defined #}
+{%- if action.deliver_to_mailbox is defined %}{# BEGIN if action.deliver_to_mailbox is defined #}
+              DeliverToMailbox:
+                MailboxArn: {{ action.deliver_to_mailbox.mailbox_arn | trim }}
+                RoleArn: {{ action.deliver_to_mailbox.role_arn | trim }}
+{%- if action.deliver_to_mailbox.action_failure_policy is defined %}
+                ActionFailurePolicy: {{ action.deliver_to_mailbox.action_failure_policy }}
+{%- endif %}
+{%- endif %}{# END if action.deliver_to_mailbox is defined #}
+{%- if action.deliver_to_qbusiness is defined %}{# BEGIN if action.deliver_to_qbusiness is defined #}
+              DeliverToQBusiness:
+                ApplicationId: {{ action.deliver_to_qbusiness.application_id | trim }}
+                IndexId: {{ action.deliver_to_qbusiness.index_id | trim }}
+                RoleArn: {{ action.deliver_to_qbusiness.role_arn | trim }}
+{%- if action.deliver_to_qbusiness.action_failure_policy is defined %}
+                ActionFailurePolicy: {{ action.deliver_to_qbusiness.action_failure_policy }}
+{%- endif %}
+{%- endif %}{# END if action.deliver_to_qbusiness is defined #}
+{%- if action.drop is defined %}
+              Drop: {}
+{%- endif %}
+{%- if action.invoke_lambda is defined %}{# BEGIN if action.invoke_lambda is defined #}
+              InvokeLambda:
+                FunctionArn: {{ action.invoke_lambda.function_arn | trim }}
+                InvocationType: {{ action.invoke_lambda.invocation_type }}
+                RoleArn: {{ action.invoke_lambda.role_arn | trim }}
+{%- if action.invoke_lambda.action_failure_policy is defined %}
+                ActionFailurePolicy: {{ action.invoke_lambda.action_failure_policy }}
+{%- endif %}
+{%- if action.invoke_lambda.retry_time_minutes is defined %}
+                RetryTimeMinutes: {{ action.invoke_lambda.retry_time_minutes }}
+{%- endif %}
+{%- endif %}{# END if action.invoke_lambda is defined #}
+{%- if action.publish_to_sns is defined %}{# BEGIN if action.publish_to_sns is defined #}
+              PublishToSns:
+                RoleArn: {{ action.publish_to_sns.role_arn | trim }}
+                TopicArn: {{ action.publish_to_sns.topic_arn | trim }}
+{%- if action.publish_to_sns.action_failure_policy is defined %}
+                ActionFailurePolicy: {{ action.publish_to_sns.action_failure_policy }}
+{%- endif %}
+{%- if action.publish_to_sns.encoding is defined %}
+                Encoding: {{ action.publish_to_sns.encoding }}
+{%- endif %}
+{%- if action.publish_to_sns.payload_type is defined %}
+                PayloadType: {{ action.publish_to_sns.payload_type }}
+{%- endif %}
+{%- endif %}{# END if action.publish_to_sns is defined #}
+{%- if action.relay is defined %}{# BEGIN if action.relay is defined #}
+              Relay:
+                Relay: {{ action.relay.relay }}
+{%- if action.relay.action_failure_policy is defined %}
+                ActionFailurePolicy: {{ action.relay.action_failure_policy }}
+{%- endif %}
+{%- if action.relay.mail_from is defined %}
+                MailFrom: {{ action.relay.mail_from }}
+{%- endif %}
+{%- endif %}{# END if action.relay is defined #}
+{%- if action.replace_recipient is defined %}{# BEGIN if action.replace_recipient is defined #}
+              ReplaceRecipient:
+{%- if action.replace_recipient.replace_with is defined %}{# BEGIN if action.replace_recipient.replace_with is defined #}
+                ReplaceWith:
+{%- for item in action.replace_recipient.replace_with %}
+                  - {{ item }}
+{%- endfor %}
+{%- endif %}{# END if action.replace_recipient.replace_with is defined #}
+{%- endif %}{# END if action.replace_recipient is defined #}
+{%- if action.send is defined %}{# BEGIN if action.send is defined #}
+              Send:
+                RoleArn: {{ action.send.role_arn | trim }}
+{%- if action.send.action_failure_policy is defined %}
+                ActionFailurePolicy: {{ action.send.action_failure_policy }}
+{%- endif %}
+{%- endif %}{# END if action.send is defined #}
+{%- if action.write_to_s3 is defined %}{# BEGIN if action.write_to_s3 is defined #}
+              WriteToS3:
+                RoleArn: {{ action.write_to_s3.role_arn | trim }}
+                S3Bucket: {{ action.write_to_s3.s3_bucket }}
+{%- if action.write_to_s3.action_failure_policy is defined %}
+                ActionFailurePolicy: {{ action.write_to_s3.action_failure_policy }}
+{%- endif %}
+{%- if action.write_to_s3.s3_prefix is defined %}
+                S3Prefix: {{ action.write_to_s3.s3_prefix }}
+{%- endif %}
+{%- if action.write_to_s3.s3_sse_kms_key_id is defined %}
+                S3SseKmsKeyId: {{ action.write_to_s3.s3_sse_kms_key_id | trim }}
+{%- endif %}
+{%- endif %}{# END if action.write_to_s3 is defined #}
+{%- endfor %}{# END for action in rule.actions #}
+{%- if rule.conditions is defined %}{# BEGIN if rule.conditions is defined #}
+          Conditions:
+{%- for condition in rule.conditions %}{# BEGIN for condition in rule.conditions #}
+            -
+              {{- prep_rule_condition(condition) | indent(width=14, first=false) }}
+{%- endfor %}{# END for condition in rule.conditions #}
+{%- endif %}{# END if rule.conditions is defined #}
+{%- if rule.name is defined %}
+          Name: {{ rule.name }}
+{%- endif %}
+{%- if rule.unless is defined %}{# BEGIN if rule.unless is defined #}
+          Unless:
+{%- for condition in rule.unless %}
+            -
+              {{- prep_rule_condition(condition) | indent(width=14, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if rule.unless is defined #}
+{%- endfor %}{# END for rule in mail_manager_rule_set.rules #}
+{%- if mail_manager_rule_set.rule_set_name is defined %}
+      RuleSetName: {{ mail_manager_rule_set.rule_set_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if mail_manager_rule_set.tags is defined %}
+{%- for key,value in mail_manager_rule_set.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for mail_manager_rule_set in sceptre_user_data.mail_manager_rule_sets %}
+{%- set mail_manager_rule_set_name = mail_manager_rule_set.name %}
+  {{ mail_manager_rule_set_name }}RuleSetArn:
+    Description: The ARN for {{ mail_manager_rule_set_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_rule_set_name }}
+        - RuleSetArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_rule_set_name }}-RuleSetArn"
+  {{ mail_manager_rule_set_name }}RuleSetId:
+    Description: The ID for {{ mail_manager_rule_set_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_rule_set_name }}
+        - RuleSetId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_rule_set_name }}-RuleSetId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::MailManagerRuleSet
+Properties:
+  Rules:
+    -
+      Actions:
+        -
+          AddHeader:
+            HeaderName: String
+            HeaderValue: String
+          Archive:
+            ActionFailurePolicy: String
+            TargetArchive: String
+          Bounce:
+            ActionFailurePolicy: String
+            DiagnosticMessage: String
+            Message: String
+            RoleArn: String
+            Sender: String
+            SmtpReplyCode: String
+            StatusCode: String
+          DeliverToMailbox:
+            ActionFailurePolicy: String
+            MailboxArn: String
+            RoleArn: String
+          DeliverToQBusiness:
+            ActionFailurePolicy: String
+            ApplicationId: String
+            IndexId: String
+            RoleArn: String
+          Drop: Json
+          InvokeLambda:
+            ActionFailurePolicy: String
+            FunctionArn: String
+            InvocationType: String
+            RetryTimeMinutes: Integer
+            RoleArn: String
+          PublishToSns:
+            ActionFailurePolicy: String
+            Encoding: String
+            PayloadType: String
+            RoleArn: String
+            TopicArn: String
+          Relay:
+            ActionFailurePolicy: String
+            MailFrom: String
+            Relay: String
+          ReplaceRecipient:
+            ReplaceWith:
+              - String
+          Send:
+            ActionFailurePolicy: String
+            RoleArn: String
+          WriteToS3:
+            ActionFailurePolicy: String
+            RoleArn: String
+            S3Bucket: String
+            S3Prefix: String
+            S3SseKmsKeyId: String
+      Conditions:
+        -
+          BooleanExpression:
+            Evaluate:
+              Analysis:
+                Analyzer: String
+                ResultField: String
+              Attribute: String
+              IsInAddressList:
+                AddressLists:
+                  - String
+                Attribute: String
+            Operator: String
+          DmarcExpression:
+            Operator: String
+            Values:
+              - String
+          IpExpression:
+            Evaluate:
+              Attribute: String
+            Operator: String
+            Values:
+              - String
+          NumberExpression:
+            Evaluate:
+              Attribute: String
+            Operator: String
+            Value: Number
+          StringExpression:
+            Evaluate:
+              Analysis:
+                Analyzer: String
+                ResultField: String
+              Attribute: String
+              ClientCertificateAttribute: String
+              MimeHeaderAttribute: String
+            Operator: String
+            Values:
+              - String
+          VerdictExpression:
+            Evaluate:
+              Analysis:
+                Analyzer: String
+                ResultField: String
+              Attribute: String
+            Operator: String
+            Values:
+              - String
+      Name: String
+      Unless:
+        -
+          BooleanExpression:
+            Evaluate:
+              Analysis:
+                Analyzer: String
+                ResultField: String
+              Attribute: String
+              IsInAddressList:
+                AddressLists:
+                  - String
+                Attribute: String
+            Operator: String
+          DmarcExpression:
+            Operator: String
+            Values:
+              - String
+          IpExpression:
+            Evaluate:
+              Attribute: String
+            Operator: String
+            Values:
+              - String
+          NumberExpression:
+            Evaluate:
+              Attribute: String
+            Operator: String
+            Value: Number
+          StringExpression:
+            Evaluate:
+              Analysis:
+                Analyzer: String
+                ResultField: String
+              Attribute: String
+              ClientCertificateAttribute: String
+              MimeHeaderAttribute: String
+            Operator: String
+            Values:
+              - String
+          VerdictExpression:
+            Evaluate:
+              Analysis:
+                Analyzer: String
+                ResultField: String
+              Attribute: String
+            Operator: String
+            Values:
+              - String
+  RuleSetName: String
+  Tags:
+    - Key: String
+      Value: String
+#}

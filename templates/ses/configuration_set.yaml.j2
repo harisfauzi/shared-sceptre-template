@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('SES ConfigurationSet(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('SES Configuration Set(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for configuration_set in sceptre_user_data.configuration_sets %}
 {%- set configuration_set_name = configuration_set.name %}
   {{ configuration_set_name }}:
@@ -11,22 +10,131 @@ Resources:
     DeletionPolicy: {{ configuration_set.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ configuration_set.update_replace_policy | default('Delete') }}
     Properties:
+{%- if configuration_set.archiving_options is defined %}{# BEGIN if configuration_set.archiving_options is defined #}
+      ArchivingOptions:
+{%- if configuration_set.archiving_options.archive_arn is defined %}
+        ArchiveArn: {{ configuration_set.archiving_options.archive_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if configuration_set.archiving_options is defined #}
+{%- if configuration_set.delivery_options is defined %}{# BEGIN if configuration_set.delivery_options is defined #}
+      DeliveryOptions:
+{%- if configuration_set.delivery_options.max_delivery_seconds is defined %}
+        MaxDeliverySeconds: {{ configuration_set.delivery_options.max_delivery_seconds }}
+{%- endif %}
+{%- if configuration_set.delivery_options.sending_pool_name is defined %}
+        SendingPoolName: {{ configuration_set.delivery_options.sending_pool_name }}
+{%- endif %}
+{%- if configuration_set.delivery_options.tls_policy is defined %}
+        TlsPolicy: {{ configuration_set.delivery_options.tls_policy }}
+{%- endif %}
+{%- endif %}{# END if configuration_set.delivery_options is defined #}
 {%- if configuration_set.configuration_set_name is defined %}
       Name: {{ configuration_set.configuration_set_name }}
 {%- endif %}
-
+{%- if configuration_set.reputation_options is defined %}{# BEGIN if configuration_set.reputation_options is defined #}
+      ReputationOptions:
+{%- if configuration_set.reputation_options.reputation_metrics_enabled is defined %}
+        ReputationMetricsEnabled: {{ configuration_set.reputation_options.reputation_metrics_enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if configuration_set.reputation_options is defined #}
+{%- if configuration_set.sending_options is defined %}{# BEGIN if configuration_set.sending_options is defined #}
+      SendingOptions:
+{%- if configuration_set.sending_options.sending_enabled is defined %}
+        SendingEnabled: {{ configuration_set.sending_options.sending_enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if configuration_set.sending_options is defined #}
+{%- if configuration_set.suppression_options is defined %}{# BEGIN if configuration_set.suppression_options is defined #}
+      SuppressionOptions:
+{%- if configuration_set.suppression_options.suppressed_reasons is defined %}{# BEGIN if configuration_set.suppression_options.suppressed_reasons is defined #}
+        SuppressedReasons:
+{%- for reason in configuration_set.suppression_options.suppressed_reasons %}
+          - {{ reason }}
+{%- endfor %}
+{%- endif %}{# END if configuration_set.suppression_options.suppressed_reasons is defined #}
+{%- if configuration_set.suppression_options.validation_options is defined %}{# BEGIN if configuration_set.suppression_options.validation_options is defined #}
+        ValidationOptions:
+          ConditionThreshold:
+            ConditionThresholdEnabled: {{ configuration_set.suppression_options.validation_options.condition_threshold.condition_threshold_enabled | lower}}
+{%- if configuration_set.suppression_options.validation_options.condition_threshold.overall_confidence_threshold is defined %}
+            OverallConfidenceThreshold:
+              ConfidenceVerdictThreshold: {{ configuration_set.suppression_options.validation_options.condition_threshold.overall_confidence_threshold.confidence_verdict_threshold }}
+{%- endif %}
+{%- endif %}{# END if configuration_set.suppression_options.validation_options is defined #}
+{%- endif %}{# END if configuration_set.suppression_options is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if configuration_set.tags is defined %}
+{%- for key,value in configuration_set.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if configuration_set.tracking_options is defined %}{# BEGIN if configuration_set.tracking_options is defined #}
+      TrackingOptions:
+{%- if configuration_set.tracking_options.custom_redirect_domain is defined %}
+        CustomRedirectDomain: {{ configuration_set.tracking_options.custom_redirect_domain }}
+{%- endif %}
+{%- if configuration_set.tracking_options.https_policy is defined %}
+        HttpsPolicy: {{ configuration_set.tracking_options.https_policy }}
+{%- endif %}
+{%- endif %}{# END if configuration_set.tracking_options is defined #}
+{%- if configuration_set.vdm_options is defined %}{# BEGIN if configuration_set.vdm_options is defined #}
+      VdmOptions:
+{%- if configuration_set.vdm_options.dashboard_options is defined %}
+        DashboardOptions:
+          EngagementMetrics: {{ configuration_set.vdm_options.dashboard_options.engagement_metrics }}
+{%- endif %}
+{%- if configuration_set.vdm_options.guardian_options is defined %}
+        GuardianOptions:
+          OptimizedSharedDelivery: {{ configuration_set.vdm_options.guardian_options.optimized_shared_delivery }}
+{%- endif %}
+{%- endif %}{# END if configuration_set.vdm_options is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for configuration_set in sceptre_user_data.configuration_sets %}
 {%- set configuration_set_name = configuration_set.name %}
   {{ configuration_set_name }}:
-    Description: ConfigurationSet Name for {{ configuration_set_name }}
+    Description: Resource Name for {{ configuration_set_name }}
     Value:
       Ref: {{ configuration_set_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ configuration_set_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::ConfigurationSet
+Properties:
+  ArchivingOptions:
+    ArchiveArn: String
+  DeliveryOptions:
+    MaxDeliverySeconds: Number
+    SendingPoolName: String
+    TlsPolicy: String
+  Name: String
+  ReputationOptions:
+    ReputationMetricsEnabled: Boolean
+  SendingOptions:
+    SendingEnabled: Boolean
+  SuppressionOptions:
+    SuppressedReasons:
+      - String
+    ValidationOptions:
+      ConditionThreshold:
+        ConditionThresholdEnabled: String
+        OverallConfidenceThreshold:
+          ConfidenceVerdictThreshold: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TrackingOptions:
+    CustomRedirectDomain: String
+    HttpsPolicy: String
+  VdmOptions:
+    DashboardOptions:
+      EngagementMetrics: String
+    GuardianOptions:
+      OptimizedSharedDelivery: String
+#}
