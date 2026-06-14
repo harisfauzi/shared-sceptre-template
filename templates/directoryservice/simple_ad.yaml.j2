@@ -1,6 +1,6 @@
 ---
 {%- import 'macros/vpc_settings.yaml.j2' as vpc_settings %}
-Description: {{sceptre_user_data.description|default('DirectoryService SimpleAD(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('DirectoryService Simple AD(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 {%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
@@ -35,24 +35,33 @@ Resources:
       Size: {{ simple_ad.size }}
       {{- vpc_settings.prep(simple_ad.vpc_settings) | indent(width=6,first=false) }}
 {%- if simple_ad.create_alias is defined %}
-      CreateAlias: {{ simple_ad.create_alias }}
+      CreateAlias: {{ simple_ad.create_alias | lower }}
 {%- endif %}
 {%- if simple_ad.description is defined %}
       Description: {{ simple_ad.description }}
 {%- endif %}
 {%- if simple_ad.enable_sso is defined %}
-      EnableSso: {{ simple_ad.enable_sso }}
+      EnableSso: {{ simple_ad.enable_sso | lower }}
 {%- endif %}
 {%- if simple_ad.short_name is defined %}
       ShortName: {{ simple_ad.short_name }}
 {%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if simple_ad.tags is defined %}{# BEGIN if simple_ad.tags is defined #}
+{%- for key,value in simple_ad.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if simple_ad.tags is defined #}
 {%- endfor %}
 
 Outputs:
 {%- for simple_ad in sceptre_user_data.simple_ads %}
 {%- set simple_ad_name = simple_ad.name %}
   {{ simple_ad_name }}:
-    Description: Resource ID for {{ simple_ad_name }}
+    Description: The Directory ID for {{ simple_ad_name }}
     Value:
       Ref: {{ simple_ad_name }}
     Export:
@@ -67,6 +76,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ simple_ad_name }}-Alias"
+  {{ simple_ad_name }}DirectoryId:
+    Description: The Directory ID for {{ simple_ad_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ simple_ad_name }}
+        - DirectoryId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ simple_ad_name }}-DirectoryId"
   {{ simple_ad_name }}DnsIpAddress1:
     Description: The first DNS IP address for {{ simple_ad_name }}
     Value:
@@ -89,4 +107,22 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ simple_ad_name }}-DnsIpAddress2"
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::DirectoryService::SimpleAD
+Properties:
+  CreateAlias: Boolean
+  Description: String
+  EnableSso: Boolean
+  Name: String
+  Password: String
+  ShortName: String
+  Size: String
+  Tags:
+    - Key: String
+      Value: String
+  VpcSettings:
+    SubnetIds:
+      - String
+    VpcId: String
+#}

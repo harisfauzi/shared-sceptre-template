@@ -34,13 +34,13 @@ Resources:
 {%- endif %}
       {{- vpc_settings.prep(microsoft_ad.vpc_settings) | indent(width=6,first=false) }}
 {%- if microsoft_ad.create_alias is defined %}
-      CreateAlias: {{ microsoft_ad.create_alias }}
+      CreateAlias: {{ microsoft_ad.create_alias | lower }}
 {%- endif %}
 {%- if microsoft_ad.edition is defined %}
       Edition: {{ microsoft_ad.edition }}
 {%- endif %}
 {%- if microsoft_ad.enable_sso is defined %}
-      EnableSso: {{ microsoft_ad.enable_sso }}
+      EnableSso: {{ microsoft_ad.enable_sso | lower }}
 {%- endif %}
 {%- if microsoft_ad.short_name is defined %}
       ShortName: {{ microsoft_ad.short_name }}
@@ -88,4 +88,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ microsoft_ad_name }}-DnsIpAddress2"
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::DirectoryService::MicrosoftAD
+Properties:
+  CreateAlias: Boolean
+  Edition: String
+  EnableSso: Boolean
+  Name: String
+  Password: String
+  ShortName: String
+  VpcSettings:
+    SubnetIds:
+      - String
+    VpcId: String
+#}
