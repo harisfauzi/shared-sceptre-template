@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: ses/mail_manager_addon_instance.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Mail Manager Addon Instance(s) for testing purposes"
+  mail_manager_addon_instances:
+    - name: SpamFilterAddonInstance
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      addon_subscription_id: "sub-0123456789abcdef0"
+      tags:
+        Application: "EmailSecurity"
+        AddonType: "SpamFilter"
+        Environment: "Production"
+
+    - name: PhishingProtectionAddonInstance
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      addon_subscription_id: "sub-0123456789abcdef1"
+      tags:
+        Application: "EmailSecurity"
+        AddonType: "PhishingProtection"
+        Environment: "Production"
+
+    - name: ArchiveAddonInstance
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      addon_subscription_id: "sub-0123456789abcdef2"
+      tags:
+        Application: "Compliance"
+        AddonType: "Archive"
+        Department: "Legal"
+
+    - name: AnalyticsReportingAddonInstance
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      addon_subscription_id: "sub-0123456789abcdef3"
+      tags:
+        Application: "Analytics"
+        AddonType: "Reporting"
+        Environment: "Production"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-mail-manager-addon-instance

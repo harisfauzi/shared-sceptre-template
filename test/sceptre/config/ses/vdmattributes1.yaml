@@ -1,0 +1,42 @@
+---
+template:
+  type: file
+  path: ses/vdm_attributes.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES VDM Attributes for testing purposes"
+  vdm_attributess:
+    - name: DashboardMetricsEnabled
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      dashboard_attributes:
+        engagement_metrics: "Enabled"
+
+    - name: GuardianDeliveryOptimized
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      guardian_attributes:
+        optimized_shared_delivery: "Enabled"
+
+    - name: BothFeaturesEnabled
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      dashboard_attributes:
+        engagement_metrics: "Enabled"
+      guardian_attributes:
+        optimized_shared_delivery: "Enabled"
+
+    - name: DashboardMetricsDisabled
+      dashboard_attributes:
+        engagement_metrics: "Disabled"
+
+    - name: GuardianDeliveryDisabled
+      guardian_attributes:
+        optimized_shared_delivery: "Disabled"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-vdm-attributes

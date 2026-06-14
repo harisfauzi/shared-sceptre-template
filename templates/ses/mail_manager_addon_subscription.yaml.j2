@@ -1,0 +1,54 @@
+---
+Description: {{sceptre_user_data.description|default('SES Mail Manager Addon Subscription(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for mail_manager_addon_subscription in sceptre_user_data.mail_manager_addon_subscriptions %}
+{%- set mail_manager_addon_subscription_name = mail_manager_addon_subscription.name %}
+  {{ mail_manager_addon_subscription_name }}:
+    Type: AWS::SES::MailManagerAddonSubscription
+    DeletionPolicy: {{ mail_manager_addon_subscription.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ mail_manager_addon_subscription.update_replace_policy | default('Delete') }}
+    Properties:
+      AddonName: {{ mail_manager_addon_subscription.addon_name }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if mail_manager_addon_subscription.tags is defined %}
+{%- for key,value in mail_manager_addon_subscription.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for mail_manager_addon_subscription in sceptre_user_data.mail_manager_addon_subscriptions %}
+{%- set mail_manager_addon_subscription_name = mail_manager_addon_subscription.name %}
+  {{ mail_manager_addon_subscription_name }}AddonSubscriptionArn:
+    Description: The ARN of the Add On subscription for {{ mail_manager_addon_subscription_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_addon_subscription_name }}
+        - AddonSubscriptionArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_addon_subscription_name }}-AddonSubscriptionArn"
+  {{ mail_manager_addon_subscription_name }}AddonSubscriptionId:
+    Description: The unique ID of the Add On subscription for {{ mail_manager_addon_subscription_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_addon_subscription_name }}
+        - AddonSubscriptionId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_addon_subscription_name }}-AddonSubscriptionId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::MailManagerAddonSubscription
+Properties:
+  AddonName: String
+  Tags:
+    - Key: String
+      Value: String
+#}

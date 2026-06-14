@@ -1,0 +1,84 @@
+---
+template:
+  type: file
+  path: ses/mail_manager_traffic_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Mail Manager Traffic Policy(s) for testing purposes"
+  mail_manager_traffic_policies:
+    - name: AllowTrustedIpsPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      traffic_policy_name: "allow-trusted-ips"
+      default_action: "DENY"
+      max_message_size_bytes: 52428800
+      policy_statements:
+        - action: "ALLOW"
+          conditions:
+            - ip_expression:
+                operator: "CIDR_MATCHES"
+                _values:
+                  - "192.168.1.0/24"
+                  - "10.0.0.0/8"
+      tags:
+        Application: "IPFilteringPolicy"
+        Environment: "Production"
+        Type: "Whitelist"
+
+    - name: BlockHighRiskSendersPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      traffic_policy_name: "block-high-risk-senders"
+      default_action: "ALLOW"
+      policy_statements:
+        - action: "DENY"
+          conditions:
+            - string_expression:
+                evaluate:
+                  attribute: "FROM"
+                operator: "CONTAINS"
+                _values:
+                  - "suspicious-domain.com"
+                  - "phishing-site.net"
+      tags:
+        Application: "SenderFilteringPolicy"
+        Environment: "Production"
+        Type: "Blacklist"
+
+    - name: EnforceSecureTlsPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      traffic_policy_name: "enforce-secure-tls"
+      default_action: "ALLOW"
+      policy_statements:
+        - action: "DENY"
+          conditions:
+            - tls_expression:
+                operator: "LESS_THAN"
+                value: "TLSv1.2"
+      tags:
+        Application: "SecurityPolicy"
+        Environment: "Production"
+        Type: "TLSEnforcement"
+
+    - name: RestrictLargeMessagesPolicy
+      default_action: "ALLOW"
+      max_message_size_bytes: 26214400
+      policy_statements:
+        - action: "DENY"
+          conditions:
+            - ip_expression:
+                operator: "CIDR_MATCHES"
+                _values:
+                  - "203.0.113.0/24"
+      tags:
+        Application: "SizeRestrictionPolicy"
+        Environment: "Production"
+        Purpose: "LargeMessageProtection"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-mail-manager-traffic-policy

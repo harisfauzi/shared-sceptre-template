@@ -1,0 +1,76 @@
+---
+template:
+  type: file
+  path: ses/email_identity.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Email Identity(s) for testing purposes"
+  email_identities:
+    - name: TransactionalSenderIdentity
+      email_identity: "noreply@transactional.example.com"
+      configuration_set_attributes:
+        configuration_set_name: "transactional-email"
+      dkim_attributes:
+        signing_enabled: true
+      feedback_attributes:
+        email_forwarding_enabled: true
+      mail_from_attributes:
+        mail_from_domain: "bounce.transactional.example.com"
+        behavior_on_mx_failure: "UseDefaultValue"
+      tags:
+        Application: "TransactionalEmailer"
+        Environment: "Production"
+        SenderType: "System"
+
+    - name: MarketingCampaignIdentity
+      email_identity: "campaigns@marketing.example.com"
+      configuration_set_attributes:
+        configuration_set_name: "marketing-email"
+      dkim_attributes:
+        signing_enabled: true
+      dkim_signing_attributes:
+        domain_signing_selector: "default"
+        next_signing_key_length: "RSA_2048_BIT"
+      feedback_attributes:
+        email_forwarding_enabled: false
+      mail_from_attributes:
+        mail_from_domain: "bounce.marketing.example.com"
+        behavior_on_mx_failure: "RejectMessage"
+      tags:
+        Application: "MarketingCampaigns"
+        Department: "Marketing"
+        SenderType: "Marketing"
+
+    - name: NewsletterPublisherIdentity
+      email_identity: "newsletter@example.com"
+      configuration_set_attributes:
+        configuration_set_name: "newsletter-config-set"
+      dkim_attributes:
+        signing_enabled: true
+      feedback_attributes:
+        email_forwarding_enabled: true
+      mail_from_attributes:
+        mail_from_domain: "bounce.newsletter.example.com"
+        behavior_on_mx_failure: "UseDefaultValue"
+      tags:
+        Application: "NewsletterService"
+        Department: "ContentMarketing"
+
+    - name: CustomerSupportIdentity
+      email_identity: "support@example.com"
+      dkim_attributes:
+        signing_enabled: true
+      mail_from_attributes:
+        mail_from_domain: "bounce.support.example.com"
+        behavior_on_mx_failure: "UseDefaultValue"
+      tags:
+        Application: "SupportEmailer"
+        Department: "CustomerSuccess"
+        SenderType: "Support"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-email-identity

@@ -1,0 +1,89 @@
+---
+template:
+  type: file
+  path: ses/contact_list.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Contact List(s) for testing purposes"
+  contact_lists:
+    - name: MarketingSubscribersList
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      contact_list_name: "marketing-subscribers"
+      description: "Contact list for marketing campaign subscribers"
+      topics:
+        - topic_name: "MarketingUpdates"
+          display_name: "Marketing Updates"
+          default_subscription_status: "OPT_IN"
+          description: "Weekly marketing updates and promotional offers"
+        - topic_name: "ProductAnnouncements"
+          display_name: "Product Announcements"
+          default_subscription_status: "OPT_IN"
+          description: "New product launches and feature releases"
+      tags:
+        Department: "Marketing"
+        Purpose: "CampaignManagement"
+
+    - name: TransactionalContactsList
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      contact_list_name: "transactional-contacts"
+      description: "Contact list for transactional email recipients"
+      topics:
+        - topic_name: "OrderNotifications"
+          display_name: "Order Notifications"
+          default_subscription_status: "OPT_OUT"
+        - topic_name: "ShippingUpdates"
+          display_name: "Shipping Updates"
+          default_subscription_status: "OPT_OUT"
+          description: "Shipment tracking and delivery status"
+        - topic_name: "SupportTickets"
+          display_name: "Support Ticket Updates"
+          default_subscription_status: "OPT_OUT"
+      tags:
+        Department: "Operations"
+        Purpose: "TransactionalEmail"
+
+    - name: NewsletterContactsList
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      contact_list_name: "newsletter-subscribers"
+      topics:
+        - topic_name: "WeeklyNewsletter"
+          display_name: "Weekly Newsletter"
+          default_subscription_status: "OPT_IN"
+          description: "Our weekly industry insights and updates"
+        - topic_name: "BlogUpdates"
+          display_name: "Blog Updates"
+          default_subscription_status: "OPT_IN"
+      tags:
+        Department: "ContentMarketing"
+
+    - name: PreferenceManagementList
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      contact_list_name: "preference-management"
+      description: "Multi-topic contact list for user preference management"
+      topics:
+        - topic_name: "DailyDigest"
+          display_name: "Daily Digest"
+          default_subscription_status: "OPT_IN"
+        - topic_name: "WeeklyReport"
+          display_name: "Weekly Report"
+          default_subscription_status: "OPT_IN"
+        - topic_name: "MonthlyAnalysis"
+          display_name: "Monthly Analysis"
+          default_subscription_status: "OPT_OUT"
+        - topic_name: "SpecialOffers"
+          display_name: "Special Offers"
+          default_subscription_status: "OPT_OUT"
+      tags:
+        Department: "CustomerSuccess"
+        Purpose: "PreferenceCenter"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-contact-list

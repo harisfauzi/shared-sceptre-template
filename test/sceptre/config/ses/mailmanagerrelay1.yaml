@@ -1,0 +1,65 @@
+---
+template:
+  type: file
+  path: ses/mail_manager_relay.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Mail Manager Relay(s) for testing purposes"
+  mail_manager_relays:
+    - name: InternalSmtpRelay
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      relay_name: "internal-smtp-relay"
+      server_name: "mail.internal.example.com"
+      server_port: 25
+      authentication:
+        no_authentication: true
+      tags:
+        Application: "InternalMailRelay"
+        Environment: "Production"
+        Type: "SMTP"
+
+    - name: AuthenticatedSmtpRelay
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      relay_name: "authenticated-smtp-relay"
+      server_name: "smtp.external-provider.example.com"
+      server_port: 587
+      authentication:
+        secret_arn: "arn:aws:secretsmanager:us-east-1:123456789012:secret:smtp-relay-credentials-abcdef"
+      tags:
+        Application: "ExternalMailRelay"
+        Environment: "Production"
+        Authentication: "Required"
+
+    - name: SecureExternalRelay
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      relay_name: "secure-external-relay"
+      server_name: "mail-relay.vendor.example.com"
+      server_port: 465
+      authentication:
+        secret_arn: "arn:aws:secretsmanager:us-east-1:123456789012:secret:external-relay-creds-xyz123"
+      tags:
+        Application: "VendorMailRelay"
+        Environment: "Production"
+        Security: "TLS"
+
+    - name: LocalBackupRelay
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      server_name: "backup-mail.local.example.com"
+      server_port: 25
+      authentication:
+        no_authentication: true
+      tags:
+        Application: "BackupRelay"
+        Environment: "DR"
+        Purpose: "Failover"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-mail-manager-relay

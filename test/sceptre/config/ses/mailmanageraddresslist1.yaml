@@ -1,0 +1,49 @@
+---
+template:
+  type: file
+  path: ses/mail_manager_address_list.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Mail Manager Address List(s) for testing purposes"
+  mail_manager_address_lists:
+    - name: AllowedSendersAddressList
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      address_list_name: "allowed-senders"
+      tags:
+        Application: "EmailSecurity"
+        ListType: "Whitelist"
+        Purpose: "InboundFiltering"
+
+    - name: BlockedSendersAddressList
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      address_list_name: "blocked-senders"
+      tags:
+        Application: "EmailSecurity"
+        ListType: "Blacklist"
+        Purpose: "Spam"
+
+    - name: InternalRecipientsAddressList
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Application: "EmailManagement"
+        ListType: "Internal"
+        Department: "Operations"
+
+    - name: ExternalPartnersAddressList
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      address_list_name: "external-partners"
+      tags:
+        Application: "EmailManagement"
+        ListType: "ExternalPartners"
+        Department: "Business"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-mail-manager-address-list

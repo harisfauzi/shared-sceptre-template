@@ -1,0 +1,130 @@
+---
+Description: {{sceptre_user_data.description|default('SES Mail Manager Ingress Point(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for mail_manager_ingress_point in sceptre_user_data.mail_manager_ingress_points %}
+{%- set mail_manager_ingress_point_name = mail_manager_ingress_point.name %}
+  {{ mail_manager_ingress_point_name }}:
+    Type: AWS::SES::MailManagerIngressPoint
+    DeletionPolicy: {{ mail_manager_ingress_point.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ mail_manager_ingress_point.update_replace_policy | default('Delete') }}
+    Properties:
+      RuleSetId: {{ mail_manager_ingress_point.rule_set_id | trim }}
+      TrafficPolicyId: {{ mail_manager_ingress_point.traffic_policy_id | trim }}
+      Type: {{ mail_manager_ingress_point.type }}
+{%- if mail_manager_ingress_point.ingress_point_configuration is defined %}{# BEGIN if mail_manager_ingress_point.ingress_point_configuration is defined #}
+      IngressPointConfiguration:
+{%- if mail_manager_ingress_point.ingress_point_configuration.secret_arn is defined %}
+        SecretArn: {{ mail_manager_ingress_point.ingress_point_configuration.secret_arn | trim }}
+{%- endif %}
+{%- if mail_manager_ingress_point.ingress_point_configuration.smtp_password is defined %}
+        SmtpPassword: {{ mail_manager_ingress_point.ingress_point_configuration.smtp_password | trim }}
+{%- endif %}
+{%- if mail_manager_ingress_point.ingress_point_configuration.tls_auth_configuration is defined %}{# BEGIN if mail_manager_ingress_point.ingress_point_configuration.tls_auth_configuration is defined #}
+        TlsAuthConfiguration:
+          TrustStore:
+            CAContent: |-
+              {{ mail_manager_ingress_point.ingress_point_configuration.tls_auth_configuration.trust_store.ca_content | indent(width=14, first=false) }}
+{%- if mail_manager_ingress_point.ingress_point_configuration.tls_auth_configuration.trust_store.crl_content is defined %}
+            CrlContent: |-
+              {{ mail_manager_ingress_point.ingress_point_configuration.tls_auth_configuration.trust_store.crl_content | indent(width=14, first=false) }}
+{%- endif %}
+{%- if mail_manager_ingress_point.ingress_point_configuration.tls_auth_configuration.trust_store.kms_key_arn is defined %}
+            KmsKeyArn: {{ mail_manager_ingress_point.ingress_point_configuration.tls_auth_configuration.trust_store.kms_key_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if mail_manager_ingress_point.ingress_point_configuration.tls_auth_configuration is defined #}
+{%- endif %}{# END if mail_manager_ingress_point.ingress_point_configuration is defined #}
+{%- if mail_manager_ingress_point.ingress_point_name is defined %}
+      IngressPointName: {{ mail_manager_ingress_point.ingress_point_name }}
+{%- endif %}
+{%- if mail_manager_ingress_point.network_configuration is defined %}
+      NetworkConfiguration:
+        PrivateNetworkConfiguration:
+          VpcEndpointId: String
+        PublicNetworkConfiguration:
+          IpType: String
+{%- endif %}
+{%- if mail_manager_ingress_point.status_to_update is defined %}
+      StatusToUpdate: {{ mail_manager_ingress_point.status_to_update }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if mail_manager_ingress_point.tags is defined %}
+{%- for key,value in mail_manager_ingress_point.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if mail_manager_ingress_point.tls_policy is defined %}
+      TlsPolicy: {{ mail_manager_ingress_point.tls_policy }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for mail_manager_ingress_point in sceptre_user_data.mail_manager_ingress_points %}
+{%- set mail_manager_ingress_point_name = mail_manager_ingress_point.name %}
+  {{ mail_manager_ingress_point_name }}ARecord:
+    Description: The DNS A Record that identifies ingress endpoint {{ mail_manager_ingress_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_ingress_point_name }}
+        - ARecord
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_ingress_point_name }}-ARecord"
+  {{ mail_manager_ingress_point_name }}IngressPointArn:
+    Description: The ARN of the ingress endpoint {{ mail_manager_ingress_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_ingress_point_name }}
+        - IngressPointArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_ingress_point_name }}-IngressPointArn"
+  {{ mail_manager_ingress_point_name }}IngressPointId:
+    Description: The identifier of the ingress endpoint {{ mail_manager_ingress_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_ingress_point_name }}
+        - IngressPointId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_ingress_point_name }}-IngressPointId"
+  {{ mail_manager_ingress_point_name }}Status:
+    Description: The status of the ingress endpoint {{ mail_manager_ingress_point_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_ingress_point_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_ingress_point_name }}-Status"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::MailManagerIngressPoint
+Properties:
+  IngressPointConfiguration:
+    SecretArn: String
+    SmtpPassword: String
+    TlsAuthConfiguration:
+      TrustStore:
+        CAContent: String
+        CrlContent: String
+        KmsKeyArn: String
+  IngressPointName: String
+  NetworkConfiguration:
+    PrivateNetworkConfiguration:
+      VpcEndpointId: String
+    PublicNetworkConfiguration:
+      IpType: String
+  RuleSetId: String
+  StatusToUpdate: String
+  Tags:
+    - Key: String
+      Value: String
+  TlsPolicy: String
+  TrafficPolicyId: String
+  Type: String
+#}

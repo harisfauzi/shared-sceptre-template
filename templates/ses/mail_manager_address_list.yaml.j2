@@ -1,0 +1,63 @@
+---
+Description: {{sceptre_user_data.description|default('SES Mail Manager Address List(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for mail_manager_address_list in sceptre_user_data.mail_manager_address_lists %}
+{%- set mail_manager_address_list_name = mail_manager_address_list.name %}
+  {{ mail_manager_address_list_name }}:
+    Type: AWS::SES::MailManagerAddressList
+    DeletionPolicy: {{ mail_manager_address_list.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ mail_manager_address_list.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if mail_manager_address_list.address_list_name is defined %}
+      AddressListName: {{ mail_manager_address_list.address_list_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if mail_manager_address_list.tags is defined %}
+{%- for key,value in mail_manager_address_list.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for mail_manager_address_list in sceptre_user_data.mail_manager_address_lists %}
+{%- set mail_manager_address_list_name = mail_manager_address_list.name %}
+  {{ mail_manager_address_list_name }}:
+    Description: Resource ID for {{ mail_manager_address_list_name }}
+    Value:
+      Ref: {{ mail_manager_address_list_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_address_list_name }}"
+  {{ mail_manager_address_list_name }}AddressListArn:
+    Description: The ARN of the Address List for {{ mail_manager_address_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_address_list_name }}
+        - AddressListArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_address_list_name }}-AddressListArn"
+  {{ mail_manager_address_list_name }}AddressListId:
+    Description: The unique ID of the Address List for {{ mail_manager_address_list_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_address_list_name }}
+        - AddressListId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_address_list_name }}-AddressListId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::MailManagerAddressList
+Properties:
+  AddressListName: String
+  Tags:
+    - Key: String
+      Value: String
+#}
