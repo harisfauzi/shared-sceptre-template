@@ -1,0 +1,155 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Database Snapshot(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for database_snapshot in sceptre_user_data.database_snapshots %}
+{%- set database_snapshot_name = database_snapshot.name %}
+  {{ database_snapshot_name }}:
+    Type: AWS::Lightsail::DatabaseSnapshot
+    DeletionPolicy: {{ database_snapshot.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ database_snapshot.update_replace_policy | default('Delete') }}
+    Properties:
+      RelationalDatabaseName: {{ database_snapshot.relational_database_name }}
+      RelationalDatabaseSnapshotName: {{ database_snapshot.relational_database_snapshot_name }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if database_snapshot.tags is defined %}
+{%- for key, value in database_snapshot.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for database_snapshot in sceptre_user_data.database_snapshots %}
+{%- set database_snapshot_name = database_snapshot.name %}
+  {{ database_snapshot_name }}Arn:
+    Description: The ARN for {{ database_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-Arn"
+  {{ database_snapshot_name }}CreatedAt:
+    Description: The timestamp when the database snapshot {{ database_snapshot_name }} was created
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - CreatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-CreatedAt"
+  {{ database_snapshot_name }}Engine:
+    Description: The database engine for {{ database_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - Engine
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-Engine"
+  {{ database_snapshot_name }}EngineVersion:
+    Description: The engine version for {{ database_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - EngineVersion
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-EngineVersion"
+  {{ database_snapshot_name }}FromRelationalDatabaseArn:
+    Description: The ARN of the database from which the database snapshot {{ database_snapshot_name }} was created
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - FromRelationalDatabaseArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-FromRelationalDatabaseArn"
+  {{ database_snapshot_name }}FromRelationalDatabaseBlueprintId:
+    Description: The blueprint ID of the database from which the database snapshot {{ database_snapshot_name }} was created
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - FromRelationalDatabaseBlueprintId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-FromRelationalDatabaseBlueprintId"
+  {{ database_snapshot_name }}FromRelationalDatabaseBundleId:
+    Description: The bundle ID of the database from which the database snapshot {{ database_snapshot_name }} was created
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - FromRelationalDatabaseBundleId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-FromRelationalDatabaseBundleId"
+  {{ database_snapshot_name }}FromRelationalDatabaseName:
+    Description: The name of the database from which the database snapshot {{ database_snapshot_name }} was created
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - FromRelationalDatabaseName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-FromRelationalDatabaseName"
+  {{ database_snapshot_name }}Name:
+    Description: The name of the database snapshot {{ database_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - Name
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-Name"
+  {{ database_snapshot_name }}ResourceType:
+    Description: The lightsail resource type for {{ database_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - ResourceType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-ResourceType"
+  {{ database_snapshot_name }}SizeInGb:
+    Description: The size in GB for {{ database_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - SizeInGb
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-SizeInGb"
+  {{ database_snapshot_name }}State:
+    Description: The state of the database snapshot {{ database_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-State"
+  {{ database_snapshot_name }}SupportCode:
+    Description: The support code for {{ database_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ database_snapshot_name }}
+        - SupportCode
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ database_snapshot_name }}-SupportCode"
+{%- endfor %}{#
+# Supported structure as of 2026-06-15:
+Type: AWS::Lightsail::DatabaseSnapshot
+Properties:
+  RelationalDatabaseName: String
+  RelationalDatabaseSnapshotName: String
+  Tags:
+    - Key: String
+      Value: String
+#}

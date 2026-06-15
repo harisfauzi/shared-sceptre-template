@@ -1,0 +1,94 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Domain(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for domain in sceptre_user_data.domains %}
+{%- set domain_name = domain.name %}
+  {{ domain_name }}:
+    Type: AWS::Lightsail::Domain
+    DeletionPolicy: {{ domain.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ domain.update_replace_policy | default('Delete') }}
+    Properties:
+      DomainName: {{ domain.domain_name }}
+{%- if domain.domain_entries is defined %}{# BEGIN if domain.domain_entries is defined #}
+      DomainEntries:
+{%- for entry in domain.domain_entries %}{# BEGIN for entry in domain.domain_entries #}
+        -
+          Name: {{ entry.name }}
+          Target: {{ entry.target }}
+          Type: {{ entry.type }}
+{%- if entry.id is defined %}
+          Id: {{ entry.id }}
+{%- endif %}
+{%- if entry.is_alias is defined %}
+          IsAlias: {{ entry.is_alias | lower }}
+{%- endif %}
+{%- endfor %}{# END for entry in domain.domain_entries #}
+{%- endif %}{# END if domain.domain_entries is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if domain.tags is defined %}
+{%- for key, value in domain.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for domain in sceptre_user_data.domains %}
+{%- set domain_name = domain.name %}
+  {{ domain_name }}Arn:
+    Description: The ARN for {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-Arn"
+  {{ domain_name }}CreatedAt:
+    Description: The creation date for {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - CreatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-CreatedAt"
+  {{ domain_name }}ResourceType:
+    Description: The resource type for {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - ResourceType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-ResourceType"
+  {{ domain_name }}SupportCode:
+    Description: The support code of the domain for {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - SupportCode
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-SupportCode"
+{%- endfor %}{#
+# Supported structure as of 2026-06-15:
+Type: AWS::Lightsail::Domain
+Properties:
+  DomainEntries:
+    -
+      Id: String
+      IsAlias: Boolean
+      Name: String
+      Target: String
+      Type: String
+  DomainName: String
+  Tags:
+    - Key: String
+      Value: String
+#}
