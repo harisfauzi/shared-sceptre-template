@@ -1,0 +1,64 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityHub Aggregator V2(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for aggregator_v2 in sceptre_user_data.aggregator_v2s %}
+{%- set aggregator_v2_name = aggregator_v2.name %}
+  {{ aggregator_v2_name }}:
+    Type: AWS::SecurityHub::AggregatorV2
+    DeletionPolicy: {{ aggregator_v2.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ aggregator_v2.update_replace_policy | default('Delete') }}
+    Properties:
+      LinkedRegions:
+{%- for region in aggregator_v2.linked_regions %}
+        - {{ region }}
+{%- endfor %}
+      RegionLinkingMode: {{ aggregator_v2.region_linking_mode }}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if aggregator_v2.tags is defined %}
+{%- for key,value in aggregator_v2.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for aggregator_v2 in sceptre_user_data.aggregator_v2s %}
+{%- set aggregator_v2_name = aggregator_v2.name %}
+  {{ aggregator_v2_name }}:
+    Description: The ARN for {{ aggregator_v2_name }}
+    Value:
+      Ref: {{ aggregator_v2_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ aggregator_v2_name }}"
+  {{ aggregator_v2_name }}AggregatorV2Arn:
+    Description: The ARN for {{ aggregator_v2_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ aggregator_v2_name }}
+        - AggregatorV2Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ aggregator_v2_name }}-AggregatorV2Arn"
+  {{ aggregator_v2_name }}AggregationRegion:
+    Description: The AWS Region where data is aggregated.
+    Value:
+      Fn::GetAtt:
+        - {{ aggregator_v2_name }}
+        - AggregationRegion
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ aggregator_v2_name }}-AggregationRegion"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::AggregatorV2
+Properties:
+  LinkedRegions:
+    - String
+  RegionLinkingMode: String
+  Tags:
+    Key: Value
+#}

@@ -1,0 +1,948 @@
+---{#
+# Structure of StringFilter as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-securityhub-insight-stringfilter.html
+  Comparison: String
+  Value: String
+#}{%- macro prep_string_filter(filter) %}
+-
+  Comparison: {{ filter.comparison }}
+  Value: {{ filter.value }}
+{%- endmacro %}{#
+# Structure of NumberFilter as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-securityhub-insight-numberfilter.html
+  Eq: Number
+  Gte: Number
+  Lte: Number
+#}{%- macro prep_number_filter(filter) %}
+-
+{%- if filter.eq is defined %}
+  Eq: {{ filter.eq }}
+{%- endif %}
+{%- if filter.gte is defined %}
+  Gte: {{ filter.gte }}
+{%- endif %}
+{%- if filter.lte is defined %}
+  Lte: {{ filter.lte }}
+{%- endif %}
+{%- endmacro %}{#
+# Structure of DateFilter as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-securityautomation_rule-automationrule-datefilter.html
+  DateRange:
+    Unit: String
+    Value: Number
+  End: String
+  Start: String
+#}{%- macro prep_date_filter(filter) %}
+-
+{%- if filter.date_range is defined %}
+  DateRange:
+    Unit: {{ filter.date_range.unit }}
+    Value: {{ filter.date_range.value }}
+{%- endif %}
+{%- if filter.end is defined %}
+  End: {{ filter.end }}
+{%- endif %}
+{%- if filter.start is defined %}
+  Start: {{ filter.start }}
+{%- endif %}
+{%- endmacro %}{#
+# Structure of MapFilter as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-securityautomation_rule-automationrule-numberfilter.html
+  Comparison: String
+  Key: String
+  Value: String
+#}{%- macro prep_map_filter(filter) %}
+-
+  Comparison: {{ filter.comparison }}
+  Key: {{ filter.key }}
+  Value: {{ filter.value }}
+{%- endmacro %}{#
+# Structure of KeywordFilter as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-securityhub-insight-keywordfilter.html
+  Value: String
+#}{%- macro prep_keyword_filter(filter) %}
+-
+  Value: {{ filter.value }}
+{%- endmacro %}{#
+# Structure of IpFilter as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-securityhub-insight-ipfilter.html
+  Cidr: String
+#}{%- macro prep_ip_filter(filter) %}
+-
+  Cidr: {{ filter.cidr }}
+{%- endmacro %}{#
+# Structure of BooleanFilter as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-securityhub-insight-booleanfilter.html
+- Value: Boolean
+#}{%- macro prep_boolean_filter(filter) %}
+-
+  Value: {{ filter.value | lower }}
+{%- endmacro %}
+Description: {{sceptre_user_data.description|default('SecurityHub Insight(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for insight in sceptre_user_data.insights %}
+{%- set insight_name = insight.name %}
+  {{ insight_name }}:
+    Type: AWS::SecurityHub::Insight
+    DeletionPolicy: {{ insight.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ insight.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ insight.insight_name }}
+      GroupByAttribute: {{ insight.group_by_attribute }}
+      Filters:
+{%- if insight.aws_account_id is defined %}
+        AwsAccountId:
+{%- for string_filter in insight.aws_account_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.aws_account_name is defined %}
+        AwsAccountName:
+{%- for string_filter in insight.aws_account_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.company_name is defined %}
+        CompanyName:
+{%- for string_filter in insight.company_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.compliance_associated_standards_id is defined %}
+        ComplianceAssociatedStandardsId:
+{%- for string_filter in insight.compliance_associated_standards_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.compliance_security_control_id is defined %}
+        ComplianceSecurityControlId:
+{%- for string_filter in insight.compliance_security_control_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.compliance_security_control_parameters_name is defined %}
+        ComplianceSecurityControlParametersName:
+{%- for string_filter in insight.compliance_security_control_parameters_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.compliance_security_control_parameters_value is defined %}
+        ComplianceSecurityControlParametersValue:
+{%- for string_filter in insight.compliance_security_control_parameters_value %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.compliance_status is defined %}
+        ComplianceStatus:
+{%- for string_filter in insight.compliance_status %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.confidence is defined %}
+        Confidence:
+{%- for number_filter in insight.confidence %}
+          {{- prep_number_filter(number_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.created_at is defined %}
+        CreatedAt:
+{%- for date_filter in insight.created_at %}
+          {{- prep_date_filter(date_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.criticality is defined %}
+        Criticality:
+{%- for number_filter in insight.criticality %}
+          {{- prep_number_filter(number_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.description is defined %}
+        Description:
+{%- for string_filter in insight.description %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.finding_provider_fields_confidence is defined %}
+        FindingProviderFieldsConfidence:
+{%- for number_filter in insight.finding_provider_fields_confidence %}
+          {{- prep_number_filter(number_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.finding_provider_fields_criticality is defined %}
+        FindingProviderFieldsCriticality:
+{%- for number_filter in insight.finding_provider_fields_criticality %}
+          {{- prep_number_filter(number_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.finding_provider_fields_related_findings_id is defined %}
+        FindingProviderFieldsRelatedFindingsId:
+{%- for string_filter in insight.finding_provider_fields_related_findings_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.finding_provider_fields_related_findings_product_arn is defined %}
+        FindingProviderFieldsRelatedFindingsProductArn:
+{%- for string_filter in insight.finding_provider_fields_related_findings_product_arn %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.finding_provider_fields_severity_label is defined %}
+        FindingProviderFieldsSeverityLabel:
+{%- for string_filter in insight.finding_provider_fields_severity_label %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.finding_provider_fields_severity_original is defined %}
+        FindingProviderFieldsSeverityOriginal:
+{%- for string_filter in insight.finding_provider_fields_severity_original %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.finding_provider_fields_types is defined %}
+        FindingProviderFieldsTypes:
+{%- for string_filter in insight.finding_provider_fields_types %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.first_observed_at is defined %}
+        FirstObservedAt:
+{%- for date_filter in insight.first_observed_at %}
+          {{- prep_date_filter(date_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.generator_id is defined %}
+        GeneratorId:
+{%- for string_filter in insight.generator_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.id is defined %}
+        Id:
+{%- for string_filter in insight.id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.keyword is defined %}
+        Keyword:
+{%- for keyword_filter in insight.keyword %}
+          {{- prep_keyword_filter(keyword_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.last_observed_at is defined %}
+        LastObservedAt:
+{%- for date_filter in insight.last_observed_at %}
+          {{- prep_date_filter(date_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.malware_name is defined %}
+        MalwareName:
+{%- for string_filter in insight.malware_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.malware_path is defined %}
+        MalwarePath:
+{%- for string_filter in insight.malware_path %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.malware_state is defined %}
+        MalwareState:
+{%- for string_filter in insight.malware_state %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.malware_type is defined %}
+        MalwareType:
+{%- for string_filter in insight.malware_type %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.network_destination_domain is defined %}
+        NetworkDestinationDomain:
+{%- for string_filter in insight.network_destination_domain %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.network_destination_ip_v4 is defined %}
+        NetworkDestinationIpV4:
+{%- for ip_filter in insight.network_destination_ip_v4 %}
+          {{- prep_ip_filter(ip_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.network_destination_ip_v6 is defined %}
+        NetworkDestinationIpV6:
+{%- for ip_filter in insight.network_destination_ip_v6 %}
+          {{- prep_ip_filter(ip_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.network_destination_port is defined %}
+        NetworkDestinationPort:
+{%- for number_filter in insight.network_destination_port %}
+          {{- prep_number_filter(number_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.network_direction is defined %}
+        NetworkDirection:
+{%- for string_filter in insight.network_direction %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.network_protocol is defined %}
+        NetworkProtocol:
+{%- for string_filter in insight.network_protocol %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.network_source_domain is defined %}
+        NetworkSourceDomain:
+{%- for string_filter in insight.network_source_domain %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.network_source_ip_v4 is defined %}
+        NetworkSourceIpV4:
+{%- for ip_filter in insight.network_source_ip_v4 %}
+          {{- prep_ip_filter(ip_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.network_source_ip_v6 is defined %}
+        NetworkSourceIpV6:
+{%- for ip_filter in insight.network_source_ip_v6 %}
+          {{- prep_ip_filter(ip_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.network_source_mac is defined %}
+        NetworkSourceMac:
+{%- for string_filter in insight.network_source_mac %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.network_source_port is defined %}
+        NetworkSourcePort:
+{%- for number_filter in insight.network_source_port %}
+          {{- prep_number_filter(number_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.note_text is defined %}
+        NoteText:
+{%- for string_filter in insight.note_text %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.note_updated_at is defined %}
+        NoteUpdatedAt:
+{%- for date_filter in insight.note_updated_at %}
+          {{- prep_date_filter(date_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.note_updated_by is defined %}
+        NoteUpdatedBy:
+{%- for string_filter in insight.note_updated_by %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.process_launched_at is defined %}
+        ProcessLaunchedAt:
+{%- for date_filter in insight.process_launched_at %}
+          {{- prep_date_filter(date_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.process_name is defined %}
+        ProcessName:
+{%- for string_filter in insight.process_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.process_parent_pid is defined %}
+        ProcessParentPid:
+{%- for number_filter in insight.process_parent_pid %}
+          {{- prep_number_filter(number_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.process_path is defined %}
+        ProcessPath:
+{%- for string_filter in insight.process_path %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.process_pid is defined %}
+        ProcessPid:
+{%- for number_filter in insight.process_pid %}
+          {{- prep_number_filter(number_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.process_terminated_at is defined %}
+        ProcessTerminatedAt:
+{%- for date_filter in insight.process_terminated_at %}
+          {{- prep_date_filter(date_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.product_arn is defined %}
+        ProductArn:
+{%- for string_filter in insight.product_arn %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.product_fields is defined %}
+        ProductFields:
+{%- for map_filter in insight.product_fields %}
+          {{- prep_map_filter(map_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.product_name is defined %}
+        ProductName:
+{%- for string_filter in insight.product_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.recommendation_text is defined %}
+        RecommendationText:
+{%- for string_filter in insight.recommendation_text %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.record_state is defined %}
+        RecordState:
+{%- for string_filter in insight.record_state %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.region is defined %}
+        Region:
+{%- for string_filter in insight.region %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.related_findings_id is defined %}
+        RelatedFindingsId:
+{%- for string_filter in insight.related_findings_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.related_findings_product_arn is defined %}
+        RelatedFindingsProductArn:
+{%- for string_filter in insight.related_findings_product_arn %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_application_arn is defined %}
+        ResourceApplicationArn:
+{%- for string_filter in insight.resource_application_arn %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_application_name is defined %}
+        ResourceApplicationName:
+{%- for string_filter in insight.resource_application_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_ec2_instance_iam_instance_profile_arn is defined %}
+        ResourceAwsEc2InstanceIamInstanceProfileArn:
+{%- for string_filter in insight.resource_aws_ec2_instance_iam_instance_profile_arn %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_ec2_instance_image_id is defined %}
+        ResourceAwsEc2InstanceImageId:
+{%- for string_filter in insight.resource_aws_ec2_instance_image_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_ec2_instance_ip_v4_addresses is defined %}
+        ResourceAwsEc2InstanceIpV4Addresses:
+{%- for ip_filter in insight.resource_aws_ec2_instance_ip_v4_addresses %}
+          {{- prep_ip_filter(ip_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_ec2_instance_ip_v6_addresses is defined %}
+        ResourceAwsEc2InstanceIpV6Addresses:
+{%- for ip_filter in insight.resource_aws_ec2_instance_ip_v6_addresses %}
+          {{- prep_ip_filter(ip_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_ec2_instance_key_name is defined %}
+        ResourceAwsEc2InstanceKeyName:
+{%- for string_filter in insight.resource_aws_ec2_instance_key_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_ec2_instance_launched_at is defined %}
+        ResourceAwsEc2InstanceLaunchedAt:
+{%- for date_filter in insight.resource_aws_ec2_instance_launched_at %}
+          {{- prep_date_filter(date_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_ec2_instance_subnet_id is defined %}
+        ResourceAwsEc2InstanceSubnetId:
+{%- for string_filter in insight.resource_aws_ec2_instance_subnet_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_ec2_instance_type is defined %}
+        ResourceAwsEc2InstanceType:
+{%- for string_filter in insight.resource_aws_ec2_instance_type %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_ec2_instance_vpc_id is defined %}
+        ResourceAwsEc2InstanceVpcId:
+{%- for string_filter in insight.resource_aws_ec2_instance_vpc_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_iam_access_key_created_at is defined %}
+        ResourceAwsIamAccessKeyCreatedAt:
+{%- for date_filter in insight.resource_aws_iam_access_key_created_at %}
+          {{- prep_date_filter(date_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_iam_access_key_principal_name is defined %}
+        ResourceAwsIamAccessKeyPrincipalName:
+{%- for string_filter in insight.resource_aws_iam_access_key_principal_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_iam_access_key_status is defined %}
+        ResourceAwsIamAccessKeyStatus:
+{%- for string_filter in insight.resource_aws_iam_access_key_status %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_iam_access_key_user_name is defined %}
+        ResourceAwsIamAccessKeyUserName:
+{%- for string_filter in insight.resource_aws_iam_access_key_user_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_iam_user_user_name is defined %}
+        ResourceAwsIamUserUserName:
+{%- for string_filter in insight.resource_aws_iam_user_user_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_s3_bucket_owner_id is defined %}
+        ResourceAwsS3BucketOwnerId:
+{%- for string_filter in insight.resource_aws_s3_bucket_owner_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_aws_s3_bucket_owner_name is defined %}
+        ResourceAwsS3BucketOwnerName:
+{%- for string_filter in insight.resource_aws_s3_bucket_owner_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_container_image_id is defined %}
+        ResourceContainerImageId:
+{%- for string_filter in insight.resource_container_image_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_container_image_name is defined %}
+        ResourceContainerImageName:
+{%- for string_filter in insight.resource_container_image_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_container_launched_at is defined %}
+        ResourceContainerLaunchedAt:
+{%- for date_filter in insight.resource_container_launched_at %}
+          {{- prep_date_filter(date_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_container_name is defined %}
+        ResourceContainerName:
+{%- for string_filter in insight.resource_container_name %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_details_other is defined %}
+        ResourceDetailsOther:
+{%- for map_filter in insight.resource_details_other %}
+          {{- prep_map_filter(map_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_id is defined %}
+        ResourceId:
+{%- for string_filter in insight.resource_id %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_partition is defined %}
+        ResourcePartition:
+{%- for string_filter in insight.resource_partition %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_region is defined %}
+        ResourceRegion:
+{%- for string_filter in insight.resource_region %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_tags is defined %}
+        ResourceTags:
+{%- for map_filter in insight.resource_tags %}
+          {{- prep_map_filter(map_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.resource_type is defined %}
+        ResourceType:
+{%- for string_filter in insight.resource_type %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.sample is defined %}
+        Sample:
+{%- for boolean_filter in insight.sample %}
+          {{- prep_boolean_filter(boolean_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.severity_label is defined %}
+        SeverityLabel:
+{%- for string_filter in insight.severity_label %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.severity_normalized is defined %}
+        SeverityNormalized:
+{%- for number_filter in insight.severity_normalized %}
+          {{- prep_number_filter(number_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.severity_product is defined %}
+        SeverityProduct:
+{%- for number_filter in insight.severity_product %}
+          {{- prep_number_filter(number_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.source_url is defined %}
+        SourceUrl:
+{%- for string_filter in insight.source_url %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.threat_intel_indicator_category is defined %}
+        ThreatIntelIndicatorCategory:
+{%- for string_filter in insight.threat_intel_indicator_category %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.threat_intel_indicator_last_observed_at is defined %}
+        ThreatIntelIndicatorLastObservedAt:
+{%- for date_filter in insight.threat_intel_indicator_last_observed_at %}
+          {{- prep_date_filter(date_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.threat_intel_indicator_source is defined %}
+        ThreatIntelIndicatorSource:
+{%- for string_filter in insight.threat_intel_indicator_source %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.threat_intel_indicator_source_url is defined %}
+        ThreatIntelIndicatorSourceUrl:
+{%- for string_filter in insight.threat_intel_indicator_source_url %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.threat_intel_indicator_type is defined %}
+        ThreatIntelIndicatorType:
+{%- for string_filter in insight.threat_intel_indicator_type %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.threat_intel_indicator_value is defined %}
+        ThreatIntelIndicatorValue:
+{%- for string_filter in insight.threat_intel_indicator_value %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.title is defined %}
+        Title:
+{%- for string_filter in insight.title %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.type is defined %}
+        Type:
+{%- for string_filter in insight.type %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.updated_at is defined %}
+        UpdatedAt:
+{%- for date_filter in insight.updated_at %}
+          {{- prep_date_filter(date_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.user_defined_fields is defined %}
+        UserDefinedFields:
+{%- for map_filter in insight.user_defined_fields %}
+          {{- prep_map_filter(map_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.verification_state is defined %}
+        VerificationState:
+{%- for string_filter in insight.verification_state %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.vulnerabilities_exploit_available is defined %}
+        VulnerabilitiesExploitAvailable:
+{%- for string_filter in insight.vulnerabilities_exploit_available %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.vulnerabilities_fix_available is defined %}
+        VulnerabilitiesFixAvailable:
+{%- for string_filter in insight.vulnerabilities_fix_available %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.workflow_state is defined %}
+        WorkflowState:
+{%- for string_filter in insight.workflow_state %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if insight.workflow_status is defined %}
+        WorkflowStatus:
+{%- for string_filter in insight.workflow_status %}
+          {{- prep_string_filter(string_filter) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for insight in sceptre_user_data.insights %}
+{%- set insight_name = insight.name %}
+  {{ insight_name }}:
+    Description: The ARN for {{ insight_name }}
+    Value:
+      Ref: {{ insight_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ insight_name }}"
+  {{ insight_name }}InsightArn:
+    Description: The ARN for {{ insight_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ insight_name }}
+        - InsightArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ insight_name }}-InsightArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-15:
+Type: AWS::SecurityHub::Insight
+Properties:
+  Filters:
+    AwsAccountId:
+      - StringFilter
+    AwsAccountName:
+      - StringFilter
+    CompanyName:
+      - StringFilter
+    ComplianceAssociatedStandardsId:
+      - StringFilter
+    ComplianceSecurityControlId:
+      - StringFilter
+    ComplianceSecurityControlParametersName:
+      - StringFilter
+    ComplianceSecurityControlParametersValue:
+      - StringFilter
+    ComplianceStatus:
+      - StringFilter
+    Confidence:
+      - NumberFilter
+    CreatedAt:
+      - DateFilter
+    Criticality:
+      - NumberFilter
+    Description:
+      - StringFilter
+    FindingProviderFieldsConfidence:
+      - NumberFilter
+    FindingProviderFieldsCriticality:
+      - NumberFilter
+    FindingProviderFieldsRelatedFindingsId:
+      - StringFilter
+    FindingProviderFieldsRelatedFindingsProductArn:
+      - StringFilter
+    FindingProviderFieldsSeverityLabel:
+      - StringFilter
+    FindingProviderFieldsSeverityOriginal:
+      - StringFilter
+    FindingProviderFieldsTypes:
+      - StringFilter
+    FirstObservedAt:
+      - DateFilter
+    GeneratorId:
+      - StringFilter
+    Id:
+      - StringFilter
+    Keyword:
+      - KeywordFilter
+    LastObservedAt:
+      - DateFilter
+    MalwareName:
+      - StringFilter
+    MalwarePath:
+      - StringFilter
+    MalwareState:
+      - StringFilter
+    MalwareType:
+      - StringFilter
+    NetworkDestinationDomain:
+      - StringFilter
+    NetworkDestinationIpV4:
+      - IpFilter
+    NetworkDestinationIpV6:
+      - IpFilter
+    NetworkDestinationPort:
+      - NumberFilter
+    NetworkDirection:
+      - StringFilter
+    NetworkProtocol:
+      - StringFilter
+    NetworkSourceDomain:
+      - StringFilter
+    NetworkSourceIpV4:
+      - IpFilter
+    NetworkSourceIpV6:
+      - IpFilter
+    NetworkSourceMac:
+      - StringFilter
+    NetworkSourcePort:
+      - NumberFilter
+    NoteText:
+      - StringFilter
+    NoteUpdatedAt:
+      - DateFilter
+    NoteUpdatedBy:
+      - StringFilter
+    ProcessLaunchedAt:
+      - DateFilter
+    ProcessName:
+      - StringFilter
+    ProcessParentPid:
+      - NumberFilter
+    ProcessPath:
+      - StringFilter
+    ProcessPid:
+      - NumberFilter
+    ProcessTerminatedAt:
+      - DateFilter
+    ProductArn:
+      - StringFilter
+    ProductFields:
+      - MapFilter
+    ProductName:
+      - StringFilter
+    RecommendationText:
+      - StringFilter
+    RecordState:
+      - StringFilter
+    Region:
+      - StringFilter
+    RelatedFindingsId:
+      - StringFilter
+    RelatedFindingsProductArn:
+      - StringFilter
+    ResourceApplicationArn:
+      - StringFilter
+    ResourceApplicationName:
+      - StringFilter
+    ResourceAwsEc2InstanceIamInstanceProfileArn:
+      - StringFilter
+    ResourceAwsEc2InstanceImageId:
+      - StringFilter
+    ResourceAwsEc2InstanceIpV4Addresses:
+      - IpFilter
+    ResourceAwsEc2InstanceIpV6Addresses:
+      - IpFilter
+    ResourceAwsEc2InstanceKeyName:
+      - StringFilter
+    ResourceAwsEc2InstanceLaunchedAt:
+      - DateFilter
+    ResourceAwsEc2InstanceSubnetId:
+      - StringFilter
+    ResourceAwsEc2InstanceType:
+      - StringFilter
+    ResourceAwsEc2InstanceVpcId:
+      - StringFilter
+    ResourceAwsIamAccessKeyCreatedAt:
+      - DateFilter
+    ResourceAwsIamAccessKeyPrincipalName:
+      - StringFilter
+    ResourceAwsIamAccessKeyStatus:
+      - StringFilter
+    ResourceAwsIamAccessKeyUserName:
+      - StringFilter
+    ResourceAwsIamUserUserName:
+      - StringFilter
+    ResourceAwsS3BucketOwnerId:
+      - StringFilter
+    ResourceAwsS3BucketOwnerName:
+      - StringFilter
+    ResourceContainerImageId:
+      - StringFilter
+    ResourceContainerImageName:
+      - StringFilter
+    ResourceContainerLaunchedAt:
+      - DateFilter
+    ResourceContainerName:
+      - StringFilter
+    ResourceDetailsOther:
+      - MapFilter
+    ResourceId:
+      - StringFilter
+    ResourcePartition:
+      - StringFilter
+    ResourceRegion:
+      - StringFilter
+    ResourceTags:
+      - MapFilter
+    ResourceType:
+      - StringFilter
+    Sample:
+      - BooleanFilter
+    SeverityLabel:
+      - StringFilter
+    SeverityNormalized:
+      - NumberFilter
+    SeverityProduct:
+      - NumberFilter
+    SourceUrl:
+      - StringFilter
+    ThreatIntelIndicatorCategory:
+      - StringFilter
+    ThreatIntelIndicatorLastObservedAt:
+      - DateFilter
+    ThreatIntelIndicatorSource:
+      - StringFilter
+    ThreatIntelIndicatorSourceUrl:
+      - StringFilter
+    ThreatIntelIndicatorType:
+      - StringFilter
+    ThreatIntelIndicatorValue:
+      - StringFilter
+    Title:
+      - StringFilter
+    Type:
+      - StringFilter
+    UpdatedAt:
+      - DateFilter
+    UserDefinedFields:
+      - MapFilter
+    VerificationState:
+      - StringFilter
+    VulnerabilitiesExploitAvailable:
+      - StringFilter
+    VulnerabilitiesFixAvailable:
+      - StringFilter
+    WorkflowState:
+      - StringFilter
+    WorkflowStatus:
+      - StringFilter
+  GroupByAttribute: String
+  Name: String
+#}

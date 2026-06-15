@@ -1,0 +1,88 @@
+---
+template:
+  type: file
+  path: securityhub/configuration_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SecurityHub Configuration Policy(s) for testing purposes"
+  configuration_policies:
+    - name: CisAwsFoundationsPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      configuration_policy_name: "CIS-AWS-Foundations-Benchmark-Policy"
+      description: "Configuration policy for CIS AWS Foundations Benchmark"
+      configuration_policy:
+        security_hub:
+          service_enabled: true
+          enabled_standard_identifiers:
+            - "arn:aws:securityhub:us-east-1::standards/aws-foundational-security-best-practices/v/1.0.0"
+            - "arn:aws:securityhub:us-east-1::standards/cis-aws-foundations-benchmark/v/1.2.0"
+          security_controls_configuration:
+            enabled_security_control_identifiers:
+              - "EC2.1"
+              - "EC2.2"
+              - "IAM.1"
+              - "S3.1"
+            disabled_security_control_identifiers:
+              - "CloudFormation.1"
+            security_control_custom_parameters:
+              - security_control_id: "EC2.2"
+                parameters:
+                  daysToExpiration: "90"
+                  allowedPorts: "80,443"
+              - security_control_id: "S3.1"
+                parameters:
+                  minTlsVersion: "1.2"
+      tags:
+        Application: "SecurityHub"
+        Standard: "CIS"
+        Environment: "Production"
+
+    - name: PciDssPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      configuration_policy_name: "PCI-DSS-v3-2-1-Policy"
+      description: "Configuration policy for PCI DSS v3.2.1 compliance"
+      configuration_policy:
+        security_hub:
+          service_enabled: true
+          enabled_standard_identifiers:
+            - "arn:aws:securityhub:us-east-1::standards/pci-dss/v/3.2.1"
+          security_controls_configuration:
+            enabled_security_control_identifiers:
+              - "Encryption.1"
+              - "Logging.1"
+              - "Network.1"
+            disabled_security_control_identifiers:
+              - "AppConfig.1"
+      tags:
+        Application: "SecurityHub"
+        Standard: "PCI-DSS"
+        Compliance: "Required"
+
+    - name: NistCybersecurityPolicy
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      configuration_policy_name: "NIST-CSF-Policy"
+      configuration_policy:
+        security_hub:
+          service_enabled: true
+          enabled_standard_identifiers:
+            - "arn:aws:securityhub:us-east-1::standards/nist-csf/v/1.1.0"
+          security_controls_configuration:
+            enabled_security_control_identifiers:
+              - "IAM.7"
+              - "Monitoring.1"
+              - "Logging.2"
+              - "KMS.1"
+      tags:
+        Application: "SecurityHub"
+        Standard: "NIST-CSF"
+        Framework: "NIST"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: securityhub-configuration-policy

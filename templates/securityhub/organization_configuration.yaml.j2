@@ -1,0 +1,48 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityHub Organization Configuration(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for organization_configuration in sceptre_user_data.organization_configurations %}
+{%- set organization_configuration_name = organization_configuration.name %}
+  {{ organization_configuration_name }}:
+    Type: AWS::SecurityHub::OrganizationConfiguration
+    DeletionPolicy: {{ organization_configuration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ organization_configuration.update_replace_policy | default('Delete') }}
+    Properties:
+      AutoEnable: {{ organization_configuration.auto_enable | lower }}
+{%- if organization_configuration.auto_enable_standards is defined %}
+      AutoEnableStandards: {{ organization_configuration.auto_enable_standards }}
+{%- endif %}
+{%- if organization_configuration.configuration_type is defined %}
+      ConfigurationType: {{ organization_configuration.configuration_type }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for organization_configuration in sceptre_user_data.organization_configurations %}
+{%- set organization_configuration_name = organization_configuration.name %}
+  {{ organization_configuration_name }}:
+    Description: The organization configuration ID for {{ organization_configuration_name }}
+    Value:
+      Ref: {{ organization_configuration_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organization_configuration_name }}"
+  {{ organization_configuration_name }}OrganizationConfigurationIdentifier:
+    Description: The organization configuration ID for {{ organization_configuration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ organization_configuration_name }}
+        - OrganizationConfigurationIdentifier
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ organization_configuration_name }}-OrganizationConfigurationIdentifier"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::OrganizationConfiguration
+Properties:
+  AutoEnable: Boolean
+  AutoEnableStandards: String
+  ConfigurationType: String
+#}

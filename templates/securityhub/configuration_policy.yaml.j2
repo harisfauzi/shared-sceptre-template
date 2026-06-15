@@ -1,0 +1,129 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityHub Configuration Policy(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for configuration_policy in sceptre_user_data.configuration_policies %}
+{%- set configuration_policy_name = configuration_policy.name %}
+  {{ configuration_policy_name }}:
+    Type: AWS::SecurityHub::ConfigurationPolicy
+    DeletionPolicy: {{ configuration_policy.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ configuration_policy.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ configuration_policy.configuration_policy_name }}
+      ConfigurationPolicy:
+{%- if configuration_policy.configuration_policy.security_hub is defined %}{# BEGIN if configuration_policy.configuration_policy.security_hub is defined #}
+        SecurityHub:
+{%- if configuration_policy.configuration_policy.security_hub.enabled_standard_identifiers is defined %}{# BEGIN if configuration_policy.configuration_policy.security_hub.enabled_standard_identifiers is defined #}
+          EnabledStandardIdentifiers:
+{%- for identifier in configuration_policy.configuration_policy.security_hub.enabled_standard_identifiers %}
+            - {{ identifier }}
+{%- endfor %}
+{%- endif %}{# END if configuration_policy.configuration_policy.security_hub.enabled_standard_identifiers is defined #}
+{%- if configuration_policy.configuration_policy.security_hub.security_controls_configuration is defined %}{# BEGIN if configuration_policy.configuration_policy.security_hub.security_controls_configuration is defined #}
+          SecurityControlsConfiguration:
+{%- if configuration_policy.configuration_policy.security_hub.security_controls_configuration.disabled_security_control_identifiers is defined %}{# BEGIN if configuration_policy.configuration_policy.security_hub.security_controls_configuration.disabled_security_control_identifiers is defined #}
+            DisabledSecurityControlIdentifiers:
+{%- for identifier in configuration_policy.configuration_policy.security_hub.security_controls_configuration.disabled_security_control_identifiers %}
+              - {{ identifier }}
+{%- endfor %}
+{%- endif %}{# END if configuration_policy.configuration_policy.security_hub.security_controls_configuration.disabled_security_control_identifiers is defined #}
+{%- if configuration_policy.configuration_policy.security_hub.security_controls_configuration.enabled_security_control_identifiers is defined %}{# BEGIN if configuration_policy.configuration_policy.security_hub.security_controls_configuration.enabled_security_control_identifiers is defined #}
+            EnabledSecurityControlIdentifiers:
+{%- for identifier in configuration_policy.configuration_policy.security_hub.security_controls_configuration.enabled_security_control_identifiers %}
+              - {{ identifier }}
+{%- endfor %}
+{%- endif %}{# END if configuration_policy.configuration_policy.security_hub.security_controls_configuration.enabled_security_control_identifiers is defined #}
+{%- if configuration_policy.configuration_policy.security_hub.security_controls_configuration.security_control_custom_parameters is defined %}{# BEGIN if configuration_policy.configuration_policy.security_hub.security_controls_configuration.security_control_custom_parameters is defined #}
+            SecurityControlCustomParameters:
+{%- for custom_parameter in configuration_policy.configuration_policy.security_hub.security_controls_configuration.security_control_custom_parameters %}
+              -
+{%- if custom_parameter.parameters is defined %}{# BEGIN if custom_parameter.parameters is defined #}
+                Parameters:
+{%- for key, value in custom_parameter.parameters.items() %}
+                  {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if custom_parameter.parameters is defined #}
+{%- if custom_parameter.security_control_id is defined %}
+                SecurityControlId: {{ custom_parameter.security_control_id }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if configuration_policy.configuration_policy.security_hub.security_controls_configuration.security_control_custom_parameters is defined #}
+{%- endif %}{# END if configuration_policy.configuration_policy.security_hub.security_controls_configuration is defined #}
+{%- if configuration_policy.configuration_policy.security_hub.service_enabled is defined %}
+          ServiceEnabled: {{ configuration_policy.configuration_policy.security_hub.service_enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if configuration_policy.configuration_policy.security_hub is defined #}
+{%- if configuration_policy.description is defined %}
+      Description: {{ configuration_policy.description }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if configuration_policy.tags is defined %}
+{%- for key,value in configuration_policy.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for configuration_policy in sceptre_user_data.configuration_policies %}
+{%- set configuration_policy_name = configuration_policy.name %}
+  {{ configuration_policy_name }}:
+    Description: The ARN for {{ configuration_policy_name }}
+    Value:
+      Ref: {{ configuration_policy_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ configuration_policy_name }}"
+  {{ configuration_policy_name }}Arn:
+    Description: The ARN for {{ configuration_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ configuration_policy_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ configuration_policy_name }}-Arn"
+  {{ configuration_policy_name }}Id:
+    Description: The ID for {{ configuration_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ configuration_policy_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ configuration_policy_name }}-Id"
+  {{ configuration_policy_name }}ServiceEnabled:
+    Description: Whether the service that configuration policy applies to is enabled for {{ configuration_policy_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ configuration_policy_name }}
+        - ServiceEnabled
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ configuration_policy_name }}-ServiceEnabled"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::ConfigurationPolicy
+Properties:
+  ConfigurationPolicy:
+    SecurityHub:
+      EnabledStandardIdentifiers:
+        - String
+      SecurityControlsConfiguration:
+        DisabledSecurityControlIdentifiers:
+          - String
+        EnabledSecurityControlIdentifiers:
+          - String
+        SecurityControlCustomParameters:
+          -
+            Parameters:
+              Key: Value
+            SecurityControlId: String
+      ServiceEnabled: Boolean
+  Description: String
+  Name: String
+  Tags:
+    Key: Value
+#}

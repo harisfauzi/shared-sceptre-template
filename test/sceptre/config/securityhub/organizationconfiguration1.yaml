@@ -1,0 +1,33 @@
+---
+template:
+  type: file
+  path: securityhub/organization_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SecurityHub Organization Configuration(s) for testing purposes"
+  organization_configurations:
+    - name: AutoEnableAllAccounts
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      auto_enable: true
+      auto_enable_standards: "DEFAULT"
+      configuration_type: "CENTRAL"
+
+    - name: ManualEnableConfiguration
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      auto_enable: false
+      configuration_type: "CENTRAL"
+
+    - name: OrganizationWideDeployment
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      auto_enable: true
+      auto_enable_standards: "ALL"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: securityhub-organization-configuration
