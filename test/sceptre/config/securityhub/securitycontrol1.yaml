@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: securityhub/security_control.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SecurityHub Security Control(s) for testing purposes"
+  security_controls:
+    - name: EnableEc2DetailedMonitoring
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      security_control_id: "EC2.1"
+      parameters: |-
+        MonitoringLevel: "Detailed"
+      last_update_reason: "Enabling detailed monitoring for compliance"
+
+    - name: RequireS3BucketVersioning
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      security_control_id: "S3.1"
+      parameters: |-
+        VersioningEnabled: "true"
+        MfaDeleteEnabled: "true"
+
+    - name: IamPasswordPolicyCaseSensitivity
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      security_control_id: "IAM.2"
+      parameters: |-
+        RequireUppercaseCharacters: "true"
+        RequireLowercaseCharacters: "true"
+        RequireSymbols: "true"
+        RequireNumbers: "true"
+        MinimumPasswordLength: "14"
+      last_update_reason: "Enforcing strong password policy requirements"
+
+    - name: EnableCloudtrailEncryption
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      security_control_id: "CloudTrail.1"
+      parameters: |-
+        LogFileEncryption: "enabled"
+        KmsKeyRotation: "enabled"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: securityhub-security-control

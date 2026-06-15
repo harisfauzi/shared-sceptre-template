@@ -1,0 +1,91 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityHub Connector V2(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for connector_v2 in sceptre_user_data.connector_v2s %}
+{%- set connector_v2_name = connector_v2.name %}
+  {{ connector_v2_name }}:
+    Type: AWS::SecurityHub::ConnectorV2
+    DeletionPolicy: {{ connector_v2.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ connector_v2.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ connector_v2.connector_v2_name }}
+      Provider:
+{%- if connector_v2.provider.jira_cloud is defined %}
+        JiraCloud:
+          ProjectKey: {{ connector_v2.provider.jira_cloud.project_key }}
+{%- endif %}
+{%- if connector_v2.provider.service_now is defined %}
+        ServiceNow:
+          InstanceName: {{ connector_v2.provider.service_now.instance_name }}
+          SecretArn: {{ connector_v2.provider.service_now.secret_arn | trim }}
+{%- endif %}
+{%- if connector_v2.description is defined %}
+      Description: {{ connector_v2.description }}
+{%- endif %}
+{%- if connector_v2.kms_key_arn is defined %}
+      KmsKeyArn: {{ connector_v2.kms_key_arn | trim }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if connector_v2.tags is defined %}
+{%- for key,value in connector_v2.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for connector_v2 in sceptre_user_data.connector_v2s %}
+{%- set connector_v2_name = connector_v2.name %}
+  {{ connector_v2_name }}:
+    Description: The ARN for {{ connector_v2_name }}
+    Value:
+      Ref: {{ connector_v2_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connector_v2_name }}"
+  {{ connector_v2_name }}ConnectorArn:
+    Description: The ARN for {{ connector_v2_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connector_v2_name }}
+        - ConnectorArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connector_v2_name }}-ConnectorArn"
+  {{ connector_v2_name }}ConnectorId:
+    Description: The ID for {{ connector_v2_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connector_v2_name }}
+        - ConnectorId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connector_v2_name }}-ConnectorId"
+  {{ connector_v2_name }}ConnectorStatus:
+    Description: The status for {{ connector_v2_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ connector_v2_name }}
+        - ConnectorStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ connector_v2_name }}-ConnectorStatus"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::ConnectorV2
+Properties:
+  Description: String
+  KmsKeyArn: String
+  Name: String
+  Provider:
+    JiraCloud:
+      ProjectKey: String
+    ServiceNow:
+      InstanceName: String
+      SecretArn: String
+  Tags:
+    Key: Value
+#}

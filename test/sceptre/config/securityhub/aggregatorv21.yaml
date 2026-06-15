@@ -1,0 +1,39 @@
+---
+template:
+  type: file
+  path: securityhub/aggregator_v2.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SecurityHub AggregatorV2(s) for testing purposes"
+  aggregator_v2s:
+    - name: PrimaryAggregator
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      linked_regions:
+        - us-east-1
+        - us-west-2
+        - eu-west-1
+      region_linking_mode: "ALL_REGIONS"
+      tags:
+        Application: "SecurityHub"
+        Environment: "Production"
+        Team: "Security"
+
+    - name: SecondaryAggregator
+      deletion_policy: Delete
+      update_release_policy: Delete
+      linked_regions:
+        - ap-southeast-1
+        - ap-southeast-2
+      region_linking_mode: "SPECIFIED_REGIONS"
+      tags:
+        Application: "SecurityHub"
+        Environment: "Production"
+        Region: "APAC"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: securityhub-aggregator-v2

@@ -1,0 +1,40 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityHub Product Subscription(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for product_subscription in sceptre_user_data.product_subscriptions %}
+{%- set product_subscription_name = product_subscription.name %}
+  {{ product_subscription_name }}:
+    Type: AWS::SecurityHub::ProductSubscription
+    DeletionPolicy: {{ product_subscription.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ product_subscription.update_replace_policy | default('Delete') }}
+    Properties:
+      ProductArn: {{ product_subscription.product_arn | trim }}
+{%- endfor %}
+
+Outputs:
+{%- for product_subscription in sceptre_user_data.product_subscriptions %}
+{%- set product_subscription_name = product_subscription.name %}
+  {{ product_subscription_name }}:
+    Description: The ARN for {{ product_subscription_name }}
+    Value:
+      Ref: {{ product_subscription_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ product_subscription_name }}"
+  {{ product_subscription_name }}ProductSubscriptionArn:
+    Description: The ARN for {{ product_subscription_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ product_subscription_name }}
+        - ProductSubscriptionArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ product_subscription_name }}-ProductSubscriptionArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::ProductSubscription
+Properties:
+  ProductArn: String
+#}

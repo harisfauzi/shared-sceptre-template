@@ -1,0 +1,599 @@
+---{#
+# Structure of StringFilter as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-securityautomation_rule-automationrule-stringfilter.html
+  Comparison: String
+  Value: String
+#}{%- macro prep_string_filter(filter) %}
+Comparison: {{ filter.comparison }}
+Value: {{ filter.value }}
+{%- endmacro %}{#
+# Structure of NumberFilter as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-securityautomation_rule-automationrule-numberfilter.html
+  Eq: Number
+  Gte: Number
+  Lte: Number
+#}{%- macro prep_number_filter(filter) %}
+{%- if filter.eq is defined %}
+Eq: {{ filter.eq }}
+{%- endif %}
+{%- if filter.gte is defined %}
+Gte: {{ filter.gte }}
+{%- endif %}
+{%- if filter.lte is defined %}
+Lte: {{ filter.lte }}
+{%- endif %}
+{%- endmacro %}{#
+# Structure of DateFilter as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-securityautomation_rule-automationrule-datefilter.html
+  DateRange:
+    Unit: String
+    Value: Number
+  End: String
+  Start: String
+#}{%- macro prep_date_filter(filter) %}
+{%- if filter.date_range is defined %}
+DateRange:
+  Unit: {{ filter.date_range.unit }}
+  Value: {{ filter.date_range.value }}
+{%- endif %}
+{%- if filter.end is defined %}
+End: {{ filter.end }}
+{%- endif %}
+{%- if filter.start is defined %}
+Start: {{ filter.start }}
+{%- endif %}
+{%- endmacro %}{#
+# Structure of MapFilter as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-securityautomation_rule-automationrule-numberfilter.html
+  Comparison: String
+  Key: String
+  Value: String
+#}{%- macro prep_map_filter(filter) %}
+Comparison: {{ filter.comparison }}
+Key: {{ filter.key }}
+Value: {{ filter.value }}
+{%- endmacro %}
+Description: {{sceptre_user_data.description|default('SecurityHub Automation Rule(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for automation_rule in sceptre_user_data.automation_rules %}
+{%- set automation_rule_name = automation_rule.name %}
+  {{ automation_rule_name }}:
+    Type: AWS::SecurityHub::AutomationRule
+    DeletionPolicy: {{ automation_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ automation_rule.update_replace_policy | default('Delete') }}
+    Properties:
+      Actions:
+{%- for action in automation_rule.actions %}{# BEGIN for action in automation_rule.actions #}
+        -
+          FindingFieldsUpdate:
+{%- if action.finding_fields_update.confidence is defined %}
+            Confidence: {{ action.finding_fields_update.confidence }}
+{%- endif %}
+{%- if action.finding_fields_update.criticality is defined %}
+            Criticality: {{ action.finding_fields_update.criticality }}
+{%- endif %}
+{%- if action.finding_fields_update.note is defined %}
+            Note:
+              Text: {{ action.finding_fields_update.note.text }}
+              UpdatedBy: {{ action.finding_fields_update.note.updated_by }}
+{%- endif %}
+{%- if action.finding_fields_update.related_findings is defined %}{# BEGIN if action.finding_fields_update.related_findings is defined #}
+            RelatedFindings:
+{%- for finding in action.finding_fields_update.related_findings %}
+              -
+                Id: {{ finding.id }}
+                ProductArn: {{ finding.product_arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if action.finding_fields_update.related_findings is defined #}
+{%- if action.finding_fields_update.severity is defined %}{# BEGIN if action.finding_fields_update.severity is defined #}
+            Severity:
+{%- if action.finding_fields_update.severity.label is defined %}
+              Label: {{ action.finding_fields_update.severity.label }}
+{%- endif %}
+{%- if action.finding_fields_update.severity.normalized is defined %}
+              Normalized: {{ action.finding_fields_update.severity.normalized }}
+{%- endif %}
+{%- if action.finding_fields_update.severity.product is defined %}
+              Product: {{ action.finding_fields_update.severity.product }}
+{%- endif %}
+{%- endif %}{# END if action.finding_fields_update.severity is defined #}
+{%- if action.finding_fields_update.types is defined %}{# BEGIN if action.finding_fields_update.types is defined #}
+            Types:
+{%- for type in action.finding_fields_update.types %}
+              - {{ type }}
+{%- endfor %}
+{%- endif %}{# END if action.finding_fields_update.types is defined #}
+{%- if action.finding_fields_update.user_defined_fields is defined %}{# BEGIN if action.finding_fields_update.user_defined_fields is defined #}
+            UserDefinedFields:
+{%- for key,value in action.finding_fields_update.user_defined_fields.items() %}
+              - Key: {{ key }}
+                Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if action.finding_fields_update.user_defined_fields is defined #}
+{%- if action.finding_fields_update.verification_state is defined %}
+            VerificationState: {{ action.finding_fields_update.verification_state }}
+{%- endif %}
+{%- if action.finding_fields_update.workflow is defined %}
+            Workflow:
+              Status: {{ action.finding_fields_update.workflow.status }}
+{%- endif %}
+          Type: FINDING_FIELDS_UPDATE
+{%- endfor %}{# END for action in automation_rule.actions #}
+      Criteria:
+{%- if automation_rule.criteria.aws_account_id is defined %}{# BEGIN if automation_rule.criteria.aws_account_id is defined #}
+        AwsAccountId:
+{%- for string_filter in automation_rule.criteria.aws_account_id %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.aws_account_id is defined #}
+{%- if automation_rule.criteria.company_name is defined %}{# BEGIN if automation_rule.criteria.company_name is defined #}
+        CompanyName:
+{%- for string_filter in automation_rule.criteria.company_name %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.company_name is defined #}
+{%- if automation_rule.criteria.compliance_associated_standards_id is defined %}{# BEGIN if automation_rule.criteria.compliance_associated_standards_id is defined #}
+        ComplianceAssociatedStandardsId:
+{%- for string_filter in automation_rule.criteria.compliance_associated_standards_id %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.compliance_associated_standards_id is defined #}
+{%- if automation_rule.criteria.compliance_security_control_id is defined %}{# BEGIN if automation_rule.criteria.compliance_security_control_id is defined #}
+        ComplianceSecurityControlId:
+{%- for string_filter in automation_rule.criteria.compliance_security_control_id %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.compliance_security_control_id is defined#}
+{%- if automation_rule.criteria.compliance_status is defined %}{# BEGIN if automation_rule.criteria.compliance_status is defined #}
+        ComplianceStatus:
+{%- for string_filter in automation_rule.criteria.compliance_status %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.compliance_status is defined #}
+{%- if automation_rule.criteria.confidence is defined %}{# BEGIN if automation_rule.criteria.confidence is defined #}
+        Confidence:
+{%- for number_filter in automation_rule.criteria.confidence %}
+          -
+            {{- prep_number_filter(number_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.confidence is defined #}
+{%- if automation_rule.criteria.created_at is defined %}{# BEGIN if automation_rule.criteria.created_at is defined 1#}
+        CreatedAt:
+{%- for date_filter in automation_rule.criteria.created_at %}
+          -
+            {{- prep_date_filter(date_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.created_at is defined #}
+{%- if automation_rule.criteria.criticality is defined %}{# BEGIN if automation_rule.criteria.criticality is defined #}
+        Criticality:
+{%- for number_filter in automation_rule.criteria.criticality %}
+          -
+            {{- prep_number_filter(number_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.criticality is defined #}
+{%- if automation_rule.criteria.description is defined %}{# BEGIN if automation_rule.criteria.description is defined #}
+        Description:
+{%- for string_filter in automation_rule.criteria.description %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.description is defined #}
+{%- if automation_rule.criteria.first_observed_at is defined %}{# BEGIN if automation_rule.criteria.first_observed_at is defined #}
+        FirstObservedAt:
+{%- for date_filter in automation_rule.criteria.first_observed_at %}
+          -
+            {{- prep_date_filter(date_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.first_observed_at is defined #}
+{%- if automation_rule.criteria.generator_id is defined %}{# BEGIN if automation_rule.criteria.generator_id is defined #}
+        GeneratorId:
+{%- for string_filter in automation_rule.criteria.generator_id %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.generator_id is defined #}
+{%- if automation_rule.criteria.id is defined %}{# BEGIN if automation_rule.criteria.id is defined #}
+        Id:
+{%- for string_filter in automation_rule.criteria.id %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.id is defined #}
+{%- if automation_rule.criteria.last_observed_at is defined %}{# BEGIN if automation_rule.criteria.last_observed_at is defined #}
+        LastObservedAt:
+{%- for date_filter in automation_rule.criteria.last_observed_at %}
+          -
+            {{- prep_date_filter(date_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.last_observed_at is defined #}
+{%- if automation_rule.criteria.note_text is defined %}{# BEGIN if automation_rule.criteria.note_text is defined #}
+        NoteText:
+{%- for string_filter in automation_rule.criteria.note_text %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.note_text is defined #}
+{%- if automation_rule.criteria.note_updated_at is defined %}{# BEGIN if automation_rule.criteria.note_updated_at is defined #}
+        NoteUpdatedAt:
+{%- for date_filter in automation_rule.criteria.note_updated_at %}
+          -
+            {{- prep_date_filter(date_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.note_updated_at is defined #}
+{%- if automation_rule.criteria.note_updated_by is defined %}{# BEGIN if automation_rule.criteria.note_updated_by is defined #}
+        NoteUpdatedBy:
+{%- for string_filter in automation_rule.criteria.note_updated_by %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.note_updated_by is defined #}
+{%- if automation_rule.criteria.product_arn is defined %}{# BEGIN if automation_rule.criteria.product_arn is defined #}
+        ProductArn:
+{%- for string_filter in automation_rule.criteria.product_arn %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.product_arn is defined #}
+{%- if automation_rule.criteria.product_name is defined %}{# BEGIN if automation_rule.criteria.product_name is defined #}
+        ProductName:
+{%- for string_filter in automation_rule.criteria.product_name %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.product_name is defined #}
+{%- if automation_rule.criteria.record_state is defined %}{# BEGIN if automation_rule.criteria.record_state is defined #}
+        RecordState:
+{%- for string_filter in automation_rule.criteria.record_state %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.record_state is defined #}
+{%- if automation_rule.criteria.related_findings_id is defined %}{# BEGIN if automation_rule.criteria.related_findings_id is defined #}
+        RelatedFindingsId:
+{%- for string_filter in automation_rule.criteria.related_findings_id %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.related_findings_id is defined #}
+{%- if automation_rule.criteria.related_findings_product_arn is defined %}{# BEGIN if automation_rule.criteria.related_findings_product_arn is defined #}
+        RelatedFindingsProductArn:
+{%- for string_filter in automation_rule.criteria.related_findings_product_arn %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.related_findings_product_arn is defined #}
+{%- if automation_rule.criteria.resource_details_other is defined %}{# BEGIN if automation_rule.criteria.resource_details_other is defined #}
+        ResourceDetailsOther:
+{%- for map_filter in automation_rule.criteria.resource_details_other%}
+          -
+            {{- prep_map_filter(map_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.resource_details_other is defined #}
+{%- if automation_rule.criteria.resource_id is defined %}{# BEGIN if automation_rule.criteria.resource_id is defined #}
+        ResourceId:
+{%- for string_filter in automation_rule.criteria.resource_id %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.resource_id is defined #}
+{%- if automation_rule.criteria.resource_partition is defined %}{# BEGIN if automation_rule.criteria.resource_partition is defined #}
+        ResourcePartition:
+{%- for string_filter in automation_rule.criteria.resource_partition %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.resource_partition is defined #}
+{%- if automation_rule.criteria.resource_region is defined %}{# BEGIN if automation_rule.criteria.resource_region is defined #}
+        ResourceRegion:
+{%- for string_filter in automation_rule.criteria.resource_region %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.resource_region is defined #}
+{%- if automation_rule.criteria.resource_tags is defined %}{# BEGIN if automation_rule.criteria.resource_tags is defined #}
+        ResourceTags:
+{%- for map_filter in automation_rule.criteria.resource_tags %}
+          -
+            {{- prep_map_filter(map_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.resource_tags is defined #}
+{%- if automation_rule.criteria.resource_type is defined %}{# BEGIN if automation_rule.criteria.resource_type is defined #}
+        ResourceType:
+{%- for string_filter in automation_rule.criteria.resource_type %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.resource_type is defined #}
+{%- if automation_rule.criteria.severity_label is defined %}{# BEGIN if automation_rule.criteria.severity_label is defined #}
+        SeverityLabel:
+{%- for string_filter in automation_rule.criteria.severity_label %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.severity_label is defined #}
+{%- if automation_rule.criteria.source_url is defined %}{# BEGIN if automation_rule.criteria.source_url is defined #}
+        SourceUrl:
+{%- for string_filter in automation_rule.criteria.source_url %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.source_url is defined #}
+{%- if automation_rule.criteria.title is defined %}{# BEGIN if automation_rule.criteria.title is defined #}
+        Title:
+{%- for string_filter in automation_rule.criteria.title %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.title is defined #}
+{%- if automation_rule.criteria.type is defined %}{# BEGIN if automation_rule.criteria.type is defined #}
+        Type:
+{%- for string_filter in automation_rule.criteria.type %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.type is defined #}
+{%- if automation_rule.criteria.updated_at is defined %}{# BEGIN if automation_rule.criteria.updated_at is defined #}
+        UpdatedAt:
+{%- for date_filter in automation_rule.criteria.updated_at %}
+          -
+            {{- prep_date_filter(date_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.updated_at is defined #}
+{%- if automation_rule.criteria.user_defined_fields is defined %}{# BEGIN if automation_rule.criteria.user_defined_fields is defined #}
+        UserDefinedFields:
+{%- for map_filter in automation_rule.criteria.user_defined_fields %}
+          -
+            {{- prep_map_filter(map_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.user_defined_fields is defined #}
+{%- if automation_rule.criteria.verification_state is defined %}{# BEGIN if automation_rule.criteria.verification_state is defined #}
+        VerificationState:
+{%- for string_filter in automation_rule.criteria.verification_state %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.verification_state is defined #}
+{%- if automation_rule.criteria.workflow_status is defined %}{# BEGIN if automation_rule.criteria.workflow_status is defined #}
+        WorkflowStatus:
+{%- for string_filter in automation_rule.criteria.workflow_status %}
+          -
+            {{- prep_string_filter(string_filter) | indent(width=12, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if automation_rule.criteria.workflow_status is defined #}
+      Description: {{ automation_rule.description }}
+      RuleName: {{ automation_rule.rule_name }}
+      RuleOrder: {{ automation_rule.rule_order }}
+{%- if automation_rule.is_terminal is defined %}
+      IsTerminal: {{ automation_rule.is_terminal | lower }}
+{%- endif %}
+{%- if automation_rule.rule_status is defined %}
+      RuleStatus: {{ automation_rule.rule_status }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if automation_rule.tags is defined %}
+{%- for key,value in automation_rule.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for automation_rule in sceptre_user_data.automation_rules %}
+{%- set automation_rule_name = automation_rule.name %}
+  {{ automation_rule_name }}:
+    Description: Rule ARN for {{ automation_rule_name }}
+    Value:
+      Ref: {{ automation_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ automation_rule_name }}"
+  {{ automation_rule_name }}RuleArn:
+    Description: Rule ARN for {{ automation_rule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ automation_rule_name }}
+        - RuleArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ automation_rule_name }}-RuleArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::AutomationRule
+Properties:
+  Actions:
+    -
+      FindingFieldsUpdate:
+        Confidence: Integer
+        Criticality: Integer
+        Note:
+          Text: String
+          UpdatedBy: String
+        RelatedFindings:
+          -
+            Id: String
+            ProductArn: String
+        Severity:
+          Label: String
+          Normalized: Integer
+          Product: Number
+        Types:
+          - String
+        UserDefinedFields:
+          Key: Value
+        VerificationState: String
+        Workflow:
+          Status: String
+      Type: String
+  Criteria:
+    AwsAccountId:
+      -
+        Comparison: String
+        Value: String
+    CompanyName:
+      -
+        Comparison: String
+        Value: String
+    ComplianceAssociatedStandardsId:
+      -
+        Comparison: String
+        Value: String
+    ComplianceSecurityControlId:
+      -
+        Comparison: String
+        Value: String
+    ComplianceStatus:
+      -
+        Comparison: String
+        Value: String
+    Confidence:
+      -
+        Eq: Number
+        Gte: Number
+        Lte: Number
+    CreatedAt:
+      -
+        DateRange:
+          Unit: String
+          Value: Number
+        End: String
+        Start: String
+    Criticality:
+      -
+        Eq: Number
+        Gte: Number
+        Lte: Number
+    Description:
+      -
+        Comparison: String
+        Value: String
+    FirstObservedAt:
+      -
+        DateRange:
+          Unit: String
+          Value: Number
+        End: String
+        Start: String
+    GeneratorId:
+      -
+        Comparison: String
+        Value: String
+    Id:
+      -
+        Comparison: String
+        Value: String
+    LastObservedAt:
+      -
+        DateRange:
+          Unit: String
+          Value: Number
+        End: String
+        Start: String
+    NoteText:
+      -
+        Comparison: String
+        Value: String
+    NoteUpdatedAt:
+      -
+        DateRange:
+          Unit: String
+          Value: Number
+        End: String
+        Start: String
+    NoteUpdatedBy:
+      -
+        Comparison: String
+        Value: String
+    ProductArn:
+      -
+        Comparison: String
+        Value: String
+    ProductName:
+      -
+        Comparison: String
+        Value: String
+    RecordState:
+      -
+        Comparison: String
+        Value: String
+    RelatedFindingsId:
+      -
+        Comparison: String
+        Value: String
+    RelatedFindingsProductArn:
+      -
+        Comparison: String
+        Value: String
+    ResourceDetailsOther:
+      -
+        Comparison: String
+        Key: String
+        Value: String
+    ResourceId:
+      -
+        Comparison: String
+        Value: String
+    ResourcePartition:
+      -
+        Comparison: String
+        Value: String
+    ResourceRegion:
+      -
+        Comparison: String
+        Value: String
+    ResourceTags:
+      -
+        Comparison: String
+        Key: String
+        Value: String
+    ResourceType:
+      -
+        Comparison: String
+        Value: String
+    SeverityLabel:
+      -
+        Comparison: String
+        Value: String
+    SourceUrl:
+      -
+        Comparison: String
+        Value: String
+    Title:
+      -
+        Comparison: String
+        Value: String
+    Type:
+      -
+        Comparison: String
+        Value: String
+    UpdatedAt:
+      -
+        DateRange:
+          Unit: String
+          Value: Number
+        End: String
+        Start: String
+    UserDefinedFields:
+      -
+        Comparison: String
+        Key: String
+        Value: String
+    VerificationState:
+      -
+        Comparison: String
+        Value: String
+    WorkflowStatus:
+      -
+        Comparison: String
+        Value: String
+  Description: String
+  IsTerminal: Boolean
+  RuleName: String
+  RuleOrder: Integer
+  RuleStatus: String
+  Tags:
+    Key: Value
+#}
