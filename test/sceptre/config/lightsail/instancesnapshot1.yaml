@@ -1,0 +1,58 @@
+---
+template:
+  type: file
+  path: lightsail/instance-snapshot.yaml.j2
+
+sceptre_user_data:
+  description: "Lightsail Instance Snapshot(s) for testing purposes"
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  instance_snapshots:
+    - name: ProductionWebServerSnapshot
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      instance_name: "production-web-server"
+      instance_snapshot_name: "production-web-server-snapshot-v1"
+      tags:
+        Environment: "Production"
+        Application: "WebServer"
+        BackupType: "Daily"
+        Owner: "DevOpsTeam"
+
+    - name: DatabaseServerSnapshot
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      instance_name: "database-server-primary"
+      instance_snapshot_name: "database-server-snapshot-v1"
+      tags:
+        Environment: "Production"
+        Application: "Database"
+        BackupType: "PointInTime"
+        CriticalData: "true"
+
+    - name: DevelopmentEnvironmentSnapshot
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      instance_name: "dev-environment-instance"
+      instance_snapshot_name: "dev-environment-snapshot-v1"
+      tags:
+        Environment: "Development"
+        BackupType: "OnDemand"
+        Purpose: "FeatureTesting"
+        Owner: "EngineeringTeam"
+
+    - name: StagingLoadBalancerSnapshot
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      instance_name: "staging-load-balancer"
+      instance_snapshot_name: "staging-load-balancer-snapshot-v1"
+      tags:
+        Environment: "Staging"
+        Application: "LoadBalancer"
+        BackupType: "PreRelease"
+        Tier: "Frontend"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: lightsail-instance-snapshot

@@ -157,7 +157,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}"
-
   {{ instance_name }}InstanceArn:
     Description: The ARN for {{ instance_name }}
     Value:
@@ -167,7 +166,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}-InstanceArn"
-
   {{ instance_name }}LocationAvailabilityZone:
     Description: The AWS Region and Availability Zone where the instance {{ instance_name }} is located.
     Value:
@@ -177,7 +175,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}-Location-AvailabilityZone"
-
   {{ instance_name }}LocationRegionName:
     Description: The AWS Region of the instance {{ instance_name }} is located.
     Value:
@@ -187,7 +184,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}-Location-RegionName"
-
   {{ instance_name }}PrivateIpAddress:
     Description: The private IP address for {{ instance_name }}
     Value:
@@ -197,7 +193,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}-PrivateIpAddress"
-
   {{ instance_name }}SshKeyName:
     Description: The name of the SSH key pair used by the instance {{ instance_name }}.
     Value:
@@ -207,7 +202,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}-SshKeyName"
-
+  {{ instance_name }}ResourceType:
+    Description: The resource type of the instance {{ instance_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - ResourceType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-ResourceType"
   {{ instance_name }}SupportCode:
     Description: The support code of the instance {{ instance_name }}.
     Value:
@@ -217,10 +220,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ instance_name }}-SupportCode"
-
-{%- endfor %}
-{#
-# Supported structure as of 20250224:
+  {{ instance_name }}UserName:
+    Description: The user name for connecting to the instance {{ instance_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ instance_name }}
+        - UserName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_name }}-UserName"
+{%- endfor %}{#
+# Supported structure as of 2025-02-24:
 Type: AWS::Lightsail::Instance
 Properties:
   AddOns:

@@ -49,7 +49,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ alarm_name }}"
-
   {{ alarm_name }}AlarmArn:
     Description: The ARN for {{ alarm_name }}
     Value:
@@ -59,10 +58,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ alarm_name }}-AlarmArn"
-
-{%- endfor %}
-{#
-# Supported structure as of 20250223:
+{%- endfor %}{#
+# Supported structure as of 2025-02-23:
 Type: AWS::Lightsail::Alarm
 Properties:
   AlarmName: String

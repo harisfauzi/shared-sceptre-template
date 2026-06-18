@@ -1,0 +1,98 @@
+---
+template:
+  type: file
+  path: lightsail/domain.yaml.j2
+
+sceptre_user_data:
+  description: "Lightsail Domain(s) for testing purposes"
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  domains:
+    - name: ProductionDomain
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      domain_name: "example.com"
+      domain_entries:
+        - name: "'@'"
+          target: "203.0.113.10"
+          type: "A"
+          is_alias: false
+        - name: "www"
+          target: "203.0.113.10"
+          type: "A"
+          is_alias: false
+        - name: "mail"
+          target: "10 mail.example.com"
+          type: "MX"
+          is_alias: false
+        - name: "api"
+          target: "203.0.113.20"
+          type: "A"
+          is_alias: false
+      tags:
+        Environment: "Production"
+        Application: "WebsiteDomain"
+        Owner: "WebOpsTeam"
+        ManagedBy: "Terraform"
+
+    - name: DevelopmentDomain
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      domain_name: "dev.example.com"
+      domain_entries:
+        - name: "'@'"
+          target: "203.0.113.30"
+          type: "A"
+          is_alias: false
+        - name: "www"
+          target: "203.0.113.30"
+          type: "A"
+          is_alias: false
+        - name: "api"
+          target: "203.0.113.31"
+          type: "A"
+          is_alias: false
+      tags:
+        Environment: "Development"
+        Application: "WebsiteDomain"
+        Owner: "EngineeringTeam"
+        Purpose: "FeatureDevelopment"
+
+    - name: StagingDomain
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      domain_name: "staging.example.com"
+      domain_entries:
+        - name: "'@'"
+          target: "203.0.113.40"
+          type: "A"
+          is_alias: false
+        - name: "www"
+          target: "203.0.113.40"
+          type: "A"
+          is_alias: false
+      tags:
+        Environment: "Staging"
+        Application: "WebsiteDomain"
+        Owner: "QATeam"
+        ReleasePhase: "PreProduction"
+
+    - name: TestingDomain
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      domain_name: "test.example.com"
+      domain_entries:
+        - name: "'@'"
+          target: "203.0.113.50"
+          type: "A"
+          is_alias: false
+      tags:
+        Environment: "Testing"
+        Application: "WebsiteDomain"
+        Owner: "QATeam"
+        Temporary: "true"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: lightsail-domain

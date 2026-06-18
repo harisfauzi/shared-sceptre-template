@@ -1,0 +1,101 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Instance Snapshot(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for instance_snapshot in sceptre_user_data.instance_snapshots %}
+{%- set instance_snapshot_name = instance_snapshot.name %}
+  {{ instance_snapshot_name }}:
+    Type: AWS::Lightsail::InstanceSnapshot
+    DeletionPolicy: {{ instance_snapshot.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ instance_snapshot.update_replace_policy | default('Delete') }}
+    Properties:
+      InstanceName: {{ instance_snapshot.instance_name }}
+      InstanceSnapshotName: {{ instance_snapshot.instance_snapshot_name }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if instance_snapshot.tags is defined %}
+{%- for key, value in instance_snapshot.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for instance_snapshot in sceptre_user_data.instance_snapshots %}
+{%- set instance_snapshot_name = instance_snapshot.name %}
+  {{ instance_snapshot_name }}Arn:
+    Description: The ARN for {{ instance_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_snapshot_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_snapshot_name }}-Arn"
+  {{ instance_snapshot_name }}FromInstanceArn:
+    Description: The ARN of the instance from which the instance snapshot {{ instance_snapshot_name }} was created
+    Value:
+      Fn::GetAtt:
+        - {{ instance_snapshot_name }}
+        - FromInstanceArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_snapshot_name }}-FromInstanceArn"
+  {{ instance_snapshot_name }}FromInstanceName:
+    Description: The instance from which instance snapshot {{ instance_snapshot_name }} was created
+    Value:
+      Fn::GetAtt:
+        - {{ instance_snapshot_name }}
+        - FromInstanceName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_snapshot_name }}-FromInstanceName"
+  {{ instance_snapshot_name }}ResourceType:
+    Description: The lightsail resource type for {{ instance_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_snapshot_name }}
+        - ResourceType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_snapshot_name }}-ResourceType"
+  {{ instance_snapshot_name }}SizeInGb:
+    Description: The size in GB for {{ instance_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_snapshot_name }}
+        - SizeInGb
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_snapshot_name }}-SizeInGb"
+  {{ instance_snapshot_name }}State:
+    Description: The state of the instance snapshot {{ instance_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_snapshot_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_snapshot_name }}-State"
+  {{ instance_snapshot_name }}SupportCode:
+    Description: The support code for {{ instance_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_snapshot_name }}
+        - SupportCode
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_snapshot_name }}-SupportCode"
+{%- endfor %}{#
+# Supported structure as of 2026-06-15:
+Type: AWS::Lightsail::InstanceSnapshot
+Properties:
+  InstanceName: String
+  InstanceSnapshotName: String
+  Tags:
+    - Key: String
+      Value: String
+#}

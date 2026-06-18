@@ -19,7 +19,7 @@ Resources:
       AvailabilityZone: {{ database.availability_zone }}
 {%- endif %}
 {%- if database.backup_retention is defined %}
-      BackupRetention: {{ database.backup_retention }}
+      BackupRetention: {{ database.backup_retention | lower }}
 {%- endif %}
 {%- if database.ca_certificate_identifier is defined %}
       CaCertificateIdentifier: {{ database.ca_certificate_identifier }}
@@ -34,11 +34,11 @@ Resources:
       PreferredMaintenanceWindow: {{ database.preferred_maintenance_window }}
 {%- endif %}
 {%- if database.publicly_accessible is defined %}
-      PubliclyAccessible: {{ database.publicly_accessible }}
+      PubliclyAccessible: {{ database.publicly_accessible | lower }}
 {%- endif %}
-{%- if database.relational_database_parameters is defined %}
+{%- if database.relational_database_parameters is defined %}{# BEGIN if database.relational_database_parameters is defined#}
       RelationalDatabaseParameters:
-{%- for param in database.relational_database_parameters %}
+{%- for param in database.relational_database_parameters %}{# BEGIN for param in database.relational_database_parameters #}
         -
 {%- if param.allowed_values is defined %}
           AllowedValues: {{ param.allowed_values }}
@@ -56,7 +56,7 @@ Resources:
           Description: {{ param.description }}
 {%- endif %}
 {%- if param.is_modifiable is defined %}
-          IsModifiable: {{ param.is_modifiable }}
+          IsModifiable: {{ param.is_modifiable | lower }}
 {%- endif %}
 {%- if param.parameter_name is defined %}
           ParameterName: {{ param.parameter_name }}
@@ -64,10 +64,10 @@ Resources:
 {%- if param.parameter_value is defined %}
           ParameterValue: {{ param.parameter_value }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for param in database.relational_database_parameters#}
+{%- endif %}{# END if database.relational_database_parameters is defined #}
 {%- if database.rotate_master_user_password is defined %}
-      RotateMasterUserPassword: {{ database.rotate_master_user_password }}
+      RotateMasterUserPassword: {{ database.rotate_master_user_password | lower }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -90,7 +90,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ database_name }}"
-
   {{ database_name }}DatabaseArn:
     Description: The ARN for {{ database_name }}
     Value:
@@ -100,10 +99,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ database_name }}-DatabaseArn"
-
-{%- endfor %}
-{#
-# Supported structure as of 20250224:
+{%- endfor %}{#
+# Supported structure as of 2025-02-24:
 Type: AWS::Lightsail::Database
 Properties:
   AvailabilityZone: String

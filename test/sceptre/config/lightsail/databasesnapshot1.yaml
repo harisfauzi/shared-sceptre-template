@@ -1,0 +1,44 @@
+---
+template:
+  type: file
+  path: lightsail/database-snapshot.yaml.j2
+
+sceptre_user_data:
+  description: "Lightsail Database Snapshot(s) for testing purposes"
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  database_snapshots:
+    - name: PrimaryDatabaseSnapshot
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      relational_database_name: "production-db"
+      relational_database_snapshot_name: "production-db-snapshot-v1"
+      tags:
+        Environment: "Production"
+        BackupType: "Daily"
+        Owner: "DatabaseTeam"
+
+    - name: DevelopmentDatabaseSnapshot
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      relational_database_name: "development-db"
+      relational_database_snapshot_name: "development-db-snapshot-v1"
+      tags:
+        Environment: "Development"
+        BackupType: "OnDemand"
+        Owner: "DevTeam"
+
+    - name: StagingDatabaseSnapshot
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      relational_database_name: "staging-db"
+      relational_database_snapshot_name: "staging-db-snapshot-prerelease"
+      tags:
+        Environment: "Staging"
+        BackupType: "PreRelease"
+        Purpose: "Testing"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: lightsail-database-snapshot
