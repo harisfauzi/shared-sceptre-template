@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('DMS ReplicationTask(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('DMS Replication Task(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for replication_task in sceptre_user_data.replication_tasks %}
 {%- set replication_task_name = replication_task.name %}
   {{ replication_task_name }}:
@@ -46,11 +45,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for replication_task in sceptre_user_data.replication_tasks %}
 {%- set replication_task_name = replication_task.name %}
   {{ replication_task_name }}:
@@ -60,5 +57,32 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ replication_task_name }}"
-
-{%- endfor %}
+  {{ replication_task_name }}ReplicationTaskArn:
+    Description: ARN for {{ replication_task_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ replication_task_name }}
+        - ReplicationTaskArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_task_name }}-ReplicationTaskArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-18:
+Type: AWS::DMS::ReplicationTask
+Properties:
+  CdcStartPosition: String
+  CdcStartTime: Number
+  CdcStopPosition: String
+  MigrationType: String
+  ReplicationInstanceArn: String
+  ReplicationTaskIdentifier: String
+  ReplicationTaskSettings: String
+  ResourceIdentifier: String
+  SourceEndpointArn: String
+  TableMappings: String
+  Tags:
+    - Key: String
+      Value: String
+  TargetEndpointArn: String
+  TaskData: String
+#}

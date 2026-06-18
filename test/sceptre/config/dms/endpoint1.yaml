@@ -1,0 +1,169 @@
+---
+template:
+  type: file
+  path: dms/endpoint.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DMS Endpoints for Database Source and Target Connectivity
+  use_parameter_for_password: false
+  endpoints:
+    - name: PostgresSourceEndpoint
+      endpoint_identifier: postgres-source-endpoint-001
+      engine: postgres
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      endpoint_type: source
+      engine_name: postgres
+      postgresql_settings:
+        server_name: source-postgres.example.com
+        port: 5432
+        database_name: source_migration_db
+        ssl_mode: require
+        capture_ddls: true
+        heartbeat_enable: true
+        heartbeat_schema: dms_heartbeat
+        heartbeat_frequency: 60
+        ddl_artifacts_schema: dms_sample
+        fail_tasks_on_lob_truncation: false
+      tags:
+        Environment: Production
+        DatabaseType: PostgreSQL
+        Role: Source
+
+    - name: MysqlTargetEndpoint
+      endpoint_identifier: mysql-target-endpoint-002
+      engine: mysql
+      deletion_policy: Delete
+      endpoint_type: target
+      engine_name: mysql
+      mysql_settings:
+        server_name: target-mysql.example.com
+        port: 3306
+        ssl_mode: require
+        server_timezone: UTC
+        max_file_size: 262144000
+        parallel_load_threads: 4
+        events_poll_interval: 5
+        clean_source_metadata_on_mismatch: true
+      tags:
+        Environment: Staging
+        DatabaseType: MySQL
+        Role: Target
+
+    - name: OracleSourceEndpoint
+      endpoint_identifier: oracle-source-endpoint-003
+      engine: oracle
+      database_name: ORCL
+      endpoint_type: source
+      engine_name: oracle
+      oracle_settings:
+        server_name: oracle-db.example.com
+        port: 1521
+        ssl_mode: require
+        asm_user: asm_user
+        asm_server: asm.example.com
+        char_length_semantics: BYTE
+        direct_path_no_log: false
+        direct_path_parallel_load: true
+        enable_homogenous_tablespace: false
+        fail_tasks_on_lob_truncation: true
+        number_datatype_scale: 38
+        parallel_asm_read_threads: 4
+        read_ahead_blocks: 50
+        read_table_space_name: false
+        replace_path_prefix: false
+        retry_interval: 5
+        security_db_encryption: ENCRYPTED
+        security_db_encryption_name: TDE
+        spatial_data_option_to_geo_json_function_name: SDOGEOM
+        standby_delay_time: 0
+        use_alternate_folder_for_online: false
+        use_b_file: true
+        use_direct_path_full_load: true
+        use_logminer_reader: false
+        use_path_prefix: '.'
+        extra_archived_log_dest_ids:
+          - /u01/archive1
+          - /u02/archive2
+      tags:
+        Environment: Production
+        DatabaseType: Oracle
+        Critical: "true"
+
+    - name: MongoDbTargetEndpoint
+      endpoint_identifier: mongodb-target-endpoint-004
+      engine: mongodb
+      endpoint_type: target
+      engine_name: mongodb
+      mongo_db_settings:
+        server_name: mongo-cluster.example.com
+        port: 27017
+        auth_type: password
+        auth_mechanism: scram
+        auth_source: admin
+        database_name: migration_db
+        extract_doc_id: true
+        nesting_level: 3
+        docs_to_investigate: 10000
+      tags:
+        Environment: Development
+        DatabaseType: MongoDB
+
+    - name: KafkaTargetEndpoint
+      endpoint_identifier: kafka-target-endpoint-005
+      engine: kafka
+      endpoint_type: target
+      engine_name: kafka
+      kafka_settings:
+        broker: kafka-broker.example.com:9092
+        topic: dms-replication-topic
+        message_format: json
+        include_control_details: true
+        include_null_and_empty: true
+        include_partition_value: true
+        include_table_alter_operations: true
+        include_transaction_details: true
+        partition_include_schema_table: true
+        security_protocol: SSL
+        no_hex_prefix: false
+        message_max_bytes: 1000000
+      tags:
+        Environment: Staging
+        DatabaseType: Kafka
+        DataFormat: JSON
+
+    - name: RedisTargetEndpoint
+      endpoint_identifier: redis-target-endpoint-006
+      engine: redis
+      endpoint_type: target
+      engine_name: redis
+      redis_settings:
+        server_name: redis-cluster.example.com
+        port: 6379
+        auth_type: password
+        auth_user_name: default
+        ssl_security_protocol: ssl-encryption
+        ssl_ca_certificate_arn: arn:aws:secretsmanager:us-east-1:123456789012:secret:redis-ca-cert
+      tags:
+        Environment: Development
+        DatabaseType: Redis
+
+    - name: DocDbTargetEndpoint
+      endpoint_identifier: docdb-target-endpoint-007
+      engine: docdb
+      endpoint_type: source
+      engine_name: docdb
+      doc_db_settings:
+        server_name: docdb-cluster.example.com
+        port: 27017
+        database_name: docdb_migration
+        extract_doc_id: false
+        nesting_level: 1
+      tags:
+        Environment: Staging
+        DatabaseType: DocumentDB
+
+stack_tags:
+  Test: dms-endpoint

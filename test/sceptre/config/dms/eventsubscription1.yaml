@@ -1,0 +1,89 @@
+---
+template:
+  type: file
+  path: dms/event_subscription.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DMS Event Subscriptions for Task and Endpoint Notifications
+  event_subscriptions:
+    - name: ReplicationTaskEventSubscription
+      sns_topic_arn: arn:aws:sns:us-east-1:123456789012:dms-replication-tasks
+      enabled: true
+      subscription_name: replication-task-events
+      source_type: replication-task
+      event_categories:
+        - failure
+        - state change
+        - configuration change
+        - creation
+        - deletion
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        AlertLevel: High
+        Owner: DataEngineering
+
+    - name: EndpointEventSubscription
+      sns_topic_arn: arn:aws:sns:us-east-1:123456789012:dms-endpoints
+      enabled: true
+      subscription_name: endpoint-events
+      source_type: replication-instance
+      event_categories:
+        - availability
+        - failure
+        - state change
+      deletion_policy: Delete
+      tags:
+        Environment: Production
+        AlertLevel: Medium
+
+    - name: DatabaseMigrationAlerts
+      sns_topic_arn: arn:aws:sns:us-east-1:123456789012:dms-migration-alerts
+      enabled: true
+      subscription_name: database-migration-notifications
+      source_type: replication-task
+      source_ids:
+        - arn:aws:dms:us-east-1:123456789012:task:primary-migration-task
+        - arn:aws:dms:us-east-1:123456789012:task:secondary-migration-task
+      event_categories:
+        - creation
+        - deletion
+        - state change
+        - failure
+      tags:
+        Environment: Staging
+        CostCenter: Infrastructure
+        Project: DataMigration
+
+    - name: ProductionTaskMonitoring
+      sns_topic_arn: arn:aws:sns:us-east-1:123456789012:dms-prod-monitoring
+      enabled: true
+      subscription_name: production-task-monitoring
+      source_type: replication-task
+      source_ids:
+        - arn:aws:dms:us-east-1:123456789012:task:prod-primary-replication
+        - arn:aws:dms:us-east-1:123456789012:task:prod-secondary-replication
+        - arn:aws:dms:us-east-1:123456789012:task:prod-disaster-recovery
+      event_categories:
+        - failure
+        - configuration change
+        - state change
+      deletion_policy: Retain
+      tags:
+        Environment: Production
+        Critical: "true"
+        OnCall: DatabaseTeam
+
+    - name: AllDmsEventsSubscription
+      sns_topic_arn: arn:aws:sns:us-east-1:123456789012:dms-all-events
+      enabled: false
+      subscription_name: all-dms-events
+      tags:
+        Environment: Development
+        Purpose: Auditing
+
+stack_tags:
+  Test: dms-event-subscription

@@ -1,0 +1,91 @@
+---
+Description: {{sceptre_user_data.description|default('DMS Instance Profile(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for instance_profile in sceptre_user_data.instance_profiles %}
+{%- set instance_profile_name = instance_profile.name %}
+  {{ instance_profile_name }}:
+    Type: AWS::DMS::InstanceProfile
+    DeletionPolicy: {{ instance_profile.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ instance_profile.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if instance_profile.availability_zone is defined %}
+      AvailabilityZone: {{ instance_profile.availability_zone }}
+{%- endif %}
+{%- if instance_profile.description is defined %}
+      Description: {{ instance_profile.description }}
+{%- endif %}
+{%- if instance_profile.instance_profile_identifier is defined %}
+      InstanceProfileIdentifier: {{ instance_profile.instance_profile_identifier }}
+{%- endif %}
+{%- if instance_profile.instance_profile_name is defined %}
+      InstanceProfileName: {{ instance_profile.instance_profile_name }}
+{%- endif %}
+{%- if instance_profile.kms_key_arn is defined %}
+      KmsKeyArn: {{ instance_profile.kms_key_arn | trim }}
+{%- endif %}
+{%- if instance_profile.network_type is defined %}
+      NetworkType: {{ instance_profile.network_type }}
+{%- endif %}
+{%- if instance_profile.publicly_accessible is defined %}
+      PubliclyAccessible: {{ instance_profile.publicly_accessible | lower }}
+{%- endif %}
+{%- if instance_profile.subnet_group_identifier is defined %}
+      SubnetGroupIdentifier: {{ instance_profile.subnet_group_identifier | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if instance_profile.tags is defined %}
+{%- for key,value in instance_profile.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if instance_profile.vpc_security_groups is defined %}
+      VpcSecurityGroups:
+{%- for vpc_security_group in instance_profile.vpc_security_groups %}
+        - {{ vpc_security_group }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for instance_profile in sceptre_user_data.instance_profiles %}
+{%- set instance_profile_name = instance_profile.name %}
+  {{ instance_profile_name }}:
+    Description: Instance profile ARN for {{ instance_profile_name }}
+    Value:
+      Ref: {{ instance_profile_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_profile_name }}"
+{%- set instance_profile_name = instance_profile.name %}
+  {{ instance_profile_name }}InstanceProfileArn:
+    Description: Instance profile ARN for {{ instance_profile_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ instance_profile_name }}
+        - InstanceProfileArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ instance_profile_name }}-InstanceProfileArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-18:
+Type: AWS::DMS::InstanceProfile
+Properties:
+  AvailabilityZone: String
+  Description: String
+  InstanceProfileIdentifier: String
+  InstanceProfileName: String
+  KmsKeyArn: String
+  NetworkType: String
+  PubliclyAccessible: Boolean
+  SubnetGroupIdentifier: String
+  Tags:
+    - Key: String
+      Value: String
+  VpcSecurityGroups:
+    - String
+#}
