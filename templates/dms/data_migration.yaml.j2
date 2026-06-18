@@ -1,0 +1,108 @@
+---
+Description: {{sceptre_user_data.description|default('DMS Data Migration(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for data_migration in sceptre_user_data.data_migrations %}
+{%- set data_migration_name = data_migration.name %}
+  {{ data_migration_name }}:
+    Type: AWS::DMS::DataMigration
+    DeletionPolicy: {{ data_migration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ data_migration.update_replace_policy | default('Delete') }}
+    Properties:
+      DataMigrationType: {{ data_migration.data_migration_type }}
+      MigrationProjectIdentifier: {{ data_migration.migration_project_identifier | trim }}
+      ServiceAccessRoleArn: {{ data_migration.service_access_role_arn | trim }}
+{%- if data_migration.data_migration_identifier is defined %}
+      DataMigrationIdentifier: {{ data_migration.data_migration_identifier | trim }}
+{%- endif %}
+{%- if data_migration.data_migration_name is defined %}
+      DataMigrationName: {{ data_migration.data_migration_name | trim }}
+{%- endif %}
+{%- if data_migration.data_migration_settings is defined %}{# BEGIN if data_migration.data_migration_settings is defined #}
+      DataMigrationSettings:
+{%- if data_migration.data_migration_settings.cloudwatch_logs_enabled is defined %}
+        CloudwatchLogsEnabled: {{ data_migration.data_migration_settings.cloudwatch_logs_enabled | lower }}
+{%- endif %}
+{%- if data_migration.data_migration_settings.number_of_jobs is defined %}
+        NumberOfJobs: {{ data_migration.data_migration_settings.number_of_jobs }}
+{%- endif %}
+{%- if data_migration.data_migration_settings.selection_rules is defined %}
+        SelectionRules: |-
+          {{ data_migration.data_migration_settings.selection_rules | indent(width=10, first=false) }}
+{%- endif %}
+{%- endif %}{# END if data_migration.data_migration_settings is defined#}
+{%- if data_migration.source_data_settings is defined %}{# BEGIN if data_migration.source_data_settings is defined #}
+      SourceDataSettings:
+{%- for source_data_setting in data_migration.source_data_settings %}{# BEGIN for source_data_setting in data_migration.source_data_settings #}
+        -
+{%- if source_data_setting.data_provider_identifier is defined %}
+          DataProviderIdentifier: {{ source_data_setting.data_provider_identifier | trim }}
+{%- endif %}
+{%- if source_data_setting.cdc_start_position is defined %}
+          CDCStartPosition: {{ source_data_setting.cdc_start_position }}
+{%- endif %}
+{%- if source_data_setting.cdc_start_time is defined %}
+          CDCStartTime: {{ source_data_setting.cdc_start_time }}
+{%- endif %}
+{%- if source_data_setting.cdc_stop_time is defined %}
+          CDCStopTime: {{ source_data_setting.cdc_stop_time  }}
+{%- endif %}
+{%- if source_data_setting.slot_name is defined %}
+          SlotName: {{ source_data_setting.slot_name }}
+{%- endif %}
+{%- endfor %}{# END for source_data_setting in data_migration.source_data_settings #}
+{%- endif %}{# END if data_migration.source_data_settings is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if data_migration.tags is defined %}
+{%- for key,value in data_migration.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for data_migration in sceptre_user_data.data_migrations %}
+{%- set data_migration_name = data_migration.name %}
+  {{ data_migration_name }}:
+    Description: ARN for {{ data_migration_name }}
+    Value:
+      Ref: {{ data_migration_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ data_migration_name }}"
+  {{ data_migration_name }}DataMigrationArn:
+    Description: ARN for {{ data_migration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ data_migration_name }}
+        - DataMigrationArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ data_migration_name }}-DataMigrationArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-18:
+Type: AWS::DMS::DataMigration
+Properties:
+  DataMigrationIdentifier: String
+  DataMigrationName: String
+  DataMigrationSettings:
+    CloudwatchLogsEnabled: Boolean
+    NumberOfJobs: Integer
+    SelectionRules: String
+  DataMigrationType: String
+  MigrationProjectIdentifier: String
+  ServiceAccessRoleArn: String
+  SourceDataSettings:
+    - DataProviderIdentifier: String
+      CDCStartPosition: String
+      CDCStartTime: String
+      CDCStopTime: String
+      SlotName: String
+  Tags:
+    - Key: String
+      Value: String
+#}

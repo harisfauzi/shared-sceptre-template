@@ -1,0 +1,278 @@
+---
+Description: {{sceptre_user_data.description|default('DMS Data Provider(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for data_provider in sceptre_user_data.data_providers %}
+{%- set data_provider_name = data_provider.name %}
+  {{ data_provider_name }}:
+    Type: AWS::DMS::DataProvider
+    DeletionPolicy: {{ data_provider.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ data_provider.update_replace_policy | default('Delete') }}
+    Properties:
+      Engine: {{ data_provider.engine }}
+{%- if data_provider.data_provider_identifier is defined %}
+      DataProviderIdentifier: {{ data_provider.data_provider_identifier }}
+{%- endif %}
+{%- if data_provider.data_provider_name is defined %}
+      DataProviderName: {{ data_provider.data_provider_name }}
+{%- endif %}
+{%- if data_provider.description is defined %}
+      Description: {{ data_provider.description }}
+{%- endif %}
+{%- if data_provider.exact_settings is defined %}
+      ExactSettings: {{ data_provider.exact_settings | lower }}
+{%- endif %}
+{%- if data_provider.settings is defined %}{# BEGIN if data_provider.settings is defined #}
+      Settings:
+{%- if data_provider.settings.doc_db_settings is defined %}{# BEGIN if data_provider.settings.doc_db_settings is defined #}
+        DocDbSettings:
+{%- if data_provider.settings.doc_db_settings.certificate_arn is defined %}
+          CertificateArn: {{ data_provider.settings.doc_db_settings.certificate_arn | trim }}
+{%- endif %}
+          DatabaseName: {{ data_provider.settings.doc_db_settings.database_name }}
+          Port: {{ data_provider.settings.doc_db_settings.port }}
+          ServerName: {{ data_provider.settings.doc_db_settings.server_name }}
+          SslMode: {{ data_provider.settings.doc_db_settings.ssl_mode }}
+{%- endif %}{# END if data_provider.settings.doc_db_settings is defined #}
+{%- if data_provider.settings.ibm_db2_luw_settings is defined %}{# BEGIN if data_provider.settings.ibm_db2_luw_settings is defined #}
+        IbmDb2LuwSettings:
+          CertificateArn: String
+          DatabaseName: String
+          Port: Integer
+          ServerName: String
+          SslMode: String
+{%- endif %}{# END if data_provider.settings.ibm_db2_luw_settings is defined #}
+{%- if data_provider.settings.ibm_db2z_os_settings is defined %}{# BEGIN if data_provider.settings.ibm_db2z_os_settings is defined #}
+        IbmDb2zOsSettings:
+{%- if data_provider.settings.ibm_db2z_os_settings.certificate_arn is defined %}
+          CertificateArn: {{ data_provider.settings.ibm_db2z_os_settings.certificate_arn | trim }}
+{%- endif %}
+          DatabaseName: {{ data_provider.settings.ibm_db2z_os_settings.database_name }}
+          Port: {{ data_provider.settings.ibm_db2z_os_settings.port }}
+          ServerName: {{ data_provider.settings.ibm_db2z_os_settings.server_name }}
+          SslMode: {{ data_provider.settings.ibm_db2z_os_settings.ssl_mode }}
+{%- endif %}{# END if data_provider.settings.ibm_db2z_os_settings is defined #}
+{%- if data_provider.settings.maria_db_settings is defined %}{# BEGIN if data_provider.settings.maria_db_settings is defined #}
+        MariaDbSettings:
+{%- if data_provider.settings.maria_db_settings.certificate_arn is defined %}
+          CertificateArn: {{ data_provider.settings.maria_db_settings.certificate_arn | trim }}
+{%- endif %}
+          Port: {{ data_provider.settings.maria_db_settings.port }}
+          ServerName: {{ data_provider.settings.maria_db_settings.server_name }}
+          SslMode: {{ data_provider.settings.maria_db_settings.ssl_mode }}
+{%- endif %}{# END if data_provider.settings.maria_db_settings is defined #}
+{%- if data_provider.settings.microsoft_sql_server_settings is defined %}{# BEGIN if data_provider.settings.microsoft_sql_server_settings is defined #}
+        MicrosoftSqlServerSettings:
+{%- if data_provider.settings.microsoft_sql_server_settings.certificate_arn is defined %}
+          CertificateArn: {{ data_provider.settings.microsoft_sql_server_settings.certificate_arn | trim }}
+{%- endif %}
+          DatabaseName: {{ data_provider.settings.microsoft_sql_server_settings.database_name }}
+          Port: {{ data_provider.settings.microsoft_sql_server_settings.port }}
+          ServerName: {{ data_provider.settings.microsoft_sql_server_settings.server_name }}
+          SslMode: {{ data_provider.settings.microsoft_sql_server_settings.ssl_mode }}
+{%- endif %}{# END if data_provider.settings.microsoft_sql_server_settings is defined #}
+{%- if data_provider.settings.mongo_db_settings is defined %}{# BEGIN if data_provider.settings.mongo_db_settings is defined #}
+        MongoDbSettings:
+          Port: {{ data_provider.settings.mongo_db_settings.port }}
+          ServerName: {{ data_provider.settings.mongo_db_settings.server_name }}
+{%- if data_provider.settings.mongo_db_settings.auth_mechanism is defined %}
+          AuthMechanism: {{ data_provider.settings.mongo_db_settings.auth_mechanism }}
+{%- endif %}
+{%- if data_provider.settings.mongo_db_settings.auth_source is defined %}
+          AuthSource: {{ data_provider.settings.mongo_db_settings.auth_source }}
+{%- endif %}
+{%- if data_provider.settings.mongo_db_settings.auth_type is defined %}
+          AuthType: {{ data_provider.settings.mongo_db_settings.auth_type }}
+{%- endif %}
+{%- if data_provider.settings.mongo_db_settings.certificate_arn is defined %}
+          CertificateArn: {{ data_provider.settings.mongo_db_settings.certificate_arn | trim }}
+{%- endif %}
+{%- if data_provider.settings.mongo_db_settings.database_name is defined %}
+          DatabaseName: {{ data_provider.settings.mongo_db_settings.database_name }}
+{%- endif %}
+{%- if data_provider.settings.mongo_db_settings.ssl_mode is defined %}
+          SslMode: {{ data_provider.settings.mongo_db_settings.ssl_mode }}
+{%- endif %}
+{%- endif %}{# END if data_provider.settings.mongo_db_settings is defined #}
+{%- if data_provider.settings.my_sql_settings is defined %}{# BEGIN if data_provider.settings.my_sql_settings is defined #}
+        MySqlSettings:
+{%- if data_provider.settings.my_sql_settings.certificate_arn is defined %}
+          CertificateArn: {{ data_provider.settings.my_sql_settings.certificate_arn | trim }}
+{%- endif %}
+          Port: {{ data_provider.settings.my_sql_settings.port }}
+          ServerName: {{ data_provider.settings.my_sql_settings.server_name }}
+          SslMode: {{ data_provider.settings.my_sql_settings.ssl_mode }}
+{%- endif %}{# END if data_provider.settings.my_sql_settings is defined #}
+{%- if data_provider.settings.oracle_settings is defined %}{# BEGIN if data_provider.settings.oracle_settings is defined #}
+        OracleSettings:
+          DatabaseName: {{ data_provider.settings.oracle_settings.database_name }}
+          Port: {{ data_provider.settings.oracle_settings.port }}
+          ServerName: {{ data_provider.settings.oracle_settings.server_name }}
+          SslMode: {{ data_provider.settings.oracle_settings.ssl_mode }}
+{%- if data_provider.settings.oracle_settings.asm_server is defined %}
+          AsmServer: {{ data_provider.settings.oracle_settings.asm_server }}
+{%- endif %}
+{%- if data_provider.settings.oracle_settings.certificate_arn is defined %}
+          CertificateArn: {{ data_provider.settings.oracle_settings.certificate_arn | trim }}
+{%- endif %}
+{%- if data_provider.settings.oracle_settings.secrets_manager_oracle_asm_access_role_arn is defined %}
+          SecretsManagerOracleAsmAccessRoleArn: {{ data_provider.settings.oracle_settings.secrets_manager_oracle_asm_access_role_arn | trim }}
+{%- endif %}
+{%- if data_provider.settings.oracle_settings.secrets_manager_oracle_asm_secret_id is defined %}
+          SecretsManagerOracleAsmSecretId: {{ data_provider.settings.oracle_settings.secrets_manager_oracle_asm_secret_id | trim }}
+{%- endif %}
+{%- if data_provider.settings.oracle_settings.secrets_manager_security_db_encryption_access_role_arn is defined %}
+          SecretsManagerSecurityDbEncryptionAccessRoleArn: {{ data_provider.settings.oracle_settings.secrets_manager_security_db_encryption_access_role_arn | trim }}
+{%- endif %}
+{%- if data_provider.settings.oracle_settings.secrets_manager_security_db_encryption_secret_id is defined %}
+          SecretsManagerSecurityDbEncryptionSecretId: {{ data_provider.settings.oracle_settings.secrets_manager_security_db_encryption_secret_id | trim }}
+{%- endif %}
+{%- endif %}{# END if data_provider.settings.oracle_settings is defined #}
+{%- if data_provider.settings.postgre_sql_settings is defined %}{# BEGIN if data_provider.settings.postgre_sql_settings is defined #}
+        PostgreSqlSettings:
+{%- if data_provider.settings.postgre_sql_settings.certificate_arn is defined %}
+          CertificateArn: {{ data_provider.settings.postgre_sql_settings.certificate_arn | trim }}
+{%- endif %}
+          DatabaseName: {{ data_provider.settings.postgre_sql_settings.database_name }}
+          Port: {{ data_provider.settings.postgre_sql_settings.port }}
+          ServerName: {{ data_provider.settings.postgre_sql_settings.server_name }}
+          SslMode: {{ data_provider.settings.postgre_sql_settings.ssl_mode }}
+{%- endif %}{# END if data_provider.settings.postgre_sql_settings is defined #}
+{%- if data_provider.settings.redshift_settings is defined %}{# BEGIN if data_provider.settings.redshift_settings is defined #}
+        RedshiftSettings:
+          DatabaseName: {{ data_provider.settings.redshift_settings.database_name }}
+          Port: {{ data_provider.settings.redshift_settings.port }}
+          ServerName: {{ data_provider.settings.redshift_settings.server_name }}
+{%- endif %}{# END if data_provider.settings.redshift_settings is defined #}
+{%- if data_provider.settings.sybase_ase_settings is defined %}{# BEGIN if data_provider.settings.sybase_ase_settings is defined #}
+        SybaseAseSettings:
+          Port: {{ data_provider.settings.sybase_ase_settings.port }}
+          ServerName: {{ data_provider.settings.sybase_ase_settings.server_name }}
+          SslMode: {{ data_provider.settings.sybase_ase_settings.ssl_mode }}
+{%- if data_provider.settings.sybase_ase_settings.certificate_arn is defined %}
+          CertificateArn: {{ data_provider.settings.sybase_ase_settings.certificate_arn | trim }}
+{%- endif %}
+{%- if data_provider.settings.sybase_ase_settings.database_name is defined %}
+          DatabaseName: {{ data_provider.settings.sybase_ase_settings.database_name }}
+{%- endif %}
+{%- if data_provider.settings.sybase_ase_settings.encrypt_password is defined %}
+          EncryptPassword: {{ data_provider.settings.sybase_ase_settings.encrypt_password }}
+{%- endif %}
+{%- endif %}{# END if data_provider.settings.sybase_ase_settings is defined #}
+{%- endif %}{# END if data_provider.settings is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if data_provider.tags is defined %}
+{%- for key,value in data_provider.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for data_provider in sceptre_user_data.data_providers %}
+{%- set data_provider_name = data_provider.name %}
+  {{ data_provider_name }}:
+    Description: ARN for {{ data_provider_name }}
+    Value:
+      Ref: {{ data_provider_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ data_provider_name }}"
+  {{ data_provider_name }}DataProviderArn:
+    Description: ARN for {{ data_provider_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ data_provider_name }}
+        - DataProviderArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ data_provider_name }}-DataProviderArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-18:
+Type: AWS::DMS::DataProvider
+Properties:
+  DataProviderIdentifier: String
+  DataProviderName: String
+  Description: String
+  Engine: String
+  ExactSettings: Boolean
+  Settings:
+    DocDbSettings:
+      CertificateArn: String
+      DatabaseName: String
+      Port: Integer
+      ServerName: String
+      SslMode: String
+    IbmDb2LuwSettings:
+      CertificateArn: String
+      DatabaseName: String
+      Port: Integer
+      ServerName: String
+      SslMode: String
+    IbmDb2zOsSettings:
+      CertificateArn: String
+      DatabaseName: String
+      Port: Integer
+      ServerName: String
+      SslMode: String
+    MariaDbSettings:
+      CertificateArn: String
+      Port: Integer
+      ServerName: String
+      SslMode: String
+    MicrosoftSqlServerSettings:
+      CertificateArn: String
+      DatabaseName: String
+      Port: Integer
+      ServerName: String
+      SslMode: String
+    MongoDbSettings:
+      AuthMechanism: String
+      AuthSource: String
+      AuthType: String
+      CertificateArn: String
+      DatabaseName: String
+      Port: Integer
+      ServerName: String
+      SslMode: String
+    MySqlSettings:
+      CertificateArn: String
+      Port: Integer
+      ServerName: String
+      SslMode: String
+    OracleSettings:
+      AsmServer: String
+      CertificateArn: String
+      DatabaseName: String
+      Port: Integer
+      SecretsManagerOracleAsmAccessRoleArn: String
+      SecretsManagerOracleAsmSecretId: String
+      SecretsManagerSecurityDbEncryptionAccessRoleArn: String
+      SecretsManagerSecurityDbEncryptionSecretId: String
+      ServerName: String
+      SslMode: String
+    PostgreSqlSettings:
+      CertificateArn: String
+      DatabaseName: String
+      Port: Integer
+      ServerName: String
+      SslMode: String
+    RedshiftSettings:
+      DatabaseName: String
+      Port: Integer
+      ServerName: String
+    SybaseAseSettings:
+      CertificateArn: String
+      DatabaseName: String
+      EncryptPassword: Boolean
+      Port: Integer
+      ServerName: String
+      SslMode: String
+  Tags:
+    - Key: String
+      Value: String
+#}

@@ -1,0 +1,91 @@
+---
+template:
+  type: file
+  path: dms/replication_task.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DMS Replication Tasks for Database Migration
+  replication_tasks:
+    - name: PostgresToMysqlFullLoadTask
+      replication_task_identifier: postgres-to-mysql-full-load-001
+      migration_type: full-load
+      replication_instance_arn: arn:aws:dms:us-east-1:123456789012:rep:ABCDEFGH-1234-5678-9012-IJKLMNOPQRST
+      source_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:source-postgres-001
+      target_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:target-mysql-001
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      table_mappings: '{"rules":[{"rule-type":"selection","rule-id":"1","rule-name":"include-all-tables","object-locator":{"schema-name":"%","table-name":"%"},"rule-action":"include"}]}'
+      replication_task_settings: '{"TargetMetadata":{"TargetSchema":"","SupportLobs":true,"FullLobMode":false,"LimitedSizeLobMode":true,"LobMaxSize":32,"InlineLobMaxSize":0,"LoadMaxFileSize":512000,"BatchApplyEnabled":false,"ParallelLoadThreads":4,"ParallelLoadQueuesPerThread":1,"ParallelApplyThreads":0},"FullLoadSettings":{"TargetSchemaTableCount":1000,"MaxFullLoadSubTasks":8,"CommitRate":50000}}'
+      tags:
+        Environment: Production
+        MigrationType: FullLoad
+        SourceDatabase: PostgreSQL
+        TargetDatabase: MySQL
+        Owner: DataEngineering
+        Wave: Wave1
+
+    - name: OracleToPgCdcTask
+      replication_task_identifier: oracle-to-pg-cdc-002
+      migration_type: cdc
+      replication_instance_arn: arn:aws:dms:us-east-1:123456789012:rep:EFGHIJKL-5678-9012-3456-MNOPQRSTUVWX
+      source_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:source-oracle-001
+      target_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:target-postgres-001
+      deletion_policy: Retain
+      table_mappings: '{"rules":[{"rule-type":"selection","rule-id":"1","rule-name":"include-prod-schemas","object-locator":{"schema-name":"PROD_%","table-name":"%"},"rule-action":"include"}]}'
+      cdc_start_position: '{"Version": "3.4.5", "IsEngineNative": true}'
+      replication_task_settings: '{"ChangeProcessingTuning":{"BatchApplyEnabled":true,"MinTransactionSize":1000,"CommitTimeout":1,"MemoryLimitTotal":1024,"MemoryKeepTime":60,"StatementCacheSize":50}}'
+      tags:
+        Environment: Production
+        MigrationType: CdcOnly
+        SourceDatabase: Oracle
+        TargetDatabase: PostgreSQL
+        Purpose: ContinuousSync
+
+    - name: SqlServerToAuroraFullLoadAndCdc
+      replication_task_identifier: sqlserver-to-aurora-full-load-cdc-003
+      migration_type: full-load-and-cdc
+      replication_instance_arn: arn:aws:dms:us-east-1:123456789012:rep:IJKLMNOP-9012-3456-7890-QRSTUVWXYZAB
+      source_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:source-sqlserver-001
+      target_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:target-aurora-001
+      deletion_policy: Retain
+      table_mappings: '{"rules":[{"rule-type":"selection","rule-id":"1","rule-name":"include-all","object-locator":{"schema-name":"%","table-name":"%"},"rule-action":"include"}]}'
+      cdc_start_time: 1623580800
+      replication_task_settings: '{"TargetMetadata":{"SupportLobs":true,"FullLobMode":false,"LimitedSizeLobMode":true,"LobMaxSize":32,"BatchApplyEnabled":true,"ParallelLoadThreads":8},"FullLoadSettings":{"MaxFullLoadSubTasks":16,"CommitRate":100000},"ChangeProcessingTuning":{"BatchApplyEnabled":true,"CommitTimeout":1}}'
+      resource_identifier: sqlserver-aurora-replication-custom
+      tags:
+        Environment: Production
+        MigrationType: FullLoadAndCdc
+        SourceDatabase: SQLServer
+        TargetDatabase: Aurora
+        Critical: "true"
+
+    - name: MongoDbToDocDbStreaming
+      replication_task_identifier: mongodb-to-docdb-streaming-004
+      migration_type: full-load-and-cdc
+      replication_instance_arn: arn:aws:dms:us-east-1:123456789012:rep:MNOPQRST-3456-7890-1234-CDEFGHIJKLMN
+      source_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:source-mongodb-001
+      target_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:target-docdb-001
+      deletion_policy: Delete
+      table_mappings: '{"rules":[{"rule-type":"selection","rule-id":"1","rule-name":"include-all-collections","object-locator":{"schema-name":".*","table-name":"%"},"rule-action":"include"}]}'
+      cdc_start_position: '{"Version": "3.4.5"}'
+      tags:
+        Environment: Staging
+        MigrationType: FullLoadAndCdc
+        SourceDatabase: MongoDB
+        TargetDatabase: DocumentDB
+
+    - name: MinimalReplicationTask
+      migration_type: full-load
+      replication_instance_arn: arn:aws:dms:us-east-1:123456789012:rep:OPQRSTUV-7890-1234-5678-EFGHIJKLMNOP
+      source_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:source-mysql-001
+      target_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:target-redshift-001
+      deletion_policy: Delete
+      table_mappings: '{"rules":[{"rule-type":"selection","rule-id":"1","rule-name":"all","object-locator":{"schema-name":"%","table-name":"%"},"rule-action":"include"}]}'
+      tags:
+        Environment: Development
+        Purpose: Testing
+
+stack_tags:
+  Test: dms-replication-task
