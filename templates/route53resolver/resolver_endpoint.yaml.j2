@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('Route53Resolver ResolverEndpoint(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Route53Resolver Resolver Endpoint(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for resolver_endpoint in sceptre_user_data.resolver_endpoints %}
 {%- set resolver_endpoint_name = resolver_endpoint.name %}
   {{ resolver_endpoint_name }}:
@@ -13,7 +12,7 @@ Resources:
     Properties:
       Direction: {{ resolver_endpoint.direction }}
       IpAddresses:
-{%- for ip_address in resolver_endpoint.ip_addresses %}
+{%- for ip_address in resolver_endpoint.ip_addresses %}{# BEGIN for ip_address in resolver_endpoint.ip_addresses #}
         - SubnetId: {{ ip_address.subnet_id }}
 {%- if ip_address.ip is defined %}
           Ip: {{ ip_address.ip }}
@@ -21,16 +20,37 @@ Resources:
 {%- if ip_address.ipv6 is defined %}
           Ipv6: {{ ip_address.ipv6 }}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{# END for ip_address in resolver_endpoint.ip_addresses #}
       SecurityGroupIds:
 {%- for security_group_id in resolver_endpoint.security_group_ids %}
         - {{ security_group_id }}
 {%- endfor %}
+{%- if resolver_endpoint.dns64_enabled is defined %}
+      Dns64Enabled: {{ resolver_endpoint.dns64_enabled | lower }}
+{%- endif %}
+{%- if resolver_endpoint.ipv6_internet_access_enabled is defined %}
+      Ipv6InternetAccessEnabled: {{ resolver_endpoint.ipv6_internet_access_enabled | lower }}
+{%- endif %}
+{%- if resolver_endpoint.outpost_arn is defined %}
+      OutpostArn: {{ resolver_endpoint.outpost_arn | trim }}
+{%- endif %}
+{%- if resolver_endpoint.preferred_instance_type is defined %}
+      PreferredInstanceType: {{ resolver_endpoint.preferred_instance_type }}
+{%- endif %}
+{%- if resolver_endpoint.protocols is defined %}{# BEGIN if resolver_endpoint.protocols is defined #}
+      Protocols:
+{%- for protocol in resolver_endpoint.protocols %}
+        - {{ protocol }}
+{%- endfor %}
+{%- endif %}{# END if resolver_endpoint.protocols is defined #}
 {%- if resolver_endpoint.resolver_endpoint_name is defined %}
       Name: {{ resolver_endpoint.resolver_endpoint_name }}
 {%- endif %}
 {%- if resolver_endpoint.resolver_endpoint_type is defined %}
       ResolverEndpointType: {{resolver_endpoint.resolver_endpoint_type}}
+{%- endif %}
+{%- if resolver_endpoint.rni_enhanced_metrics_enabled is defined %}
+      RniEnhancedMetricsEnabled: {{ resolver_endpoint.rni_enhanced_metrics_enabled | lower }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -41,11 +61,12 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
+{%- if resolver_endpoint.target_name_server_metrics_enabled is defined %}
+      TargetNameServerMetricsEnabled: {{ resolver_endpoint.target_name_server_metrics_enabled | lower }}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for resolver_endpoint in sceptre_user_data.resolver_endpoints %}
 {%- set resolver_endpoint_name = resolver_endpoint.name %}
   {{ resolver_endpoint_name }}:
@@ -55,7 +76,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}"
-
   {{ resolver_endpoint_name }}Arn:
     Description: The ARN for {{ resolver_endpoint_name }}
     Value:
@@ -65,7 +85,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-Arn"
-
   {{ resolver_endpoint_name }}Direction:
     Description: Indicates whether {{ resolver_endpoint_name }} allows inbound or outbound DNS queries
     Value:
@@ -75,7 +94,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-Direction"
-
   {{ resolver_endpoint_name }}HostVPCId:
     Description: The VPC ID where {{ resolver_endpoint_name }} is created.
     Value:
@@ -85,7 +103,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-HostVPCId"
-
   {{ resolver_endpoint_name }}IpAddressCount:
     Description: The number of IP addresses that {{ resolver_endpoint_name }} can use for DNS queries
     Value:
@@ -95,7 +112,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-IpAddressCount"
-
   {{ resolver_endpoint_name }}Name:
     Description: The name that you assigned to {{ resolver_endpoint_name }} when you created the endpoint.
     Value:
@@ -105,7 +121,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-Name"
-
   {{ resolver_endpoint_name }}ResolverEndpointId:
     Description: The Id of {{ resolver_endpoint_name }}
     Value:
@@ -115,5 +130,29 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_endpoint_name }}-ResolverEndpointId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-19:
+Type: AWS::Route53Resolver::ResolverEndpoint
+Properties:
+  Direction: String
+  Dns64Enabled: Boolean
+  IpAddresses:
+    -
+      Ip: String
+      Ipv6: String
+      SubnetId: String
+  Ipv6InternetAccessEnabled: Boolean
+  Name: String
+  OutpostArn: String
+  PreferredInstanceType: String
+  Protocols:
+    - String
+  ResolverEndpointType: String
+  RniEnhancedMetricsEnabled: Boolean
+  SecurityGroupIds:
+    - String
+  Tags:
+    - Key: String
+      Value: String
+  TargetNameServerMetricsEnabled: Boolean
+#}

@@ -1,0 +1,45 @@
+---
+template:
+  type: file
+  path: route53resolver/resolver_endpoint.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Resolver Endpoints for DNS Resolution Testing
+  resolver_endpoints:
+    - name: InboundResolverEndpoint
+      direction: INBOUND
+      resolver_endpoint_name: Prod-Inbound-Endpoint
+      ip_addresses:
+        - subnet_id: subnet-0123456789abcdef0
+          ip: 10.0.1.100
+        - subnet_id: subnet-abcdef0123456789
+          ip: 10.0.2.100
+      security_group_ids:
+        - sg-0123456789abcdef0
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      dns64_enabled: false
+      ipv6_internet_access_enabled: false
+      protocols:
+        - DoH
+        - Do53
+      rni_enhanced_metrics_enabled: true
+      tags:
+        Environment: Production
+        Purpose: InboundDNS
+    - name: OutboundResolverEndpoint
+      direction: OUTBOUND
+      resolver_endpoint_name: Prod-Outbound-Endpoint
+      ip_addresses:
+        - subnet_id: subnet-1111111111111111
+        - subnet_id: subnet-2222222222222222
+      security_group_ids:
+        - sg-abcdef0123456789
+        - sg-1111111111111111
+      resolver_endpoint_type: IPV4
+      target_name_server_metrics_enabled: true
+
+stack_tags:
+  Test: route53resolver-resolver-endpoint

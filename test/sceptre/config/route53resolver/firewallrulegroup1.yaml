@@ -1,0 +1,38 @@
+---
+template:
+  type: file
+  path: route53resolver/firewall_rule_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Firewall Rule Groups for Security Testing
+  firewall_rule_groups:
+    - name: MalwareDomainBlockRuleGroup
+      firewall_rule_group_name: Malware-Domain-Block-RuleGroup
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      firewall_rules:
+        - action: BLOCK
+          priority: 100
+          firewall_domain_list_id: fdl-1234567890abcdef0
+          block_response: NODATA
+        - action: ALERT
+          priority: 200
+          firewall_domain_list_id: fdl-abcdef0123456789
+          dns_threat_protection: ENABLED
+      tags:
+        Environment: Production
+        Purpose: Security
+    - name: CategoryBasedFilterRuleGroup
+      firewall_rule_group_name: Category-Based-Filter-RuleGroup
+      firewall_rules:
+        - action: BLOCK
+          priority: 50
+          firewall_rule_type:
+            firewall_advanced_content_category:
+              category: Malware
+          block_override_ttl: 300
+
+stack_tags:
+  Test: route53resolver-firewall-rule-group

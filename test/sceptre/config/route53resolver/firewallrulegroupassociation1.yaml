@@ -1,0 +1,28 @@
+---
+template:
+  type: file
+  path: route53resolver/firewall_rule_group_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Firewall Rule Group Associations for Security Testing
+  firewall_rule_group_associations:
+    - name: ProdSecurityAssociation
+      firewall_rule_group_id: rfg-1234567890abcdef0
+      priority: 100
+      vpc_id: vpc-0123456789abcdef0
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      mutation_protection: ENABLED
+      firewall_rule_group_association_name: Prod-Security-Association
+      tags:
+        Environment: Production
+        Purpose: Security
+    - name: DevBlockListAssociation
+      firewall_rule_group_id: rfg-abcdef0123456789
+      priority: 200
+      vpc_id: vpc-abcdef0123456789
+
+stack_tags:
+  Test: route53resolver-firewall-rule-group-association

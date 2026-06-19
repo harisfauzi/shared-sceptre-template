@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('Route53Resolver FirewallDomainList(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Route53Resolver Firewall Domain List(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for firewall_domain_list in sceptre_user_data.firewall_domain_lists %}
 {%- set firewall_domain_list_name = firewall_domain_list.name %}
   {{ firewall_domain_list_name }}:
@@ -32,11 +31,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for firewall_domain_list in sceptre_user_data.firewall_domain_lists %}
 {%- set firewall_domain_list_name = firewall_domain_list.name %}
   {{ firewall_domain_list_name }}:
@@ -46,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}"
-
   {{ firewall_domain_list_name }}Arn:
     Description: The ARN for {{ firewall_domain_list_name }}
     Value:
@@ -56,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-Arn"
-
   {{ firewall_domain_list_name }}CreationTime:
     Description: The date and time that {{ firewall_domain_list_name }} was created, in UTC.
     Value:
@@ -66,7 +61,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-CreationTime"
-
   {{ firewall_domain_list_name }}CreatorRequestId:
     Description: A unique string defined by you to identify the request for {{ firewall_domain_list_name }}
     Value:
@@ -76,7 +70,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-CreatorRequestId"
-
   {{ firewall_domain_list_name }}DomainCount:
     Description: The DomainCount for {{ firewall_domain_list_name }}
     Value:
@@ -86,7 +79,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-DomainCount"
-
   {{ firewall_domain_list_name }}Id:
     Description: The Id for {{ firewall_domain_list_name }}
     Value:
@@ -96,7 +88,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-Id"
-
   {{ firewall_domain_list_name }}ModificationTime:
     Description: The date and time that {{ firewall_domain_list_name }} was last modified.
     Value:
@@ -106,7 +97,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-ModificationTime"
-
   {{ firewall_domain_list_name }}Status:
     Description: The status for {{ firewall_domain_list_name }}
     Value:
@@ -116,7 +106,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-Status"
-
   {{ firewall_domain_list_name }}StatusMessage:
     Description: Additional status message for {{ firewall_domain_list_name }}, if available.
     Value:
@@ -126,5 +115,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_domain_list_name }}-StatusMessage"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-18:
+Type: AWS::Route53Resolver::FirewallDomainList
+Properties:
+  DomainFileUrl: String
+  Domains:
+    - String
+  Name: String
+  Tags:
+    - Key: String
+      Value: String
+#}
