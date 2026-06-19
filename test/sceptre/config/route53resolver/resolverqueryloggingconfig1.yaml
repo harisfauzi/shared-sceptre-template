@@ -1,0 +1,21 @@
+---
+template:
+  type: file
+  path: route53resolver/resolver_query_logging_config.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Resolver Query Logging Configurations for DNS Query Logging Testing
+  resolver_query_logging_configs:
+    - name: ProdQueryLoggingConfig
+      resolver_query_logging_config_name: Prod-Query-Logging-Config
+      destination_arn: arn:aws:logs:us-east-1:123456789012:log-group:/aws/route53resolver/prod-queries
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: DevQueryLoggingConfig
+      resolver_query_logging_config_name: Dev-Query-Logging-Config
+      destination_arn: arn:aws:logs:us-west-2:123456789012:log-group:/aws/route53resolver/dev-queries
+
+stack_tags:
+  Test: route53resolver-query-logging-config

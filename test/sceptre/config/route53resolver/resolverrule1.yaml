@@ -1,0 +1,33 @@
+---
+template:
+  type: file
+  path: route53resolver/resolver_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Resolver Rules for DNS Resolution Testing
+  resolver_rules:
+    - name: ForwardExternalDomainRule
+      rule_type: FORWARD
+      resolver_rule_name: Forward-External-Domain
+      domain_name: external.example.com
+      resolver_endpoint_id: rslvr-out-1234567890abcdef0
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      target_ips:
+        - ip: 8.8.8.8
+          port: 53
+          protocol: Do53
+        - ip: 8.8.4.4
+          port: 53
+      tags:
+        Environment: Production
+        Purpose: ExternalResolution
+    - name: SystemResolverRule
+      rule_type: SYSTEM
+      domain_name: amazonaws.com
+      resolver_rule_name: System-Rule
+
+stack_tags:
+  Test: route53resolver-resolver-rule

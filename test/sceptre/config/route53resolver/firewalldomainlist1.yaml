@@ -1,0 +1,29 @@
+---
+template:
+  type: file
+  path: route53resolver/firewall_domain_list.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Firewall Domain Lists for Security Testing
+  firewall_domain_lists:
+    - name: MalwareBlockList
+      firewall_domain_list_name: Malware-Blocklist
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      domains:
+        - malware.example.com
+        - phishing.example.com
+        - trojan.example.com
+      tags:
+        Environment: Production
+        Purpose: Security
+    - name: AdTrackerBlockList
+      firewall_domain_list_name: Ad-Tracker-Blocklist
+      domains:
+        - ads.tracker1.com
+        - analytics.tracker2.com
+
+stack_tags:
+  Test: route53resolver-firewall-domain-list
