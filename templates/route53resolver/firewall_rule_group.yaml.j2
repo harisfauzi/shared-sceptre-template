@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('Route53Resolver FirewallRuleGroup(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Route53Resolver Firewall Rule Group(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for firewall_rule_group in sceptre_user_data.firewall_rule_groups %}
 {%- set firewall_rule_group_name = firewall_rule_group.name %}
   {{ firewall_rule_group_name }}:
@@ -11,11 +10,11 @@ Resources:
     DeletionPolicy: {{ firewall_rule_group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ firewall_rule_group.update_replace_policy | default('Delete') }}
     Properties:
-{%- if firewall_rule_group.firewall_rules is defined %}
+{%- if firewall_rule_group.firewall_rules is defined %}{# BEGIN if firewall_rule_group.firewall_rules is defined #}
       FirewallRules:
-{%- for firewall_rule in firewall_rule_group.firewall_rules %}
-        - Action: {{ firewall_rule.action }}
-          FirewallDomainListId: {{ firewall_rule.firewall_domain_list_id | trim }}
+{%- for firewall_rule in firewall_rule_group.firewall_rules %}{# BEGIN for firewall_rule in firewall_rule_group.firewall_rules #}
+        -
+          Action: {{ firewall_rule.action }}
           Priority: {{ firewall_rule.priority }}
 {%- if firewall_rule.block_override_dns_type is defined %}
           BlockOverrideDnsType: {{ firewall_rule.block_override_dns_type }}
@@ -29,8 +28,37 @@ Resources:
 {%- if firewall_rule.block_response is defined %}
           BlockResponse: {{ firewall_rule.block_response }}
 {%- endif %}
-{%- endfor %}
+{%- if firewall_rule.confidence_threshold is defined %}
+          ConfidenceThreshold: {{ firewall_rule.confidence_threshold }}
 {%- endif %}
+{%- if firewall_rule.dns_threat_protection is defined %}
+          DnsThreatProtection: {{ firewall_rule.dns_threat_protection }}
+{%- endif %}
+{%- if firewall_rule.firewall_domain_list_id is defined %}
+          FirewallDomainListId: {{ firewall_rule.firewall_domain_list_id }}
+{%- endif %}
+{%- if firewall_rule.firewall_domain_redirection_action is defined %}
+          FirewallDomainRedirectionAction: {{ firewall_rule.firewall_domain_redirection_action }}
+{%- endif %}
+{%- if firewall_rule.firewall_rule_type is defined %}{# BEGIN if firewall_rule.firewall_rule_type is defined #}
+          FirewallRuleType:
+{%- if firewall_rule.firewall_rule_type.firewall_advanced_content_category is defined %}
+            FirewallAdvancedContentCategory:
+              Category: {{ firewall_rule.firewall_rule_type.firewall_advanced_content_category.category }}
+{%- endif %}
+{%- if firewall_rule.firewall_rule_type.firewall_advanced_threat_category is defined %}
+            FirewallAdvancedThreatCategory:
+              Category: {{ firewall_rule.firewall_rule_type.firewall_advanced_threat_category.category }}
+{%- endif %}
+{%- endif %}{# END if firewall_rule.firewall_rule_type is defined #}
+{%- if firewall_rule.firewall_threat_protection_id is defined %}
+          FirewallThreatProtectionId: {{ firewall_rule.firewall_threat_protection_id | trim }}
+{%- endif %}
+{%- if firewall_rule.qtype is defined %}
+          Qtype: {{ firewall_rule.qtype }}
+{%- endif %}
+{%- endfor %}{# END for firewall_rule in firewall_rule_group.firewall_rules #}
+{%- endif %}{# END if firewall_rule_group.firewall_rules is defined #}
 {%- if firewall_rule_group.firewall_rule_group_name is defined %}
       Name: {{ firewall_rule_group.firewall_rule_group_name }}
 {%- endif %}
@@ -43,11 +71,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for firewall_rule_group in sceptre_user_data.firewall_rule_groups %}
 {%- set firewall_rule_group_name = firewall_rule_group.name %}
   {{ firewall_rule_group_name }}:
@@ -57,7 +83,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}"
-
   {{ firewall_rule_group_name }}Arn:
     Description: The ARN for {{ firewall_rule_group_name }}
     Value:
@@ -67,7 +92,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-Arn"
-
   {{ firewall_rule_group_name }}CreationTime:
     Description: The date and time that {{ firewall_rule_group_name }} was created, in UTC.
     Value:
@@ -77,7 +101,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-CreationTime"
-
   {{ firewall_rule_group_name }}CreatorRequestId:
     Description: A unique string defined by you to identify the request for {{ firewall_rule_group_name }}
     Value:
@@ -87,7 +110,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-CreatorRequestId"
-
   {{ firewall_rule_group_name }}Id:
     Description: The Id for {{ firewall_rule_group_name }}
     Value:
@@ -97,7 +119,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-Id"
-
   {{ firewall_rule_group_name }}ModificationTime:
     Description: The date and time that {{ firewall_rule_group_name }} was last modified.
     Value:
@@ -107,7 +128,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-ModificationTime"
-
   {{ firewall_rule_group_name }}RuleCount:
     Description: The rule count for {{ firewall_rule_group_name }}
     Value:
@@ -117,7 +137,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-RuleCount"
-
   {{ firewall_rule_group_name }}ShareStatus:
     Description: The sharing status (via AWS Resource Access Manager) for {{ firewall_rule_group_name }}
     Value:
@@ -127,7 +146,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-ShareStatus"
-
   {{ firewall_rule_group_name }}Status:
     Description: The status for {{ firewall_rule_group_name }}
     Value:
@@ -137,7 +155,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-Status"
-
   {{ firewall_rule_group_name }}StatusMessage:
     Description: Additional status message for {{ firewall_rule_group_name }}, if available.
     Value:
@@ -147,5 +164,31 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_name }}-StatusMessage"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-18:
+Type: AWS::Route53Resolver::FirewallRuleGroup
+Properties:
+  FirewallRules:
+    -
+      Action: String
+      BlockOverrideDnsType: String
+      BlockOverrideDomain: String
+      BlockOverrideTtl: Integer
+      BlockResponse: String
+      ConfidenceThreshold: String
+      DnsThreatProtection: String
+      FirewallDomainListId: String
+      FirewallDomainRedirectionAction: String
+      FirewallRuleType:
+        FirewallAdvancedContentCategory:
+          Category: String
+        FirewallAdvancedThreatCategory:
+          Category: String
+      FirewallThreatProtectionId: String
+      Priority: Integer
+      Qtype: String
+  Name: String
+  Tags:
+    - Key: String
+      Value: String
+#}

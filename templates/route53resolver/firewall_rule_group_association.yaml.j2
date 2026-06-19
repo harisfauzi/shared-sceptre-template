@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('Route53Resolver FirewallRuleGroupAssociation(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Route53Resolver Firewall Rule Group Association(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -28,7 +28,6 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
@@ -41,7 +40,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}"
-
   {{ firewall_rule_group_association_name }}Arn:
     Description: The ARN for {{ firewall_rule_group_association_name }}
     Value:
@@ -51,7 +49,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-Arn"
-
   {{ firewall_rule_group_association_name }}CreationTime:
     Description: The date and time that {{ firewall_rule_group_association_name }} was created, in UTC.
     Value:
@@ -61,7 +58,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-CreationTime"
-
   {{ firewall_rule_group_association_name }}CreatorRequestId:
     Description: A unique string defined by you to identify the request for {{ firewall_rule_group_association_name }}
     Value:
@@ -71,7 +67,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-CreatorRequestId"
-
   {{ firewall_rule_group_association_name }}Id:
     Description: The Id for {{ firewall_rule_group_association_name }}
     Value:
@@ -81,7 +76,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-Id"
-
   {{ firewall_rule_group_association_name }}ModificationTime:
     Description: The date and time that {{ firewall_rule_group_association_name }} was last modified.
     Value:
@@ -91,17 +85,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-ModificationTime"
-
-  {{ firewall_rule_group_association_name }}ModificationTime:
-    Description: The date and time that {{ firewall_rule_group_association_name }} was last modified.
-    Value:
-      Fn::GetAtt:
-        - {{ firewall_rule_group_association_name }}
-        - ModificationTime
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-ModificationTime"
-
   {{ firewall_rule_group_association_name }}Status:
     Description: The status for {{ firewall_rule_group_association_name }}
     Value:
@@ -111,7 +94,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-Status"
-
   {{ firewall_rule_group_association_name }}StatusMessage:
     Description: Additional status message for {{ firewall_rule_group_association_name }}, if available.
     Value:
@@ -121,5 +103,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ firewall_rule_group_association_name }}-StatusMessage"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-18:
+Type: AWS::Route53Resolver::FirewallRuleGroupAssociation
+Properties:
+  FirewallRuleGroupId: String
+  MutationProtection: String
+  Name: String
+  Priority: Integer
+  Tags:
+    - Key: String
+      Value: String
+  VpcId: String
+#}

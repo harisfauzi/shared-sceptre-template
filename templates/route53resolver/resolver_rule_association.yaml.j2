@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('Route53Resolver ResolverRuleAssociation(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Route53Resolver Resolver Rule Association(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for resover_rule_association in sceptre_user_data.resover_rule_associations %}
 {%- set resover_rule_association_name = resover_rule_association.name %}
   {{ resover_rule_association_name }}:
@@ -16,11 +15,9 @@ Resources:
 {%- if resover_rule_association.resover_rule_association_name is defined %}
       Name: {{ resover_rule_association.resover_rule_association_name }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for resover_rule_association in sceptre_user_data.resover_rule_associations %}
 {%- set resover_rule_association_name = resover_rule_association.name %}
   {{ resover_rule_association_name }}:
@@ -30,7 +27,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resover_rule_association_name }}"
-
   {{ resover_rule_association_name }}Name:
     Description: The name of the association for {{ resover_rule_association_name }}
     Value:
@@ -40,7 +36,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resover_rule_association_name }}-Name"
-
   {{ resover_rule_association_name }}ResolverRuleAssociationId:
     Description: The ResolverRuleAssociation Id for {{ resover_rule_association_name }}
     Value:
@@ -50,7 +45,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resover_rule_association_name }}-ResolverRuleAssociationId"
-
   {{ resover_rule_association_name }}ResolverRuleId:
     Description: >
       The ID of the resolver rule that you associated with the VPC for {{ resover_rule_association_name }}
@@ -61,7 +55,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resover_rule_association_name }}-ResolverRuleId"
-
   {{ resover_rule_association_name }}VPCId:
     Description: >
       The ID of the VPC that you associated the resolver rule with for {{ resover_rule_association_name }}
@@ -72,5 +65,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resover_rule_association_name }}-VPCId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-19:
+Type: AWS::Route53Resolver::ResolverRuleAssociation
+Properties:
+  Name: String
+  ResolverRuleId: String
+  VPCId: String
+#}
