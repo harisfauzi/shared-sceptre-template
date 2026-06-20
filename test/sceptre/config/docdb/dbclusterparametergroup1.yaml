@@ -1,0 +1,42 @@
+---
+template:
+  type: file
+  path: docdb/db_cluster_parameter_group.yaml2.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: DocDB DB Cluster Parameter Group(s) for Production
+  db_cluster_parameter_groups:
+    - name: PrimaryParameterGroup
+      description: Primary DocDB cluster parameter group with optimized settings
+      family: docdb4.0
+      db_cluster_parameter_group_name: primary-docdb-params
+      parameters: |-
+        tls: "enabled"
+        audit_logs: "enabled"
+        profiler: "enabled"
+        profiler_sampling_rate: "1"
+      tags:
+        Environment: Production
+        Tier: Primary
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondaryParameterGroup
+      description: Secondary DocDB cluster parameter group for read replicas
+      family: docdb4.0
+      db_cluster_parameter_group_name: secondary-docdb-params
+      parameters: |-
+        tls: "enabled"
+        audit_logs: "disabled"
+      tags:
+        Environment: Production
+        Tier: Secondary
+    - name: DevelopmentParameterGroup
+      description: Development DocDB cluster parameter group with diagnostic settings
+      family: docdb3.6
+      parameters_json: |-
+        {"profiler": "enabled", "profiler_sampling_rate": "100", "log_retention_period": "7"}
+
+stack_tags:
+  Test: docdb-parameter-group
