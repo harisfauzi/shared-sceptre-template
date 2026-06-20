@@ -1,0 +1,47 @@
+---
+Description: {{sceptre_user_data.description|default('DocDB Event Subscription(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for event_subscription in sceptre_user_data.event_subscriptions %}
+{%- set event_subscription_name = event_subscription.name %}
+  {{ event_subscription_name }}:
+    Type: AWS::DocDB::EventSubscription
+    DeletionPolicy: {{ event_subscription.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ event_subscription.update_replace_policy | default('Delete') }}
+    Properties:
+      SnsTopicArn: {{ event_subscription.sns_topic_arn | trim }}
+{%- if event_subscription.enabled is defined %}
+      Enabled: {{ event_subscription.enabled | lower }}
+{%- endif %}
+{%- if event_subscription.event_categories is defined %}{# BEGIN if event_subscription.event_categories is defined #}
+      EventCategories:
+{%- for category in event_subscription.event_categories %}
+        - {{ category }}
+{%- endfor %}
+{%- endif %}{# END if event_subscription.event_categories is defined #}
+{%- if event_subscription.source_ids is defined %}{# BEGIN if event_subscription.source_ids is defined #}
+      SourceIds:
+{%- for source_id in event_subscription.source_ids %}
+        - {{ source_id }}
+{%- endfor %}
+{%- endif %}{# END if event_subscription.source_ids is defined #}
+{%- if event_subscription.source_type is defined %}
+      SourceType: {{ event_subscription.source_type }}
+{%- endif %}
+{%- if event_subscription.subscription_name is defined %}
+      SubscriptionName: {{ event_subscription.subscription_name }}
+{%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-20:
+Type: AWS::DocDB::EventSubscription
+Properties:
+  Enabled: Boolean
+  EventCategories:
+    - String
+  SnsTopicArn: String
+  SourceIds:
+    - String
+  SourceType: String
+  SubscriptionName: String
+#}

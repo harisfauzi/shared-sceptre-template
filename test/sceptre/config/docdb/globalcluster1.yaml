@@ -1,0 +1,45 @@
+---
+template:
+  type: file
+  path: docdb/global_cluster.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: DocDB Global Cluster(s) for Multi-Region Disaster Recovery
+  global_clusters:
+    - name: PrimaryGlobalCluster
+      global_cluster_identifier: "primary-global-docdb-cluster"
+      engine: docdb
+      engine_version: "4.0.0"
+      deletion_protection: true
+      storage_encrypted: true
+      tags:
+        Environment: Production
+        Strategy: DisasterRecovery
+        PrimaryRegion: us-east-1
+      deletion_policy: Snapshot
+      update_replace_policy: Snapshot
+    - name: SecondaryGlobalCluster
+      global_cluster_identifier: "secondary-global-docdb-cluster"
+      engine: docdb
+      engine_version: "4.0.0"
+      deletion_protection: false
+      storage_encrypted: true
+      source_db_cluster_identifier: "primary-docdb-cluster"
+      tags:
+        Environment: Production
+        Strategy: ReadReplica
+        SourceRegion: us-east-1
+        ReplicaRegion: us-west-2
+    - name: DevelopmentGlobalCluster
+      global_cluster_identifier: "dev-global-docdb-cluster"
+      engine: docdb
+      engine_version: "3.6.0"
+      deletion_protection: false
+      storage_encrypted: false
+      tags:
+        Environment: Development
+
+stack_tags:
+  Test: docdb-global-cluster

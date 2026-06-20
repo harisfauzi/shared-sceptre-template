@@ -1,10 +1,10 @@
 ---
-Description: {{sceptre_user_data.description|default('DocDB DBCluster(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('DocDB DB Cluster(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
-{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}{# BEGIN if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password #}
 Parameters:
-{%- for db_cluster in sceptre_user_data.db_clusters %}
+{%- for db_cluster in sceptre_user_data.db_clusters %}{# BEGIN for db_cluster in sceptre_user_data.db_clusters #}
 {%- set db_cluster_name = db_cluster.name %}
 {%- if db_cluster.master_user_password is defined and db_cluster.master_user_password %}
   {{ db_cluster_name }}MasterUserPassword:
@@ -12,12 +12,11 @@ Parameters:
     Description: Master User Password for {{ db_cluster_name }}
     Default: ''
     NoEcho: true
-
-{%- endfor %}
 {%- endif %}
+{%- endfor %}{# END for db_cluster in sceptre_user_data.db_clusters #}
+{%- endif %}{# END if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password #}
 
 Resources:
-
 {%- for db_cluster in sceptre_user_data.db_clusters %}
 {%- set db_cluster_name = db_cluster.name %}
   {{ db_cluster_name }}:
@@ -25,17 +24,17 @@ Resources:
     DeletionPolicy: {{ db_cluster.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ db_cluster.update_replace_policy | default('Delete') }}
     Properties:
-{%- if db_cluster.availability_zones is defined %}
+{%- if db_cluster.availability_zones is defined %}{# BEGIN if db_cluster.availability_zones is defined #}
       AvailabilityZones:
 {%- for availability_zone in db_cluster.availability_zones %}
         - {{ availability_zone }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if db_cluster.availability_zones is defined #}
 {%- if db_cluster.backup_retention_period is defined %}
       BackupRetentionPeriod: {{ db_cluster.backup_retention_period }}
 {%- endif %}
 {%- if db_cluster.copy_tags_to_snapshot is defined %}
-      CopyTagsToSnapshot: {{ db_cluster.copy_tags_to_snapshot }}
+      CopyTagsToSnapshot: {{ db_cluster.copy_tags_to_snapshot | lower }}
 {%- endif %}
 {%- if db_cluster.db_cluster_identifier is defined %}
       DBClusterIdentifier: {{ db_cluster.db_cluster_identifier }}
@@ -47,7 +46,7 @@ Resources:
       DBSubnetGroupName: {{ db_cluster.db_subnet_group_name }}
 {%- endif %}
 {%- if db_cluster.deletion_protection is defined %}
-      DeletionProtection: {{ db_cluster.deletion_protection }}
+      DeletionProtection: {{ db_cluster.deletion_protection | lower }}
 {%- endif %}
 {%- if db_cluster.enable_cloudwatch_logs_exports is defined %}
       EnableCloudwatchLogsExports:
@@ -58,19 +57,31 @@ Resources:
 {%- if db_cluster.engine_version is defined %}
       EngineVersion: {{ db_cluster.engine_version }}
 {%- endif %}
+{%- if db_cluster.global_cluster_identifier is defined %}
+      GlobalClusterIdentifier: {{ db_cluster.global_cluster_identifier | trim }}
+{%- endif %}
 {%- if db_cluster.kms_key_id is defined %}
       KmsKeyId: {{ db_cluster.kms_key_id | trim }}
+{%- endif %}
+{%- if db_cluster.manage_master_user_password is defined %}
+      ManageMasterUserPassword: {{ db_cluster.manage_master_user_password | lower }}
 {%- endif %}
 {%- if db_cluster.master_username is defined %}
       MasterUsername: {{ db_cluster.master_username }}
 {%- endif %}
-{%- if db_cluster.master_user_password is defined %}
+{%- if db_cluster.master_user_password is defined %}{# BEGIN if db_cluster.master_user_password is defined #}
 {%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
       MasterUserPassword:
-        Ref: {{ db_instance_name }}MasterUserPassword
+        Ref: {{ db_cluster_name }}MasterUserPassword
 {%- else %}
-      MasterUserPassword: {{ db_instance.master_user_password }}
+      MasterUserPassword: {{ db_cluster.master_user_password }}
 {%- endif %}
+{%- endif %}{# END if db_cluster.master_user_password is defined #}
+{%- if db_cluster.master_user_secret_kms_key_id is defined %}
+      MasterUserSecretKmsKeyId: {{ db_cluster.master_user_secret_kms_key_id | trim }}
+{%- endif %}
+{%- if db_cluster.network_type is defined %}
+      NetworkType: {{ db_cluster.network_type }}
 {%- endif %}
 {%- if db_cluster.port is defined %}
       Port: {{ db_cluster.port }}
@@ -81,18 +92,41 @@ Resources:
 {%- if db_cluster.preferred_maintenance_window is defined %}
       PreferredMaintenanceWindow: {{ db_cluster.preferred_maintenance_window }}
 {%- endif %}
+{%- if db_cluster.restore_to_time is defined %}
+      RestoreToTime: {{ db_cluster.restore_to_time }}
+{%- endif %}
+{%- if db_cluster.restore_type is defined %}
+      RestoreType: {{ db_cluster.restore_type }}
+{%- endif %}
+{%- if db_cluster.rotate_master_user_password is defined %}
+      RotateMasterUserPassword: {{ db_cluster.rotate_master_user_password | lower }}
+{%- endif %}
+{%- if db_cluster.serverless_v2_scaling_configuration is defined %}
+      ServerlessV2ScalingConfiguration:
+        MaxCapacity: {{ db_cluster.serverless_v2_scaling_configuration.max_capacity }}
+        MinCapacity: {{ db_cluster.serverless_v2_scaling_configuration.min_capacity }}
+{%- endif %}
 {%- if db_cluster.snapshot_identifier is defined %}
       SnapshotIdentifier: {{ db_cluster.snapshot_identifier | trim }}
 {%- endif %}
-{%- if db_cluster.storage_encrypted is defined %}
-      StorageEncrypted: {{ db_cluster.storage_encrypted }}
+{%- if db_cluster.source_db_cluster_identifier is defined %}
+      SourceDBClusterIdentifier: {{ db_cluster.source_db_cluster_identifier | trim }}
 {%- endif %}
-{%- if db_cluster.vpc_security_group_ids is defined %}
+{%- if db_cluster.storage_encrypted is defined %}
+      StorageEncrypted: {{ db_cluster.storage_encrypted | lower }}
+{%- endif %}
+{%- if db_cluster.storage_type is defined %}
+      StorageType: {{ db_cluster.storage_type }}
+{%- endif %}
+{%- if db_cluster.use_latest_restorable_time is defined %}
+      UseLatestRestorableTime: {{ db_cluster.use_latest_restorable_time | lower }}
+{%- endif %}
+{%- if db_cluster.vpc_security_group_ids is defined %}{# BEGIN if db_cluster.vpc_security_group_ids is defined #}
       VpcSecurityGroupIds:
 {%- for security_group_id in db_cluster.vpc_security_group_ids %}
         - {{ security_group_id }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if db_cluster.vpc_security_group_ids is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -102,11 +136,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for db_cluster in sceptre_user_data.db_clusters %}
 {%- set db_cluster_name = db_cluster.name %}
   {{ db_cluster_name }}:
@@ -116,7 +148,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}"
-
   {{ db_cluster_name }}ClusterResourceId:
     Description: The Resource Id for DB cluster {{ db_cluster_name }}
     Value:
@@ -126,7 +157,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-ClusterResourceId"
-
   {{ db_cluster_name }}Endpoint:
     Description: >
       The connection endpoint for the cluster {{ db_cluster_name }}
@@ -137,7 +167,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-Endpoint"
-
   {{ db_cluster_name }}Port:
     Description: The port number on which the cluster {{ db_cluster_name }} accepts connections.
     Value:
@@ -147,7 +176,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-Port"
-
   {{ db_cluster_name }}ReadEndpoint:
     Description: The reader endpoint for the cluster {{ db_cluster_name }}.
     Value:
@@ -157,5 +185,45 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ db_cluster_name }}-ReadEndpoint"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-20:
+Type: AWS::DocDB::DBCluster
+Properties:
+  AvailabilityZones:
+    - String
+  BackupRetentionPeriod: Integer
+  CopyTagsToSnapshot: Boolean
+  DBClusterIdentifier: String
+  DBClusterParameterGroupName: String
+  DBSubnetGroupName: String
+  DeletionProtection: Boolean
+  EnableCloudwatchLogsExports:
+    - String
+  EngineVersion: String
+  GlobalClusterIdentifier: String
+  KmsKeyId: String
+  ManageMasterUserPassword: Boolean
+  MasterUsername: String
+  MasterUserPassword: String
+  MasterUserSecretKmsKeyId: String
+  NetworkType: String
+  Port: Integer
+  PreferredBackupWindow: String
+  PreferredMaintenanceWindow: String
+  RestoreToTime: String
+  RestoreType: String
+  RotateMasterUserPassword: Boolean
+  ServerlessV2ScalingConfiguration:
+    MaxCapacity: Number
+    MinCapacity: Number
+  SnapshotIdentifier: String
+  SourceDBClusterIdentifier: String
+  StorageEncrypted: Boolean
+  StorageType: String
+  Tags:
+    - Key: String
+      Value: String
+  UseLatestRestorableTime: Boolean
+  VpcSecurityGroupIds:
+    - String
+#}
