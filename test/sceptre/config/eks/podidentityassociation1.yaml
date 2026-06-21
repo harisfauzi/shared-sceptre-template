@@ -1,0 +1,106 @@
+---
+template:
+  type: file
+  path: eks/pod_identity_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "EKS Pod Identity Associations for secure workload IAM access"
+  addons:
+    - name: EbsCsiPodIdentity
+      addon_name: aws-ebs-csi-driver
+      cluster_name: production-eks-cluster
+      addon_version: "v1.24.0-eksbuild.1"
+      deletion_policy: Delete
+      preserve_on_delete: false
+      pod_identity_associations:
+        - role_arn: "arn:aws:iam::123456789012:role/ebs-csi-driver-pod-role"
+          service_account: ebs-csi-controller-sa
+      tags:
+        Component: Storage
+        Capability: EBS
+        Environment: Production
+
+    - name: EfsCsiPodIdentity
+      addon_name: aws-efs-csi-driver
+      cluster_name: production-eks-cluster
+      addon_version: "v1.7.0-eksbuild.1"
+      namespace_config:
+        namespace: kube-system
+      deletion_policy: Delete
+      pod_identity_associations:
+        - role_arn: "arn:aws:iam::123456789012:role/efs-csi-driver-pod-role"
+          service_account: efs-csi-controller-sa
+      tags:
+        Component: Storage
+        Capability: EFS
+        Environment: Production
+
+    - name: VpcCniPodIdentity
+      addon_name: vpc-cni
+      cluster_name: production-eks-cluster
+      addon_version: "v1.18.1-eksbuild.1"
+      deletion_policy: Delete
+      resolve_conflicts: OVERWRITE
+      preserve_on_delete: false
+      pod_identity_associations:
+        - role_arn: "arn:aws:iam::123456789012:role/vpc-cni-pod-role"
+          service_account: aws-node
+      tags:
+        Component: Networking
+        Capability: VpcCni
+        Environment: Production
+
+    - name: LoadBalancerControllerPodIdentity
+      addon_name: aws-load-balancer-controller
+      cluster_name: production-eks-cluster
+      deletion_policy: Delete
+      namespace_config:
+        namespace: kube-system
+      preserve_on_delete: true
+      pod_identity_associations:
+        - role_arn: "arn:aws:iam::123456789012:role/aws-load-balancer-controller-pod-role"
+          service_account: aws-load-balancer-controller-sa
+        - role_arn: "arn:aws:iam::123456789012:role/aws-load-balancer-webhook-sa-role"
+          service_account: aws-load-balancer-webhook-sa
+      tags:
+        Component: Ingress
+        Capability: LoadBalancer
+        Environment: Production
+
+    - name: ExternalSecretsPodIdentity
+      addon_name: external-secrets
+      cluster_name: production-eks-cluster
+      deletion_policy: Retain
+      namespace_config:
+        namespace: external-secrets
+      resolve_conflicts: OVERWRITE
+      pod_identity_associations:
+        - role_arn: "arn:aws:iam::123456789012:role/external-secrets-operator-pod-role"
+          service_account: external-secrets-webhook
+      tags:
+        Component: Secrets
+        Capability: ExternalSecrets
+        Environment: Production
+
+    - name: AutoscalerPodIdentity
+      addon_name: cluster-autoscaler
+      cluster_name: production-eks-cluster
+      deletion_policy: Delete
+      namespace_config:
+        namespace: kube-system
+      pod_identity_associations:
+        - role_arn: "arn:aws:iam::123456789012:role/cluster-autoscaler-pod-role"
+          service_account: cluster-autoscaler
+      configuration_values: '{"autoDiscovery":{"clusterName":"production-eks-cluster"}}'
+      tags:
+        Component: Scaling
+        Capability: Autoscaler
+        Environment: Production
+
+stack_tags:
+  Test: eks-pod-identity-association
+
+
+

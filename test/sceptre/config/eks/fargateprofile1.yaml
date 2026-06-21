@@ -1,0 +1,98 @@
+---
+template:
+  type: file
+  path: eks/fargate_profile.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "EKS Fargate Profiles for serverless compute"
+  fargate_profiles:
+    - name: SystemNamespaceProfile
+      fargate_profile_name: system-namespace-profile
+      cluster_name: production-eks-cluster
+      pod_execution_role_arn: "arn:aws:iam::123456789012:role/eks-fargate-pod-execution-role"
+      deletion_policy: Delete
+      selectors:
+        - namespace: kube-system
+        - namespace: kube-public
+      subnets:
+        - subnet-12345678
+        - subnet-87654321
+      tags:
+        Component: CoreServices
+        Environment: Production
+
+    - name: ApplicationWorkloadsProfile
+      fargate_profile_name: app-workloads-profile
+      cluster_name: production-eks-cluster
+      pod_execution_role_arn: "arn:aws:iam::123456789012:role/eks-fargate-app-role"
+      deletion_policy: Delete
+      selectors:
+        - namespace: production
+          labels:
+            workload-type: web
+            tier: frontend
+        - namespace: production
+          labels:
+            workload-type: api
+            tier: backend
+        - namespace: default
+          labels:
+            fargate: enabled
+      subnets:
+        - subnet-app-1111
+        - subnet-app-2222
+        - subnet-app-3333
+      tags:
+        Component: Applications
+        Environment: Production
+        CostCenter: Engineering
+
+    - name: MonitoringServicesProfile
+      fargate_profile_name: monitoring-profile
+      cluster_name: production-eks-cluster
+      pod_execution_role_arn: "arn:aws:iam::123456789012:role/eks-fargate-monitoring-role"
+      deletion_policy: Retain
+      selectors:
+        - namespace: monitoring
+          labels:
+            app: prometheus
+            tier: monitoring
+        - namespace: monitoring
+          labels:
+            app: grafana
+        - namespace: logging
+          labels:
+            component: logstash
+      subnets:
+        - subnet-mon-1111
+        - subnet-mon-2222
+      tags:
+        Component: Observability
+        Environment: Production
+        Team: Platform
+
+    - name: DevelopmentWorkloadsProfile
+      cluster_name: development-eks-cluster
+      pod_execution_role_arn: "arn:aws:iam::123456789012:role/eks-fargate-dev-role"
+      deletion_policy: Delete
+      selectors:
+        - namespace: development
+        - namespace: staging
+          labels:
+            env: staging
+      subnets:
+        - subnet-dev-1111
+        - subnet-dev-2222
+      tags:
+        Component: Development
+        Environment: Development
+
+stack_tags:
+  Test: eks-fargate-profile
+
+
+
+
+

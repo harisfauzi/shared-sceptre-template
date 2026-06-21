@@ -1,0 +1,92 @@
+---
+Description: {{sceptre_user_data.description|default('EKS Access Entry(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for access_entry in sceptre_user_data.access_entries %}
+{%- set access_entry_name = access_entry.name %}
+  {{ access_entry_name }}:
+    Type: AWS::EKS::AccessEntry
+    DeletionPolicy: {{ access_entry.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ access_entry.update_replace_policy | default('Delete') }}
+    Properties:
+      ClusterName: {{ access_entry.cluster_name }}
+      PrincipalArn: {{ access_entry.principal_arn | trim }}
+{%- if access_entry.access_policies is defined %}{# BEGIN if access_entry.access_policies is defined #}
+      AccessPolicies:
+{%- for policy in access_entry.access_policies %}{# BEGIN for policy in access_entry.access_policies #}
+        -
+          AccessScope:
+            Type: {{ policy.access_scope.type }}
+{%- if policy.access_scope.namespaces is defined %}{# BEGIN if policy.access_scope.namespaces is defined #}
+            Namespaces:
+{%- for namespace in policy.access_scope.namespaces %}
+              - {{ namespace }}
+{%- endfor %}
+{%- endif %}{# END if policy.access_scope.namespaces is defined #}
+          PolicyArn: {{ policy.policy_arn | trim }}
+{%- endfor %}{# END for policy in access_entry.access_policies #}
+{%- endif %}{# END if access_entry.access_policies is defined #}
+{%- if access_entry.kubernetes_groups is defined %}{# BEGIN if access_entry.kubernetes_groups is defined #}
+      KubernetesGroups:
+{%- for group in access_entry.kubernetes_groups %}
+        - {{ group }}
+{%- endfor %}
+{%- endif %}{# END if access_entry.kubernetes_groups is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if access_entry.tags is defined %}
+{%- for key,value in access_entry.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if access_entry.type is defined %}
+      Type: {{ access_entry.type }}
+{%- endif %}
+{%- if access_entry.username is defined %}
+      Username: {{ access_entry.username }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for access_entry in sceptre_user_data.access_entries %}
+{%- set access_entry_name = access_entry.name %}
+  {{ access_entry_name }}:
+    Description: Resource name for {{ access_entry_name }}
+    Value:
+      Ref: {{ access_entry_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_entry_name }}"
+  {{ access_entry_name }}AccessEntryArn:
+    Description: The ARN for {{ access_entry_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ access_entry_name }}
+        - AccessEntryArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ access_entry_name }}-AccessEntryArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-21:
+Type: AWS::EKS::AccessEntry
+Properties:
+  AccessPolicies:
+    -
+      AccessScope:
+        Namespaces:
+          - String
+        Type: String
+      PolicyArn: String
+  ClusterName: String
+  KubernetesGroups:
+    - String
+  PrincipalArn: String
+  Tags:
+    - Key: String
+      Value: String
+  Type: String
+  Username: String
+#}

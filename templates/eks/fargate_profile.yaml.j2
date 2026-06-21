@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EKS Fargate Profile(s) for
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for fargate_profile in sceptre_user_data.fargate_profiles %}
 {%- set fargate_profile_name = fargate_profile.name %}
   {{ fargate_profile_name }}:
@@ -12,27 +11,27 @@ Resources:
     UpdateReplacePolicy: {{ fargate_profile.update_replace_policy | default('Delete') }}
     Properties:
       ClusterName: {{ fargate_profile.cluster_name }}
-      PodExecutionRoleArn: {{ fargate_profile.pod_execution_role_arn }}
+      PodExecutionRoleArn: {{ fargate_profile.pod_execution_role_arn | trim }}
       Selectors:
-{%- for selector in fargate_profile.selectors %}
+{%- for selector in fargate_profile.selectors %}{# BEGIN for selector in fargate_profile.selectors #}
         - Namespace: {{ selector.namespace }}
-{%- if selector.labels is defined %}
+{%- if selector.labels is defined %}{# BEGIN if selector.labels is defined #}
           Labels:
-{%- for key, value in selector.labels %}
+{%- for key, value in selector.labels.items() %}
             - Key: {{ key }}
               Value: {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}
+{%- endif %}{# END if selector.labels is defined #}
+{%- endfor %}{# END for selector in fargate_profile.selectors #}
 {%- if fargate_profile.fargate_profile_name is defined %}
       FargateProfileName: {{ fargate_profile.fargate_profile_name }}
 {%- endif %}
-{%- if fargate_profile.subnets is defined %}
+{%- if fargate_profile.subnets is defined %}{# BEGIN if fargate_profile.subnets is defined #}
       Subnets:
 {%- for subnet_id in fargate_profile.subnets %}
         - {{ subnet_id }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if fargate_profile.subnets is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -45,7 +44,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for fargate_profile in sceptre_user_data.fargate_profiles %}
 {%- set fargate_profile_name = fargate_profile.name %}
   {{ fargate_profile_name }}:
@@ -55,7 +53,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ fargate_profile_name }}"
-
   {{ fargate_profile_name }}Arn:
     Description: The ARN for {{ fargate_profile_name }}
     Value:
@@ -65,5 +62,23 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ fargate_profile_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-21:
+Type: AWS::EKS::FargateProfile
+Properties:
+  ClusterName: String
+  FargateProfileName: String
+  PodExecutionRoleArn: String
+  Selectors:
+    -
+      Labels:
+        -
+          Key: String
+          Value: String
+      Namespace: String
+  Subnets:
+    - String
+  Tags:
+    - Key: String
+      Value: String
+#}
