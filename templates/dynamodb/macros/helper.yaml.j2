@@ -1,0 +1,133 @@
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-dynamodb-globaltable-projection.html
+# as of 2026-06-21:
+#
+NonKeyAttributes:
+  - String
+ProjectionType: String
+#}
+{%- macro prep_projection(projection) %}
+{%- if projection.non_key_attributes is defined %}{# BEGIN if projection.non_key_attributes is defined #}
+NonKeyAttributes:
+{%- for attribute in projection.non_key_attributes %}
+  - {{ attribute }}
+{%- endfor %}
+{%- endif %}{# END if projection.non_key_attributes is defined #}
+{%- if projection.projection_type is defined %}
+ProjectionType: {{ projection.projection_type }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-dynamodb-globaltable-capacityautoscalingsettings.html
+# as of 2026-06-21:
+  MaxCapacity: Integer
+  MinCapacity: Integer
+  SeedCapacity: Integer
+  TargetTrackingScalingPolicyConfiguration:
+    DisableScaleIn: Boolean
+    ScaleInCooldown: Integer
+    ScaleOutCooldown: Integer
+    TargetValue: Number
+#}
+{%- macro prep_capacity_auto_scaling_settings(settings) %}
+MaxCapacity: {{ settings.read_capacity_auto_scaling_settings.max_capacity }}
+MinCapacity: {{ settings.read_capacity_auto_scaling_settings.min_capacity }}
+{%- if settings.read_capacity_auto_scaling_settings.seed_capacity is defined %}
+SeedCapacity: {{ settings.read_capacity_auto_scaling_settings.seed_capacity }}
+{%- endif %}
+TargetTrackingScalingPolicyConfiguration:
+  TargetValue: {{ settings.read_capacity_auto_scaling_settings.target_tracking_scaling_policy_configuration.target_value }}
+{%- if settings.read_capacity_auto_scaling_settings.target_tracking_scaling_policy_configuration.disable_scale_in is defined %}
+  DisableScaleIn: {{ settings.read_capacity_auto_scaling_settings.target_tracking_scaling_policy_configuration.disable_scale_in | lower }}
+{%- endif %}
+{%- if settings.read_capacity_auto_scaling_settings.target_tracking_scaling_policy_configuration.scale_in_cooldown is defined %}
+  ScaleInCooldown: {{ settings.read_capacity_auto_scaling_settings.target_tracking_scaling_policy_configuration.scale_in_cooldown }}
+{%- endif %}
+{%- if settings.read_capacity_auto_scaling_settings.target_tracking_scaling_policy_configuration.scale_out_cooldown is defined %}
+  ScaleOutCooldown: {{ settings.read_capacity_auto_scaling_settings.target_tracking_scaling_policy_configuration.scale_out_cooldown }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-dynamodb-globaltable-readprovisionedthroughputsettings.html
+# as of 2026-06-21:
+#
+ReadCapacityAutoScalingSettings:
+  CapacityAutoScalingSettings
+ReadCapacityUnits: Integer
+# #}
+{%- macro prep_read_provisioned_throughput_settings(settings) -%}
+{%- if settings.read_capacity_auto_scaling_settings is defined %}{# BEGIN if settings.read_capacity_auto_scaling_settings is defined #}
+ReadCapacityAutoScalingSettings:
+  {{- prep_capacity_auto_scaling_settings(settings.read_capacity_auto_scaling_settings) | indent(width=2, first=false) }}
+{%- endif %}{# END if settings.read_capacity_auto_scaling_settings is defined #}
+{%- if settings.read_capacity_units is defined %}
+ReadCapacityUnits: {{ settings.read_capacity_units}}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-dynamodb-globaltable-warmthroughput.html
+# as of 2026-06-21:
+ReadUnitsPerSecond: Integer
+WriteUnitsPerSecond: Integer
+#}
+{%- macro prep_warm_throughput(settings) %}
+{%- if settings.read_units_per_second is defined %}
+ReadUnitsPerSecond: {{ settings.read_units_per_second }}
+{%- endif %}
+{%- if settings.write_units_per_second is defined %}
+WriteUnitsPerSecond: {{ settings.write_units_per_second }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-dynamodb-globaltable-keyschema.html
+# as of 2026-06-21:
+AttributeName: String
+KeyType: String
+#}
+{%- macro prep_key_schema(schema) %}
+AttributeName: {{ schema.attribute_name }}
+KeyType: {{ schema.key_type }}
+{%- endmacro %}
+
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-dynamodb-globaltable-contributorinsightsspecification.html
+# as of 2026-06-21:
+Enabled: Boolean
+Mode: String
+#}
+{%- macro prep_contributor_insights_specification(specification) %}
+Enabled: {{ specification.enabled | lower }}
+{%- if specification.mode is defined %}
+Mode: {{ specification.mode }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-dynamodb-table-ondemandthroughput.html
+# as of 2026-06-21:
+MaxReadRequestUnits: Integer
+MaxWriteRequestUnits: Integer
+#}
+{%- macro prep_on_demand_throughput(throughput) %}
+{%- if throughput.max_read_request_units is defined %}
+MaxReadRequestUnits: {{ throughput.max_read_request_units }}
+{%- endif %}
+{%- if throughput.max_write_request_units is defined %}
+MaxWriteRequestUnits: {{ throughput.max_write_request_units }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-dynamodb-table-provisionedthroughput.html
+# as of 2026-06-21:
+ReadCapacityUnits: Integer
+WriteCapacityUnits: Integer
+#}
+{%- macro prep_provisioned_throughput(throughput) %}
+ReadCapacityUnits: {{ throughput.read_capacity_units }}
+WriteCapacityUnits: {{ throughput.write_capacity_units }}
+{%- endmacro %}
