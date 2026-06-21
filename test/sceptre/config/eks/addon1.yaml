@@ -1,0 +1,77 @@
+---
+template:
+  type: file
+  path: eks/addon.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "EKS Addons for cluster functionality"
+  addons:
+    - name: VpcCniAddon
+      addon_name: vpc-cni
+      cluster_name: production-eks-cluster
+      addon_version: "v1.18.1-eksbuild.1"
+      deletion_policy: Delete
+      resolve_conflicts: OVERWRITE
+      preserve_on_delete: false
+      tags:
+        Component: Networking
+        Environment: Production
+
+    - name: CoreDnsAddon
+      addon_name: coredns
+      cluster_name: production-eks-cluster
+      addon_version: "v1.10.1-eksbuild.2"
+      deletion_policy: Delete
+      resolve_conflicts: OVERWRITE
+      tags:
+        Component: DNS
+        Environment: Production
+
+    - name: KubeProxyAddon
+      addon_name: kube-proxy
+      cluster_name: production-eks-cluster
+      addon_version: "v1.30.0-eksbuild.1"
+      namespace_config:
+        namespace: kube-system
+      service_account_role_arn: "arn:aws:iam::123456789012:role/eks-kube-proxy-role"
+      deletion_policy: Delete
+      resolve_conflicts: NONE
+      tags:
+        Component: Proxy
+        Environment: Production
+
+    - name: EbsCsiDriverAddon
+      addon_name: aws-ebs-csi-driver
+      cluster_name: production-eks-cluster
+      addon_version: "v1.24.0-eksbuild.1"
+      deletion_policy: Retain
+      resolve_conflicts: OVERWRITE
+      preserve_on_delete: true
+      service_account_role_arn: "arn:aws:iam::123456789012:role/eks-ebs-csi-driver-role"
+      pod_identity_associations:
+        - role_arn: "arn:aws:iam::123456789012:role/eks-ebs-csi-driver-pod-role"
+          service_account: ebs-csi-controller-sa
+      tags:
+        Component: Storage
+        Environment: Production
+        Critical: true
+
+    - name: EfsCsiDriverAddon
+      addon_name: aws-efs-csi-driver
+      cluster_name: production-eks-cluster
+      addon_version: "v1.7.0-eksbuild.1"
+      namespace_config:
+        namespace: kube-system
+      deletion_policy: Delete
+      resolve_conflicts: OVERWRITE
+      configuration_values: '{"controller":{"resources":{"limits":{"cpu":"100m","memory":"256Mi"}}}}'
+      tags:
+        Component: Storage
+        Environment: Production
+
+stack_tags:
+  Test: eks-addon
+
+

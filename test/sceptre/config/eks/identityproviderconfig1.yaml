@@ -1,0 +1,91 @@
+---
+template:
+  type: file
+  path: eks/identity_provider_config.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "EKS Identity Provider Configurations for OIDC integration"
+  identity_provider_configs:
+    - name: BasicOidcProvider
+      identity_provider_config_name: basic-oidc-config
+      cluster_name: production-eks-cluster
+      type: oidc
+      deletion_policy: Delete
+      oidc:
+        client_id: "kubernetes"
+        issuer_url: "https://oidc.example.com"
+        username_claim: email
+      tags:
+        Component: Authentication
+        Environment: Production
+
+    - name: FullOidcProvider
+      identity_provider_config_name: full-oidc-config
+      cluster_name: production-eks-cluster
+      type: oidc
+      deletion_policy: Delete
+      oidc:
+        client_id: "eks-application"
+        issuer_url: "https://auth.company.com/.well-known/openid-configuration"
+        username_claim: preferred_username
+        username_prefix: "'oidc:'"
+        groups_claim: groups
+        groups_prefix: "'oidc:groups:'"
+        required_claims:
+          hd: company.com
+          org: engineering
+          dept: platform
+      tags:
+        Component: Authentication
+        Environment: Production
+        Team: Platform
+
+    - name: GitHubOidcProvider
+      identity_provider_config_name: github-oidc-config
+      cluster_name: production-eks-cluster
+      type: oidc
+      deletion_policy: Retain
+      oidc:
+        client_id: "github-kubernetes-app"
+        issuer_url: "https://token.actions.githubusercontent.com"
+        username_claim: actor
+        username_prefix: "'github:'"
+        groups_claim: groups_inside_org
+        groups_prefix: "'github:'"
+        required_claims:
+          repository_owner: my-org
+      tags:
+        Component: CICD
+        Environment: Production
+        Provider: GitHub
+
+    - name: KeycloakOidcProvider
+      identity_provider_config_name: keycloak-oidc-config
+      cluster_name: development-eks-cluster
+      type: oidc
+      deletion_policy: Delete
+      oidc:
+        client_id: "keycloak-eks-client"
+        issuer_url: "https://keycloak.internal.company.com/auth/realms/kubernetes"
+        username_claim: preferred_username
+        username_prefix: "'keycloak:'"
+        groups_claim: groups
+        groups_prefix: "'keycloak:'"
+        required_claims:
+          realm: kubernetes
+          typ: Bearer
+      tags:
+        Component: Authentication
+        Environment: Development
+        Provider: Keycloak
+
+stack_tags:
+  Test: eks-identity-provider-config
+
+
+
+
+
+

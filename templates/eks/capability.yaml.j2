@@ -1,0 +1,131 @@
+---
+Description: {{sceptre_user_data.description|default('EKS Addon(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for capability in sceptre_user_data.capabilities %}
+{%- set capability_name = capability.name %}
+  {{ capability_name }}:
+    Type: AWS::EKS::Capability
+    DeletionPolicy: {{ capability.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ capability.update_replace_policy | default('Delete') }}
+    Properties:
+      CapabilityName: {{ capability.capability_name }}
+      ClusterName: {{ capability.cluster_name }}
+      DeletePropagationPolicy: {{ capability.delete_propagation_policy }}
+      RoleArn: {{ capability.role_arn | trim }}
+      Type: {{ capability.type }}
+{%- if capability.configuration is defined %}{# BEGIN if capability.configuration is defined #}
+      Configuration:
+{%- if capability.configuration.argo_cd is defined %}{# BEGIN if capability.configuration.argo_cd is defined #}
+        ArgoCd:
+          AwsIdc:
+            IdcInstanceArn: {{ capability.configuration.argo_cd.aws_idc.idc_instance_arn | trim }}
+{%- if capability.configuration.argo_cd.aws_idc.idc_managed_application_arn is defined %}
+            IdcManagedApplicationArn: {{ capability.configuration.argo_cd.aws_idc.idc_managed_application_arn | trim}}
+{%- endif %}
+{%- if capability.configuration.argo_cd.aws_idc.idc_region is defined %}
+            IdcRegion: {{ capability.configuration.argo_cd.aws_idc.idc_region }}
+{%- endif %}
+{%- if capability.configuration.argo_cd.namespace is defined %}
+          Namespace: {{ capability.configuration.argo_cd.namespace }}
+{%- endif %}
+{%- if capability.configuration.argo_cd.network_access is defined %}{# BEGIN if capability.configuration.argo_cd.network_access is defined #}
+          NetworkAccess:
+{%- if capability.configuration.argo_cd.network_access.vpce_ids is defined %}{# BEGIN if capability.configuration.argo_cd.network_access.vpce_ids is defined #}
+            VpceIds:
+{%- for vpce_id in capability.configuration.argo_cd.network_access.vpce_ids %}
+              - {{ vpce_id }}
+{%- endfor %}
+{%- endif %}{# END if capability.configuration.argo_cd.network_access.vpce_ids is defined #}
+{%- endif %}{# END if capability.configuration.argo_cd.network_access is defined #}
+{%- if capability.configuration.argo_cd.rbac_role_mappings is defined %}{# BEGIN if capability.configuration.argo_cd.rbac_role_mappings is defined #}
+          RbacRoleMappings:
+{%- for mapping in capability.configuration.argo_cd.rbac_role_mappings %}{# BEGIN for mapping in capability.configuration.argo_cd.rbac_role_mappings #}
+            -
+              Identities:
+{%- for identity in mapping.identities %}
+                -
+                  Id: {{ identity.id }}
+                  Type: {{ identity.type }}
+{%- endfor %}
+              Role: {{ mapping.role }}
+{%- endfor %}{# END for mapping in capability.configuration.argo_cd.rbac_role_mappings #}
+{%- endif %}{# END if capability.configuration.argo_cd.rbac_role_mappings is defined #}
+{%- if capability.configuration.argo_cd.server_url is defined %}
+          ServerUrl: {{ capability.configuration.argo_cd.server_url }}
+{%- endif %}
+{%- endif %}{# END if capability.configuration.argo_cd is defined #}
+{%- endif %}{# END if capability.configuration is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if capability.tags is defined %}
+{%- for key,value in capability.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for capability in sceptre_user_data.capabilities %}
+{%- set capability_name = capability.name %}
+  {{ capability_name }}Arn:
+    Description: The ARN for {{ capability_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capability_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capability_name }}-Arn"
+  {{ capability_name }}Status:
+    Description: The current status of the capability {{ capability_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capability_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capability_name }}-Status"
+  {{ capability_name }}Version:
+    Description: The version of the capability {{ capability_name }} currently running.
+    Value:
+      Fn::GetAtt:
+        - {{ capability_name }}
+        - Version
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capability_name }}-Version"
+{%- endfor %}{#
+# Supported structure as of 2026-06-21:
+Type: AWS::EKS::Capability
+Properties:
+  CapabilityName: String
+  ClusterName: String
+  Configuration:
+    ArgoCd:
+      AwsIdc:
+        IdcInstanceArn: String
+        IdcManagedApplicationArn: String
+        IdcRegion: String
+      Namespace: String
+      NetworkAccess:
+        VpceIds:
+          - String
+      RbacRoleMappings:
+        -
+          Identities:
+            -
+              Id: String
+              Type: String
+          Role: String
+      ServerUrl: String
+  DeletePropagationPolicy: String
+  RoleArn: String
+  Tags:
+    - Key: String
+      Value: String
+  Type: String
+#}

@@ -1,0 +1,65 @@
+---
+template:
+  type: file
+  path: eks/access_entry.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "EKS Access Entries for cluster access management"
+  access_entries:
+    - name: BasicAdminEntry
+      cluster_name: production-eks-cluster
+      principal_arn: "arn:aws:iam::123456789012:role/AdminRole"
+      type: STANDARD
+      deletion_policy: Delete
+      tags:
+        AccessLevel: Admin
+        Environment: Production
+
+    - name: NamespacedReaderEntry
+      cluster_name: production-eks-cluster
+      principal_arn: "arn:aws:iam::123456789012:role/ReaderRole"
+      type: STANDARD
+      username: reader-user
+      kubernetes_groups:
+        - viewers
+        - readers
+      access_policies:
+        - policy_arn: "arn:aws:eks::aws:cluster-access-policy/AmazonEKSViewPolicy"
+          access_scope:
+            type: namespace
+            namespaces:
+              - default
+              - monitoring
+              - logging
+        - policy_arn: "arn:aws:eks::aws:cluster-access-policy/AmazonEKSReadOnlyPolicy"
+          access_scope:
+            type: cluster
+      tags:
+        AccessLevel: Reader
+        Environment: Production
+        Team: Platform
+
+    - name: DeveloperNamespaceEntry
+      cluster_name: production-eks-cluster
+      principal_arn: "arn:aws:iam::123456789012:role/DeveloperRole"
+      type: STANDARD
+      username: developer-user
+      kubernetes_groups:
+        - developers
+      access_policies:
+        - policy_arn: "arn:aws:eks::aws:cluster-access-policy/AmazonEKSEditPolicy"
+          access_scope:
+            type: namespace
+            namespaces:
+              - development
+              - staging
+      tags:
+        AccessLevel: Developer
+        Environment: Production
+        Team: Development
+
+stack_tags:
+  Test: eks-access-entry
+
