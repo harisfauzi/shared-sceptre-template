@@ -1,0 +1,26 @@
+---
+template:
+  type: file
+  path: fis/target-account-configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{ git_repo }}"
+  target_account_configurations:
+    - name: TargetDev
+      account_id: "111111111111"
+      experiment_template_id: !stack_output fis/experimenttemplate1.yaml::template1
+      role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/FISTargetAccountConfigRole"
+      description: "FIS Target Account Configuration for Development"
+    - name: TargetStaging
+      account_id: "222222222222"
+      experiment_template_id: !stack_output fis/experimenttemplate1.yaml::template2
+      role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/FISTargetAccountConfigRole"
+      description: "FIS Target Account Configuration for Staging"
+    - name: TargetProd
+      account_id: "333333333333"
+      experiment_template_id: !stack_output fis/experimenttemplate1.yaml::template3
+      role_arn: "!Sub arn:aws:iam::${AWS::AccountId}:role/FISTargetAccountConfigRole"
+      description: "FIS Target Account Configuration for Production"
+stack_tags:
+  Test: fis-targetaccountconfiguration
