@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('FIS TargetAccountConfiguration(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('FIS Target Account Configuration(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for target_account_configuration in sceptre_user_data.target_account_configurations %}
 {%- set target_account_configuration_name = target_account_configuration.name %}
   {{ target_account_configuration_name }}:
@@ -17,5 +16,12 @@ Resources:
 {%- if target_account_configuration.description is defined %}
       Description: {{target_account_configuration.description}}
 {%- endif %}
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-22:
+Type: AWS::FIS::TargetAccountConfiguration
+Properties:
+  AccountId: String
+  Description: String
+  ExperimentTemplateId: String
+  RoleArn: String
+#}
