@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: kinesis/resource_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Kinesis Resource Policies for {{project_code}}
+  resource_policies:
+    - name: StreamProducerPolicy
+      resource_arn: "arn:aws:kinesis:us-east-1:123456789012:stream/prod-events"
+      resource_policy: |-
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowProducerAccess
+            Effect: Allow
+            Principal:
+              Service:
+                - firehose.amazonaws.com
+                - lambda.amazonaws.com
+            Action:
+              - kinesis:PutRecord
+              - kinesis:PutRecords
+            Resource: "arn:aws:kinesis:us-east-1:123456789012:stream/prod-events"
+    - name: StreamConsumerPolicy
+      resource_arn: "arn:aws:kinesis:us-east-1:123456789012:stream/prod-analytics"
+      resource_policy_json: |
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowConsumerAccess",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::123456789012:role/analytics-consumer-role"
+              },
+              "Action": [
+                "kinesis:GetRecords",
+                "kinesis:GetShardIterator",
+                "kinesis:DescribeStream",
+                "kinesis:ListStreams"
+              ],
+              "Resource": "arn:aws:kinesis:us-east-1:123456789012:stream/prod-analytics"
+            }
+          ]
+        }
+
+stack_tags:
+  Test: kinesis-resourcepolicy

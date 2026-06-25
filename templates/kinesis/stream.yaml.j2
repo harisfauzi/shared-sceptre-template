@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('Kinesis Stream(s) for '+sc
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for stream in sceptre_user_data.streams %}
 {%- set stream_name = stream.name %}
   {{ stream_name }}:
@@ -11,17 +10,32 @@ Resources:
     DeletionPolicy: {{ stream.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ stream.update_replace_policy | default('Delete') }}
     Properties:
-      ShardCount: {{ stream.shard_count }}
+{%- if stream.desired_shard_level_metrics is defined %}
+      DesiredShardLevelMetrics:
+{%- for metric in stream.desired_shard_level_metrics %}
+        - {{ metric }}
+{%- endfor %}
+{%- endif %}
+{%- if stream.max_record_size_in_kib is defined %}
+      MaxRecordSizeInKiB: {{ stream.max_record_size_in_kib }}
+{%- endif %}
 {%- if stream.stream_name is defined %}
       Name: {{ stream.stream_name }}
 {%- endif %}
 {%- if stream.retention_period_hours is defined %}
       RetentionPeriodHours: {{ stream.retention_period_hours }}
 {%- endif %}
+{%- if stream.shard_count is defined %}
+      ShardCount: {{ stream.shard_count }}
+{%- endif %}
 {%- if stream.stream_encryption is defined %}
       StreamEncryption:
         EncryptionType: {{ stream.stream_encryption.encryption_type }}
         KeyId: {{ stream.stream_encryption.key_id | trim }}
+{%- endif %}
+{%- if stream.stream_mode_details is defined %}
+      StreamModeDetails:
+        StreamMode: {{ stream.stream_mode_details.stream_mode }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -32,11 +46,12 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
+{%- if stream.warm_throughput_mibps is defined %}
+      WarmThroughputMiBps: {{ stream.warm_throughput_mibps }}
+{%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for stream in sceptre_user_data.streams %}
 {%- set stream_name = stream.name %}
   {{ stream_name }}:
@@ -46,7 +61,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ stream_name }}"
-
   {{ stream_name }}Arn:
     Description: The ARN for {{ stream_name }}
     Value:
@@ -56,5 +70,23 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ stream_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Kinesis::Stream
+Properties:
+  DesiredShardLevelMetrics:
+    - String
+  MaxRecordSizeInKiB: Integer
+  Name: String
+  RetentionPeriodHours: Integer
+  ShardCount: Integer
+  StreamEncryption:
+    EncryptionType: String
+    KeyId: String
+  StreamModeDetails:
+    StreamMode: String
+  Tags:
+    - Key: String
+      Value: String
+  WarmThroughputMiBps: Integer
+#}
