@@ -1,0 +1,103 @@
+---
+Description: {{sceptre_user_data.description|default('Lambda URL(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for url in sceptre_user_data.urls %}
+{%- set url_name = url.name %}
+  {{ url_name }}:
+    Type: AWS::Lambda::Url
+    DeletionPolicy: {{ url.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ url.update_replace_policy | default('Delete') }}
+    Properties:
+      AuthType: {{ url.auth_type }}
+      TargetFunctionArn: {{ url.target_function_arn | trim }}
+{%- if url.cors is defined %}{# BEGIN if url.cors is defined #}
+      Cors:
+{%- if url.cors.allow_credentials is defined %}
+        AllowCredentials: {{ url.cors.allow_credentials }}
+{%- endif %}
+{%- if url.cors.allow_headers is defined %}{# BEGIN if url.cors.allow_headers is defined #}
+        AllowHeaders:
+{%- for header in url.cors.allow_headers %}
+          - {{ header }}
+{%- endfor %}
+{%- endif %}{# END if url.cors.allow_headers is defined #}
+{%- if url.cors.allow_methods is defined %}{# BEGIN if url.cors.allow_methods is defined #}
+        AllowMethods:
+{%- for method in url.cors.allow_methods %}
+          - {{ method }}
+{%- endfor %}
+{%- endif %}{# END if url.cors.allow_methods is defined #}
+{%- if url.cors.allow_origins is defined %}{# BEGIN if url.cors.allow_origins is defined #}
+        AllowOrigins:
+{%- for origin in url.cors.allow_origins %}
+          - {{ origin }}
+{%- endfor %}
+{%- endif %}{# END if url.cors.allow_origins is defined #}
+{%- if url.cors.expose_headers is defined %}{# BEGIN if url.cors.expose_headers is defined #}
+        ExposeHeaders:
+{%- for header in url.cors.expose_headers %}
+          - {{ header }}
+{%- endfor %}
+{%- endif %}{# END if url.cors.expose_headers is defined #}
+{%- if url.cors.max_age is defined %}
+        MaxAge: {{ url.cors.max_age }}
+{%- endif %}
+{%- endif %}{# END if url.cors is defined #}
+{%- if url.invoke_mode is defined %}
+      InvokeMode: {{ url.invoke_mode }}
+{%- endif %}
+{%- if url.qualifier is defined %}
+      Qualifier: {{ url.qualifier }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for url in sceptre_user_data.urls %}
+{%- set url_name = url.name %}
+  {{ url_name }}:
+    Description: The resource name for {{ url_name }}
+    Value:
+      Ref: {{ url_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ url_name }}"
+  {{ url_name }}FunctionArn:
+    Description: The ARN of the function for {{ url_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ url_name }}
+        - FunctionArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ url_name }}-FunctionArn"
+  {{ url_name }}FunctionUrl:
+    Description: The HTTP URL endpoint for {{ url_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ url_name }}
+        - FunctionUrl
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ url_name }}-FunctionUrl"
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::Url
+Properties:
+  AuthType: String
+  Cors:
+    AllowCredentials: Boolean
+    AllowHeaders:
+      - String
+    AllowMethods:
+      - String
+    AllowOrigins:
+      - String
+    ExposeHeaders:
+      - String
+    MaxAge: Integer
+  InvokeMode: String
+  Qualifier: String
+  TargetFunctionArn: String
+#}

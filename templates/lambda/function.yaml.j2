@@ -27,78 +27,110 @@ Resources:
         SourceKMSKeyArn: {{ function.code.source_kms_key_arn | trim }}
 {%- endif %}
 {%- if function.code.zip_file is defined %}
-        ZipFile: |
-{{ function.code.zip_file | indent(width=10, first=true) }}
+        ZipFile: |-
+          {{ function.code.zip_file | indent(width=10, first=false) }}
 {%- endif %}
       Role: {{ function.role }}
-{%- if function.architectures is defined %}
+{%- if function.architectures is defined %}{# BEGIN if function.architectures is defined #}
       Architectures:
 {%- for architecture in function.architectures %}
         - {{architecture}}
 {%- endfor %}
+{%- endif %}{# END if function.architectures is defined #}
+{%- if function.capacity_provider_config is defined %}{# BEGIN if function.capacity_provider_config is defined #}
+      CapacityProviderConfig:
+        LambdaManagedInstancesCapacityProviderConfig:
+          CapacityProviderArn: {{ function.capacity_provider_config.lambda_managed_instances_capacity_provider_config.capacity_provider_arn | trim }}
+{%- if function.capacity_provider_config.lambda_managed_instances_capacity_provider_config.execution_environment_memory_gib_per_vcpu is defined %}
+          ExecutionEnvironmentMemoryGiBPerVCpu: {{ function.capacity_provider_config.lambda_managed_instances_capacity_provider_config.execution_environment_memory_gib_per_vcpu }}
 {%- endif %}
+{%- if function.capacity_provider_config.lambda_managed_instances_capacity_provider_config.per_execution_environment_max_concurrency is defined %}
+          PerExecutionEnvironmentMaxConcurrency: {{ function.capacity_provider_config.lambda_managed_instances_capacity_provider_config.per_execution_environment_max_concurrency }}
+{%- endif %}
+{%- endif %}{# END if function.capacity_provider_config is defined #}
 {%- if function.code_signing_config_arn is defined %}
-      CodeSigningConfigArn: {{ function.code_signing_config_arn }}
+      CodeSigningConfigArn: {{ function.code_signing_config_arn | trim }}
 {%- endif %}
-{%- if function.dead_letter_config is defined %}
+{%- if function.dead_letter_config is defined %}{# BEGIN if function.dead_letter_config is defined #}
       DeadLetterConfig:
+{%- if function.dead_letter_config.target_arn is defined %}
         TargetArn: {{ function.dead_letter_config.target_arn | trim }}
 {%- endif %}
+{%- endif %}{# END if function.dead_letter_config is defined #}
 {%- if function.description is defined %}
       Description: {{ function.description }}
 {%- endif %}
-{%- if function.environment is defined %}
+{%- if function.durable_config is defined %}{# BEGIN if function.durable_config is defined #}
+      DurableConfig:
+        ExecutionTimeout: {{ function.durable_config.execution_timeout }}
+{%- if function.durable_config.retention_period_in_days is defined %}
+        RetentionPeriodInDays: {{ function.durable_config.retention_period_in_days }}
+{%- endif %}
+{%- endif %}{# END if function.durable_config is defined #}
+{%- if function.environment is defined %}{# BEGIN if function.environment is defined #}
       Environment:
+{%- if function.environment.variables is defined %}{# BEGIN if function.environment.variables is defined #}
         Variables:
 {%- for key, value in function.environment.variables.items() %}
           {{ key }}: {{ value }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if function.environment.variables is defined #}
+{%- endif %}{# END if function.environment is defined #}
 {%- if function.ephemeral_storage is defined %}
       EphemeralStorage:
         Size: {{ function.ephemeral_storage.size }}
 {%- endif %}
-{%- if function.file_system_configs is defined %}
+{%- if function.file_system_configs is defined %}{# BEGIN if function.file_system_configs is defined #}
       FileSystemConfigs:
 {%- for file_system_config in function.file_system_configs %}
-        - Arn: {{ file_system_config.arn | trim }}
+        -
+          Arn: {{ file_system_config.arn | trim }}
           LocalMountPath: {{ file_system_config.local_mounth_path }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if function.file_system_configs is defined #}
 {%- if function.function_name is defined %}
       FunctionName: {{ function.function_name }}
 {%- endif %}
+{%- if function.function_scaling_config is defined %}{# BEGIN if function.function_scaling_config is defined #}
+      FunctionScalingConfig:
+{%- if function.function_scaling_config.max_execution_environments is defined %}
+        MaxExecutionEnvironments: {{ function.function_scaling_config.max_execution_environments }}
+{%- endif %}
+{%- if function.function_scaling_config.min_execution_environments is defined %}
+        MinExecutionEnvironments: {{ function.function_scaling_config.min_execution_environments }}
+{%- endif %}
+{%- endif %}{# END if function.function_scaling_config is defined #}
 {%- if function.handler is defined %}
       Handler: {{ function.handler }}
 {%- endif %}
-{%- if function.image_config is defined %}
+{%- if function.image_config is defined %}{# BEGIN if function.image_config is defined #}
       ImageConfig:
-{%- if function.image_config.command is defined %}
+{%- if function.image_config.command is defined %}{# BEGIN if function.image_config.command is defined #}
         Command:
 {%- for command in function.image_config.command %}
           - {{ command }}
 {%- endfor %}
-{%- endif %}
-{%- if function.image_config.entry_point is defined %}
+{%- endif %}{# END if function.image_config.command is defined #}
+{%- if function.image_config.entry_point is defined %}{# BEGIN if function.image_config.entry_point is defined #}
         EntryPoint:
 {%- for entry_point in function.image_config.entry_point %}
           - {{ entry_point }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if function.image_config.entry_point is defined #}
 {%- if function.image_config.working_directory is defined %}
         WorkingDirectory: {{ function.image_config.working_directory }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if function.image_config is defined #}
 {%- if function.kms_key_arn is defined %}
       KmsKeyArn: {{ function.kms_key_arn | trim }}
 {%- endif %}
-{%- if function.layers is defined %}
+{%- if function.layers is defined %}{# BEGIN if function.layers is defined #}
       Layers:
 {%- for layer_arn in function.layers %}
         - {{ layer_arn | trim }}
 {%- endfor %}
-{%- endif %}
-{%- if function.logging_config is defined %}
+{%- endif %}{# END if function.layers is defined #}
+{%- if function.logging_config is defined %}{# BEGIN if function.logging_config is defined #}
       LoggingConfig:
 {%- if function.logging_config.application_log_level is defined %}
         ApplicationLogLevel: {{ function.logging_config.application_log_level }}
@@ -112,12 +144,15 @@ Resources:
 {%- if function.logging_config.system_log_level is defined %}
         SystemLogLevel: {{ function.logging_config.system_log_level }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if function.logging_config is defined #}
 {%- if function.memory_size is defined %}
       MemorySize: {{ function.memory_size }}
 {%- endif %}
 {%- if function.package_type is defined %}
       PackageType: {{ function.package_type }}
+{%- endif %}
+{%- if function.publish_to_latest_published is defined %}
+      PublishToLatestPublished: {{ function.publish_to_latest_published | lower }}
 {%- endif %}
 {%- if function.recursive_loop is defined %}
       RecursiveLoop: {{ function.recursive_loop }}
@@ -128,42 +163,48 @@ Resources:
 {%- if function.runtime is defined %}
       Runtime: {{ function.runtime }}
 {%- endif %}
-{%- if function.runtime_management_config is defined %}
+{%- if function.runtime_management_config is defined %}{# BEGIN if function.runtime_management_config is defined #}
       RuntimeManagementConfig:
         UpdateRuntimeOn: {{ function.runtime_management_config.update_runtime_on }}
 {%- if function.runtime_management_config.runtime_version_arn is defined %}
         RuntimeVersionArn: {{ function.runtime_management_config.runtime_version_arn | trim }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if function.runtime_management_config is defined #}
 {%- if function.snap_start is defined %}
       SnapStart:
         ApplyOn: {{ function.snap_start.apply_on }}
 {%- endif %}
+{%- if function.tenancy_config is defined %}
+      TenancyConfig:
+        TenantIsolationMode: PER_TENANT
+{%- endif %}
 {%- if function.timeout is defined %}
       Timeout: {{ function.timeout }}
 {%- endif %}
-{%- if function.tracing_config is defined %}
+{%- if function.tracing_config is defined %}{# BEGIN if function.tracing_config is defined #}
       TracingConfig:
+{%- if function.tracing_config.mode is defined %}
         Mode: {{ function.tracing_config.mode }}
 {%- endif %}
-{%- if function.vpc_config is defined %}
+{%- endif %}{# END if function.tracing_config is defined #}
+{%- if function.vpc_config is defined %}{# BEGIN if function.vpc_config is defined #}
       VpcConfig:
 {%- if function.vpc_config.ipv6_allowed_for_dual_stack is defined %}
         Ipv6AllowedForDualStack: {{ function.vpc_config.ipv6_allowed_for_dual_stack }}
 {%- endif %}
-{%- if function.vpc_config.security_group_ids is defined %}
+{%- if function.vpc_config.security_group_ids is defined %}{# BEGIN if function.vpc_config.security_group_ids is defined #}
         SecurityGroupIds:
 {%- for security_group_id in function.vpc_config.security_group_ids %}
           - {{ security_group_id | trim }}
 {%- endfor %}
-{%- endif %}
-{%- if function.vpc_config.subnet_ids is defined %}
+{%- endif %}{# END if function.vpc_config.security_group_ids is defined #}
+{%- if function.vpc_config.subnet_ids is defined %}{# BEGIN if function.vpc_config.subnet_ids is defined #}
         SubnetIds:
 {%- for subnet_id in function.vpc_config.subnet_ids %}
           - {{ subnet_id | trim }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}
+{%- endif %}{# END if function.vpc_config.subnet_ids is defined #}
+{%- endif %}{# END if function.vpc_config is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -176,7 +217,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for function in sceptre_user_data.functions %}
 {%- set function_name = function.name %}
   {{ function_name }}:
@@ -186,7 +226,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ function_name }}"
-
   {{ function_name }}Arn:
     Description: The ARN for {{ function_name }}
     Value:
@@ -196,14 +235,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ function_name }}-Arn"
-
-{%- endfor %}
-{#
-# Current supported structure as of 2024/10/26:
+{%- endfor %}{#
+# Current supported structure as of 2026-06-25:
 Type: AWS::Lambda::Function
 Properties:
   Architectures:
     - String
+  CapacityProviderConfig:
+    LambdaManagedInstancesCapacityProviderConfig:
+      CapacityProviderArn: String
+      ExecutionEnvironmentMemoryGiBPerVCpu: Number
+      PerExecutionEnvironmentMaxConcurrency: Integer
   Code:
     ImageUri: String
     S3Bucket: String
@@ -215,6 +257,9 @@ Properties:
   DeadLetterConfig:
     TargetArn: String
   Description: String
+  DurableConfig:
+    ExecutionTimeout: Integer
+    RetentionPeriodInDays: Integer
   Environment:
     Variables:
       Key: Value
@@ -225,6 +270,9 @@ Properties:
       Arn: String
       LocalMountPath: String
   FunctionName: String
+  FunctionScalingConfig:
+    MaxExecutionEnvironments: Integer
+    MinExecutionEnvironments: Integer
   Handler: String
   ImageConfig:
     Command:
@@ -242,6 +290,7 @@ Properties:
     SystemLogLevel: String
   MemorySize: Integer
   PackageType: String
+  PublishToLatestPublished: Boolean
   RecursiveLoop: String
   ReservedConcurrentExecutions: Integer
   Role: String
@@ -255,6 +304,8 @@ Properties:
     -
       Key: String
       Value: String
+  TenancyConfig:
+    TenantIsolationMode: String
   Timeout: Integer
   TracingConfig:
     Mode: String

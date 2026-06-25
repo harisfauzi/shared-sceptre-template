@@ -16,10 +16,32 @@ Resources:
 {%- if permission.event_source_token is defined %}
       EventSourceToken: {{ permission.event_source_token }}
 {%- endif %}
+{%- if permission.function_url_auth_type is defined %}
+      FunctionUrlAuthType: {{ permission.function_url_auth_type }}
+{%- endif %}
+{%- if permission.invoked_via_function_url is defined %}
+      InvokedViaFunctionUrl: {{ permission.invoked_via_function_url | lower }}
+{%- endif %}
+{%- if permission.principal_org_id is defined %}
+      PrincipalOrgID: {{ permission.principal_org_id | trim }}
+{%- endif %}
 {%- if permission.source_account is defined %}
       SourceAccount: {{ permission.source_account }}
 {%- endif %}
 {%- if permission.source_arn is defined %}
-      SourceArn: {{ permission.source_arn }}
+      SourceArn: {{ permission.source_arn | trim }}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::Permission
+Properties:
+  Action: String
+  EventSourceToken: String
+  FunctionName: String
+  FunctionUrlAuthType: String
+  InvokedViaFunctionUrl: Boolean
+  Principal: String
+  PrincipalOrgID: String
+  SourceAccount: String
+  SourceArn: String
+#}

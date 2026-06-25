@@ -1,0 +1,39 @@
+---
+template:
+  type: file
+  path: lambda/code_signing_config.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Lambda Code Signing Configs for {{project_code}}
+  code_signing_configs:
+    - name: ProductionCodeSigningConfig
+      description: "Code signing configuration for production Lambda functions"
+      allowed_publishers:
+        signing_profile_version_arns:
+          - "arn:aws:signer:us-east-1:123456789012:/signing-profile/prod-signing-profile:v1"
+          - "arn:aws:signer:us-east-1:123456789012:/signing-profile/prod-alt-profile:v2"
+      code_signing_policies:
+        untrusted_artifact_on_deployment: Warn
+      tags:
+        Environment: Production
+        Team: Security
+        SigningProfile: Production
+    - name: DevelopmentCodeSigningConfig
+      description: "Code signing configuration for development Lambda functions"
+      allowed_publishers:
+        signing_profile_version_arns:
+          - "arn:aws:signer:us-east-1:123456789012:/signing-profile/dev-signing-profile:v1"
+      code_signing_policies:
+        untrusted_artifact_on_deployment: Enforce
+      tags:
+        Environment: Development
+        Team: Security
+    - name: StagingCodeSigningConfig
+      allowed_publishers:
+        signing_profile_version_arns:
+          - "arn:aws:signer:us-east-1:123456789012:/signing-profile/staging-profile:v1"
+          - "arn:aws:signer:us-east-1:123456789012:/signing-profile/staging-backup:v3"
+      tags:
+        Environment: Staging

@@ -13,15 +13,24 @@ Resources:
       Content:
         S3Bucket: {{ layer_version.content.s3_bucket }}
         S3Key: {{ layer_version.content.s3_key }}
+{%- if layer_version.content.s3_object_storage_mode is defined %}
+        S3ObjectStorageMode: {{ layer_version.content.s3_object_storage_mode }}
+{%- endif %}
 {%- if layer_version.content.s3_object_version is defined %}
         S3ObjectVersion: {{ layer_version.content.s3_object_version }}
 {%- endif %}
-{%- if layer_version.compatible_run_times is defined %}
+{%- if layer_version.compatible_architectures is defined %}{# BEGIN if layer_version.compatible_architectures is defined #}
+      CompatibleArchitectures:
+{%- for compatible_architecture in layer_version.compatible_architectures %}
+        - {{ compatible_architecture }}
+{%- endfor %}
+{%- endif %}{# END if layer_version.compatible_architectures is defined #}
+{%- if layer_version.compatible_run_times is defined %}{# BEGIN if layer_version.compatible_run_times is defined #}
       CompatibleRuntimes:
 {%- for compatible_run_time in layer_version.compatible_run_times %}
         - {{ compatible_run_time }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if layer_version.compatible_run_times is defined #}
 {%- if layer_version.description is defined %}
       Description: {{ layer_version.description }}
 {%- endif %}
@@ -34,15 +43,38 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for layer_version in sceptre_user_data.layer_versions %}
 {%- set layer_version_name = layer_version.name %}
   {{ layer_version_name }}:
-    Description: The ARN of the layer version for {{ layer_version_name }}
+    Description: The ARN for {{ layer_version_name }}
     Value:
       Ref: {{ layer_version_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ layer_version_name }}"
-
-{%- endfor %}
+  {{ layer_version_name }}LayerVersionArn:
+    Description: The ARN for {{ layer_version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ layer_version_name }}
+        - LayerVersionArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ layer_version_name }}-LayerVersionArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::LayerVersion
+Properties:
+  CompatibleArchitectures:
+    - String
+  CompatibleRuntimes:
+    - String
+  Content:
+    S3Bucket: String
+    S3Key: String
+    S3ObjectStorageMode: String
+    S3ObjectVersion: String
+  Description: String
+  LayerName: String
+  LicenseInfo: String
+#}
