@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('ImageBuilder ImagePipeline(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('ImageBuilder Image Pipeline(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for image_pipeline in sceptre_user_data.image_pipelines %}
 {%- set image_pipeline_name = image_pipeline.name %}
   {{ image_pipeline_name }}:
@@ -21,56 +20,69 @@ Resources:
       Description: {{ image_pipeline.description }}
 {%- endif %}
 {%- if image_pipeline.distribution_configuration_arn is defined %}
-      DistributionConfigurationArn: {{ image_pipeline.distribution_configuration_arn }}
+      DistributionConfigurationArn: {{ image_pipeline.distribution_configuration_arn | trim }}
 {%- endif %}
 {%- if image_pipeline.enhanced_image_metadata_enabled is defined %}
-      EnhancedImageMetadataEnabled: {{ image_pipeline.enhanced_image_metadata_enabled }}
+      EnhancedImageMetadataEnabled: {{ image_pipeline.enhanced_image_metadata_enabled | lower }}
 {%- endif %}
 {%- if image_pipeline.execution_role is defined %}
-      ExecutionRole: {{ image_pipeline.execution_role }}
+      ExecutionRole: {{ image_pipeline.execution_role | trim }}
 {%- endif %}
 {%- if image_pipeline.image_recipe_arn is defined %}
       ImageRecipeArn: {{ image_pipeline.image_recipe_arn | trim }}
 {%- endif %}
-{%- if image_pipeline.image_scanning_configuration is defined %}{# BEGIN {%- if image_pipeline.image_scanning_configuration is defined %} #}
+{%- if image_pipeline.image_scanning_configuration is defined %}{# BEGIN if image_pipeline.image_scanning_configuration is defined #}
       ImageScanningConfiguration:
-{%- if image_pipeline.image_scanning_configuration.ecr_configuration is defined %}
+{%- if image_pipeline.image_scanning_configuration.ecr_configuration is defined %}{# BEGIN if image_pipeline.image_scanning_configuration.ecr_configuration is defined #}
         EcrConfiguration:
-{%- if image_pipeline.image_scanning_configuration.ecr_configuration.container_tags is defined %}
+{%- if image_pipeline.image_scanning_configuration.ecr_configuration.container_tags is defined %}{# BEGIN if image_pipeline.image_scanning_configuration.ecr_configuration.container_tags is defined #}
           ContainerTags:
 {%- for container_tag in image_pipeline.image_scanning_configuration.ecr_configuration.container_tags %}
             - {{ container_tag }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if image_pipeline.image_scanning_configuration.ecr_configuration.container_tags is defined #}
 {%- if image_pipeline.image_scanning_configuration.ecr_configuration.repository_name is defined %}
           RepositoryName: {{ image_pipeline.image_scanning_configuration.ecr_configuration.repository_name }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if image_pipeline.image_scanning_configuration.ecr_configuration is defined #}
 {%- if image_pipeline.image_scanning_configuration.image_scanning_enabled is defined %}
-        ImageScanningEnabled: {{ image_pipeline.image_scanning_configuration.image_scanning_enabled }}
+        ImageScanningEnabled: {{ image_pipeline.image_scanning_configuration.image_scanning_enabled | lower }}
 {%- endif %}
-{%- endif %}{# END {%- if image_pipeline.image_scanning_configuration is defined %} #}
-{%- if image_pipeline.image_tests_configuration is defined %}{# BEGIN {%- if image_pipeline.image_tests_configuration is defined %} #}
+{%- endif %}{# END if image_pipeline.image_scanning_configuration is defined #}
+{%- if image_pipeline.image_tests_configuration is defined %}{# BEGIN if image_pipeline.image_tests_configuration is defined #}
       ImageTestsConfiguration:
 {%- if image_pipeline.image_tests_configuration.image_tests_enabled is defined %}
-        ImageTestsEnabled: {{ image_pipeline.image_tests_configuration.image_tests_enabled }}
+        ImageTestsEnabled: {{ image_pipeline.image_tests_configuration.image_tests_enabled | lower }}
 {%- endif %}
 {%- if image_pipeline.image_tests_configuration.timeout_minutes is defined %}
         TimeoutMinutes: {{ image_pipeline.image_tests_configuration.timeout_minutes }}
 {%- endif %}
-{%- endif %}{# END {%- if image_pipeline.image_tests_configuration is defined %} #}
+{%- endif %}{# END if image_pipeline.image_tests_configuration is defined #}
 {%- if image_pipeline.infrastructure_configuration_arn is defined %}
       InfrastructureConfigurationArn: {{ image_pipeline.infrastructure_configuration_arn | trim }}
 {%- endif %}
-{%- if image_pipeline.schedule is defined %}
+{%- if image_pipeline.logging_configuration is defined %}{# BEGIN if image_pipeline.logging_configuration is defined #}
+      LoggingConfiguration:
+{%- if image_pipeline.logging_configuration.image_log_group_name is defined %}
+        ImageLogGroupName: {{ image_pipeline.logging_configuration.image_log_group_name }}
+{%- endif %}
+{%- if image_pipeline.logging_configuration.pipeline_log_group_name is defined %}
+        PipelineLogGroupName: {{ image_pipeline.logging_configuration.pipeline_log_group_name }}
+{%- endif %}
+{%- endif %}{# END if image_pipeline.logging_configuration is defined #}
+{%- if image_pipeline.schedule is defined %}{# BEGIN if image_pipeline.schedule is defined #}
       Schedule:
+{%- if image_pipeline.schedule.auto_disable_policy is defined %}
+        AutoDisablePolicy:
+          FailureCount: {{ image_pipeline.schedule.auto_disable_policy.failure_count }}
+{%- endif %}
 {%- if image_pipeline.schedule.pipeline_execution_start_condition is defined %}
         PipelineExecutionStartCondition: {{ image_pipeline.schedule.pipeline_execution_start_condition }}
 {%- endif %}
 {%- if image_pipeline.schedule.schedule_expression is defined %}
         ScheduleExpression: {{ image_pipeline.schedule.schedule_expression }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if image_pipeline.schedule is defined #}
 {%- if image_pipeline.status is defined %}
       Status: {{ image_pipeline.status }}
 {%- endif %}
@@ -81,9 +93,9 @@ Resources:
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- if image_pipeline.workflows is defined %}{# BEGIN {%- if image_pipeline.workflows is defined %} #}
+{%- if image_pipeline.workflows is defined %}{# BEGIN if image_pipeline.workflows is defined #}
       Workflows:
-{%- for workflow in image_pipeline.workflows %}
+{%- for workflow in image_pipeline.workflows %}{# BEGIN for workflow in image_pipeline.workflows #}
         -
 {%- if workflow.on_failure is defined %}
           OnFailure: {{ workflow.on_failure }}
@@ -91,31 +103,29 @@ Resources:
 {%- if workflow.parallel_group is defined %}
           ParallelGroup: {{workflow.parallel_group }}
 {%- endif %}
-{%- if workflow.parameters is defined %}
+{%- if workflow.parameters is defined %}{# BEGIN if workflow.parameters is defined #}
           Parameters:
-{%- for parameter in workflow.parameters %}
+{%- for parameter in workflow.parameters %}{# BEGIN for parameter in workflow.parameters #}
             -
 {%- if parameter.name is defined %}
               Name: {{parameter.name }}
 {%- endif %}
-{%- if parameter.name is defined %}
+{%- if parameter.value is defined %}{# BEGIN if parameter.value is defined #}
               Value:
-{%- for val in parameter.name %}
+{%- for val in parameter.value %}
                 - {{ val }}
 {%- endfor %}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for parameter in workflow.parameters #}
+{%- endif %}{# END if workflow.parameters is defined #}
 {%- if workflow.workflow_arn is defined %}
           WorkflowArn: {{ workflow.workflow_arn }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}{# END {%- if image_pipeline.workflows is defined %} #}
-
+{%- endfor %}{# END for workflow in image_pipeline.workflows #}
+{%- endif %}{# END if image_pipeline.workflows is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for image_pipeline in sceptre_user_data.image_pipelines %}
 {%- set image_pipeline_name = image_pipeline.name %}
   {{ image_pipeline_name }}:
@@ -125,7 +135,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ image_pipeline_name }}"
-
   {{ image_pipeline_name }}Arn:
     Description: The ARN for {{ image_pipeline_name }}
     Value:
@@ -135,9 +144,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ image_pipeline_name }}-Arn"
-
   {{ image_pipeline_name }}Name:
-    Description: The ImagePipeline Name for {{ image_pipeline_name }}
+    Description: The Image Pipeline Name for {{ image_pipeline_name }}
     Value:
       Fn::GetAtt:
         - {{ image_pipeline_name }}
@@ -145,5 +153,55 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ image_pipeline_name }}-Name"
-
-{%- endfor %}
+  {{ image_pipeline_name }}DeploymentId:
+    Description: The Deployment ID for {{ image_pipeline_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ image_pipeline_name }}
+        - DeploymentId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ image_pipeline_name }}-DeploymentId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-22:
+Type: AWS::ImageBuilder::ImagePipeline
+Properties:
+  ContainerRecipeArn: String
+  Description: String
+  DistributionConfigurationArn: String
+  EnhancedImageMetadataEnabled: Boolean
+  ExecutionRole: String
+  ImageRecipeArn: String
+  ImageScanningConfiguration:
+    EcrConfiguration:
+      ContainerTags:
+        - String
+      RepositoryName: String
+    ImageScanningEnabled: Boolean
+  ImageTestsConfiguration:
+    ImageTestsEnabled: Boolean
+    TimeoutMinutes: Integer
+  InfrastructureConfigurationArn: String
+  LoggingConfiguration:
+    ImageLogGroupName: String
+    PipelineLogGroupName: String
+  Name: String
+  Schedule:
+    AutoDisablePolicy:
+      FailureCount: Integer
+    PipelineExecutionStartCondition: String
+    ScheduleExpression: String
+  Status: String
+  Tags:
+    Key: Value
+  Workflows:
+    -
+      OnFailure: String
+      ParallelGroup: String
+      Parameters:
+        -
+          Name: String
+          Value:
+            - String
+      WorkflowArn: String
+#}

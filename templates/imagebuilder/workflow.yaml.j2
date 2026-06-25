@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ImageBuilder Workflow(s) f
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for workflow in sceptre_user_data.workflows %}
 {%- set workflow_name = workflow.name %}
   {{ workflow_name }}:
@@ -25,7 +24,7 @@ Resources:
       Description: {{ workflow.description }}
 {%- endif %}
 {%- if workflow.kms_key_id is defined %}
-      KmsKeyId: {{ workflow.kms_key_id }}
+      KmsKeyId: {{ workflow.kms_key_id | trim }}
 {%- endif %}
       Tags:
         SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -37,11 +36,9 @@ Resources:
 {%- if workflow.uri is defined %}
       Uri: {{ workflow.uri }}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for workflow in sceptre_user_data.workflows %}
 {%- set workflow_name = workflow.name %}
   {{ workflow_name }}Arn:
@@ -53,5 +50,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ workflow_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-22:
+Type: AWS::ImageBuilder::Workflow
+Properties:
+  ChangeDescription: String
+  Data: String
+  Description: String
+  KmsKeyId: String
+  Name: String
+  Tags:
+    Key: Value
+  Type: String
+  Uri: String
+  Version: String
+#}

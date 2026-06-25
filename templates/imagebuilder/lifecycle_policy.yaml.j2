@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('ImageBuilder LifecyclePolicy(es) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('ImageBuilder Lifecycle Policy(es) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for lifecycle_policy in sceptre_user_data.lifecycle_policies %}
 {%- set lifecycle_policy_name = lifecycle_policy.name %}
   {{ lifecycle_policy_name }}:
@@ -17,22 +16,22 @@ Resources:
       ExecutionRole: {{ lifecycle_policy.execution_role | trim }}
       Name: {{ lifecycle_policy.lifecycle_policy_name }}
       PolicyDetails:
-{%- for policy_detail in lifecycle_policy.policy_details %}{# BEGIN {%- for policy_detail in lifecycle_policy.policy_details %} #}
+{%- for policy_detail in lifecycle_policy.policy_details %}{# BEGIN for policy_detail in lifecycle_policy.policy_details #}
         -
           Action:
             Type: {{ policy_detail.action.type }}
-{%- if policy_detail.action.include_resources is defined %}{# BEGIN {%- if policy_detail.action.include_resources is defined %} #}
+{%- if policy_detail.action.include_resources is defined %}{# BEGIN if policy_detail.action.include_resources is defined #}
             IncludeResources:
 {%- if policy_detail.action.include_resources.amis is defined %}
-              Amis: {{ policy_detail.action.include_resources.amis }}
+              Amis: {{ policy_detail.action.include_resources.amis | lower}}
 {%- endif %}
 {%- if policy_detail.action.include_resources.containers is defined %}
-              Containers: {{ policy_detail.action.include_resources.containers }}
+              Containers: {{ policy_detail.action.include_resources.containers | lower }}
 {%- endif %}
 {%- if policy_detail.action.include_resources.snapshots is defined %}
-              Snapshots: {{ policy_detail.action.include_resources.snapshots }}
+              Snapshots: {{ policy_detail.action.include_resources.snapshots | lower }}
 {%- endif %}
-{%- endif %}{# END {%- if policy_detail.action.include_resources is defined %} #}
+{%- endif %}{# END if policy_detail.action.include_resources is defined #}
           Filter:
             Type: {{ policy_detail.filter.type }}
             Value: {{ policy_detail.filter.value }}
@@ -42,62 +41,62 @@ Resources:
 {%- if policy_detail.filter.unit is defined %}
             Unit: {{ policy_detail.filter.unit }}
 {%- endif %}
-{%- if policy_detail.exclusion_rules is defined %}{# BEGIN {%- if policy_detail.exclusion_rules is defined %} #}
+{%- if policy_detail.exclusion_rules is defined %}{# BEGIN if policy_detail.exclusion_rules is defined #}
           ExclusionRules:
-{%- if policy_detail.exclusion_rules.amis is defined %}{# BEGIN {%- if policy_detail.exclusion_rules.amis is defined %} #}
+{%- if policy_detail.exclusion_rules.amis is defined %}{# BEGIN if policy_detail.exclusion_rules.amis is defined #}
             Amis:
 {%- if policy_detail.exclusion_rules.amis.is_public is defined %}
-              IsPublic: {{ policy_detail.exclusion_rules.amis.is_public }}
+              IsPublic: {{ policy_detail.exclusion_rules.amis.is_public | lower }}
 {%- endif %}
 {%- if policy_detail.exclusion_rules.amis.last_launched is defined %}
               LastLaunched:
                 Unit: {{ policy_detail.exclusion_rules.amis.last_launched.unit }}
                 Value: {{ policy_detail.exclusion_rules.amis.last_launched.value }}
 {%- endif %}
-{%- if policy_detail.exclusion_rules.amis.regions is defined %}
+{%- if policy_detail.exclusion_rules.amis.regions is defined %}{# BEGIN if policy_detail.exclusion_rules.amis.regions is defined #}
               Regions:
 {%- for region in policy_detail.exclusion_rules.amis.regions %}
                 - {{ region }}
 {%- endfor %}
-{%- endif %}
-{%- if policy_detail.exclusion_rules.amis.shared_accounts is defined %}
+{%- endif %}{# END if policy_detail.exclusion_rules.amis.regions is defined #}
+{%- if policy_detail.exclusion_rules.amis.shared_accounts is defined %}{# BEGIN if policy_detail.exclusion_rules.amis.shared_accounts is defined #}
               SharedAccounts:
 {%- for shared_account in policy_detail.exclusion_rules.amis.shared_accounts %}
                 - {{ shared_account }}
 {%- endfor %}
-{%- endif %}
-{%- if policy_detail.exclusion_rules.amis.tag_map is defined %}
+{%- endif %}{# END if policy_detail.exclusion_rules.amis.shared_accounts is defined #}
+{%- if policy_detail.exclusion_rules.amis.tag_map is defined %}{# BEGIN if policy_detail.exclusion_rules.amis.tag_map is defined #}
               TagMap:
 {%- for key,value in policy_detail.exclusion_rules.amis.tag_map.items() %}
                 {{ key }}: {{ value}}
 {%- endfor %}
-{%- endif %}
-{%- endif %}{# END {%- if policy_detail.exclusion_rules.amis is defined %} #}
-{%- if policy_detail.exclusion_rules.tag_map is defined %}
+{%- endif %}{# END if policy_detail.exclusion_rules.amis.tag_map is defined #}
+{%- endif %}{# END if policy_detail.exclusion_rules.amis is defined #}
+{%- if policy_detail.exclusion_rules.tag_map is defined %}{# BEGIN if policy_detail.exclusion_rules.tag_map is defined #}
             TagMap:
 {%- for key,value in policy_detail.exclusion_rules.tag_map.items() %}
               {{ key }}: {{ value}}
 {%- endfor %}
-{%- endif %}
-{%- endif %}{# END {%- if policy_detail.exclusion_rules is defined %} #}
-{%- endfor %}{# END {%- for policy_detail in lifecycle_policy.policy_details %} #}
-{%- if lifecycle_policy.resource_selection is defined %}{# BEGIN {%- if lifecycle_policy.resource_selection is defined %} #}
+{%- endif %}{# END if policy_detail.exclusion_rules.tag_map is defined #}
+{%- endif %}{# END if policy_detail.exclusion_rules is defined #}
+{%- endfor %}{# END for policy_detail in lifecycle_policy.policy_details #}
+{%- if lifecycle_policy.resource_selection is defined %}{# BEGIN if lifecycle_policy.resource_selection is defined #}
       ResourceSelection:
-{%- if lifecycle_policy.resource_selection.recipes is defined %}
+{%- if lifecycle_policy.resource_selection.recipes is defined %}{# BEGIN if lifecycle_policy.resource_selection.recipes is defined #}
         Recipes:
 {%- for recipe in lifecycle_policy.resource_selection.recipes %}
           -
             Name: {{ recipe.name }}
             SemanticVersion: {{ recipe.semantic_version }}
 {%- endfor %}
-{%- endif %}
-{%- if lifecycle_policy.resource_selection.tag_map is defined %}
+{%- endif %}{# END if lifecycle_policy.resource_selection.recipes is defined #}
+{%- if lifecycle_policy.resource_selection.tag_map is defined %}{# BEGIN if lifecycle_policy.resource_selection.tag_map is defined #}
         TagMap:
 {%- for key,value in lifecycle_policy.resource_selection.tag_map.items() %}
           {{ key }}: {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}{# END {%- if lifecycle_policy.resource_selection is defined %} #}
+{%- endif %}{# END if lifecycle_policy.resource_selection.tag_map is defined #}
+{%- endif %}{# END if lifecycle_policy.resource_selection is defined #}
       ResourceType: {{ lifecycle_policy.resource_type }}
 {%- if lifecycle_policy.status is defined %}
       Status: {{ lifecycle_policy.status }}
@@ -109,11 +108,9 @@ Resources:
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for lifecycle_policy in sceptre_user_data.lifecycle_policies %}
 {%- set lifecycle_policy_name = lifecycle_policy.name %}
   {{ lifecycle_policy_name }}Arn:
@@ -125,5 +122,49 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ lifecycle_policy_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-22:
+Type: AWS::ImageBuilder::LifecyclePolicy
+Properties:
+  Description: String
+  ExecutionRole: String
+  Name: String
+  PolicyDetails:
+    -
+      Action:
+        IncludeResources:
+          Amis: Boolean
+          Containers: Boolean
+          Snapshots: Boolean
+        Type: String
+      ExclusionRules:
+        Amis:
+          IsPublic: Boolean
+          LastLaunched:
+            Unit: String
+            Value: Integer
+          Regions:
+            - String
+          SharedAccounts:
+            - String
+          TagMap:
+            Key: Value
+        TagMap:
+          Key: Value
+      Filter:
+        RetainAtLeast: Integer
+        Type: String
+        Unit: String
+        Value: Integer
+  ResourceSelection:
+    Recipes:
+      -
+        Name: String
+        SemanticVersion: String
+    TagMap:
+      Key: Value
+  ResourceType: String
+  Status: String
+  Tags:
+    Key: Value
+#}
