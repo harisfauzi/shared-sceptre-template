@@ -1,5 +1,5 @@
 ---
-Description: {{sceptre_user_data.description|default('Lambda EventInvokeConfig(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Lambda Event Invoke Config(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
@@ -12,17 +12,17 @@ Resources:
     Properties:
       FunctionName: {{ event_invoke_config.function_name }}
       Qualifier: {{ event_invoke_config.qualifier }}
-{%- if event_invoke_config.destination_config is defined %}
+{%- if event_invoke_config.destination_config is defined %}{# BEGIN if event_invoke_config.destination_config is defined #}
       DestinationConfig:
 {%- if event_invoke_config.destination_config.on_failure is defined %}
         OnFailure:
           Destination: {{ event_invoke_config.destination_config.on_failure.destination }}
 {%- endif %}
-{%- if event_invoke_config.destination_config.on_failure is defined %}
+{%- if event_invoke_config.destination_config.on_success is defined %}
         OnSuccess:
           Destination: {{ event_invoke_config.destination_config.on_success.destination }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if event_invoke_config.destination_config is defined #}
 {%- if event_invoke_config.maximum_event_age_in_seconds is defined %}
       MaximumEventAgeInSeconds: {{ event_invoke_config.maximum_event_age_in_seconds }}
 {%- endif %}
@@ -32,7 +32,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for event_invoke_config in sceptre_user_data.event_invoke_configs %}
 {%- set event_invoke_config_name = event_invoke_config.name %}
   {{ event_invoke_config_name }}:
@@ -42,5 +41,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ event_invoke_config_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::EventInvokeConfig
+Properties:
+  DestinationConfig:
+    OnFailure:
+      Destination: String
+    OnSuccess:
+      Destination: String
+  FunctionName: String
+  MaximumEventAgeInSeconds: Integer
+  MaximumRetryAttempts: Integer
+  Qualifier: String
+#}

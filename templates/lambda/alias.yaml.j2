@@ -32,13 +32,17 @@ Resources:
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: {{ alias.provisioned_concurrency_config.provisioned_concurrent_executions }}
 {%- endif %}
-{%- if alias.routing_config is defined %}
+{%- if alias.routing_config is defined %}{# BEGIN if alias.routing_config is defined #}
       RoutingConfig:
+{%- if alias.routing_config.additional_version_weights is defined %}{# if alias.routing_config.additional_version_weights is defined #}
         AdditionalVersionWeights:
 {%- for additional_version_weight in alias.routing_config.additional_version_weights %}
-          - FunctionVersion: {{ additional_version_weight.function_version }}
+          -
+            FunctionVersion: {{ additional_version_weight.function_version }}
             FunctionWeight: {{ additional_version_weight.function_weight }}
-{%- endif %}
+{%- endfor %}
+{%- endif %}{# END if alias.routing_config.additional_version_weights is defined #}
+{%- endif %}{# END if alias.routing_config is defined #}
 {%- endfor %}
 
 Outputs:
@@ -51,5 +55,28 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ alias_name }}"
-
-{%- endfor %}
+  {{ alias_name }}AliasArn:
+    Description: The ARN for {{ alias_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ alias_name }}
+        - AliasArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ alias_name }}-AliasArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::Alias
+Properties:
+  Description: String
+  FunctionName: String
+  FunctionVersion: String
+  Name: String
+  ProvisionedConcurrencyConfig:
+    ProvisionedConcurrentExecutions: Integer
+  RoutingConfig:
+    AdditionalVersionWeights:
+      -
+        FunctionVersion: String
+        FunctionWeight: Number
+#}

@@ -1,0 +1,44 @@
+---
+template:
+  type: file
+  path: lambda/layer_version.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Lambda Layer Versions for {{project_code}}
+  layer_versions:
+    - name: PythonDependenciesLayer
+      layer_name: python-dependencies
+      content:
+        s3_bucket: lambda-layer-bucket
+        s3_key: layers/python-dependencies.zip
+        s3_object_version: abc123def456
+      compatible_run_times:
+        - python3.9
+        - python3.10
+        - python3.11
+      description: Python dependencies layer for data processing
+    - name: CommonUtilitiesLayer
+      layer_name: common-utilities
+      content:
+        s3_bucket: lambda-layer-bucket
+        s3_key: layers/common-utilities.zip
+      compatible_architectures:
+        - x86_64
+        - arm64
+      compatible_run_times:
+        - python3.11
+        - nodejs18.x
+        - nodejs20.x
+      description: Shared utility functions for Lambda layers
+      license_info: "Apache-2.0"
+    - name: SharedLibrariesLayer
+      content:
+        s3_bucket: lambda-layer-bucket
+        s3_key: layers/shared-libraries.zip
+        s3_object_storage_mode: Archive
+      compatible_architectures:
+        - x86_64
+      deletion_policy: Retain
+      update_replace_policy: Retain

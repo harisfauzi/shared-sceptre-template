@@ -1,0 +1,106 @@
+---
+template:
+  type: file
+  path: lambda/microvm_image.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Lambda Microvm Images for {{project_code}}
+  microvm_images:
+    - name: ProductionDataProcessorImage
+      microvm_image_name: prod-data-processor-microvm
+      base_image_arn: "arn:aws:lambda:us-east-1::microvm-base-image:al2.2024.04"
+      base_image_version: "2024.04.01"
+      build_role_arn: "arn:aws:iam::123456789012:role/lambda-microvm-build-role"
+      description: Production microvm image for data processing
+      code_artifact:
+        uri: "s3://lambda-code-bucket/microvm/processor.tar.gz"
+      additional_os_capabilities:
+        - nfs
+        - network
+      cpu_configurations:
+        - architecture: x86_64
+        - architecture: arm64
+      egress_network_connectors:
+        - vpc
+      environment_variables:
+        ENVIRONMENT: production
+        LOG_LEVEL: INFO
+        PROCESSOR_TYPE: data
+      hooks:
+        microvm_hooks:
+          run: "/app/scripts/run.sh"
+          run_timeout_in_seconds: 300
+          suspend: "/app/scripts/suspend.sh"
+          suspend_timeout_in_seconds: 60
+          resume: "/app/scripts/resume.sh"
+          resume_timeout_in_seconds: 120
+          terminate: "/app/scripts/cleanup.sh"
+          terminate_timeout_in_seconds: 30
+        microvm_image_hooks:
+          ready: "/app/health/ready.sh"
+          ready_timeout_in_seconds: 60
+          validate: "/app/health/validate.sh"
+          validate_timeout_in_seconds: 45
+        port: 8080
+      logging:
+        cloudwatch:
+          log_group: "/aws/lambda/prod-data-processor-microvm"
+          log_stream: "production"
+      resources:
+        - minimum_memory_in_mib: 512
+      tags:
+        Environment: Production
+        Team: DataEngineering
+        Application: DataProcessor
+      deletion_policy: Retain
+      update_replace_policy: Retain
+    - name: DevelopmentMicrovmImage
+      microvm_image_name: dev-microvm
+      base_image_arn: "arn:aws:lambda:us-east-1::microvm-base-image:al2.2024.04"
+      base_image_version: "2024.04.01"
+      build_role_arn: "arn:aws:iam::123456789012:role/lambda-microvm-build-role"
+      description: Development microvm image
+      code_artifact:
+        uri: "s3://lambda-code-bucket/microvm/dev-app.tar.gz"
+      additional_os_capabilities:
+        - network
+      egress_network_connectors:
+        - vpc
+      cpu_configurations:
+        - architecture: x86_64
+      environment_variables:
+        ENVIRONMENT: development
+        DEBUG: "true"
+      hooks:
+        microvm_image_hooks:
+          ready: "/health/ready.sh"
+          ready_timeout_in_seconds: 30
+      logging:
+        cloudwatch:
+          log_group: "/aws/lambda/dev-microvm"
+      resources:
+        - minimum_memory_in_mib: 256
+    - name: MinimalMicrovmImage
+      microvm_image_name: minimal-microvm
+      base_image_arn: "arn:aws:lambda:us-east-1::microvm-base-image:al2.2024.04"
+      base_image_version: "2024.04.01"
+      build_role_arn: "arn:aws:iam::123456789012:role/lambda-microvm-build-role"
+      description: Minimal microvm image
+      code_artifact:
+        uri: "s3://lambda-code-bucket/microvm/minimal.tar.gz"
+      additional_os_capabilities:
+        - network
+      egress_network_connectors:
+        - vpc
+      cpu_configurations:
+        - architecture: x86_64
+      environment_variables:
+        ENVIRONMENT: staging
+      hooks:
+        port: 3000
+      logging:
+        disabled: true
+      resources:
+        - minimum_memory_in_mib: 128

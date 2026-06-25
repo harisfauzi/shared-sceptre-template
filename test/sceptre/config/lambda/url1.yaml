@@ -1,0 +1,60 @@
+---
+template:
+  type: file
+  path: lambda/url.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Lambda URLs for {{project_code}}
+  urls:
+    - name: PublicHttpUrl
+      auth_type: NONE
+      target_function_arn: "arn:aws:lambda:us-east-1:123456789012:function:public-api-handler"
+      invoke_mode: BUFFERED
+      cors:
+        allow_origins:
+          - "'*'"
+        allow_methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+        allow_headers:
+          - "Content-Type"
+          - "Authorization"
+          - "X-Custom-Header"
+        expose_headers:
+          - "Content-Length"
+          - "X-Custom-Response"
+        allow_credentials: true
+        max_age: 3600
+    - name: PrivateIamUrl
+      auth_type: AWS_IAM
+      target_function_arn: "arn:aws:lambda:us-east-1:123456789012:function:private-api-handler"
+      qualifier: "prod"
+      invoke_mode: RESPONSE_STREAM
+      cors:
+        allow_origins:
+          - "https://example.com"
+          - "https://app.example.com"
+        allow_methods:
+          - "POST"
+        allow_credentials: false
+        max_age: 86400
+    - name: InternalServiceUrl
+      auth_type: AWS_IAM
+      target_function_arn: "arn:aws:lambda:us-east-1:123456789012:function:internal-service"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      cors:
+        allow_origins:
+          - "https://internal.company.com"
+        allow_methods:
+          - "GET"
+          - "POST"
+        allow_headers:
+          - "Content-Type"
+        expose_headers:
+          - "X-Service-Version"
+        max_age: 1800

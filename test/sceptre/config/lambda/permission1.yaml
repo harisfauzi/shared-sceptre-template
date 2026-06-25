@@ -1,0 +1,41 @@
+---
+template:
+  type: file
+  path: lambda/permission.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Lambda Permissions for {{project_code}}
+  permissions:
+    - name: S3InvokeLambdaPermission
+      action: "lambda:InvokeFunction"
+      function_name: "data-processor-function"
+      principal: "s3.amazonaws.com"
+      source_arn: "arn:aws:s3:::data-bucket"
+      source_account: "123456789012"
+    - name: ApiGatewayInvokeLambdaPermission
+      action: "lambda:InvokeFunctionUrl"
+      function_name: "http-handler-function"
+      principal: "apigateway.amazonaws.com"
+      function_url_auth_type: AWS_IAM
+      invoked_via_function_url: true
+      source_arn: "arn:aws:apigateway:us-east-1::/restapis/abc123/stages/prod"
+    - name: CrossAccountOrgPermission
+      action: "lambda:InvokeFunction"
+      function_name: "shared-utility-function"
+      principal: "123456789012"
+      principal_org_id: "o-1234567890"
+      source_account: "111111111111"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+    - name: EventsInvokeLambdaPermission
+      action: "lambda:InvokeFunction"
+      function_name: "event-processor-function"
+      principal: "events.amazonaws.com"
+      source_arn: "arn:aws:events:us-east-1:123456789012:rule/ScheduledProcessing"
+    - name: EventSourceMappingPermission
+      action: "lambda:InvokeFunction"
+      function_name: "stream-consumer-function"
+      principal: "dynamodb.amazonaws.com"
+      event_source_token: "arn:aws:dynamodb:us-east-1:123456789012:table/MyTable/stream/2015-06-27T00:48:05.899"

@@ -1,0 +1,164 @@
+---
+Description: {{sceptre_user_data.description|default('Lambda Capacity Provider(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for capacity_provider in sceptre_user_data.capacity_provideres %}
+{%- set capacity_provider_name = capacity_provider.name %}
+  {{ capacity_provider_name }}:
+    Type: AWS::Lambda::CapacityProvider
+    DeletionPolicy: {{ capacity_provider.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ capacity_provider.update_replace_policy | default('Delete') }}
+    Properties:
+      PermissionsConfig:
+        CapacityProviderOperatorRoleArn: {{ capacity_provider.permissions_config.capacity_provider_operator_role_arn | trim }}
+      VpcConfig:
+        SecurityGroupIds:
+{%- for sg_id in capacity_provider.vpc_config.security_group_ids %}
+          - {{ sg_id }}
+{%- endfor %}
+        SubnetIds:
+{%- for subnet_id in capacity_provider.vpc_config.subnet_ids %}
+          - {{ subnet_id }}
+{%- endfor %}
+{%- if capacity_provider.capacity_provider_name is defined %}
+      CapacityProviderName: {{ capacity_provider.capacity_provider_name }}
+{%- endif %}
+{%- if capacity_provider.capacity_provider_scaling_config is defined %}{# BEGIN if capacity_provider.capacity_provider_scaling_config is defined #}
+      CapacityProviderScalingConfig:
+{%- if capacity_provider.capacity_provider_scaling_config.max_vcpu_count is defined %}
+        MaxVCpuCount: {{ capacity_provider.capacity_provider_scaling_config.max_vcpu_count }}
+{%- endif %}
+{%- if capacity_provider.capacity_provider_scaling_config.scaling_mode is defined %}
+        ScalingMode: {{ capacity_provider.capacity_provider_scaling_config.scaling_mode }}
+{%- endif %}
+{%- if capacity_provider.capacity_provider_scaling_config.scaling_policies is defined %}{# BEGIN if capacity_provider.capacity_provider_scaling_config.scaling_policies is defined #}
+        ScalingPolicies:
+{%- for policy in capacity_provider.capacity_provider_scaling_config.scaling_policies %}
+          -
+            PredefinedMetricType: {{ policy.predefined_metric_type }}
+            TargetValue: {{ policy.target_value }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.capacity_provider_scaling_config.scaling_policies is defined #}
+{%- endif %}{# END if capacity_provider.capacity_provider_scaling_config is defined #}
+{%- if capacity_provider.instance_requirements is defined %}{# BEGIN if capacity_provider.instance_requirements is defined #}
+      InstanceRequirements:
+{%- if capacity_provider.instance_requirements.allowed_instance_types is defined %}{# BEGIN if capacity_provider.instance_requirements.allowed_instance_types is defined #}
+        AllowedInstanceTypes:
+{%- for instance_type in capacity_provider.instance_requirements.allowed_instance_types %}
+          - {{ instance_type }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.instance_requirements.allowed_instance_types is defined #}
+{%- if capacity_provider.instance_requirements.architectures is defined %}{# BEGIN if capacity_provider.instance_requirements.architectures is defined #}
+        Architectures:
+{%- for architecture in capacity_provider.instance_requirements.architectures %}
+          - {{ architecture }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.instance_requirements.architectures is defined #}
+{%- if capacity_provider.instance_requirements.excluded_instance_types is defined %}{# BEGIN if capacity_provider.instance_requirements.excluded_instance_types is defined #}
+        ExcludedInstanceTypes:
+{%- for instance_type in capacity_provider.instance_requirements.excluded_instance_types %}
+          - {{ instance_type }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.instance_requirements.excluded_instance_types is defined #}
+{%- endif %}{# END if capacity_provider.instance_requirements is defined #}
+{%- if capacity_provider.kms_key_arn is defined %}
+      KmsKeyArn: {{ capacity_provider.kms_key_arn | trim }}
+{%- endif %}
+{%- if capacity_provider.propagate_tags is defined %}{# BEGIN if capacity_provider.propagate_tags is defined #}
+      PropagateTags:
+{%- if capacity_provider.propagate_tags.explicit_tags is defined %}{# BEGIN if capacity_provider.propagate_tags.explicit_tags is defined #}
+        ExplicitTags:
+{%- for key,value in capacity_provider.propagate_tags.explicit_tags.items() %}
+          - Key: {{ key }}
+            Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if capacity_provider.propagate_tags.explicit_tags is defined #}
+{%- if capacity_provider.propagate_tags.mode is defined %}
+        Mode: {{ capacity_provider.propagate_tags.mode }}
+{%- endif %}
+{%- endif %}{# END if capacity_provider.propagate_tags is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if capacity_provider.tags is defined %}
+{%- for key,value in capacity_provider.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if capacity_provider.telemetry_config is defined %}{# BEGIN if capacity_provider.telemetry_config is defined #}
+      TelemetryConfig:
+{%- if capacity_provider.telemetry_config.logging_config is defined %}{# BEGIN if capacity_provider.telemetry_config.logging_config is defined #}
+        LoggingConfig:
+{%- if capacity_provider.telemetry_config.logging_config.log_group is defined %}
+          LogGroup: {{ capacity_provider.telemetry_config.logging_config.log_group }}
+{%- endif %}
+{%- if capacity_provider.telemetry_config.logging_config.system_log_level is defined %}
+          SystemLogLevel: {{ capacity_provider.telemetry_config.logging_config.system_log_level }}
+{%- endif %}
+{%- endif %}{# END if capacity_provider.telemetry_config.logging_config is defined #}
+{%- endif %}{# END if capacity_provider.telemetry_config is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for capacity_provider in sceptre_user_data.capacity_provideres %}
+{%- set capacity_provider_name = capacity_provider.name %}
+  {{ capacity_provider_name }}Arn:
+    Description: The ARN for {{ capacity_provider_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_provider_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_provider_name }}-Arn"
+  {{ capacity_provider_name }}State:
+    Description: The current state of {{ capacity_provider_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ capacity_provider_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ capacity_provider_name }}-State"
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::CapacityProvider
+Properties:
+  CapacityProviderName: String
+  CapacityProviderScalingConfig:
+    MaxVCpuCount: Integer
+    ScalingMode: String
+    ScalingPolicies:
+      -
+        PredefinedMetricType: String
+        TargetValue: Number
+  InstanceRequirements:
+    AllowedInstanceTypes:
+      - String
+    Architectures:
+      - String
+    ExcludedInstanceTypes:
+      - String
+  KmsKeyArn: String
+  PermissionsConfig:
+    CapacityProviderOperatorRoleArn: String
+  PropagateTags:
+    ExplicitTags:
+      - Key: String
+        Value: String
+    Mode: String
+  Tags:
+    - Key: String
+      Value: String
+  TelemetryConfig:
+    LoggingConfig:
+      LogGroup: String
+      SystemLogLevel: String
+  VpcConfig:
+    SecurityGroupIds:
+      - String
+    SubnetIds:
+      - String
+#}

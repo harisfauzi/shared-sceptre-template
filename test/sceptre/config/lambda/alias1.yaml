@@ -1,0 +1,36 @@
+---
+template:
+  type: file
+  path: lambda/alias.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Lambda Aliases for {{project_code}}
+  aliases:
+    - name: ProductionAlias
+      function_name: my-lambda-function
+      function_version: "1"
+      description: Production alias for my-lambda-function
+      update_policy:
+        code_deploy_lambda_alias_update:
+          application_name: CodeDeployApplication
+          deployment_group_name: lambda-deployment-group
+          before_allow_traffic_hook: BeforeTrafficHookFunction
+          after_allow_traffic_hook: AfterTrafficHookFunction
+    - name: StagingAlias
+      function_name: my-lambda-function
+      function_version: "2"
+      description: Staging alias for canary deployment
+      routing_config:
+        additional_version_weights:
+          - function_version: "1"
+            function_weight: 0.1
+          - function_version: "3"
+            function_weight: 0.2
+    - name: LiveAlias
+      function_name: my-lambda-function
+      function_version: "4"
+      description: Live alias with provisioned concurrency
+      provisioned_concurrency_config:
+        provisioned_concurrent_executions: 100

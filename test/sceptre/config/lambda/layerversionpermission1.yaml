@@ -1,0 +1,24 @@
+---
+template:
+  type: file
+  path: lambda/layer_version_permission.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Lambda Layer Version Permissions for {{project_code}}
+  layer_version_permissions:
+    - name: CrossAccountLayerPermission
+      action: "lambda:GetLayerVersion"
+      layer_version_arn: "arn:aws:lambda:us-east-1:123456789012:layer:python-dependencies:5"
+      principal: "987654321098"
+    - name: RoleLayerPermission
+      action: "lambda:GetLayerVersion"
+      layer_version_arn: "arn:aws:lambda:us-east-1:123456789012:layer:common-utilities:2"
+      principal: "arn:aws:iam::123456789012:role/LambdaExecutionRole"
+    - name: OrganizationLayerPermission
+      action: "lambda:GetLayerVersion"
+      layer_version_arn: "arn:aws:lambda:us-east-1:123456789012:layer:shared-utilities:1"
+      principal: "'*'"
+      organization_id: "o-1234567890"
+      deletion_policy: "Retain"
