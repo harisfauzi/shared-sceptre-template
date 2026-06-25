@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('ImageBuilder InfrastructureConfiguration(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('ImageBuilder Infrastructure Configuration(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for infrastructure_configuration in sceptre_user_data.infrastructure_configurations %}
 {%- set infrastructure_configuration_name = infrastructure_configuration.name %}
   {{ infrastructure_configuration_name }}:
@@ -16,7 +15,7 @@ Resources:
 {%- if infrastructure_configuration.description is defined %}
       Description: {{ infrastructure_configuration.description }}
 {%- endif %}
-{%- if infrastructure_configuration.instance_metadata_options is defined %}
+{%- if infrastructure_configuration.instance_metadata_options is defined %}{# BEGIN if infrastructure_configuration.instance_metadata_options is defined #}
       InstanceMetadataOptions:
 {%- if infrastructure_configuration.instance_metadata_options.http_put_response_hop_limit is defined %}
         HttpPutResponseHopLimit: {{ infrastructure_configuration.instance_metadata_options.http_put_response_hop_limit }}
@@ -24,19 +23,19 @@ Resources:
 {%- if infrastructure_configuration.instance_metadata_options.http_tokens is defined %}
         HttpTokens: {{ infrastructure_configuration.instance_metadata_options.http_tokens }}
 {%- endif %}
-{%- endif %}
-{%- if infrastructure_configuration.instance_types is defined %}
+{%- endif %}{# END if infrastructure_configuration.instance_metadata_options is defined #}
+{%- if infrastructure_configuration.instance_types is defined %}{# BEGIN if infrastructure_configuration.instance_types is defined #}
       InstanceTypes:
 {%- for instance_type in infrastructure_configuration.instance_types %}
         - {{ instance_type }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if infrastructure_configuration.instance_types is defined #}
 {%- if infrastructure_configuration.key_pair is defined %}
       KeyPair: {{ infrastructure_configuration.key_pair }}
 {%- endif %}
-{%- if infrastructure_configuration.logging is defined %}
+{%- if infrastructure_configuration.logging is defined %}{# BEGIN if infrastructure_configuration.logging is defined #}
       Logging:
-{%- if infrastructure_configuration.logging.s3_logs is defined %}
+{%- if infrastructure_configuration.logging.s3_logs is defined %}{# BEGIN if infrastructure_configuration.logging.s3_logs is defined #}
         S3Logs:
 {%- if infrastructure_configuration.logging.s3_logs.s3_bucket_name is defined %}
           S3BucketName: {{ infrastructure_configuration.logging.s3_logs.s3_bucket_name }}
@@ -44,20 +43,35 @@ Resources:
 {%- if infrastructure_configuration.logging.s3_logs.s3_key_prefix is defined %}
           S3KeyPrefix: {{ infrastructure_configuration.logging.s3_logs.s3_key_prefix }}
 {%- endif %}
+{%- endif %}{# END if infrastructure_configuration.logging.s3_logs is defined #}
+{%- endif %}{# END if infrastructure_configuration.logging is defined #}
+{%- if infrastructure_configuration.placement is defined %}{# BEGIN if infrastructure_configuration.placement is defined #}
+      Placement:
+{%- if infrastructure_configuration.placement.availability_zone is defined %}
+        AvailabilityZone: {{ infrastructure_configuration.placement.availability_zone }}
 {%- endif %}
+{%- if infrastructure_configuration.placement.host_id is defined %}
+        HostId: {{ infrastructure_configuration.placement.host_id | trim }}
 {%- endif %}
-{%- if infrastructure_configuration.resource_tags is defined %}
+{%- if infrastructure_configuration.placement.host_resource_group_arn is defined %}
+        HostResourceGroupArn: {{ infrastructure_configuration.placement.host_resource_group_arn | trim }}
+{%- endif %}
+{%- if infrastructure_configuration.placement.tenancy is defined %}
+        Tenancy: {{ infrastructure_configuration.placement.tenancy }}
+{%- endif %}
+{%- endif %}{# END if infrastructure_configuration.placement is defined #}
+{%- if infrastructure_configuration.resource_tags is defined %}{# BEGIN if infrastructure_configuration.resource_tags is defined #}
       ResourceTags:
 {%- for key,value in infrastructure_configuration.resource_tags.items() %}
         {{ key }}: {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- if infrastructure_configuration.security_group_ids is defined %}
+{%- endif %}{# END if infrastructure_configuration.resource_tags is defined #}
+{%- if infrastructure_configuration.security_group_ids is defined %}{# BEGIN if infrastructure_configuration.security_group_ids is defined #}
       SecurityGroupIds:
 {%- for security_group_id in infrastructure_configuration.security_group_ids %}
         - {{ security_group_id }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if infrastructure_configuration.security_group_ids is defined #}
 {%- if infrastructure_configuration.sns_topic_arn is defined %}
       SnsTopicArn: {{ infrastructure_configuration.sns_topic_arn | trim }}
 {%- endif %}
@@ -65,7 +79,7 @@ Resources:
       SubnetId: {{ infrastructure_configuration.subnet_id | trim }}
 {%- endif %}
 {%- if infrastructure_configuration.terminate_instance_on_failure is defined %}
-      TerminateInstanceOnFailure: {{ infrastructure_configuration.terminate_instance_on_failure }}
+      TerminateInstanceOnFailure: {{ infrastructure_configuration.terminate_instance_on_failure | lower }}
 {%- endif %}
       Tags:
         SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -74,11 +88,9 @@ Resources:
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for infrastructure_configuration in sceptre_user_data.infrastructure_configurations %}
 {%- set infrastructure_configuration_name = infrastructure_configuration.name %}
   {{ infrastructure_configuration_name }}:
@@ -88,7 +100,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ infrastructure_configuration_name }}"
-
   {{ infrastructure_configuration_name }}Arn:
     Description: The ARN for {{ infrastructure_configuration_name }}
     Value:
@@ -98,7 +109,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ infrastructure_configuration_name }}-Arn"
-
   {{ infrastructure_configuration_name }}Name:
     Description: The InfrastructureConfiguration Name for {{ infrastructure_configuration_name }}
     Value:
@@ -108,5 +118,35 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ infrastructure_configuration_name }}-Name"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-22:
+Type: AWS::ImageBuilder::InfrastructureConfiguration
+Properties:
+  Description: String
+  InstanceMetadataOptions:
+    HttpPutResponseHopLimit: Integer
+    HttpTokens: String
+  InstanceProfileName: String
+  InstanceTypes:
+    - String
+  KeyPair: String
+  Logging:
+    S3Logs:
+      S3BucketName: String
+      S3KeyPrefix: String
+  Name: String
+  Placement:
+    AvailabilityZone: String
+    HostId: String
+    HostResourceGroupArn: String
+    Tenancy: String
+  ResourceTags:
+    Key: Value
+  SecurityGroupIds:
+    - String
+  SnsTopicArn: String
+  SubnetId: String
+  Tags:
+    Key: Value
+  TerminateInstanceOnFailure: Boolean
+#}

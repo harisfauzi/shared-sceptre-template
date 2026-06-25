@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ImageBuilder Image(s) for 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for image in sceptre_user_data.images %}
 {%- set image_name = image.name %}
   {{ image_name }}:
@@ -14,48 +13,67 @@ Resources:
 {%- if image.container_recipe_arn is defined %}
       ContainerRecipeArn: {{ image.container_recipe_arn | trim }}
 {%- endif %}
+{%- if image.deletion_settings is defined %}
+      DeletionSettings:
+        ExecutionRole: {{ image.deletion_settings.execution_role | trim }}
+{%- endif %}
 {%- if image.distribution_configuration_arn is defined %}
       DistributionConfigurationArn: {{ image.distribution_configuration_arn | trim }}
 {%- endif %}
 {%- if image.enhanced_image_metadata_enabled is defined %}
-      EnhancedImageMetadataEnabled: {{ image.enhanced_image_metadata_enabled }}
+      EnhancedImageMetadataEnabled: {{ image.enhanced_image_metadata_enabled | lower }}
 {%- endif %}
 {%- if image.execution_role is defined %}
       ExecutionRole: {{ image.execution_role | trim }}
 {%- endif %}
+{%- if image.image_pipeline_execution_settings is defined %}
+      ImagePipelineExecutionSettings:
+{%- if image.image_pipeline_execution_settings.deployment_id is defined %}
+        DeploymentId: {{ image.image_pipeline_execution_settings.deployment_id | trim }}
+{%- endif %}
+{%- if image.image_pipeline_execution_settings.on_update is defined %}
+        OnUpdate: {{ image.image_pipeline_execution_settings.on_update | lower }}
+{%- endif %}
+{%- endif %}
 {%- if image.image_recipe_arn is defined %}
       ImageRecipeArn: {{ image.image_recipe_arn | trim }}
 {%- endif %}
-{%- if image.image_scanning_configuration is defined %}{# BEGIN {%- if image.image_scanning_configuration is defined %} #}
+{%- if image.image_scanning_configuration is defined %}{# BEGIN if image.image_scanning_configuration is defined #}
       ImageScanningConfiguration:
-{%- if image.image_scanning_configuration.ecr_configuration is defined %}
+{%- if image.image_scanning_configuration.ecr_configuration is defined %}{# BEGIN if image.image_scanning_configuration.ecr_configuration is defined #}
         EcrConfiguration:
-{%- if image.image_scanning_configuration.ecr_configuration.container_tags is defined %}
+{%- if image.image_scanning_configuration.ecr_configuration.container_tags is defined %}{# BEGIN if image.image_scanning_configuration.ecr_configuration.container_tags is defined #}
           ContainerTags:
 {%- for container_tag in image.image_scanning_configuration.ecr_configuration.container_tags %}
             - {{ container_tag }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if image.image_scanning_configuration.ecr_configuration.container_tags is defined #}
 {%- if image.image_scanning_configuration.ecr_configuration.repository_name is defined %}
           RepositoryName: {{ image.image_scanning_configuration.ecr_configuration.repository_name }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if image.image_scanning_configuration.ecr_configuration is defined #}
 {%- if image.image_scanning_configuration.image_scanning_enabled is defined %}
-        ImageScanningEnabled: {{ image.image_scanning_configuration.image_scanning_enabled }}
+        ImageScanningEnabled: {{ image.image_scanning_configuration.image_scanning_enabled | lower }}
 {%- endif %}
-{%- endif %}{# END {%- if image.image_scanning_configuration is defined %} #}
-{%- if image.image_tests_configuration is defined %}
+{%- endif %}{# END if image.image_scanning_configuration is defined #}
+{%- if image.image_tests_configuration is defined %}{# BEGIN if image.image_tests_configuration is defined #}
       ImageTestsConfiguration:
 {%- if image.image_tests_configuration.image_tests_enabled is defined %}
-        ImageTestsEnabled: {{ image.image_tests_configuration.image_tests_enabled }}
+        ImageTestsEnabled: {{ image.image_tests_configuration.image_tests_enabled | lower }}
 {%- endif %}
 {%- if image.image_tests_configuration.timeout_minutes is defined %}
         TimeoutMinutes: {{ image.image_tests_configuration.timeout_minutes }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if image.image_tests_configuration is defined #}
 {%- if image.infrastructure_configuration_arn is defined %}
       InfrastructureConfigurationArn: {{ image.infrastructure_configuration_arn | trim }}
 {%- endif %}
+{%- if image.logging_configuration is defined %}{# BEGIN if image.logging_configuration is defined #}
+      LoggingConfiguration:
+{%- if image.logging_configuration.log_group_name is defined %}
+        LogGroupName: {{ image.logging_configuration.log_group_name }}
+{%- endif %}
+{%- endif %}{# END if image.logging_configuration is defined #}
       Tags:
         SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if image.tags is defined %}
@@ -63,9 +81,9 @@ Resources:
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- if image.workflows is defined %}{# BEGIN {%- if image.workflows is defined %} #}
+{%- if image.workflows is defined %}{# BEGIN if image.workflows is defined #}
       Workflows:
-{%- for workflow in image.workflows %}
+{%- for workflow in image.workflows %}{# BEGIN for workflow in image.workflows #}
         -
 {%- if workflow.on_failure is defined %}
           OnFailure: {{ workflow.on_failure }}
@@ -73,31 +91,29 @@ Resources:
 {%- if workflow.parallel_group is defined %}
           ParallelGroup: {{ workflow.parallel_group }}
 {%- endif %}
-{%- if workflow.parameters is defined %}
+{%- if workflow.parameters is defined %}{# BEGIN if workflow.parameters is defined #}
           Parameters:
-{%- for parameter in workflow.parameters %}
+{%- for parameter in workflow.parameters %}{# BEGIN for parameter in workflow.parameters #}
             -
 {%- if parameter.name is defined %}
               Name: {{ parameter.name }}
 {%- endif %}
-{%- if parameter.value is defined %}
+{%- if parameter.value is defined %}{# BEGIN if parameter.value is defined #}
               Value:
 {%- for val in parameter.value %}
                 - {{ val }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endif %}{# END if parameter.value is defined #}
+{%- endfor %}{# END for parameter in workflow.parameters #}
+{%- endif %}{# END if workflow.parameters is defined #}
 {%- if workflow.workflow_arn is defined %}
           WorkflowArn: {{ workflow.workflow_arn | trim }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}{# END {%- if image.workflows is defined %} #}
-
+{%- endfor %}{# END for workflow in image.workflows #}
+{%- endif %}{# END if image.workflows is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for image in sceptre_user_data.images %}
 {%- set image_name = image.name %}
   {{ image_name }}:
@@ -107,7 +123,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ image_name }}"
-
   {{ image_name }}Arn:
     Description: The ARN for {{ image_name }}
     Value:
@@ -117,7 +132,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ image_name }}-Arn"
-
 {%- if image.image_recipe_arn is defined %}
   {{ image_name }}ImageId:
     Description: The AMI ID for {{ image_name }}
@@ -128,7 +142,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ image_name }}-ImageId"
-
 {%- endif %}
 {%- if image.container_recipe_arn is defined %}
   {{ image_name }}ImageUri:
@@ -140,7 +153,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ image_name }}-ImageUri"
-
 {%- endif %}
   {{ image_name }}Name:
     Description: The Image Name for {{ image_name }}
@@ -151,5 +163,42 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ image_name }}-Name"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-22:
+Type: AWS::ImageBuilder::Image
+Properties:
+  ContainerRecipeArn: String
+  DeletionSettings:
+    ExecutionRole: String
+  DistributionConfigurationArn: String
+  EnhancedImageMetadataEnabled: Boolean
+  ExecutionRole: String
+  ImagePipelineExecutionSettings:
+    DeploymentId: String
+    OnUpdate: Boolean
+  ImageRecipeArn: String
+  ImageScanningConfiguration:
+    EcrConfiguration:
+      ContainerTags:
+        - String
+      RepositoryName: String
+    ImageScanningEnabled: Boolean
+  ImageTestsConfiguration:
+    ImageTestsEnabled: Boolean
+    TimeoutMinutes: Integer
+  InfrastructureConfigurationArn: String
+  LoggingConfiguration:
+    LogGroupName: String
+  Tags:
+    Key: Value
+  Workflows:
+    -
+      OnFailure: String
+      ParallelGroup: String
+      Parameters:
+        -
+          Name: String
+          Value:
+            - String
+      WorkflowArn: String
+#}
