@@ -1,0 +1,23 @@
+---
+template:
+  type: file
+  path: inspector/resource_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Inspector Resource Groups for {{project_code}}
+  resource_groups:
+    - name: ProductionServers
+      resource_group_tags:
+        Environment: Production
+        Service: WebServers
+        ManagedBy: Terraform
+    - name: StagingServers
+      resource_group_tags:
+        Environment: Staging
+        Service: TestServers
+        ManagedBy: Terraform
+
+stack_tags:
+  Test: inspector-resourcegroup

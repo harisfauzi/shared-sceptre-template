@@ -1,0 +1,101 @@
+---
+Description: {{sceptre_user_data.description|default('InspectorV2 Code Security Integration(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for code_security_integration in sceptre_user_data.code_security_integrations %}
+{%- set code_security_integration_name = code_security_integration.name %}
+  {{ code_security_integration_name }}:
+    Type: AWS::InspectorV2::CodeSecurityIntegration
+    DeletionPolicy: {{ code_security_integration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ code_security_integration.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if code_security_integration.create_integration_details is defined %}
+      CreateIntegrationDetails:
+        gitlabSelfManaged:
+          accessToken: {{ code_security_integration.create_integration_details.gitlab_self_managed.access_token }}
+          instanceUrl: {{ code_security_integration.create_integration_details.gitlab_self_managed.instance_url }}
+{%- endif %}
+{%- if code_security_integration.code_security_integration_name is defined %}
+      Name: {{ code_security_integration.code_security_integration_name }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if code_security_integration.tags is defined%}
+{%- for key,value in code_security_integration.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if code_security_integration.type is defined %}
+      Type: {{ code_security_integration.type }}
+{%- endif %}
+{%- if code_security_integration.update_integration_details is defined %}{# BEGIN if code_security_integration.update_integration_details is defined #}
+      UpdateIntegrationDetails:
+{%- if code_security_integration.update_integration_details.github is defined %}
+        github:
+          code: {{ code_security_integration.update_integration_details.github.code }}
+          installationId: {{ code_security_integration.update_integration_details.github.installation_id }}
+{%- endif %}
+{%- if code_security_integration.update_integration_details.gitlab_self_managed is defined %}
+        gitlabSelfManaged:
+          authCode: {{ code_security_integration.update_integration_details.gitlab_self_managed.auth_code }}
+{%- endif %}
+{%- endif %}{# END if code_security_integration.update_integration_details is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for code_security_integration in sceptre_user_data.code_security_integrations %}
+{%- set code_security_integration_name = code_security_integration.name %}
+  {{ code_security_integration_name }}:
+    Description: The ARN for {{ code_security_integration_name }}
+    Value:
+      Ref: {{ code_security_integration_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ code_security_integration_name }}"
+  {{ code_security_integration_name }}Arn:
+    Description: The ARN for {{ code_security_integration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ code_security_integration_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ code_security_integration_name }}-Arn"
+  {{ code_security_integration_name }}AuthorizationUrl:
+    Description: The URL used to authorize the integration with the repository provider for {{ code_security_integration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ code_security_integration_name }}
+        - AuthorizationUrl
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ code_security_integration_name }}-AuthorizationUrl"
+  {{ code_security_integration_name }}Status:
+    Description: The status of the integration for {{ code_security_integration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ code_security_integration_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ code_security_integration_name }}-Status"
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::InspectorV2::CodeSecurityIntegration
+Properties:
+  CreateIntegrationDetails:
+    gitlabSelfManaged:
+      accessToken: String
+      instanceUrl: String
+  Name: String
+  Tags:
+    Key: Value
+  Type: String
+  UpdateIntegrationDetails:
+    github:
+      code: String
+      installationId: String
+    gitlabSelfManaged:
+      authCode: String
+#}

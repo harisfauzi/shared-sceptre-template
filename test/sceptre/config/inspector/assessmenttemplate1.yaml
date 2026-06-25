@@ -1,0 +1,32 @@
+---
+template:
+  type: file
+  path: inspector/assessment_template.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Inspector Assessment Templates for {{project_code}}
+  assessment_templates:
+    - name: ProductionTemplate
+      assessment_target_arn: "!Sub arn:aws:inspector:${AWS::Region}:${AWS::AccountId}:target/1"
+      duration_in_seconds: 3600
+      assessment_template_name: prod-assessment-template
+      rules_package_arns:
+        - "!Sub arn:aws:inspector:${AWS::Region}:0:rulespackage/0-gBdNVmYL"
+      user_attributes_for_findings:
+        Environment: Production
+        Team: Security
+    - name: StagingTemplate
+      assessment_target_arn: "!Sub arn:aws:inspector:${AWS::Region}:${AWS::AccountId}:target/2"
+      duration_in_seconds: 1800
+      assessment_template_name: staging-assessment-template
+      rules_package_arns:
+        - "!Sub arn:aws:inspector:${AWS::Region}:0:rulespackage/0-gBdNVmYL"
+        - "!Sub arn:aws:inspector:${AWS::Region}:0:rulespackage/0-rExsr2X9"
+      user_attributes_for_findings:
+        Environment: Staging
+        Team: QA
+
+stack_tags:
+  Test: inspector-assementtemplate

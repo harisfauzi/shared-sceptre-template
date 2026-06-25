@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('Inspector ResourceGroup(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Inspector Resource Group(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for resource_group in sceptre_user_data.resource_groups %}
 {%- set resource_group_name = resource_group.name %}
   {{ resource_group_name }}:
@@ -16,11 +15,9 @@ Resources:
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for resource_group in sceptre_user_data.resource_groups %}
 {%- set resource_group_name = resource_group.name %}
   {{ resource_group_name }}:
@@ -30,7 +27,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_group_name }}"
-
   {{ resource_group_name }}Arn:
     Description: The ARN for {{ resource_group_name }}
     Value:
@@ -40,5 +36,11 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resource_group_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Inspector::ResourceGroup
+Properties:
+  ResourceGroupTags:
+    - Key: String
+      Value: String
+#}

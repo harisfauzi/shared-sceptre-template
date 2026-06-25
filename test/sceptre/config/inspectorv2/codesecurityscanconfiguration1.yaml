@@ -1,0 +1,42 @@
+---
+template:
+  type: file
+  path: inspectorv2/code_security_scan_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: InspectorV2 Code Security Scan Configurations for {{project_code}}
+  code_security_scan_configurations:
+    - name: ContinuousIntegrationConfig
+      code_security_scan_configuration_name: ci-code-security-scan
+      level: HIGH
+      configuration:
+        rule_set_categories:
+          - Vulnerability
+          - Secrets
+        continuous_integration_scan_configuration:
+          supported_events:
+            - PULL_REQUEST
+            - PUSH
+      scope_settings:
+        project_selection_scope: ALL
+      tags:
+        ScanType: ContinuousIntegration
+        Environment: Production
+    - name: PeriodicScanConfig
+      code_security_scan_configuration_name: periodic-code-security-scan
+      level: MEDIUM
+      configuration:
+        rule_set_categories:
+          - Vulnerability
+          - Secrets
+          - Dependencies
+        periodic_scan_configuration:
+          frequency: DAILY
+      tags:
+        ScanType: Periodic
+        Environment: Production
+
+stack_tags:
+  Test: inspectorv2-codesecurityscanconfiguration
