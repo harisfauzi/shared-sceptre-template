@@ -1,0 +1,99 @@
+---
+template:
+  type: file
+  path: memorydb/user.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: MemoryDB Users for Production and Development Environments
+  users:
+    - name: AdminUser
+      user_name: admin-user
+      access_string: on ~* &* +@all
+      authentication_mode:
+        type: password
+        passwords:
+          - AdminPassword123!SecureKey
+          - AdminPassword456!BackupKey
+      tags:
+        Name: AdminUser
+        Environment: Production
+        Role: Administrator
+        CostCenter: "1001"
+    - name: ApplicationServiceUser
+      user_name: app-service-user
+      access_string: on ~* &* +@read +@write -@admin
+      authentication_mode:
+        type: password
+        passwords:
+          - AppServicePassword123!Key
+      tags:
+        Name: ApplicationServiceUser
+        Environment: Production
+        Team: ApplicationEngineering
+        Service: CacheService
+        CostCenter: "1002"
+    - name: ReadOnlyAnalyticsUser
+      user_name: readonly-analytics-user
+      access_string: on ~* -&* +@read -@write
+      authentication_mode:
+        type: password
+        passwords:
+          - AnalyticsReadPassword123!Key
+          - AnalyticsReadPassword456!BackupKey
+      tags:
+        Name: ReadOnlyAnalyticsUser
+        Environment: Production
+        Team: Analytics
+        Purpose: ReportingAndAnalysis
+        CostCenter: "1003"
+        ReadOnly: "true"
+    - name: DeveloperTestUser
+      user_name: developer-test-user
+      access_string: on ~* &* +@all
+      authentication_mode:
+        type: password
+        passwords:
+          - DevPassword123!TestKey
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Name: DeveloperTestUser
+        Environment: Development
+        Team: QA
+        Purpose: Testing
+        CostCenter: "1004"
+    - name: BackupServiceUser
+      user_name: backup-service-user
+      access_string: on ~* -&* +@read -@write +@keyspace
+      authentication_mode:
+        type: password
+        passwords:
+          - BackupServicePassword123!Key
+          - BackupServicePassword456!RotationKey
+      tags:
+        Name: BackupServiceUser
+        Environment: Production
+        Team: Infrastructure
+        Purpose: BackupAndRecovery
+        CostCenter: "1005"
+        ServiceAccount: "true"
+    - name: MonitoringAlertUser
+      user_name: monitoring-alert-user
+      access_string: on ~* -&* +@read -@write +@info +@client
+      authentication_mode:
+        type: password
+        passwords:
+          - MonitoringPassword123!Key
+      tags:
+        Name: MonitoringAlertUser
+        Environment: Production
+        Team: Operations
+        Purpose: MonitoringAndAlerts
+        CostCenter: "1006"
+
+stack_tags:
+  Test: memorydb-user
+  Project: MemoryDBUsers
+  Version: "2.0"

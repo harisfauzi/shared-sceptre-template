@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('MemoryDB Cluster(s) for '+
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for cluster in sceptre_user_data.clusters %}
 {%- set cluster_name = cluster.name %}
   {{ cluster_name }}:
@@ -15,9 +14,9 @@ Resources:
       ClusterName: {{cluster.cluster_name}}
       NodeType: {{cluster.node_type}}
 {%- if cluster.auto_minor_version_upgrade is defined %}
-      AutoMinorVersionUpgrade: {{cluster.auto_minor_version_upgrade}}
+      AutoMinorVersionUpgrade: {{cluster.auto_minor_version_upgrade | lower}}
 {%- endif %}
-{%- if cluster.cluster_endpoint is defined %}
+{%- if cluster.cluster_endpoint is defined %}{# BEGIN if cluster.cluster_endpoint is defined #}
       ClusterEndpoint:
 {%- if cluster.cluster_endpoint.address is defined %}
         Address: {{cluster.cluster_endpoint.address}}
@@ -25,12 +24,15 @@ Resources:
 {%- if cluster.cluster_endpoint.port is defined %}
         Port: {{cluster.cluster_endpoint.port}}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if cluster.cluster_endpoint is defined #}
 {%- if cluster.data_tiering is defined %}
       DataTiering: {{cluster.data_tiering}}
 {%- endif %}
 {%- if cluster.description is defined %}
       Description: {{cluster.description}}
+{%- endif %}
+{%- if cluster.engine is defined %}
+      Engine: {{cluster.engine}}
 {%- endif %}
 {%- if cluster.engine_version is defined %}
       EngineVersion: {{cluster.engine_version}}
@@ -38,11 +40,20 @@ Resources:
 {%- if cluster.final_snapshot_name is defined %}
       FinalSnapshotName: {{cluster.final_snapshot_name}}
 {%- endif %}
+{%- if cluster.ip_discovery is defined %}
+      IpDiscovery: {{cluster.ip_discovery}}
+{%- endif %}
 {%- if cluster.kms_key_id is defined %}
-      KmsKeyId: {{cluster.kms_key_id}}
+      KmsKeyId: {{cluster.kms_key_id | trim}}
 {%- endif %}
 {%- if cluster.maintenance_window is defined %}
       MaintenanceWindow: {{cluster.maintenance_window}}
+{%- endif %}
+{%- if cluster.multi_region_cluster_name is defined %}
+      MultiRegionClusterName: {{cluster.multi_region_cluster_name}}
+{%- endif %}
+{%- if cluster.network_type is defined %}
+      NetworkType: {{cluster.network_type}}
 {%- endif %}
 {%- if cluster.num_replicas_per_shard is defined %}
       NumReplicasPerShard: {{cluster.num_replicas_per_shard}}
@@ -56,18 +67,18 @@ Resources:
 {%- if cluster.port is defined %}
       Port: {{cluster.port}}
 {%- endif %}
-{%- if cluster.security_group_ids is defined %}
+{%- if cluster.security_group_ids is defined %}{# BEGIN if cluster.security_group_ids is defined #}
       SecurityGroupIds:
 {%- for security_group_id in cluster.security_group_ids %}
-        - {{security_group_id}}
+        - {{security_group_id | trim}}
 {%- endfor %}
-{%- endif %}
-{%- if cluster.snapshot_arns is defined %}
+{%- endif %}{# END if cluster.security_group_ids is defined #}
+{%- if cluster.snapshot_arns is defined %}{# BEGIN if cluster.snapshot_arns is defined #}
       SnapshotArns:
 {%- for snapshot_arn in cluster.snapshot_arns %}
-        - {{snapshot_arn}}
+        - {{snapshot_arn | trim}}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if cluster.snapshot_arns is defined #}
 {%- if cluster.snapshot_name is defined %}
       SnapshotName: {{cluster.snapshot_name}}
 {%- endif %}
@@ -78,7 +89,7 @@ Resources:
       SnapshotWindow: {{cluster.snapshot_window}}
 {%- endif %}
 {%- if cluster.sns_topic_arn is defined %}
-      SnsTopicArn: {{cluster.sns_topic_arn}}
+      SnsTopicArn: {{cluster.sns_topic_arn | trim}}
 {%- endif %}
 {%- if cluster.sns_topic_status is defined %}
       SnsTopicStatus: {{cluster.sns_topic_status}}
@@ -87,7 +98,7 @@ Resources:
       SubnetGroupName: {{cluster.subnet_group_name}}
 {%- endif %}
 {%- if cluster.tls_enabled is defined %}
-      TLSEnabled: {{cluster.tls_enabled}}
+      TLSEnabled: {{cluster.tls_enabled | lower}}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -98,23 +109,29 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for cluster in sceptre_user_data.clusters %}
 {%- set cluster_name = cluster.name %}
-  {{ cluster_name }}Address:
-    Description: The address for {{ cluster_name }}
+  {{ cluster_name }}ClusterEndpointAddress:
+    Description: The endpoint address for {{ cluster_name }}
     Value:
       Fn::GetAtt:
         - {{ cluster_name }}
-        - Address
+        - ClusterEndpoint.Address
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Arn"
-
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-ClusterEndpointAddress"
+  {{ cluster_name }}ClusterEndpointPort:
+    Description: The endpoint port for {{ cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cluster_name }}
+        - ClusterEndpoint.Port
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-ClusterEndpointPort"
   {{ cluster_name }}ARN:
     Description: The ARN for {{ cluster_name }}
     Value:
@@ -124,14 +141,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-ARN"
-
-  {{ cluster_name }}Name:
-    Description: The Name of {{ cluster_name }}
-    Value: {{cluster.cluster_name}}
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Name"
-
   {{ cluster_name }}ParameterGroupStatus:
     Description: The status of the parameter group used by the cluster {{ cluster_name }}
     Value:
@@ -141,7 +150,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-ParameterGroupStatus"
-
   {{ cluster_name }}Status:
     Description: The status of the cluster {{ cluster_name }}
     Value:
@@ -151,5 +159,43 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Status"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-26:
+Type: AWS::MemoryDB::Cluster
+Properties:
+  ACLName: String
+  AutoMinorVersionUpgrade: Boolean
+  ClusterEndpoint:
+    Address: String
+    Port: Integer
+  ClusterName: String
+  DataTiering: String
+  Description: String
+  Engine: String
+  EngineVersion: String
+  FinalSnapshotName: String
+  IpDiscovery: String
+  KmsKeyId: String
+  MaintenanceWindow: String
+  MultiRegionClusterName: String
+  NetworkType: String
+  NodeType: String
+  NumReplicasPerShard: Integer
+  NumShards: Integer
+  ParameterGroupName: String
+  Port: Integer
+  SecurityGroupIds:
+    - String
+  SnapshotArns:
+    - String
+  SnapshotName: String
+  SnapshotRetentionLimit: Integer
+  SnapshotWindow: String
+  SnsTopicArn: String
+  SnsTopicStatus: String
+  SubnetGroupName: String
+  Tags:
+    - Key: String
+      Value: String
+  TLSEnabled: Boolean
+#}

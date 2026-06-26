@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('MemoryDB SubnetGroup(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('MemoryDB Subnet Group(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for subnet_group in sceptre_user_data.subnet_groups %}
 {%- set subnet_group_name = subnet_group.name %}
   {{ subnet_group_name }}:
@@ -11,13 +10,13 @@ Resources:
     DeletionPolicy: {{ subnet_group.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ subnet_group.update_replace_policy | default('Delete') }}
     Properties:
-      SubnetGroupName: {{subnet_group.subnet_group_name}}
+      SubnetGroupName: {{ subnet_group.subnet_group_name }}
       SubnetIds:
 {%- for subnet_id in subnet_group.subnet_ids %}
-        - {{subnet_id}}
+        - {{ subnet_id | trim }}
 {%- endfor %}
 {%- if subnet_group.description is defined %}
-      Description: {{subnet_group.description}}
+      Description: {{ subnet_group.description }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -28,28 +27,29 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for subnet_group in sceptre_user_data.subnet_groups %}
 {%- set subnet_group_name = subnet_group.name %}
-  {{ subnet_group_name }}Arn:
+  {{ subnet_group_name }}ARN:
     Description: The ARN for {{ subnet_group_name }}
     Value:
       Fn::GetAtt:
         - {{ subnet_group_name }}
-        - Arn
+        - ARN
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ subnet_group_name }}-Arn"
-
-  {{ subnet_group_name }}Name:
-    Description: Name of {{ subnet_group_name }}
-    Value: {{subnet_group.subnet_group_name}}
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ subnet_group_name }}-Name"
-
-{%- endfor %}
+        Fn::Sub: "${AWS::StackName}-{{ subnet_group_name }}-ARN"
+{%- endfor %}{#
+# Supported structure as of 2026-06-26:
+Type: AWS::MemoryDB::SubnetGroup
+Properties:
+  Description: String
+  SubnetGroupName: String
+  SubnetIds:
+    - String
+  Tags:
+    - Key: String
+      Value: String
+#}
