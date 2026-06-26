@@ -1,0 +1,182 @@
+---
+template:
+  type: 
+  path: elbv2/listener_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: ELBv2 Listener Rules for Production Load Balancers
+  listener_rules:
+    - name: HostHeaderRedirectRule
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/prod-alb/1234567890abcdef/0467ef3c8400ae65
+      priority: 100
+      conditions:
+        - field: host-header
+          host_header_config:
+            _values:
+              - www.example.com
+              - api.example.com
+      actions:
+        - type: redirect
+          order: 1
+          redirect_config:
+            status_code: HTTP_301
+            protocol: HTTPS
+            port: 443
+            host: "{% raw %}'#{host}'{% endraw %}"
+            path: "{% raw %}'/#{path}'{% endraw %}"
+            query: "{% raw %}'#{query}'{% endraw %}"
+      tags:
+        Name: HostHeaderRedirectRule
+        Environment: Production
+        Purpose: "HostRedirect"
+    - name: PathPatternForwardRule
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/prod-alb/1234567890abcdef/0467ef3c8400ae65
+      priority: 110
+      conditions:
+        - field: path-pattern
+          path_pattern_config:
+            _values:
+              - /api/*
+              - /v1/*
+              - /v2/*
+      actions:
+        - type: forward
+          order: 1
+          target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/api-targets/1234567890abcdef
+      tags:
+        Name: PathPatternForwardRule
+        Environment: Production
+        Service: "API"
+    - name: HttpHeaderAuthenticationRule
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/prod-alb/1234567890abcdef/0467ef3c8400ae65
+      priority: 120
+      conditions:
+        - field: http-header
+          http_header_config:
+            http_header_name: X-API-Key
+            _values:
+              - key-prod-12345
+              - key-prod-67890
+      actions:
+        - type: forward
+          order: 1
+          target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/premium-targets/1234567890abcdef
+      tags:
+        Name: HttpHeaderAuthenticationRule
+        Environment: Production
+        Security: "ApiKeyAuth"
+    - name: HttpMethodGetRule
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/prod-alb/1234567890abcdef/0467ef3c8400ae65
+      priority: 130
+      conditions:
+        - field: http-request-method
+          http_request_method_config:
+            _values:
+              - GET
+              - HEAD
+      actions:
+        - type: forward
+          order: 1
+          target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/read-targets/1234567890abcdef
+      tags:
+        Name: HttpMethodGetRule
+        Environment: Production
+        HttpMethod: "GET"
+    - name: QueryStringParameterRule
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/prod-alb/1234567890abcdef/0467ef3c8400ae65
+      priority: 140
+      conditions:
+        - field: query-string
+          query_string_config:
+            _values:
+              - key: debug
+                value: "true"
+              - key: version
+                value: "2"
+      actions:
+        - type: forward
+          order: 1
+          forward_config:
+            target_groups:
+              - target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/debug-targets/1234567890abcdef
+                weight: 50
+              - target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/standard-targets/1234567890abcdef
+                weight: 50
+            target_group_stickiness_config:
+              enabled: true
+              duration_seconds: 3600
+      tags:
+        Name: QueryStringParameterRule
+        Environment: Production
+        DebugSupport: "enabled"
+    - name: SourceIpAccessControlRule
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/prod-alb/1234567890abcdef/0467ef3c8400ae65
+      priority: 150
+      conditions:
+        - field: source-ip
+          source_ip_config:
+            _values:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      actions:
+        - type: forward
+          order: 1
+          target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/internal-targets/1234567890abcdef
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Name: SourceIpAccessControlRule
+        Environment: Production
+        AccessControl: "InternalOnly"
+    - name: UrlRewriteRule
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/prod-alb/1234567890abcdef/0467ef3c8400ae65
+      priority: 160
+      conditions:
+        - field: path-pattern
+          path_pattern_config:
+            _values:
+              - /old-api/*
+      actions:
+        - type: forward
+          order: 1
+          target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/api-targets/1234567890abcdef
+      transforms:
+        - type: UrlRewrite
+          url_rewrite_config:
+            rewrites:
+              - regex: ^/old-api/(.*)$
+                replace: /new-api/$1
+      tags:
+        Name: UrlRewriteRule
+        Environment: Production
+        Purpose: "ApiMigration"
+    - name: HostHeaderRewriteRule
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/prod-alb/1234567890abcdef/0467ef3c8400ae65
+      priority: 170
+      conditions:
+        - field: host-header
+          host_header_config:
+            _values:
+              - legacy.example.com
+      actions:
+        - type: forward
+          order: 1
+          target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/legacy-targets/1234567890abcdef
+      transforms:
+        - type: HostHeader
+          host_header_rewrite_config:
+            rewrites:
+              - regex: legacy.example.com
+                replace: new.example.com
+      tags:
+        Name: HostHeaderRewriteRule
+        Environment: Production
+        Purpose: "HostMigration"
+
+stack_tags:
+  Test: elbv2-listener-rule
+  Project: ELBv2ListenerRules
+  Version: "2.0"

@@ -36,6 +36,13 @@ Resources:
 Outputs:
 {%- for trust_store in sceptre_user_data.trust_stores %}
 {%- set trust_store_name = trust_store.name %}
+  {{ trust_store_name }}:
+    Description: The ARN of {{ trust_store_name }}
+    Value:
+      Ref: {{ trust_store_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ trust_store_name }}"
   {{ trust_store_name }}NumberOfCaCertificates:
     Description: The number of ca certificates in the trust store {{ trust_store_name }}
     Value:
@@ -45,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ trust_store_name }}-NumberOfCaCertificates"
-
   {{ trust_store_name }}Status:
     Description: The current status of the trust store {{ trust_store_name }}
     Value:
@@ -55,7 +61,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ trust_store_name }}-Status"
-
   {{ trust_store_name }}TrustStoreArn:
     Description: The Amazon Resource Name (ARN) of the trust store {{ trust_store_name }}
     Value:
@@ -65,10 +70,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ trust_store_name }}-TrustStoreArn"
-
-{%- endfor %}
-{#
-# Supported structure as of 20241028:
+{%- endfor %}{#
+# Supported structure as of 2024-10-28:
 Type: AWS::ElasticLoadBalancingV2::TrustStore
 Properties:
   CaCertificatesBundleS3Bucket: String

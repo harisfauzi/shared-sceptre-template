@@ -1,0 +1,122 @@
+---
+template:
+  type: 
+  path: elbv2/listener.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: ELBv2 Listeners for Production Load Balancers
+  listeners:
+    - name: HttpRedirectListener
+      load_balancer_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/prod-alb/1234567890abcdef
+      port: 80
+      protocol: HTTP
+      default_actions:
+        - type: redirect
+          order: 1
+          redirect_config:
+            status_code: HTTP_301
+            protocol: HTTPS
+            port: 443
+            host: "{% raw %}'#{host}'{% endraw %}"
+            path: "{% raw %}'#{path}'{% endraw %}"
+            query: "{% raw %}'#{query}'{% endraw %}"
+      tags:
+        Name: HttpRedirectListener
+        Environment: Production
+        Purpose: RedirectToHttps
+    - name: HttpsSecureListener
+      load_balancer_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/prod-alb/1234567890abcdef
+      port: 443
+      protocol: HTTPS
+      ssl_policy: ELBSecurityPolicy-TLS-1-2-2017-01
+      certificates:
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/87654321-4321-4321-4321-210987654321
+      default_actions:
+        - type: forward
+          order: 1
+          target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/prod-targets/1234567890abcdef
+      listener_attributes:
+        - key: access_logs.s3.enabled
+          value: "true"
+        - key: access_logs.s3.bucket
+          value: my-alb-logs-bucket
+        - key: access_logs.s3.prefix
+          value: prod-alb
+      tags:
+        Name: HttpsSecureListener
+        Environment: Production
+        CertificateCount: "2"
+    - name: WebSocketListener
+      load_balancer_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/prod-alb/1234567890abcdef
+      port: 8080
+      protocol: HTTP
+      default_actions:
+        - type: forward
+          order: 1
+          forward_config:
+            target_groups:
+              - target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/websocket-targets/1234567890abcdef
+                weight: 100
+            target_group_stickiness_config:
+              enabled: true
+              duration_seconds: 86400
+      tags:
+        Name: WebSocketListener
+        Environment: Production
+        Protocol: WebSocket
+    - name: GrpcSecureListener
+      load_balancer_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/prod-nlb/1234567890abcdef
+      port: 443
+      protocol: HTTPS
+      ssl_policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+      alpn_policy:
+        - h2
+        - http/1.1
+      certificates:
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/grpc-cert-12345678-1234-1234-1234-123456789012
+      default_actions:
+        - type: forward
+          order: 1
+          target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/grpc-targets/1234567890abcdef
+      deletion_policy: Retain
+      tags:
+        Name: GrpcSecureListener
+        Environment: Production
+        Protocol: gRPC
+        AlpnProtocols: "h2,http/1.1"
+    - name: MutualTlsListener
+      load_balancer_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/network/prod-nlb/1234567890abcdef
+      port: 8443
+      protocol: HTTPS
+      ssl_policy: ELBSecurityPolicy-TLS-1-2-2017-01
+      certificates:
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/mtls-cert-12345678-1234-1234-1234-123456789012
+      mutual_authentication:
+        mode: verify
+        trust_store_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:truststore/my-trust-store/1234567890abcdef
+        ignore_client_certificate_expiry: false
+        advertise_trust_store_ca_names: "true"
+      default_actions:
+        - type: forward
+          order: 1
+          target_group_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/mtls-targets/1234567890abcdef
+      listener_attributes:
+        - key: deregistration_delay.timeout_seconds
+          value: "30"
+        - key: deregistration_delay.connection_termination.enabled
+          value: "true"
+        - key: preserve_client_ip.enabled
+          value: "true"
+      tags:
+        Name: MutualTlsListener
+        Environment: Production
+        Authentication: MutualTls
+        SecurityLevel: "High"
+
+stack_tags:
+  Test: elbv2-listener
+  Project: ELBv2Listeners
+  Version: "2.0"

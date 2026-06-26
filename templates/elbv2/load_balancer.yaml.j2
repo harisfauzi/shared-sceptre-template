@@ -10,15 +10,24 @@ Resources:
     DeletionPolicy: {{ load_balancer.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ load_balancer.update_replace_policy | default('Delete') }}
     Properties:
+{%- if load_balancer.enable_capacity_reservation_provision_stabilize is defined %}
+      EnableCapacityReservationProvisionStabilize: {{ load_balancer.enable_capacity_reservation_provision_stabilize | lower }}
+{%- endif %}
+{%- if load_balancer.enable_prefix_for_ipv6_source_nat is defined %}
+      EnablePrefixForIpv6SourceNat: {{ load_balancer.enable_prefix_for_ipv6_source_nat }}
+{%- endif %}
 {%- if load_balancer.enforce_security_group_inbound_rules_on_private_link_traffic is defined %}
       EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic: {{ load_balancer.enforce_security_group_inbound_rules_on_private_link_traffic }}
 {%- endif %}
 {%- if load_balancer.ip_address_type is defined %}
       IpAddressType: {{ load_balancer.ip_address_type }}
 {%- endif %}
-{%- if load_balancer.load_balancer_attributes is defined %}
+{%- if load_balancer.ipv4_ipam_pool_id is defined %}
+      Ipv4IpamPoolId: {{ load_balancer.ipv4_ipam_pool_id | trim }}
+{%- endif %}
+{%- if load_balancer.load_balancer_attributes is defined %}{# BEGIN if load_balancer.load_balancer_attributes is defined #}
       LoadBalancerAttributes:
-{%- for attribute in load_balancer.load_balancer_attributes %}
+{%- for attribute in load_balancer.load_balancer_attributes %}{# BEGIN for attribute in load_balancer.load_balancer_attributes #}
         -
 {%- if attribute.key is defined %}
           Key: {{ attribute.key }}
@@ -26,7 +35,11 @@ Resources:
 {%- if attribute.value is defined %}
           Value: {{ attribute.value }}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{# END for attribute in load_balancer.load_balancer_attributes #}
+{%- endif %}{# END if load_balancer.load_balancer_attributes is defined #}
+{%- if load_balancer.minimum_load_balancer_capacity is defined %}
+      MinimumLoadBalancerCapacity:
+        CapacityUnits: {{ load_balancer.minimum_load_balancer_capacity.capacity_units }}
 {%- endif %}
 {%- if load_balancer.load_balancer_name is defined %}
       Name: {{ load_balancer.load_balancer_name }}
@@ -34,16 +47,17 @@ Resources:
 {%- if load_balancer.scheme is defined %}
       Scheme: {{ load_balancer.scheme }}
 {%- endif %}
-{%- if load_balancer.security_groups is defined %}
+{%- if load_balancer.security_groups is defined %}{# BEGIN if load_balancer.security_groups is defined #}
       SecurityGroups:
 {%- for security_group in load_balancer.security_groups %}
         - {{ security_group }}
 {%- endfor %}
-{%- endif %}
-{%- if load_balancer.subnet_mappings is defined %}
+{%- endif %}{# END if load_balancer.security_groups is defined #}
+{%- if load_balancer.subnet_mappings is defined %}{# BEGIN if load_balancer.subnet_mappings is defined #}
       SubnetMappings:
-{%- for subnet_mapping in load_balancer.subnet_mappings %}
-        - SubnetId: {{ subnet_mapping.subnet_id | trim }}
+{%- for subnet_mapping in load_balancer.subnet_mappings %}{# BEGIN for subnet_mapping in load_balancer.subnet_mappings #}
+        -
+          SubnetId: {{ subnet_mapping.subnet_id | trim }}
 {%- if subnet_mapping.allocation_id is defined %}
           AllocationId: {{ subnet_mapping.allocation_id | trim }}
 {%- endif %}
@@ -53,14 +67,17 @@ Resources:
 {%- if subnet_mapping.private_ipv4_address is defined %}
           PrivateIPv4Address: {{ subnet_mapping.private_ipv4_address }}
 {%- endif %}
-{%- endfor %}
+{%- if subnet_mapping.source_nat_ipv6_prefix is defined %}
+          SourceNatIpv6Prefix: {{ subnet_mapping.source_nat_ipv6_prefix }}
 {%- endif %}
-{%- if load_balancer.subnets is defined %}
+{%- endfor %}{# END for subnet_mapping in load_balancer.subnet_mappings #}
+{%- endif %}{# END if load_balancer.subnet_mappings is defined #}
+{%- if load_balancer.subnets is defined %}{# BEGIN if load_balancer.subnets is defined #}
       Subnets:
 {%- for subnet in load_balancer.subnets %}
         - {{ subnet }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if load_balancer.subnets is defined #}
 {%- if load_balancer.type is defined %}
       Type: {{ load_balancer.type }}
 {%- endif %}
@@ -85,7 +102,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}"
-
   {{ load_balancer_name }}CanonicalHostedZoneID:
     Description: The ID of the Amazon Route 53 hosted zone associated with {{ load_balancer_name }}
     Value:
@@ -95,7 +111,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-CanonicalHostedZoneID"
-
   {{ load_balancer_name }}DNSName:
     Description: The DNS name for {{ load_balancer_name }}
     Value:
@@ -105,7 +120,15 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-DNSName"
-
+  {{ load_balancer_name }}LoadBalancerArn:
+    Description: The ARN of {{ load_balancer_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ load_balancer_name }}
+        - LoadBalancerArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-LoadBalancerArn"
   {{ load_balancer_name }}LoadBalancerFullName:
     Description: The full name of {{ load_balancer_name }}
     Value:
@@ -115,7 +138,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-LoadBalancerFullName"
-
   {{ load_balancer_name }}LoadBalancerName:
     Description: The name of the load balancer {{ load_balancer_name }}
     Value:
@@ -125,17 +147,21 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-LoadBalancerName"
-{%- endfor %}
-{#
-# Supported structure as of 20241028:
+{%- endfor %}{#
+# Supported structure as of 2026-06-26:
 Type: AWS::ElasticLoadBalancingV2::LoadBalancer
 Properties:
+  EnableCapacityReservationProvisionStabilize: Boolean
+  EnablePrefixForIpv6SourceNat: String
   EnforceSecurityGroupInboundRulesOnPrivateLinkTraffic: String
   IpAddressType: String
+  Ipv4IpamPoolId: String
   LoadBalancerAttributes:
     -
       Key: String
       Value: String
+  MinimumLoadBalancerCapacity:
+    CapacityUnits: Integer
   Name: String
   Scheme: String
   SecurityGroups:
@@ -145,6 +171,7 @@ Properties:
       AllocationId: String
       IPv6Address: String
       PrivateIPv4Address: String
+      SourceNatIpv6Prefix: String
       SubnetId: String
   Subnets:
     - String

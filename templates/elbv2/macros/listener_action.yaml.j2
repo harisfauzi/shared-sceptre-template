@@ -1,120 +1,198 @@
-{%- macro prep(actions) %}
-{%- for action in actions %}{# BEGIN {%- for action in actions %} #}
-        - Type: {{ action.type }}
-{%- if action.authenticate_cognito_config is defined %}{# BEGIN {%- if action.authenticate_cognito_config is defined %} #}
-          AuthenticateCognitoConfig:
-            UserPoolArn: {{ action.authenticate_cognito_config.user_pool_arn }}
-            UserPoolClientId: {{ action.authenticate_cognito_config.user_pool_client_id | trim }}
-            UserPoolDomain: {{ action.authenticate_cognito_config.user_pool_domain }}
-{%- if action.authenticate_cognito_config.authentication_request_extra_params is defined %}
-            AuthenticationRequestExtraParams:
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-elasticloadbalancingv2-listenerrule-action.html
+# as of 2026-06-26:
+AuthenticateCognitoConfig:
+  AuthenticationRequestExtraParams:
+    Key: Value
+  OnUnauthenticatedRequest: String
+  Scope: String
+  SessionCookieName: String
+  SessionTimeout: Integer
+  UserPoolArn: String
+  UserPoolClientId: String
+  UserPoolDomain: String
+AuthenticateOidcConfig:
+  AuthenticationRequestExtraParams:
+    Key: Value
+  AuthorizationEndpoint: String
+  ClientId: String
+  ClientSecret: String
+  Issuer: String
+  OnUnauthenticatedRequest: String
+  Scope: String
+  SessionCookieName: String
+  SessionTimeout: Integer
+  TokenEndpoint: String
+  UseExistingClientSecret: Boolean
+  UserInfoEndpoint: String
+FixedResponseConfig:
+  ContentType: String
+  MessageBody: String
+  StatusCode: String
+ForwardConfig:
+  TargetGroups:
+    -
+      TargetGroupArn: String
+      Weight: Integer
+  TargetGroupStickinessConfig:
+    DurationSeconds: Integer
+    Enabled: Boolean
+JwtValidationConfig:
+  AdditionalClaims:
+    -
+      Format: String
+      Name: String
+      Values:
+        - String
+  Issuer: String
+  JwksEndpoint: String
+Order: Integer
+RedirectConfig:
+  Host: String
+  Path: String
+  Port: String
+  Protocol: String
+  Query: String
+  StatusCode: String
+TargetGroupArn: String
+Type: String
+#}{%- macro prep(actions) %}
+{%- for action in actions %}{# BEGIN for action in actions #}
+-
+  Type: {{ action.type }}
+{%- if action.authenticate_cognito_config is defined %}{# BEGIN if action.authenticate_cognito_config is defined #}
+  AuthenticateCognitoConfig:
+    UserPoolArn: {{ action.authenticate_cognito_config.user_pool_arn | trim }}
+    UserPoolClientId: {{ action.authenticate_cognito_config.user_pool_client_id | trim }}
+    UserPoolDomain: {{ action.authenticate_cognito_config.user_pool_domain }}
+{%- if action.authenticate_cognito_config.authentication_request_extra_params is defined %}{# BEGIN if action.authenticate_cognito_config.authentication_request_extra_params is defined #}
+    AuthenticationRequestExtraParams:
 {%- for key, value in action.authenticate_cognito_config.authentication_request_extra_params.items() %}
-              {{ key }}: {{ value }}
+      {{ key }}: {{ value }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if action.authenticate_cognito_config.authentication_request_extra_params is defined #}
 {%- if action.authenticate_cognito_config.on_unauthenticated_request is defined %}
-            OnUnauthenticatedRequest: {{ action.authenticate_cognito_config.on_unauthenticated_request }}
+    OnUnauthenticatedRequest: {{ action.authenticate_cognito_config.on_unauthenticated_request }}
 {%- endif %}
 {%- if action.authenticate_cognito_config.scope is defined %}
-            Scope: {{ action.authenticate_cognito_config.scope }}
+    Scope: {{ action.authenticate_cognito_config.scope }}
 {%- endif %}
 {%- if action.authenticate_cognito_config.session_cookie_name is defined %}
-            SessionCookieName: {{ action.authenticate_cognito_config.session_cookie_name }}
+    SessionCookieName: {{ action.authenticate_cognito_config.session_cookie_name }}
 {%- endif %}
 {%- if action.authenticate_cognito_config.session_timeout is defined %}
-            SessionTimeout: {{ action.authenticate_cognito_config.session_timeout }}
+    SessionTimeout: {{ action.authenticate_cognito_config.session_timeout }}
 {%- endif %}
-{%- endif %}{# END {%- if action.authenticate_cognito_config is defined %} #}
-{%- if action.authenticate_oidc_config is defined %}{# BEGIN {%- if action.authenticate_oidc_config is defined %} #}
-          AuthenticateOidcConfig:
-            AuthorizationEndpoint: {{ action.authenticate_oidc_config.authorization_endpoint }}
-            ClientId: {{ action.authenticate_oidc_config.client_id | trim }}
-{%- if action.authenticate_oidc_config.client_secret is defined %}
-            ClientSecret: {{ action.authenticate_oidc_config.client_secret }}
-{%- endif %}
-            Issuer: {{ action.authenticate_oidc_config.client_issuer }}
-            TokenEndpoint: {{ action.authenticate_oidc_config.token_endpoint }}
-            UserInfoEndpoint: {{ action.authenticate_oidc_config.user_info_endpoint }}
-{%- if action.authenticate_oidc_config.authentication_request_extra_params %}
-            AuthenticationRequestExtraParams:
+{%- endif %}{# END if action.authenticate_cognito_config is defined #}
+{%- if action.authenticate_oidc_config is defined %}{# BEGIN if action.authenticate_oidc_config is defined #}
+  AuthenticateOidcConfig:
+    AuthorizationEndpoint: {{ action.authenticate_oidc_config.authorization_endpoint }}
+    ClientId: {{ action.authenticate_oidc_config.client_id | trim }}
+    Issuer: {{ action.authenticate_oidc_config.client_issuer }}
+    TokenEndpoint: {{ action.authenticate_oidc_config.token_endpoint }}
+    UserInfoEndpoint: {{ action.authenticate_oidc_config.user_info_endpoint }}
+{%- if action.authenticate_oidc_config.authentication_request_extra_params %}{# BEGIN if action.authenticate_oidc_config.authentication_request_extra_params is defined #}
+    AuthenticationRequestExtraParams:
 {%- for key, value in action.authenticate_oidc_config.authentication_request_extra_params.items() %}
-              {{ key }}: {{ value }}
+      {{ key }}: {{ value }}
 {%- endfor %}
+{%- endif %}{# END if action.authenticate_oidc_config.authentication_request_extra_params is defined #}
+{%- if action.authenticate_oidc_config.client_secret is defined %}
+    ClientSecret: {{ action.authenticate_oidc_config.client_secret }}
 {%- endif %}
 {%- if action.authenticate_oidc_config.on_unauthenticated_request %}
-            OnUnauthenticatedRequest: {{ action.authenticate_oidc_config.on_unauthenticated_request }}
+    OnUnauthenticatedRequest: {{ action.authenticate_oidc_config.on_unauthenticated_request }}
 {%- endif %}
 {%- if action.authenticate_oidc_config.scope %}
-            Scope: {{ action.authenticate_oidc_config.scope }}
+    Scope: {{ action.authenticate_oidc_config.scope }}
 {%- endif %}
 {%- if action.authenticate_oidc_config.session_cookie_name %}
-            SessionCookieName: {{ action.authenticate_oidc_config.session_cookie_name }}
+    SessionCookieName: {{ action.authenticate_oidc_config.session_cookie_name }}
 {%- endif %}
 {%- if action.authenticate_oidc_config.session_timeout %}
-            SessionTimeout: {{ action.authenticate_oidc_config.session_timeout }}
+    SessionTimeout: {{ action.authenticate_oidc_config.session_timeout }}
 {%- endif %}
 {%- if action.authenticate_oidc_config.use_existing_client_secret is defined %}
-            UseExistingClientSecret: {{ action.authenticate_oidc_config.use_existing_client_secret }}
+    UseExistingClientSecret: {{ action.authenticate_oidc_config.use_existing_client_secret | lower }}
 {%- endif %}
-{%- endif %}{# END {%- if action.authenticate_oidc_config is defined %} #}
-{%- if action.fixed_response_config is defined %}{# BEGIN {%- if action.fixed_response_config is defined %} #}
-          FixedResponseConfig:
-            StatusCode: {{ action.fixed_response_config.status_code }}
+{%- endif %}{# END if action.authenticate_oidc_config is defined #}
+{%- if action.fixed_response_config is defined %}{# BEGIN if action.fixed_response_config is defined #}
+  FixedResponseConfig:
+    StatusCode: {{ action.fixed_response_config.status_code }}
 {%- if action.fixed_response_config.content_type is defined %}
-            ContentType: {{ action.fixed_response_config.content_type }}
+    ContentType: {{ action.fixed_response_config.content_type }}
 {%- endif %}
 {%- if action.fixed_response_config.message_body is defined %}
-            MessageBody: {{ action.fixed_response_config.message_body }}
+    MessageBody: |-
+      {{ action.fixed_response_config.message_body | indent(width=14, first=false) }}
 {%- endif %}
-{%- endif %}{# END {%- if action.fixed_response_config is defined %} #}
-{%- if action.forward_config is defined %}{# BEGIN {%- if action.forward_config is defined %} #}
-          ForwardConfig:
+{%- endif %}{# END if action.fixed_response_config is defined #}
+{%- if action.forward_config is defined %}{# BEGIN if action.forward_config is defined #}
+  ForwardConfig:
 {%- if action.forward_config.target_groups is defined %}
-            TargetGroups:
+    TargetGroups:
 {%- for target_group in action.forward_config.target_groups %}
-              -
+      -
 {%- if target_group.target_group_arn is defined %}
-                TargetGroupArn: {{ target_group.target_group_arn }}
+        TargetGroupArn: {{ target_group.target_group_arn | trim }}
 {%- endif %}
 {%- if target_group.weight is defined %}
-                Weight: {{ target_group.weight }}
+        Weight: {{ target_group.weight }}
 {%- endif %}
 {%- endfor %}
 {%- endif %}
-{%- if action.forward_config.target_group_stickiness_config is defined %}
-            TargetGroupStickinessConfig:
+{%- if action.forward_config.target_group_stickiness_config is defined %}{# BEGIN if action.forward_config.target_group_stickiness_config is defined #}
+    TargetGroupStickinessConfig:
 {%- if action.forward_config.target_group_stickiness_config.duration_seconds is defined %}
-              DurationSeconds: {{ action.forward_config.target_group_stickiness_config.duration_seconds }}
+      DurationSeconds: {{ action.forward_config.target_group_stickiness_config.duration_seconds }}
 {%- endif %}
 {%- if action.forward_config.target_group_stickiness_config.enabled is defined %}
-              Enabled: {{ action.forward_config.target_group_stickiness_config.enabled }}
+      Enabled: {{ action.forward_config.target_group_stickiness_config.enabled | lower }}
 {%- endif %}
-{%- endif %}
-{%- endif %}{# END {%- if action.forward_config is defined %} #}
+{%- endif %}{# END if action.forward_config.target_group_stickiness_config is defined #}
+{%- endif %}{# END if action.forward_config is defined #}
+{%- if action.jwt_validation_config is defined %}{# BEGIN if action.jwt_validation_config is defined #}
+  JwtValidationConfig:
+    Issuer: {{ action.jwt_validation_config.issuer }}
+    JwksEndpoint: {{ action.jwt_validation_config.jwks_endpoint }}
+{%- if action.jwt_validation_config.additional_claims is defined %}{# BEGIN if action.jwt_validation_config.additional_claims is defined #}
+    AdditionalClaims:
+{%- for claim in action.jwt_validation_config.additional_claims %}{# BEGIN for claim in action.jwt_validation_config.additional_claims #}
+      -
+        Format: {{ claim.format }}
+        Name: {{ claim.name }}
+        Values:
+{%- for value in claim._values %}
+          - {{ value }}
+{%- endfor %}
+{%- endfor %}{# END for claim in action.jwt_validation_config.additional_claims #}
+{%- endif %}{# END if action.jwt_validation_config.additional_claims is defined #}
+{%- endif %}{# END if action.jwt_validation_config is defined #}
 {%- if action.order is defined %}
-          Order: {{ action.order }}
+  Order: {{ action.order }}
 {%- endif %}
-{%- if action.redirect_config is defined %}{# BEGIN {%- if action.redirect_config is defined %} #}
-          RedirectConfig:
-            StatusCode: {{ action.redirect_config.status_code }}
+{%- if action.redirect_config is defined %}{# BEGIN if action.redirect_config is defined #}
+  RedirectConfig:
+    StatusCode: {{ action.redirect_config.status_code }}
 {%- if action.redirect_config.host is defined %}
-            Host: {{ action.redirect_config.host }}
+    Host: {{ action.redirect_config.host }}
 {%- endif %}
 {%- if action.redirect_config.path is defined %}
-            Path: {{ action.redirect_config.path }}
+    Path: {{ action.redirect_config.path }}
 {%- endif %}
 {%- if action.redirect_config.port is defined %}
-            Port: {{ action.redirect_config.port }}
+    Port: {{ action.redirect_config.port }}
 {%- endif %}
 {%- if action.redirect_config.protocol is defined %}
-            Protocol: {{ action.redirect_config.protocol }}
+    Protocol: {{ action.redirect_config.protocol }}
 {%- endif %}
 {%- if action.redirect_config.query is defined %}
-            Query: {{ action.redirect_config.query }}
+    Query: {{ action.redirect_config.query }}
 {%- endif %}
-{%- endif %}{# END {%- if action.redirect_config is defined %} #}
+{%- endif %}{# END if action.redirect_config is defined #}
 {%- if action.target_group_arn is defined %}
-          TargetGroupArn: {{ action.target_group_arn }}
+  TargetGroupArn: {{ action.target_group_arn | trim }}
 {%- endif %}
-{%- endfor %}{# END {%- for action in actions %} #}
+{%- endfor %}{# END for action in actions #}
 {%- endmacro %}
