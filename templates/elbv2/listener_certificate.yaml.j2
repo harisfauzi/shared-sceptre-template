@@ -15,4 +15,12 @@ Resources:
         - CertificateArn: {{ certificate.certificate_arn | trim }}
 {%- endfor %}
       ListenerArn: {{ listener_certificate.listener_arn | trim }}
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-26:
+Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+Properties:
+  Certificates:
+    -
+      CertificateArn: String
+  ListenerArn: String
+#}

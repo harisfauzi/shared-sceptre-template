@@ -10,9 +10,9 @@ Resources:
     DeletionPolicy: {{ trust_store_revocation.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ trust_store_revocation.update_replace_policy | default('Delete') }}
     Properties:
-{%- if trust_store_revocation.revocation_contents is defined %}
+{%- if trust_store_revocation.revocation_contents is defined %}{# BEGIN if trust_store_revocation.revocation_contents is defined #}
       RevocationContents:
-{%- for content in trust_store_revocation.revocation_contents %}
+{%- for content in trust_store_revocation.revocation_contents %}{# BEGIN for content in trust_store_revocation.revocation_contents #}
         -
 {%- if content.revocation_type is defined %}
           RevocationType: {{ content.revocation_type }}
@@ -26,14 +26,13 @@ Resources:
 {%- if content.s3_object_version is defined %}
           S3ObjectVersion: {{ content.s3_object_version }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for content in trust_store_revocation.revocation_contents #}
+{%- endif %}{# END if trust_store_revocation.revocation_contents is defined #}
 {%- if trust_store_revocation.trust_store_arn is defined %}
       TrustStoreArn: {{ trust_store_revocation.trust_store_arn | trim }}
 {%- endif %}
-{%- endfor %}
-{#
-# Supported structure as of 20241028:
+{%- endfor %}{#
+# Supported structure as of 2024-10-28:
 Type: AWS::ElasticLoadBalancingV2::TrustStoreRevocation
 Properties:
   RevocationContents:

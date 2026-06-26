@@ -1,0 +1,65 @@
+---
+template:
+  type: 
+  path: elbv2/listener_certificate.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: ELBv2 Listener Certificates for Production Load Balancers
+  listener_certificates:
+    - name: PrimaryProductionListenerCerts
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/prod-alb/1234567890abcdef/0987654321fedcba
+      certificates:
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/primary-cert-12345678-1234-1234-1234-123456789012
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/wildcard-cert-87654321-4321-4321-4321-210987654321
+      tags:
+        Name: PrimaryProductionListenerCerts
+        Environment: Production
+        Purpose: "Primary SSL/TLS"
+    - name: BackupProductionListenerCerts
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/prod-alb/1234567890abcdef/1122334455667788
+      certificates:
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/backup-cert-11223344-1122-1122-1122-112233445566
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/legacy-cert-55443322-5544-5544-5544-554433221100
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/future-cert-99887766-9988-9988-9988-998877665544
+      tags:
+        Name: BackupProductionListenerCerts
+        Environment: Production
+        Purpose: "Backup and Rotation"
+    - name: GrpcSecureListenerCerts
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/grpc-nlb/2222333344445555/3333444455556666
+      certificates:
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/grpc-cert-aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/grpc-backup-bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb
+      tags:
+        Name: GrpcSecureListenerCerts
+        Environment: Production
+        Protocol: "gRPC"
+        CertificateType: "mTLS"
+    - name: MutualTlsListenerCerts
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/network/mtls-nlb/3333444455556666/4444555566667777
+      certificates:
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/mtls-server-cccccccc-cccc-cccc-cccc-cccccccccccc
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Name: MutualTlsListenerCerts
+        Environment: Production
+        Authentication: "MutualTLS"
+        SecurityLevel: "High"
+    - name: DevelopmentTestListenerCerts
+      listener_arn: arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/dev-alb/5555666677778888/6666777788889999
+      certificates:
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/dev-test-dddddddd-dddd-dddd-dddd-dddddddddddd
+        - certificate_arn: arn:aws:acm:us-east-1:123456789012:certificate/dev-test-backup-eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee
+      tags:
+        Name: DevelopmentTestListenerCerts
+        Environment: Development
+        Purpose: "Testing"
+        Team: "QA"
+
+stack_tags:
+  Test: elbv2-listener-certificate
+  Project: ELBv2ListenerCertificates
+  Version: "2.0"

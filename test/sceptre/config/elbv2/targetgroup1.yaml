@@ -1,0 +1,217 @@
+---
+template:
+  type: file
+  path: elbv2/target_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: ELBv2 Target Groups for Production Load Balancers
+  target_groups:
+    - name: HttpApplicationTargetGroup
+      target_group_name: http-app-tg
+      vpc_id: vpc-12345678
+      port: 80
+      protocol: HTTP
+      target_type: instance
+      health_check_enabled: true
+      health_check_protocol: HTTP
+      health_check_path: /health
+      health_check_port: 80
+      health_check_interval_seconds: 30
+      health_check_timeout_seconds: 5
+      healthy_threshold_count: 2
+      unhealthy_threshold_count: 3
+      matcher:
+        http_code: 200,201,202
+      targets:
+        - id: i-1234567890abcdef0
+          port: 80
+          availability_zone: us-east-1a
+        - id: i-0987654321fedcba1
+          port: 80
+          availability_zone: us-east-1b
+      target_group_attributes:
+        - key: deregistration_delay.timeout_seconds
+          value: "30"
+        - key: stickiness.enabled
+          value: "true"
+        - key: stickiness.type
+          value: lb_cookie
+        - key: stickiness.lb_cookie.duration_seconds
+          value: "86400"
+      tags:
+        Name: HttpApplicationTargetGroup
+        Environment: Production
+        Team: ApplicationEngineering
+        Purpose: "HttpBackend"
+    - name: HttpsSecureTargetGroup
+      target_group_name: https-secure-tg
+      vpc_id: vpc-12345678
+      port: 443
+      protocol: HTTPS
+      target_type: instance
+      health_check_enabled: true
+      health_check_protocol: HTTPS
+      health_check_path: /status
+      health_check_port: 443
+      health_check_interval_seconds: 20
+      health_check_timeout_seconds: 10
+      healthy_threshold_count: 3
+      unhealthy_threshold_count: 2
+      matcher:
+        http_code: 200-299,301,302
+      targets:
+        - id: i-1234567890abcdef2
+          port: 443
+          availability_zone: us-east-1a
+        - id: i-0987654321fedcba3
+          port: 443
+          availability_zone: us-east-1b
+        - id: i-1111111111111111a
+          port: 443
+          availability_zone: us-east-1c
+      target_group_attributes:
+        - key: deregistration_delay.timeout_seconds
+          value: "60"
+        - key: stickiness.enabled
+          value: "true"
+        - key: stickiness.type
+          value: lb_cookie
+        - key: preserve_client_ip.enabled
+          value: "true"
+      tags:
+        Name: HttpsSecureTargetGroup
+        Environment: Production
+        Team: SecurityEngineering
+        Purpose: "HttpsBackend"
+    - name: GrpcApiTargetGroup
+      target_group_name: grpc-api-tg
+      vpc_id: vpc-12345678
+      port: 50051
+      protocol: HTTP
+      protocol_version: GRPC
+      target_type: instance
+      health_check_enabled: true
+      health_check_protocol: HTTP
+      health_check_path: /grpc.health.v1.Health/Check
+      health_check_port: 50051
+      health_check_interval_seconds: 20
+      health_check_timeout_seconds: 10
+      healthy_threshold_count: 2
+      unhealthy_threshold_count: 3
+      matcher:
+        grpc_code: "0"
+      targets:
+        - id: i-2222222222222222a
+          port: 50051
+          availability_zone: us-east-1a
+        - id: i-3333333333333333b
+          port: 50051
+          availability_zone: us-east-1b
+      target_group_attributes:
+        - key: deregistration_delay.timeout_seconds
+          value: "20"
+        - key: stickiness.enabled
+          value: "false"
+      tags:
+        Name: GrpcApiTargetGroup
+        Environment: Production
+        Team: MicroservicesEngineering
+        Purpose: "gRPCBackend"
+    - name: LambdaFunctionTargetGroup
+      target_group_name: lambda-function-tg
+      port: 80
+      protocol: HTTP
+      target_type: lambda
+      health_check_enabled: false
+      targets:
+        - id: arn:aws:lambda:us-east-1:123456789012:function:api-handler
+      target_group_attributes:
+        - key: deregistration_delay.timeout_seconds
+          value: "30"
+      tags:
+        Name: LambdaFunctionTargetGroup
+        Environment: Production
+        Team: Serverless
+        Purpose: "LambdaBackend"
+    - name: IpAddressTargetGroup
+      target_group_name: ip-address-tg
+      vpc_id: vpc-12345678
+      ip_address_type: ipv4
+      port: 8080
+      protocol: HTTP
+      target_type: ip
+      health_check_enabled: true
+      health_check_protocol: HTTP
+      health_check_path: /api/health
+      health_check_port: 8080
+      health_check_interval_seconds: 30
+      health_check_timeout_seconds: 5
+      healthy_threshold_count: 2
+      unhealthy_threshold_count: 3
+      targets:
+        - id: 10.0.1.10
+          port: 8080
+          availability_zone: us-east-1a
+        - id: 10.0.2.20
+          port: 8080
+          availability_zone: us-east-1b
+        - id: 10.0.3.30
+          port: 8080
+          availability_zone: us-east-1c
+      target_group_attributes:
+        - key: deregistration_delay.timeout_seconds
+          value: "45"
+        - key: stickiness.enabled
+          value: "true"
+        - key: stickiness.type
+          value: lb_cookie
+        - key: load_balancing.algorithm.type
+          value: least_outstanding_requests
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Name: IpAddressTargetGroup
+        Environment: Production
+        Team: NetworkEngineering
+        Purpose: "IPBasedTargets"
+        Persistence: "Enabled"
+    - name: AlbMultiTargetGroup
+      target_group_name: multi-target-tg
+      vpc_id: vpc-12345678
+      port: 9000
+      protocol: HTTP
+      target_type: instance
+      health_check_enabled: true
+      health_check_protocol: HTTP
+      health_check_path: /health/ready
+      health_check_port: 9000
+      health_check_interval_seconds: 15
+      health_check_timeout_seconds: 3
+      healthy_threshold_count: 2
+      unhealthy_threshold_count: 2
+      matcher:
+        http_code: 200
+      targets:
+        - id: i-4444444444444444c
+          availability_zone: us-east-1a
+        - id: i-5555555555555555d
+          availability_zone: us-east-1b
+      target_group_attributes:
+        - key: deregistration_delay.timeout_seconds
+          value: "25"
+        - key: stickiness.enabled
+          value: "false"
+        - key: load_balancing.algorithm.type
+          value: round_robin
+      tags:
+        Name: AlbMultiTargetGroup
+        Environment: Production
+        Team: ApplicationServices
+        Purpose: "MultiTargetRouting"
+
+stack_tags:
+  Test: elbv2-target-group
+  Project: ELBv2TargetGroups
+  Version: "2.0"
