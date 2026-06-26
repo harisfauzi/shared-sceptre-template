@@ -1,0 +1,67 @@
+---
+template:
+  type: file
+  path: memorydb/acl.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: MemoryDB Access Control Lists for Production Environment
+  acls:
+    - name: AdminAccessControlList
+      acl_name: admin-acl
+      user_names:
+        - default
+        - admin-user
+      tags:
+        Name: AdminAccessControlList
+        Environment: Production
+        Purpose: AdministrativeAccess
+        CostCenter: "1001"
+    - name: ApplicationAccessControlList
+      acl_name: app-acl
+      user_names:
+        - app-service-user
+        - cache-worker-user
+      tags:
+        Name: ApplicationAccessControlList
+        Environment: Production
+        Purpose: ApplicationAccess
+        CostCenter: "1002"
+    - name: ReadOnlyAccessControlList
+      acl_name: readonly-acl
+      user_names:
+        - readonly-user
+        - monitoring-user
+        - analytics-user
+      tags:
+        Name: ReadOnlyAccessControlList
+        Environment: Production
+        Purpose: ReadOnlyAccess
+        CostCenter: "1003"
+    - name: DeveloperAccessControlList
+      acl_name: dev-acl
+      user_names:
+        - developer-user
+        - ci-cd-user
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Name: DeveloperAccessControlList
+        Environment: Development
+        Purpose: DeveloperAccess
+        CostCenter: "1004"
+    - name: BackupAccessControlList
+      acl_name: backup-acl
+      user_names:
+        - backup-service-user
+      tags:
+        Name: BackupAccessControlList
+        Environment: Production
+        Purpose: BackupAndRecovery
+        CostCenter: "1005"
+
+stack_tags:
+  Test: memorydb-acl
+  Project: MemoryDBConfiguration
+  Version: "2.0"

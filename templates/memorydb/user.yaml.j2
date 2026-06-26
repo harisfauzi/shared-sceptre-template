@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('MemoryDB User(s) for '+sce
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for user in sceptre_user_data.users %}
 {%- set user_name = user.name %}
   {{ user_name }}:
@@ -13,21 +12,21 @@ Resources:
     Properties:
       UserName: {{user.user_name}}
 {%- if user.access_string is defined %}
-      AccessString:
-        {{user.access_string|indent(width=8,first=false)}}
+      AccessString: |-
+        {{ user.access_string | indent(width=8,first=false) }}
 {%- endif %}
-{%- if user.authentication_mode is defined %}
+{%- if user.authentication_mode is defined %}{# BEGIN if user.authentication_mode is defined #}
       AuthenticationMode:
-{%- if user.authentication_mode.passwords is defined %}
-        Passwords: 
-{%- for password in user.authentication_mode.passwords %}
-          - {{password}}
+{%- if user.authentication_mode.passwords is defined %}{# BEGIN if user.authentication_mode.passwords is defined #}
+        Passwords:
+{%- for password in user.authentication_mode.passwords %}{# NOTE: retrive the passwords from secrets manager #}
+          - {{ password }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if user.authentication_mode.passwords is defined #}
 {%- if user.authentication_mode.type is defined %}
         Type: {{user.authentication_mode.type}}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if user.authentication_mode is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -37,11 +36,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for user in sceptre_user_data.users %}
 {%- set user_name = user.name %}
   {{ user_name }}Arn:
@@ -53,14 +50,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-Arn"
-
-  {{ user_name }}Name:
-    Description: User name for {{ user_name }}
-    Value: {{user.user_name}}
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ user_name }}-Name"
-
   {{ user_name }}Status:
     Description: The Status for {{ user_name }}
     Value:
@@ -70,5 +59,18 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ user_name }}-Status"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-26:
+Type: AWS::MemoryDB::User
+Properties:
+  AccessString:
+    String
+  AuthenticationMode:
+    Passwords:
+      - String
+    Type: String
+  Tags:
+    - Key: String
+      Value: String
+  UserName: String
+#}

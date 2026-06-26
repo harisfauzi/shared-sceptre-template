@@ -1,0 +1,96 @@
+---
+template:
+  type: file
+  path: memorydb/multi_region_cluster.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: MemoryDB Multi-Region Clusters for Global Production Environment
+  multi_region_clusters:
+    - name: GlobalPrimaryMultiRegionCluster
+      node_type: db.r6g.xlarge
+      engine: memorydb
+      engine_version: "7.0"
+      num_shards: 4
+      multi_region_cluster_name_suffix: "global-primary"
+      multi_region_parameter_group_name: "global-primary-param-group"
+      description: "Global multi-region cluster for primary data center with cross-region replication"
+      tls_enabled: true
+      update_strategy: "AllowUnrestrictedServerUpdates"
+      tags:
+        Name: GlobalPrimaryMultiRegionCluster
+        Environment: Production
+        Team: DataEngineering
+        CostCenter: "2001"
+        ReplicationPolicy: "Active"
+    - name: GlobalSecondaryMultiRegionCluster
+      node_type: db.r6g.large
+      engine: memorydb
+      engine_version: "7.0"
+      num_shards: 2
+      multi_region_cluster_name_suffix: "global-secondary"
+      multi_region_parameter_group_name: "global-secondary-param-group"
+      description: "Global multi-region cluster for secondary data center with read-only replication"
+      tls_enabled: true
+      update_strategy: "AllowUnrestrictedServerUpdates"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Name: GlobalSecondaryMultiRegionCluster
+        Environment: Production
+        Team: DataEngineering
+        CostCenter: "2002"
+        ReplicationPolicy: "ReadOnly"
+    - name: DisasterRecoveryMultiRegionCluster
+      node_type: db.r6g.large
+      engine: memorydb
+      engine_version: "7.0"
+      num_shards: 3
+      multi_region_cluster_name_suffix: "dr-cluster"
+      multi_region_parameter_group_name: "dr-param-group"
+      description: "Disaster recovery multi-region cluster with automatic failover capabilities"
+      tls_enabled: true
+      update_strategy: "ApplyImmediately"
+      tags:
+        Name: DisasterRecoveryMultiRegionCluster
+        Environment: Production
+        Team: DisasterRecovery
+        CostCenter: "2003"
+        Purpose: "DisasterRecovery"
+    - name: DevelopmentTestMultiRegionCluster
+      node_type: db.t4g.medium
+      engine: memorydb
+      engine_version: "7.0"
+      num_shards: 1
+      multi_region_cluster_name_suffix: "dev-test"
+      multi_region_parameter_group_name: "dev-test-param-group"
+      description: "Development multi-region cluster for testing and validation"
+      tls_enabled: false
+      tags:
+        Name: DevelopmentTestMultiRegionCluster
+        Environment: Development
+        Team: QA
+        CostCenter: "2004"
+    - name: AnalyticsMultiRegionCluster
+      node_type: db.r6g.xlarge
+      engine: memorydb
+      engine_version: "7.0"
+      num_shards: 5
+      multi_region_cluster_name_suffix: "analytics"
+      multi_region_parameter_group_name: "analytics-param-group"
+      description: "Analytics multi-region cluster for distributed reporting and insights"
+      tls_enabled: true
+      update_strategy: "ApplyImmediately"
+      tags:
+        Name: AnalyticsMultiRegionCluster
+        Environment: Production
+        Team: Analytics
+        CostCenter: "2005"
+        Purpose: "Analytics"
+        BackupEnabled: "true"
+
+stack_tags:
+  Test: memorydb-multi-region-cluster
+  Project: MemoryDBMultiRegionClusters
+  Version: "2.0"

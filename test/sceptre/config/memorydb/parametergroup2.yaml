@@ -1,0 +1,102 @@
+---
+template:
+  type: file
+  path: memorydb/parameter_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: MemoryDB Parameter Groups for Production and Development Environments
+  parameter_groups:
+    - name: ProductionDefaultParameterGroup
+      parameter_group_name: prod-default-params
+      family: memorydb_redis7
+      description: Production default parameter group with optimized settings for high throughput
+      parameters: |-
+        hash-max-listpack-entries: "128"
+        hash-max-ziplist-entries: "512"
+        list-max-listpack-size: "64"
+        latency-tracking: "yes"
+        maxmemory-policy: "volatile-lru"
+        lfu-decay-time: "1"
+        timeout: "300"
+      tags:
+        Name: ProductionDefaultParameterGroup
+        Environment: Production
+        Team: DataEngineering
+        CostCenter: "1001"
+        Purpose: "HighThroughput"
+    - name: CacheOptimizedParameterGroup
+      parameter_group_name: cache-optimized-params
+      family: memorydb_redis7
+      description: Cache optimized parameter group for session management workloads
+      parameters: |-
+        maxmemory-policy: "allkeys-lru"
+        lfu-decay-time: "2"
+        databases: "16"
+        tcp-backlog: "511"
+        latency-tracking: "no"
+      tags:
+        Name: CacheOptimizedParameterGroup
+        Environment: Production
+        Team: ApplicationEngineering
+        CostCenter: "1002"
+        Purpose: "SessionCache"
+    - name: AnalyticsReadOnlyParameterGroup
+      parameter_group_name: analytics-readonly-params
+      family: memorydb_redis7
+      description: Read-only analytics parameter group for reporting and data analysis
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      parameters: |-
+        maxmemory-policy: "noeviction"
+        lfu-decay-time: "0"
+        latency-tracking: "yes"
+        timeout: "0"
+        tcp-keepalive: "300"
+      tags:
+        Name: AnalyticsReadOnlyParameterGroup
+        Environment: Production
+        Team: Analytics
+        CostCenter: "1003"
+        Purpose: "Analytics"
+        ReadOnly: "true"
+    - name: DevelopmentTestParameterGroup
+      parameter_group_name: dev-test-params
+      family: memorydb_redis6
+      description: Development parameter group for testing and validation
+      parameters: |-
+        maxmemory-policy: "volatile-lfu"
+        lfu-decay-time: "1"
+        latency-tracking: "yes"
+        slowlog-log-slower-than: "10000"
+        slowlog-max-len: "128"
+      tags:
+        Name: DevelopmentTestParameterGroup
+        Environment: Development
+        Team: QA
+        CostCenter: "1004"
+        Purpose: "Testing"
+    - name: LowLatencyParameterGroup
+      parameter_group_name: low-latency-params
+      family: memorydb_redis7
+      description: Low latency parameter group optimized for real-time applications
+      parameters: |-
+        latency-tracking: "no"
+        tcp-keepalive: "60"
+        timeout: "0"
+        databases: "256"
+        maxmemory-policy: "volatile-lru"
+        lfu-decay-time: "0"
+      tags:
+        Name: LowLatencyParameterGroup
+        Environment: Production
+        Team: RealTimeServices
+        CostCenter: "1005"
+        Purpose: "LowLatency"
+        SLA: "99.99"
+
+stack_tags:
+  Test: memorydb-parametergroup
+  Project: MemoryDBParameterGroups
+  Version: "2.0"

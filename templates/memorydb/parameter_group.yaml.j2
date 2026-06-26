@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('MemoryDB ParameterGroup(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('MemoryDB Parameter Group(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for parameter_group in sceptre_user_data.parameter_groups %}
 {%- set parameter_group_name = parameter_group.name %}
   {{ parameter_group_name }}:
@@ -17,12 +16,11 @@ Resources:
       Description: {{parameter_group.description}}
 {%- endif %}
 {%- if parameter_group.parameters_json is defined %}
-      Parameters: {{parameter_group.parameters_json}}
+      Parameters: |-
+        {{ parameter_group.parameters_json | indent(width=8, first=false) }}
 {%- elif parameter_group.parameters is defined %}
       Parameters:
-{%- for key,value in parameter_group.parameters.items() %}
-        {{key}}: {{value}}
-{%- endfor %}
+        {{ parameter_group.parameters | indent(width=8, first=false) }}
 {%- endif %}
       Tags:
         - Key: SourceRepoURL
@@ -33,28 +31,29 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for parameter_group in sceptre_user_data.parameter_groups %}
 {%- set parameter_group_name = parameter_group.name %}
-  {{ parameter_group_name }}Arn:
+  {{ parameter_group_name }}ARN:
     Description: The ARN for {{ parameter_group_name }}
     Value:
       Fn::GetAtt:
         - {{ parameter_group_name }}
-        - Arn
+        - ARN
     Export:
       Name:
-        Fn::Sub: "${AWS::StackName}-{{ parameter_group_name }}-Arn"
-
-  {{ parameter_group_name }}Name:
-    Description: The Name of {{ parameter_group_name }}
-    Value: {{parameter_group.parameter_group_name}}
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ parameter_group_name }}-Name"
-
-{%- endfor %}
+        Fn::Sub: "${AWS::StackName}-{{ parameter_group_name }}-ARN"
+{%- endfor %}{#
+# Supported structure as of 2026-06-26:
+Type: AWS::MemoryDB::ParameterGroup
+Properties:
+  Description: String
+  Family: String
+  ParameterGroupName: String
+  Parameters: Json
+  Tags:
+    - Key: String
+      Value: String
+#}

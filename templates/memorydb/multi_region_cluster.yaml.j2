@@ -1,0 +1,95 @@
+---
+Description: {{sceptre_user_data.description|default('MemoryDB Multi Region Cluster(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for multi_region_cluster in sceptre_user_data.multi_region_clusters %}
+{%- set multi_region_cluster_name = multi_region_cluster.name %}
+  {{ multi_region_cluster_name }}:
+    Type: AWS::MemoryDB::MultiRegionCluster
+    DeletionPolicy: {{ multi_region_cluster.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ multi_region_cluster.update_replace_policy | default('Delete') }}
+    Properties:
+      NodeType: {{ multi_region_cluster.node_type }}
+{%- if multi_region_cluster.description is defined %}
+      Description: {{ multi_region_cluster.description }}
+{%- endif %}
+{%- if multi_region_cluster.engine is defined %}
+      Engine: {{ multi_region_cluster.engine }}
+{%- endif %}
+{%- if multi_region_cluster.engine_version is defined %}
+      EngineVersion: {{ multi_region_cluster.engine_version }}
+{%- endif %}
+{%- if multi_region_cluster.multi_region_cluster_name_suffix is defined %}
+      MultiRegionClusterNameSuffix: {{ multi_region_cluster.multi_region_cluster_name_suffix }}
+{%- endif %}
+{%- if multi_region_cluster.multi_region_parameter_group_name is defined %}
+      MultiRegionParameterGroupName: {{ multi_region_cluster.multi_region_parameter_group_name }}
+{%- endif %}
+{%- if multi_region_cluster.num_shards is defined %}
+      NumShards: {{ multi_region_cluster.num_shards }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if multi_region_cluster.tags is defined %}
+{%- for key,value in multi_region_cluster.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if multi_region_cluster.tls_enabled is defined %}
+      TLSEnabled: {{ multi_region_cluster.tls_enabled | lower }}
+{%- endif %}
+{%- if multi_region_cluster.update_strategy is defined %}
+      UpdateStrategy: {{ multi_region_cluster.update_strategy }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for multi_region_cluster in sceptre_user_data.multi_region_clusters %}
+{%- set multi_region_cluster_name = multi_region_cluster.name %}
+  {{ multi_region_cluster_name }}ARN:
+    Description: The ARN for {{ multi_region_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ multi_region_cluster_name }}
+        - ARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ multi_region_cluster_name }}-ARN"
+  {{ multi_region_cluster_name }}MultiRegionClusterName:
+    Description: The Name of {{ multi_region_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ multi_region_cluster_name }}
+        - MultiRegionClusterName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ multi_region_cluster_name }}-MultiRegionClusterName"
+  {{ multi_region_cluster_name }}Status:
+    Description: The status of {{ multi_region_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ multi_region_cluster_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ multi_region_cluster_name }}-Status"
+{%- endfor %}{#
+# Supported structure as of 2026-06-26:
+Type: AWS::MemoryDB::MultiRegionCluster
+Properties:
+  Description: String
+  Engine: String
+  EngineVersion: String
+  MultiRegionClusterNameSuffix: String
+  MultiRegionParameterGroupName: String
+  NodeType: String
+  NumShards: Integer
+  Tags:
+    - Key: String
+      Value: String
+  TLSEnabled: Boolean
+  UpdateStrategy: String
+#}
