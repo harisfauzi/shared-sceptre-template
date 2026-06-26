@@ -1,0 +1,45 @@
+---
+template:
+  type: file
+  path: securityhub/hub.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SecurityHub Hub(s) for testing purposes"
+  hubs:
+    - name: PrimarySecurityHub
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      auto_enable_controls: true
+      enable_default_standards: true
+      control_finding_generator: "SECURITY_CONTROL"
+      tags:
+        Application: "SecurityHub"
+        Environment: "Production"
+        CostCenter: "Security"
+
+    - name: DevelopmentSecurityHub
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      auto_enable_controls: false
+      enable_default_standards: false
+      tags:
+        Application: "SecurityHub"
+        Environment: "Development"
+        Team: "Security"
+
+    - name: StagingSecurityHub
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      enable_default_standards: true
+      control_finding_generator: "CUSTOM_CONTROL"
+      tags:
+        Application: "SecurityHub"
+        Environment: "Staging"
+        Purpose: "Testing"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: securityhub-hub

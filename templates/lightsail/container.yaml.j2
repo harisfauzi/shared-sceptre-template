@@ -17,23 +17,23 @@ Resources:
       ContainerServiceDeployment:
 {%- if container.container_service_deployment.containers is defined %}{# BEGIN if container.container_service_deployment.containers is defined #}
         Containers:
-{%- for deployment_container in container.container_service_deployment.containers %}
+{%- for deployment_container in container.container_service_deployment.containers %}{# BEGIN for deployment_container in container.container_service_deployment.containers #}
           -
-{%- if deployment_container.command is defined %}
+{%- if deployment_container.command is defined %}{# BEGIN if deployment_container.command is defined #}
             Command:
 {%- for cmd in deployment_container.command %}
               - {{ cmd }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if deployment_container.command is defined #}
 {%- if deployment_container.container_name is defined %}
             ContainerName: {{ deployment_container.container_name }}
 {%- endif %}
 {%- if deployment_container.image is defined %}
             Image: {{ deployment_container.image }}
 {%- endif %}
-{%- if deployment_container.environment is defined %}
+{%- if deployment_container.environment is defined %}{# BEGIN if deployment_container.environment is defined #}
             Environment:
-{%- for env in deployment_container.environment %}
+{%- for env in deployment_container.environment %}{# BEGIN for env in deployment_container.environment #}
               -
 {%- if env.value is defined %}
                 Value: {{ env.value }}
@@ -41,11 +41,11 @@ Resources:
 {%- if env.variable is defined %}
                 Variable: {{ env.variable }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- if deployment_container.ports is defined %}
+{%- endfor %}{# END for env in deployment_container.environment #}
+{%- endif %}{# END if deployment_container.environment is defined #}
+{%- if deployment_container.ports is defined %}{# BEGIN if deployment_container.ports is defined #}
             Ports:
-{%- for port in deployment_container.ports %}
+{%- for port in deployment_container.ports %}{# BEGIN for port in deployment_container.ports #}
               -
 {%- if port.port is defined %}
                 Port: {{ port.port }}
@@ -53,9 +53,9 @@ Resources:
 {%- if port.protocol is defined %}
                 Protocol: {{ port.protocol }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
-{%- endfor %}
+{%- endfor %}{# END for port in deployment_container.ports #}
+{%- endif %}{# END if deployment_container.ports is defined #}
+{%- endfor %}{# END for deployment_container in container.container_service_deployment.containers #}
 {%- endif %}{# END if container.container_service_deployment.containers is defined #}
 {%- if container.container_service_deployment.public_endpoint is defined %}{# BEGIN if container.container_service_deployment.public_endpoint is defined #}
         PublicEndpoint:
@@ -95,7 +95,7 @@ Resources:
       PrivateRegistryAccess:
         EcrImagePullerRole:
 {%- if container.private_registry_access.ecr_image_puller_role.is_active is defined %}
-          IsActive: {{ container.private_registry_access.ecr_image_puller_role.is_active }}
+          IsActive: {{ container.private_registry_access.ecr_image_puller_role.is_active | lower }}
 {%- endif %}
 {%- if container.private_registry_access.ecr_image_puller_role.principal_arn is defined %}
           PrincipalArn: {{ container.private_registry_access.ecr_image_puller_role.principal_arn }}
@@ -103,18 +103,18 @@ Resources:
 {%- endif %}{# END if container.private_registry_access is defined #}
 {%- if container.public_domain_names is defined %}{# BEGIN if container.public_domain_names is defined #}
       PublicDomainNames:
-{%- for domain in container.public_domain_names %}
+{%- for domain in container.public_domain_names %}{# BEGIN for domain in container.public_domain_names #}
         -
 {%- if domain.certificate_name is defined %}
           CertificateName: {{ domain.certificate_name }}
 {%- endif %}
-{%- if domain.domain_names is defined %}
+{%- if domain.domain_names is defined %}{# BEGIN if domain.domain_names is defined #}
           DomainNames:
 {%- for domain_name in domain.domain_names %}
             - {{ domain_name }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}
+{%- endif %}{# END if domain.domain_names is defined #}
+{%- endfor %}{# END for domain in container.public_domain_names #}
 {%- endif %}{# END if container.public_domain_names is defined #}
       Tags:
         - Key: SourceRepoURL
@@ -137,7 +137,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ container_name }}"
-
   {{ container_name }}ContainerArn:
     Description: The ARN of container service {{ container_name }}
     Value:
@@ -147,7 +146,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ container_name }}-ContainerArn"
-
   {{ container_name }}PrincipalArn:
     Description: The principal ARN of container service {{ container_name }}
     Value:
@@ -157,10 +155,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ container_name }}-PrincipalArn"
-
-{%- endfor %}
-{#
-# Supported structure as of 20250223:
+{%- endfor %}{#
+# Supported structure as of 2025-02-23:
 Type: AWS::Lightsail::Container
 Properties:
   ContainerServiceDeployment:

@@ -1,0 +1,93 @@
+---
+Description: {{sceptre_user_data.description|default('Lambda Network Connector(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for network_connector in sceptre_user_data.network_connectors %}
+{%- set network_connector_name = network_connector.name %}
+  {{ network_connector_name }}:
+    Type: AWS::Lambda::NetworkConnector
+    DeletionPolicy: {{ network_connector.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ network_connector.update_replace_policy | default('Delete') }}
+    Properties:
+      Configuration:
+        VpcEgressConfiguration:
+          AssociatedComputeResourceTypes:
+{%- for type in network_connector.configuration.vpc_egress_configuration.associated_compute_resource_types %}
+            - {{ type }}
+{%- endfor %}
+          NetworkProtocol: {{ network_connector.configuration.vpc_egress_configuration.network_protocol }}
+          SubnetIds:
+{%- for subnet_id in network_connector.configuration.vpc_egress_configuration.subnet_ids %}
+            - {{ subnet_id }}
+{%- endfor %}
+{%- if network_connector.configuration.vpc_egress_configuration.security_group_ids is defined %}{# BEGIN if network_connector.configuration.vpc_egress_configuration.security_group_ids is defined #}
+          SecurityGroupIds:
+{%- for security_group_id in network_connector.configuration.vpc_egress_configuration.security_group_ids %}
+            - {{ security_group_id }}
+{%- endfor %}
+{%- endif %}{# END if network_connector.configuration.vpc_egress_configuration.security_group_ids is defined #}
+{%- if network_connector.network_connector_name is defined %}
+      Name: {{ network_connector.network_connector_name }}
+{%- endif %}
+{%- if network_connector.operator_role is defined %}
+      OperatorRole: {{ network_connector.operator_role | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if network_connector.tags is defined %}
+{%- for key,value in network_connector.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for network_connector in sceptre_user_data.network_connectors %}
+{%- set network_connector_name = network_connector.name %}
+  {{ network_connector_name }}:
+    Description: The ARN for {{ network_connector_name }}
+    Value:
+      Ref: {{ network_connector_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_connector_name }}"
+  {{ network_connector_name }}Arn:
+    Description: The ARN for {{ network_connector_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_connector_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_connector_name }}-Arn"
+  {{ network_connector_name }}State:
+    Description: The current state for {{ network_connector_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ network_connector_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ network_connector_name }}-State"
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::NetworkConnector
+Properties:
+  Configuration:
+    VpcEgressConfiguration:
+      AssociatedComputeResourceTypes:
+        - String
+      NetworkProtocol: String
+      SecurityGroupIds:
+        - String
+      SubnetIds:
+        - String
+  Name: String
+  OperatorRole: String
+  Tags:
+    - Key: String
+      Value: String
+#}

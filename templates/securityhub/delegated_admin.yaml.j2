@@ -1,0 +1,49 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityHub Delegated Admin(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for delegated_admin in sceptre_user_data.delegated_admins %}
+{%- set delegated_admin_name = delegated_admin.name %}
+  {{ delegated_admin_name }}:
+    Type: AWS::SecurityHub::DelegatedAdmin
+    DeletionPolicy: {{ delegated_admin.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ delegated_admin.update_replace_policy | default('Delete') }}
+    Properties:
+      AdminAccountId: {{ delegated_admin.admin_account_id }}
+{%- endfor %}
+
+Outputs:
+{%- for delegated_admin in sceptre_user_data.delegated_admins %}
+{%- set delegated_admin_name = delegated_admin.name %}
+  {{ delegated_admin_name }}:
+    Description: The ID of the delegated Security Hub CSPM administrator account, in the format of accountID/Region for {{ delegated_admin_name }}
+    Value:
+      Ref: {{ delegated_admin_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ delegated_admin_name }}"
+  {{ delegated_admin_name }}DelegatedAdminIdentifier:
+    Description: The ID of the delegated Security Hub CSPM administrator account, in the format of accountID/Region for {{ delegated_admin_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ delegated_admin_name }}
+        - DelegatedAdminIdentifier
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ delegated_admin_name }}-DelegatedAdminIdentifier"
+  {{ delegated_admin_name }}Status:
+    Description: Whether the delegated Security Hub CSPM administrator is set for the organization for {{ delegated_admin_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ delegated_admin_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ delegated_admin_name }}-Status"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::DelegatedAdmin
+Properties:
+  AdminAccountId: String
+#}

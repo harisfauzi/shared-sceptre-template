@@ -1,0 +1,121 @@
+---
+template:
+  type: file
+  path: memorydb/cluster.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: MemoryDB Clusters for Production Environment
+  clusters:
+    - name: PrimaryProductionCluster
+      acl_name: admin-acl
+      cluster_name: prod-primary-cluster
+      node_type: db.r6g.xlarge
+      parameter_group_name: prod-parameter-group
+      subnet_group_name: prod-subnet-group
+      engine: memorydb
+      engine_version: "7.0"
+      num_shards: 3
+      num_replicas_per_shard: 2
+      auto_minor_version_upgrade: true
+      tls_enabled: true
+      port: 6379
+      snapshot_retention_limit: 35
+      snapshot_window: "03:00-05:00"
+      maintenance_window: "sun:05:00-sun:06:00"
+      data_tiering: "Enabled"
+      description: "Primary production cluster with data tiering and high availability"
+      security_group_ids:
+        - "sg-0123456789abcdef0"
+        - "sg-0123456789abcdef1"
+      sns_topic_arn: "arn:aws:sns:us-east-1:123456789012:memorydb-events "
+      sns_topic_status: "active"
+      kms_key_id: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012 "
+      tags:
+        Name: PrimaryProductionCluster
+        Environment: Production
+        Team: DataEngineering
+        CostCenter: "1001"
+        BackupPolicy: "Daily"
+    - name: CacheApplicationCluster
+      acl_name: app-acl
+      cluster_name: app-cache-cluster
+      node_type: db.t4g.medium
+      parameter_group_name: app-parameter-group
+      subnet_group_name: app-subnet-group
+      engine: memorydb
+      engine_version: "7.0"
+      num_shards: 1
+      num_replicas_per_shard: 1
+      auto_minor_version_upgrade: false
+      tls_enabled: true
+      port: 6379
+      snapshot_retention_limit: 7
+      snapshot_window: "02:00-03:00"
+      data_tiering: "Disabled"
+      description: "Application cache cluster for session management"
+      security_group_ids:
+        - "sg-0123456789abcdef2"
+      tags:
+        Name: CacheApplicationCluster
+        Environment: Production
+        Team: ApplicationEngineering
+        CostCenter: "1002"
+    - name: DevelopmentTestCluster
+      acl_name: dev-acl
+      cluster_name: dev-test-cluster
+      node_type: db.t4g.small
+      parameter_group_name: dev-parameter-group
+      subnet_group_name: dev-subnet-group
+      engine: memorydb
+      engine_version: "7.0"
+      num_shards: 1
+      num_replicas_per_shard: 0
+      auto_minor_version_upgrade: true
+      tls_enabled: false
+      port: 6379
+      snapshot_retention_limit: 3
+      description: "Development cluster for testing and validation"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Name: DevelopmentTestCluster
+        Environment: Development
+        Team: QA
+        CostCenter: "1003"
+    - name: ReadReplicaCluster
+      acl_name: readonly-acl
+      cluster_name: prod-read-replica-cluster
+      node_type: db.r6g.large
+      parameter_group_name: readonly-parameter-group
+      subnet_group_name: prod-subnet-group
+      engine: memorydb
+      engine_version: "7.0"
+      num_shards: 2
+      num_replicas_per_shard: 3
+      auto_minor_version_upgrade: true
+      tls_enabled: true
+      port: 6379
+      snapshot_retention_limit: 30
+      snapshot_window: "04:00-05:00"
+      maintenance_window: "sun:06:00-sun:07:00"
+      data_tiering: "Enabled"
+      description: "Read replica cluster for analytics and reporting"
+      security_group_ids:
+        - "sg-0123456789abcdef3"
+        - "sg-0123456789abcdef4"
+        - "sg-0123456789abcdef5"
+      snapshot_arns:
+        - "arn:aws:memorydb:us-east-1:123456789012:snapshot/prod-snapshot-20260620 "
+      tags:
+        Name: ReadReplicaCluster
+        Environment: Production
+        Team: Analytics
+        CostCenter: "1004"
+        ReadOnly: "true"
+
+stack_tags:
+  Test: memorydb-cluster
+  Project: MemoryDBClusters
+  Version: "2.0"

@@ -11,7 +11,7 @@ Resources:
     UpdateReplacePolicy: {{ layer_version_permission.update_replace_policy | default('Delete') }}
     Properties:
       Action: {{ layer_version_permission.action }}
-      LayerVersionArn: {{ layer_version_permission.layer_version_arn }}
+      LayerVersionArn: {{ layer_version_permission.layer_version_arn | trim }}
       Principal: {{ layer_version_permission.principal }}
 {%- if layer_version_permission.organization_id is defined %}
       OrganizationId: {{ layer_version_permission.organization_id | trim }}
@@ -19,7 +19,6 @@ Resources:
 {%- endfor %}
 
 Outputs:
-
 {%- for layer_version_permission in sceptre_user_data.layer_version_permissions %}
 {%- set layer_version_permission_name = layer_version_permission.name %}
   {{ layer_version_permission_name }}:
@@ -29,5 +28,12 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ layer_version_permission_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::LayerVersionPermission
+Properties:
+  Action: String
+  LayerVersionArn: String
+  OrganizationId: String
+  Principal: String
+#}

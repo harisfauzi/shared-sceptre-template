@@ -12,12 +12,12 @@ Resources:
     Properties:
       CertificateName: {{ certificate.certificate_name }}
       DomainName: {{ certificate.domain_name }}
-{%- if certificate.subject_alternative_names is defined %}
+{%- if certificate.subject_alternative_names is defined %}{# BEGIN if certificate.subject_alternative_names is defined #}
       SubjectAlternativeNames:
 {%- for name in certificate.subject_alternative_names %}
         - {{ name }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if certificate.subject_alternative_names is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -39,7 +39,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ certificate_name }}"
-
   {{ certificate_name }}CertificateArn:
     Description: The ARN of certificate {{ certificate_name }}
     Value:
@@ -49,9 +48,7 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ certificate_name }}-CertificateArn"
-
-{%- endfor %}
-{#
+{%- endfor %}{#
 # Supported structure as of 20250223:
 Type: AWS::Lightsail::Certificate
 Properties:

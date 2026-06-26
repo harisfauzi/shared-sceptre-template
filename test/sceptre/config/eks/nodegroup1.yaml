@@ -1,0 +1,193 @@
+---
+template:
+  type: file
+  path: eks/nodegroup.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "EKS Nodegroups for cluster worker nodes"
+  nodegroups:
+    - name: GeneralPurposeNodegroup
+      nodegroup_name: general-purpose-ng
+      cluster_name: production-eks-cluster
+      node_role: "arn:aws:iam::123456789012:role/eks-node-role"
+      deletion_policy: Delete
+      subnets:
+        - subnet-12345678
+        - subnet-87654321
+        - subnet-11111111
+      ami_type: AL2_x86_64
+      capacity_type: ON_DEMAND
+      disk_size: 100
+      instance_types:
+        - t3.large
+        - t3.xlarge
+      scaling_config:
+        min_size: 2
+        max_size: 10
+        desired_size: 5
+      update_config:
+        max_unavailable: 1
+        update_strategy: RollingUpdate
+      labels: |-
+        workload-type: general
+        tier: worker
+      tags: |-
+        Component: ComputePool
+        Environment: Production
+
+    - name: ComputeOptimizedNodegroup
+      nodegroup_name: compute-optimized-ng
+      cluster_name: production-eks-cluster
+      node_role: "arn:aws:iam::123456789012:role/eks-node-role"
+      deletion_policy: Retain
+      subnets:
+        - subnet-comp-1111
+        - subnet-comp-2222
+      ami_type: AL2_x86_64
+      capacity_type: SPOT
+      disk_size: 200
+      instance_types:
+        - c6i.2xlarge
+        - c6i.4xlarge
+      scaling_config:
+        min_size: 1
+        max_size: 5
+        desired_size: 3
+      release_version: "1.30.0-20240601"
+      version: "1.30"
+      taints:
+        - key: workload-type
+          value: compute-intensive
+          effect: NoSchedule
+        - key: dedicated
+          value: hpc
+          effect: PreferNoSchedule
+      warm_pool_config:
+        enabled: true
+        min_size: 1
+        max_group_prepared_capacity: 2
+        pool_state: Active
+        reuse_on_scale_in: true
+      update_config:
+        max_unavailable_percentage: 20
+      tags: |-
+        Component: ComputePool
+        Environment: Production
+        WorkloadType: HPC
+
+    - name: GpuNodegroup
+      nodegroup_name: gpu-ng
+      cluster_name: production-eks-cluster
+      node_role: "arn:aws:iam::123456789012:role/eks-node-role"
+      deletion_policy: Delete
+      subnets:
+        - subnet-gpu-1111
+        - subnet-gpu-2222
+      ami_type: AL2_x86_64_GPU
+      capacity_type: ON_DEMAND
+      disk_size: 250
+      instance_types:
+        - g4dn.xlarge
+        - g4dn.2xlarge
+      scaling_config:
+        min_size: 0
+        max_size: 3
+        desired_size: 1
+      launch_template:
+        name: eks-gpu-launch-template
+        version: 2
+      taints:
+        - key: nvidia.com/gpu
+          value: "true"
+          effect: NoSchedule
+      labels: |-
+        workload-type: ml
+        resource-type: gpu
+      node_repair_config:
+        enabled: true
+        max_parallel_nodes_repaired_count: 1
+        max_unhealthy_node_threshold_count: 2
+        node_repair_config_overrides:
+          - node_unhealthy_reason: UnknownCondition
+            min_repair_wait_time_mins: 5
+            repair_action: Terminate
+          - node_unhealthy_reason: InstanceStoreVolumeDegraded
+            repair_action: Terminate
+      tags: |-
+        Component: ComputePool
+        Environment: Production
+        Specialty: GPU
+
+    - name: SpotFlexibleNodegroup
+      nodegroup_name: spot-flexible-ng
+      cluster_name: development-eks-cluster
+      node_role: "arn:aws:iam::123456789012:role/eks-node-role"
+      deletion_policy: Delete
+      subnets:
+        - subnet-dev-1111
+        - subnet-dev-2222
+      ami_type: AL2_x86_64
+      capacity_type: SPOT
+      disk_size: 50
+      instance_types:
+        - t3.medium
+        - t3.large
+        - t2.large
+      scaling_config:
+        min_size: 1
+        max_size: 4
+        desired_size: 2
+      remote_access:
+        ec2_ssh_key: my-key-pair
+        source_security_groups:
+          - sg-12345678
+          - sg-87654321
+      force_update_enabled: false
+      update_config:
+        max_unavailable: 2
+      tags: |-
+        Component: Development
+        Environment: Development
+        CostOptimization: Spot
+
+    - name: SystemNodegroup
+      nodegroup_name: system-ng
+      cluster_name: production-eks-cluster
+      node_role: "arn:aws:iam::123456789012:role/eks-node-role"
+      deletion_policy: Delete
+      subnets:
+        - subnet-sys-1111
+        - subnet-sys-2222
+      ami_type: AL2_x86_64
+      capacity_type: ON_DEMAND
+      disk_size: 150
+      instance_types:
+        - m5.large
+      scaling_config:
+        min_size: 3
+        max_size: 6
+        desired_size: 3
+      taints:
+        - key: CriticalAddonsOnly
+          value: "true"
+          effect: NoExecute
+      labels: |-
+        workload-type: system
+        tier: control
+      version: "1.30"
+      tags: |-
+        Component: SystemPool
+        Environment: Production
+        Critical: "true"
+
+stack_tags:
+  Test: eks-nodegroup
+
+
+
+
+
+
+

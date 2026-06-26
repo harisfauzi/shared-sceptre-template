@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('SES Template(s) for '+scep
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for template in sceptre_user_data.templates %}
 {%- set template_name = template.name %}
   {{ template_name }}:
@@ -11,18 +10,55 @@ Resources:
     DeletionPolicy: {{ template.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ template.update_replace_policy | default('Delete') }}
     Properties:
-{%- if template.template is defined %}
+{%- if template.template is defined %}{# BEGIN if template.template is defined #}
       Template:
-        SubjectPart: {{ template.template.subject_part }}
+        SubjectPart: |-
+          {{ template.template.subject_part | indent(width=10, first=false) }}
 {%- if template.template.html_part is defined %}
-        HtmlPart: {{template.template.html_part }}
+        HtmlPart: |-
+          {{ template.template.html_part | indent(width=10, first=false) }}
 {%- endif %}
 {%- if template.template.template_name is defined %}
         TemplateName: {{ template.template.template_name }}
 {%- endif %}
 {%- if template.template.text_part is defined %}
-        TextPart: {{ template.template.text_part }}
+        TextPart: |-
+          {{ template.template.text_part | indent(width=10, first=false) }}
 {%- endif %}
-{%- endif %}
-
+{%- endif %}{# END if template.template is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if template.tags is defined %}
+{%- for key,value in template.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
 {%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for template in sceptre_user_data.templates %}
+{%- set template_name = template.name %}
+  {{ template_name }}Id:
+    Description: Template ID for {{ template_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ template_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ template_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::Template
+Properties:
+  Tags:
+    - Key: String
+      Value: String
+  Template:
+    HtmlPart: String
+    SubjectPart: String
+    TemplateName: String
+    TextPart: String
+#}

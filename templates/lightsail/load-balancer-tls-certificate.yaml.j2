@@ -37,7 +37,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ load_balancer_tls_certificate_name }}"
-
   {{ load_balancer_tls_certificate_name }}LoadBalancerTlsCertificateArn:
     Description: The ARN for {{ load_balancer_tls_certificate_name }}
     Value:
@@ -47,7 +46,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ load_balancer_tls_certificate_name }}-LoadBalancerTlsCertificateArn"
-
   {{ load_balancer_tls_certificate_name }}Status:
     Description: The status of {{ load_balancer_tls_certificate_name }}
     Value:
@@ -57,10 +55,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ load_balancer_tls_certificate_name }}-Status"
-
-{%- endfor %}
-{#
-# Supported structure as of 20250224:
+{%- endfor %}{#
+# Supported structure as of 2025-02-24:
 Type: AWS::Lightsail::LoadBalancerTlsCertificate
 Properties:
   CertificateAlternativeNames:

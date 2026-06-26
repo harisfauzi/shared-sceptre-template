@@ -1,0 +1,114 @@
+---
+Description: {{sceptre_user_data.description|default('Route53Resolver Outpost Resolver(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for output_resolver in sceptre_user_data.output_resolvers %}
+{%- set output_resolver_name = output_resolver.name %}
+  {{ output_resolver_name }}:
+    Type: AWS::Route53Resolver::OutpostResolver
+    DeletionPolicy: {{ output_resolver.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ output_resolver.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ output_resolver.output_resolver_name }}
+      OutpostArn: {{ output_resolver.outpost_arn | trim }}
+      PreferredInstanceType: {{ output_resolver.preferred_instance_type }}
+{%- if output_resolver.instance_count is defined %}
+      InstanceCount: {{ output_resolver.instance_count }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if output_resolver.tags is defined %}
+{%- for key,value in output_resolver.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for output_resolver in sceptre_user_data.output_resolvers %}
+{%- set output_resolver_name = output_resolver.name %}
+  {{ output_resolver_name }}:
+    Description: The ID of resolver {{ output_resolver_name }}
+    Value:
+      Ref: {{ output_resolver_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ output_resolver_name }}"
+  {{ output_resolver_name }}Arn:
+    Description: The ARN for {{ output_resolver_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ output_resolver_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ output_resolver_name }}-Arn"
+  {{ output_resolver_name }}CreationTime:
+    Description: The date and time that {{ output_resolver_name }} was created, in UTC.
+    Value:
+      Fn::GetAtt:
+        - {{ output_resolver_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ output_resolver_name }}-CreationTime"
+  {{ output_resolver_name }}CreatorRequestId:
+    Description: A unique string defined by you to identify the request for {{ output_resolver_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ output_resolver_name }}
+        - CreatorRequestId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ output_resolver_name }}-CreatorRequestId"
+  {{ output_resolver_name }}Id:
+    Description: The Id for {{ output_resolver_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ output_resolver_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ output_resolver_name }}-Id"
+  {{ output_resolver_name }}ModificationTime:
+    Description: The date and time that {{ output_resolver_name }} was last modified.
+    Value:
+      Fn::GetAtt:
+        - {{ output_resolver_name }}
+        - ModificationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ output_resolver_name }}-ModificationTime"
+  {{ output_resolver_name }}Status:
+    Description: The status for {{ output_resolver_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ output_resolver_name }}
+        - Status
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ output_resolver_name }}-Status"
+  {{ output_resolver_name }}StatusMessage:
+    Description: Additional status message for {{ output_resolver_name }}, if available.
+    Value:
+      Fn::GetAtt:
+        - {{ output_resolver_name }}
+        - StatusMessage
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ output_resolver_name }}-StatusMessage"
+{%- endfor %}{#
+# Supported structure as of 2026-06-18:
+Type: AWS::Route53Resolver::OutpostResolver
+Properties:
+  InstanceCount: Integer
+  Name: String
+  OutpostArn: String
+  PreferredInstanceType: String
+  Tags:
+    - Key: String
+      Value: String
+#}

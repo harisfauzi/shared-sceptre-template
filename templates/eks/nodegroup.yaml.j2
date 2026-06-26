@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EKS Nodegroup(s) for '+sce
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for nodegroup in sceptre_user_data.nodegroups %}
 {%- set nodegroup_name = nodegroup.name %}
   {{ nodegroup_name }}:
@@ -36,12 +35,13 @@ Resources:
 {%- endfor %}
 {%- endif %}
 {%- if nodegroup.labels_json is defined %}
-      Labels: {{ nodegroup.labels_json }}
+      Labels: |-
+        {{ nodegroup.labels_json | indent(width=8, first=false) }}
 {%- elif nodegroup.labels is defined %}
       Labels:
-{{ nodegroup.labels | indent(width=8, first=true) }}
+        {{ nodegroup.labels | indent(width=8, first=false) }}
 {%- endif %}
-{%- if nodegroup.launch_template is defined %}
+{%- if nodegroup.launch_template is defined %}{# BEGIN if nodegroup.launch_template is defined #}
       LaunchTemplate:
 {%- if nodegroup.launch_template.id is defined %}
         Id: {{ nodegroup.launch_template.id }}
@@ -51,24 +51,60 @@ Resources:
 {%- if nodegroup.launch_template.version is defined %}
         Version: {{ nodegroup.launch_template.version }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if nodegroup.launch_template is defined #}
 {%- if nodegroup.nodegroup_name is defined %}
       NodegroupName: {{ nodegroup.nodegroup_name }}
 {%- endif %}
+{%- if nodegroup.node_repair_config is defined %}{# BEGIN if nodegroup.node_repair_config is defined #}
+      NodeRepairConfig:
+{%- if nodegroup.node_repair_config.enabled is defined %}
+        Enabled: {{ nodegroup.node_repair_config.enabled | lower }}
+{%- endif %}
+{%- if nodegroup.node_repair_config.max_parallel_nodes_repaired_count is defined %}
+        MaxParallelNodesRepairedCount: {{ nodegroup.node_repair_config.max_parallel_nodes_repaired_count }}
+{%- endif %}
+{%- if nodegroup.node_repair_config.max_parallel_nodes_repaired_percentage is defined %}
+        MaxParallelNodesRepairedPercentage: {{ nodegroup.node_repair_config.max_parallel_nodes_repaired_percentage }}
+{%- endif %}
+{%- if nodegroup.node_repair_config.max_unhealthy_node_threshold_count is defined %}
+        MaxUnhealthyNodeThresholdCount: {{ nodegroup.node_repair_config.max_unhealthy_node_threshold_count }}
+{%- endif %}
+{%- if nodegroup.node_repair_config.max_unhealthy_node_threshold_percentage is defined %}
+        MaxUnhealthyNodeThresholdPercentage: {{ nodegroup.node_repair_config.max_unhealthy_node_threshold_percentage }}
+{%- endif %}
+{%- if nodegroup.node_repair_config.node_repair_config_overrides is defined %}{# BEGIN if nodegroup.node_repair_config.node_repair_config_overrides is defined #}
+        NodeRepairConfigOverrides:
+{%- for override in nodegroup.node_repair_config.node_repair_config_overrides %}{# BEGIN for override in nodegroup.node_repair_config.node_repair_config_overrides #}
+          -
+{%- if override.min_repair_wait_time_mins is defined %}
+            MinRepairWaitTimeMins: {{ override.min_repair_wait_time_mins }}
+{%- endif %}
+{%- if override.node_monitoring_condition is defined %}
+            NodeMonitoringCondition: {{ override.node_monitoring_condition }}
+{%- endif %}
+{%- if override.node_unhealthy_reason is defined %}
+            NodeUnhealthyReason: {{ override.node_unhealthy_reason }}
+{%- endif %}
+{%- if override.repair_action is defined %}
+            RepairAction: {{ override.repair_action }}
+{%- endif %}
+{%- endfor %}{# END for override in nodegroup.node_repair_config.node_repair_config_overrides #}
+{%- endif %}{# END if nodegroup.node_repair_config.node_repair_config_overrides is defined #}
+{%- endif %}{# END if nodegroup.node_repair_config is defined #}
 {%- if nodegroup.release_version is defined %}
       ReleaseVersion: {{ nodegroup.release_version }}
 {%- endif %}
-{%- if nodegroup.remote_access is defined %}
+{%- if nodegroup.remote_access is defined %}{# BEGIN if nodegroup.remote_access is defined #}
       RemoteAccess:
         Ec2SshKey: {{ nodegroup.remote_access.ec2_ssh_key }}
-{%- if nodegroup.remote_access.source_security_groups is defined %}
+{%- if nodegroup.remote_access.source_security_groups is defined %}{# BEGIN if nodegroup.remote_access.source_security_groups is defined #}
         SourceSecurityGroups:
 {%- for security_group_id in nodegroup.remote_access.source_security_groups %}
           - {{ security_group_id }}
 {%- endfor %}
-{%- endif %}
-{%- endif %}
-{%- if nodegroup.scaling_config is defined %}
+{%- endif %}{# END if nodegroup.remote_access.source_security_groups is defined #}
+{%- endif %}{# END if nodegroup.remote_access is defined #}
+{%- if nodegroup.scaling_config is defined %}{# BEGIN if nodegroup.scaling_config is defined #}
       ScalingConfig:
 {%- if nodegroup.scaling_config.desired_size is defined %}
         DesiredSize: {{ nodegroup.scaling_config.desired_size }}
@@ -79,16 +115,17 @@ Resources:
 {%- if nodegroup.scaling_config.min_size is defined %}
         MinSize: {{ nodegroup.scaling_config.min_size }}
 {%- endif %}
-{%- endif %}
+{%- endif %}{# END if nodegroup.scaling_config is defined #}
 {%- if nodegroup.tags_json is defined %}
-      Tags: {{ nodegroup.tags_json }}
+      Tags: |-
+        {{ nodegroup.tags_json | indent(width=8, first=false) }}
 {%- elif nodegroup.tags is defined %}
       Tags:
-{{ nodegroup.tags | indent(width=8, first=true) }}
+        {{ nodegroup.tags | indent(width=8, first=false) }}
 {%- endif %}
-{%- if nodegroup.taints is defined %}{# BEGIN {%- if nodegroup.taints is defined %} #}
+{%- if nodegroup.taints is defined %}{# BEGIN if nodegroup.taints is defined #}
       Taints:
-{%- for taint in nodegroup.taints %}
+{%- for taint in nodegroup.taints %}{# BEGIN for taint in nodegroup.taints #}
         -
 {%- if taint.effect is defined %}
           Effect: {{taint.effect }}
@@ -99,9 +136,9 @@ Resources:
 {%- if taint.value is defined %}
           Value: {{ taint.value }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}{# END {%- if nodegroup.taints is defined %} #}
-{%- if nodegroup.update_config is defined %}
+{%- endfor %}{# END for taint in nodegroup.taints #}
+{%- endif %}{# END if nodegroup.taints is defined #}
+{%- if nodegroup.update_config is defined %}{# BEGIN if nodegroup.update_config is defined #}
       UpdateConfig:
 {%- if nodegroup.update_config.max_unavailable is defined %}
         MaxUnavailable: {{ nodegroup.update_config.max_unavailable }}
@@ -109,15 +146,34 @@ Resources:
 {%- if nodegroup.update_config.max_unavailable_percentage is defined %}
         MaxUnavailablePercentage: {{ nodegroup.update_config.max_unavailable_percentage }}
 {%- endif %}
+{%- if nodegroup.update_config.update_strategy is defined %}
+        UpdateStrategy: {{ nodegroup.update_config.update_strategy }}
 {%- endif %}
+{%- endif %}{# END if nodegroup.update_config is defined #}
 {%- if nodegroup.version is defined %}
       Version: {{ nodegroup.version }}
 {%- endif %}
-
+{%- if nodegroup.warm_pool_config is defined %}{# BEGIN if nodegroup.warm_pool_config is defined #}
+      WarmPoolConfig:
+{%- if nodegroup.warm_pool_config.enabled is defined %}
+        Enabled: {{ nodegroup.warm_pool_config.enabled | lower }}
+{%- endif %}
+{%- if nodegroup.warm_pool_config.max_group_prepared_capacity is defined %}
+        MaxGroupPreparedCapacity: {{ nodegroup.warm_pool_config.max_group_prepared_capacity }}
+{%- endif %}
+{%- if nodegroup.warm_pool_config.min_size is defined %}
+        MinSize: {{ nodegroup.warm_pool_config.min_size }}
+{%- endif %}
+{%- if nodegroup.warm_pool_config.pool_state is defined %}
+        PoolState: {{ nodegroup.warm_pool_config.pool_state }}
+{%- endif %}
+{%- if nodegroup.warm_pool_config.reuse_on_scale_in is defined %}
+        ReuseOnScaleIn: {{ nodegroup.warm_pool_config.reuse_on_scale_in | lower }}
+{%- endif %}
+{%- endif %}{# END if nodegroup.warm_pool_config is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for nodegroup in sceptre_user_data.nodegroups %}
 {%- set nodegroup_name = nodegroup.name %}
   {{ nodegroup_name }}:
@@ -127,7 +183,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ nodegroup_name }}"
-
   {{ nodegroup_name }}Arn:
     Description: The ARN for {{ nodegroup_name }}
     Value:
@@ -137,7 +192,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ nodegroup_name }}-Arn"
-
   {{ nodegroup_name }}ClusterName:
     Description: The ClusterName for {{ nodegroup_name }}
     Value:
@@ -147,5 +201,73 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ nodegroup_name }}-ClusterName"
-
-{%- endfor %}
+  {{ nodegroup_name }}NodegroupName:
+    Description: The name associated with an Amazon EKS managed node group {{ nodegroup_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ nodegroup_name }}
+        - NodegroupName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ nodegroup_name }}-NodegroupName"
+{%- endfor %}{#
+# Supported structure as of 2026-06-21:
+Type: AWS::EKS::Nodegroup
+Properties:
+  AmiType: String
+  CapacityType: String
+  ClusterName: String
+  DiskSize: Integer
+  ForceUpdateEnabled: Boolean
+  InstanceTypes:
+    - String
+  Labels:
+    Key: Value
+  LaunchTemplate:
+    Id: String
+    Name: String
+    Version: String
+  NodegroupName: String
+  NodeRepairConfig:
+    Enabled: Boolean
+    MaxParallelNodesRepairedCount: Integer
+    MaxParallelNodesRepairedPercentage: Integer
+    MaxUnhealthyNodeThresholdCount: Integer
+    MaxUnhealthyNodeThresholdPercentage: Integer
+    NodeRepairConfigOverrides:
+      -
+        MinRepairWaitTimeMins: Integer
+        NodeMonitoringCondition: String
+        NodeUnhealthyReason: String
+        RepairAction: String
+  NodeRole: String
+  ReleaseVersion: String
+  RemoteAccess:
+    Ec2SshKey: String
+    SourceSecurityGroups:
+      - String
+  ScalingConfig:
+    DesiredSize: Integer
+    MaxSize: Integer
+    MinSize: Integer
+  Subnets:
+    - String
+  Tags:
+    Key: Value
+  Taints:
+    -
+      Effect: String
+      Key: String
+      Value: String
+  UpdateConfig:
+    MaxUnavailable: Number
+    MaxUnavailablePercentage: Number
+    UpdateStrategy: String
+  Version: String
+  WarmPoolConfig:
+    Enabled: Boolean
+    MaxGroupPreparedCapacity: Integer
+    MinSize: Integer
+    PoolState: String
+    ReuseOnScaleIn: Boolean
+#}

@@ -11,29 +11,100 @@ Resources:
     UpdateReplacePolicy: {{ event_source_mapping.update_replace_policy | default('Delete') }}
     Properties:
       FunctionName: {{ event_source_mapping.function_name }}
+{%- if event_source_mapping.amazon_managed_kafka_event_source_config is defined %}{# BEGIN if event_source_mapping.amazon_managed_kafka_event_source_config is defined #}
+      AmazonManagedKafkaEventSourceConfig:
+{%- if event_source_mapping.amazon_managed_kafka_event_source_config.consumer_group_id is defined %}
+        ConsumerGroupId: {{ event_source_mapping.amazon_managed_kafka_event_source_config.consumer_group_id }}
+{%- endif %}
+{%- if event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config is defined %}{# BEGIN if event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config is defined #}
+        SchemaRegistryConfig:
+{%- if event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.access_configs is defined %}{# BEGIN if event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.access_configs is defined #}
+          AccessConfigs:
+{%- for config in event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.access_configs %}{# BEGIN for config in event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.access_configs #}
+            -
+{%- if config.type is defined %}
+              Type: {{ config.type }}
+{%- endif %}
+{%- if config.uri is defined %}
+              URI: {{ config.uri }}
+{%- endif %}
+{%- endfor %}{# END for config in event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.access_configs #}
+{%- endif %}{# END if event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.access_configs is defined #}
+{%- if event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.event_record_format is defined %}
+          EventRecordFormat: {{ event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.event_record_format }}
+{%- endif %}
+{%- if event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.schema_registry_uri is defined %}
+          SchemaRegistryURI: {{ event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.schema_registry_uri }}
+{%- endif %}
+{%- if event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs is defined %}{# BEGIN if event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs is defined #}
+          SchemaValidationConfigs:
+{%- for config in event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs %}{# BEGIN for config in event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs #}
+            -
+{%- if config.attribute is defined %}
+              Attribute: {{ config.attribute }}
+{%- endif %}
+{%- endfor %}{# END for config in event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs #}
+{%- endif %}{# END if event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs is defined #}
+{%- endif %}{# END if event_source_mapping.amazon_managed_kafka_event_source_config.schema_registry_config is defined #}
+{%- endif %}{# END if event_source_mapping.amazon_managed_kafka_event_source_config is defined #}
 {%- if event_source_mapping.batch_size is defined %}
       BatchSize: {{ event_source_mapping.batch_size }}
 {%- endif %}
 {%- if event_source_mapping.bisect_batch_on_function_error is defined %}
-      BisectBatchOnFunctionError: {{ event_source_mapping.bisect_batch_on_function_error }}
+      BisectBatchOnFunctionError: {{ event_source_mapping.bisect_batch_on_function_error | lower }}
 {%- endif %}
-{%- if event_source_mapping.destination_config is defined %}
+{%- if event_source_mapping.destination_config is defined %}{# BEGIN if event_source_mapping.destination_config is defined #}
       DestinationConfig:
-{%- if event_source_mapping.destination_config.on_failure is defined %}
+{%- if event_source_mapping.destination_config.on_failure is defined %}{# BEGIN if event_source_mapping.destination_config.on_failure is defined #}
         OnFailure:
+{%- if event_source_mapping.destination_config.on_failure.destination is defined %}
           Destination: {{ event_source_mapping.destination_config.on_failure.destination }}
 {%- endif %}
+{%- endif %}{# END if event_source_mapping.destination_config.on_failure is defined #}
+{%- endif %}{# END if event_source_mapping.destination_config is defined #}
+{%- if event_source_mapping.document_db_event_source_config is defined %}{# BEGIN if event_source_mapping.document_db_event_source_config is defined #}
+      DocumentDBEventSourceConfig:
+{%- if event_source_mapping.document_db_event_source_config.collection_name is defined %}
+        CollectionName: {{ event_source_mapping.document_db_event_source_config.collection_name }}
 {%- endif %}
+{%- if event_source_mapping.document_db_event_source_config.database_name is defined %}
+        DatabaseName: {{ event_source_mapping.document_db_event_source_config.database_name }}
+{%- endif %}
+{%- if event_source_mapping.document_db_event_source_config.full_document is defined %}
+        FullDocument: {{ event_source_mapping.document_db_event_source_config.full_document }}
+{%- endif %}
+{%- endif %}{# END if event_source_mapping.document_db_event_source_config is defined #}
 {%- if event_source_mapping.enabled is defined %}
-      Enabled: {{ event_source_mapping.enabled }}
+      Enabled: {{ event_source_mapping.enabled | lower }}
 {%- endif %}
 {%- if event_source_mapping.event_source_arn is defined %}
-      EventSourceArn: {{ event_source_mapping.event_source_arn }}
+      EventSourceArn: {{ event_source_mapping.event_source_arn | trim }}
 {%- endif %}
+{%- if event_source_mapping.filter_criteria is defined %}{# BEGIN if event_source_mapping.filter_criteria is defined #}
+      FilterCriteria:
+{%- if event_source_mapping.filter_criteria.filters is defined %}{# BEGIN if event_source_mapping.filter_criteria.filters is defined #}
+        Filters:
+{%- for _filter in event_source_mapping.filter_criteria.filters %}{# BEGIN for _filter in event_source_mapping.filter_criteria.filters #}
+          -
+{%- if _filter.pattern is defined %}
+            Pattern: {{ _filter.pattern }}
+{%- endif %}
+{%- endfor %}{# END for _filter in event_source_mapping.filter_criteria.filters #}
+{%- endif %}{# END if event_source_mapping.filter_criteria.filters is defined #}
+{%- endif %}{# END if event_source_mapping.filter_criteria is defined #}
 {%- if event_source_mapping.function_response_types is defined %}
       FunctionResponseTypes:
         - ReportBatchItemFailures
 {%- endif %}
+{%- if event_source_mapping.kms_key_arn is defined %}
+      KmsKeyArn: {{ event_source_mapping.kms_key_arn | trim }}
+{%- endif %}
+{%- if event_source_mapping.logging_config is defined %}{# BEGIN if event_source_mapping.logging_config is defined #}
+      LoggingConfig:
+{%- if event_source_mapping.logging_config.system_log_level is defined %}
+        SystemLogLevel: {{ event_source_mapping.logging_config.system_log_level }}
+{%- endif %}
+{%- endif %}{# END if event_source_mapping.logging_config is defined #}
 {%- if event_source_mapping.maximum_batching_window_in_seconds is defined %}
       MaximumBatchingWindowInSeconds: {{ event_source_mapping.maximum_batching_window_in_seconds }}
 {%- endif %}
@@ -43,24 +114,93 @@ Resources:
 {%- if event_source_mapping.maximum_retry_attempts is defined %}
       MaximumRetryAttempts: {{ event_source_mapping.maximum_retry_attempts }}
 {%- endif %}
+{%- if event_source_mapping.metrics_config is defined %}{# BEGIN if event_source_mapping.metrics_config is defined #}
+      MetricsConfig:
+{%- if event_source_mapping.metrics_config.metrics is defined %}{# BEGIN if event_source_mapping.metrics_config.metrics is defined #}
+        Metrics:
+{%- for metric in event_source_mapping.metrics_config.metrics %}
+          - {{ metric }}
+{%- endfor %}
+{%- endif %}{# END if event_source_mapping.metrics_config.metrics is defined #}
+{%- endif %}{# END if event_source_mapping.metrics_config is defined #}
 {%- if event_source_mapping.parallelization_factor is defined %}
       ParallelizationFactor: {{ event_source_mapping.parallelization_factor }}
 {%- endif %}
-{%- if event_source_mapping.queues is defined %}
-      Queues:
-        - {{ event_source_mapping.queues[0] }}
+{%- if event_source_mapping.provisioned_poller_config is defined %}{# BEGIN if event_source_mapping.provisioned_poller_config is defined #}
+      ProvisionedPollerConfig:
+{%- if event_source_mapping.provisioned_poller_config.maximum_pollers is defined %}
+        MaximumPollers: {{ event_source_mapping.provisioned_poller_config.maximum_pollers }}
 {%- endif %}
-{%- if event_source_mapping.self_managed_event_source is defined %}
+{%- if event_source_mapping.provisioned_poller_config.minimum_pollers is defined %}
+        MinimumPollers: {{ event_source_mapping.provisioned_poller_config.minimum_pollers }}
+{%- endif %}
+{%- if event_source_mapping.provisioned_poller_config.poller_group_name is defined %}
+        PollerGroupName: {{ event_source_mapping.provisioned_poller_config.poller_group_name }}
+{%- endif %}
+{%- endif %}{# END if event_source_mapping.provisioned_poller_config is defined #}
+{%- if event_source_mapping.queues is defined %}{# BEGIN if event_source_mapping.queues is defined #}
+      Queues:
+{%- for queue in event_source_mapping.queues %}
+        - {{ queue }}
+{%- endfor %}
+{%- endif %}{# END if event_source_mapping.queues is defined #}
+{%- if event_source_mapping.scaling_config is defined %}{# BEGIN if event_source_mapping.scaling_config is defined #}
+      ScalingConfig:
+{%- if event_source_mapping.scaling_config.maximum_concurrency is defined %}
+        MaximumConcurrency: {{ event_source_mapping.scaling_config.maximum_concurrency }}
+{%- endif %}
+{%- endif %}{# END if event_source_mapping.scaling_config is defined #}
+{%- if event_source_mapping.self_managed_event_source is defined %}{# BEGIN if event_source_mapping.self_managed_event_source is defined #}
       SelfManagedEventSource:
+{%- if kafka_bootstrap_server in event_source_mapping.self_managed_event_source.endpoints is defined %}{# BEGIN if kafka_bootstrap_server in event_source_mapping.self_managed_event_source.endpoints is defined #}
         Endpoints:
+{%- if kafka_bootstrap_server in event_source_mapping.self_managed_event_source.endpoints.kafka_bootstrap_servers is defined %}{# BEGIN if kafka_bootstrap_server in event_source_mapping.self_managed_event_source.endpoints.kafka_bootstrap_servers is defined #}
           KafkaBootstrapServers:
 {%- for kafka_bootstrap_server in event_source_mapping.self_managed_event_source.endpoints.kafka_bootstrap_servers %}
             - {{ kafka_bootstrap_server }}
 {%- endfor %}
+{%- endif %}{# END if kafka_bootstrap_server in event_source_mapping.self_managed_event_source.endpoints.kafka_bootstrap_servers is defined #}
+{%- endif %}{# END if kafka_bootstrap_server in event_source_mapping.self_managed_event_source.endpoints is defined #}
+{%- endif %}{# END if event_source_mapping.self_managed_event_source is defined #}
+{%- if event_source_mapping.self_managed_kafka_event_source_config is defined %}{# BEGIN if event_source_mapping.self_managed_kafka_event_source_config is defined #}
+      SelfManagedKafkaEventSourceConfig:
+{%- if event_source_mapping.self_managed_kafka_event_source_config.consumer_group_id is defined %}
+        ConsumerGroupId: {{ event_source_mapping.self_managed_kafka_event_source_config.consumer_group_id | trim }}
 {%- endif %}
-{%- if event_source_mapping.source_access_configurations is defined %}
+{%- if event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config is defined %}{# BEGIN event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config is defined #}
+        SchemaRegistryConfig:
+{%- if event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.access_configs is defined %}{# BEGIN if event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.access_configs is defined #}
+          AccessConfigs:
+{%- for config in event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.access_configs %}{# BEGIN for config in event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.access_configs #}
+            -
+{%- if config.type is defined %}
+              Type: {{ config.type }}
+{%- endif %}
+{%- if config.uri is defined %}
+              URI: {{ config.uri }}
+{%- endif %}
+{%- endfor %}{# END for config in event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.access_configs #}
+{%- endif %}{# END if event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.access_configs is defined #}
+{%- if event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.event_record_format is defined %}
+          EventRecordFormat: {{ event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.event_record_format }}
+{%- endif %}
+{%- if event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.schema_registry_uri is defined %}
+          SchemaRegistryURI: {{ event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.schema_registry_uri }}
+{%- endif %}
+{%- if event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs is defined %}{# BEGIN if event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs is defined #}
+          SchemaValidationConfigs:
+{%- for config in event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs %}{# BEGIN for config in event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs #}
+            -
+{%- if config.attribute is defined %}
+              Attribute: {{ config.attribute }}
+{%- endif %}
+{%- endfor %}{# END for config in event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs #}
+{%- endif %}{# END if event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config.schema_validation_configs is defined #}
+{%- endif %}{# END event_source_mapping.self_managed_kafka_event_source_config.schema_registry_config is defined #}
+{%- endif %}{# END if event_source_mapping.self_managed_kafka_event_source_config is defined #}
+{%- if event_source_mapping.source_access_configurations is defined %}{# BEGIN if event_source_mapping.source_access_configurations is defined #}
       SourceAccessConfigurations:
-{%- for source_access_configuration in event_source_mapping.source_access_configurations %}
+{%- for source_access_configuration in event_source_mapping.source_access_configurations %}{# BEGIN for source_access_configuration in event_source_mapping.source_access_configurations #}
         -
 {%- if source_access_configuration.type is defined %}
           Type: {{ source_access_configuration.type }}
@@ -68,27 +208,35 @@ Resources:
 {%- if source_access_configuration.uri is defined %}
           URI: {{ source_access_configuration.uri }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}
+{%- endfor %}{# END for source_access_configuration in event_source_mapping.source_access_configurations #}
+{%- endif %}{# END if event_source_mapping.source_access_configurations is defined #}
 {%- if event_source_mapping.starting_position is defined %}
       StartingPosition: {{ event_source_mapping.starting_position }}
 {%- endif %}
 {%- if event_source_mapping.starting_position_timestamp is defined %}
       StartingPositionTimestamp: {{ event_source_mapping.starting_position_timestamp }}
 {%- endif %}
-{%- if event_source_mapping.topics is defined %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if event_source_mapping.tags is defined %}
+{%- for key,value in event_source_mapping.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if event_source_mapping.topics is defined %}{# BEGIN if event_source_mapping.topics is defined #}
       Topics:
 {%- for topic in event_source_mapping.topics %}
         - {{ topic }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if event_source_mapping.topics is defined #}
 {%- if event_source_mapping.tumbling_window_in_seconds is defined %}
       TumblingWindowInSeconds: {{ event_source_mapping.tumbling_window_in_seconds }}
 {%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for event_source_mapping in sceptre_user_data.event_source_mappings %}
 {%- set event_source_mapping_name = event_source_mapping.name %}
   {{ event_source_mapping_name }}:
@@ -98,5 +246,102 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ event_source_mapping_name }}"
-
-{%- endfor %}
+  {{ event_source_mapping_name }}EventSourceMappingArn:
+    Description: The ARN for {{ event_source_mapping_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ event_source_mapping_name }}
+        - EventSourceMappingArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_source_mapping_name }}-EventSourceMappingArn"
+  {{ event_source_mapping_name }}Id:
+    Description: The mapping ID for {{ event_source_mapping_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ event_source_mapping_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ event_source_mapping_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::EventSourceMapping
+Properties:
+  AmazonManagedKafkaEventSourceConfig:
+    ConsumerGroupId: String
+    SchemaRegistryConfig:
+      AccessConfigs:
+        -
+          Type: String
+          URI: String
+      EventRecordFormat: String
+      SchemaRegistryURI: String
+      SchemaValidationConfigs:
+        -
+          Attribute: String
+  BatchSize: Integer
+  BisectBatchOnFunctionError: Boolean
+  DestinationConfig:
+    OnFailure:
+      Destination: String
+  DocumentDBEventSourceConfig:
+    CollectionName: String
+    DatabaseName: String
+    FullDocument: String
+  Enabled: Boolean
+  EventSourceArn: String
+  FilterCriteria:
+    Filters:
+      -
+        Pattern: String
+  FunctionName: String
+  FunctionResponseTypes:
+    - String
+  KmsKeyArn: String
+  LoggingConfig:
+    SystemLogLevel: String
+  MaximumBatchingWindowInSeconds: Integer
+  MaximumRecordAgeInSeconds: Integer
+  MaximumRetryAttempts: Integer
+  MetricsConfig:
+    Metrics:
+      - String
+  ParallelizationFactor: Integer
+  ProvisionedPollerConfig:
+    MaximumPollers: Integer
+    MinimumPollers: Integer
+    PollerGroupName: String
+  Queues:
+    - String
+  ScalingConfig:
+    MaximumConcurrency: Integer
+  SelfManagedEventSource:
+    Endpoints:
+      KafkaBootstrapServers:
+        - String
+  SelfManagedKafkaEventSourceConfig:
+    ConsumerGroupId: String
+    SchemaRegistryConfig:
+      AccessConfigs:
+        -
+          Type: String
+          URI: String
+      EventRecordFormat: String
+      SchemaRegistryURI: String
+      SchemaValidationConfigs:
+        -
+          Attribute: String
+  SourceAccessConfigurations:
+    -
+      Type: String
+      URI: String
+  StartingPosition: String
+  StartingPositionTimestamp: Number
+  Tags:
+    - Key: String
+      Value: String
+  Topics:
+    - String
+  TumblingWindowInSeconds: Integer
+#}

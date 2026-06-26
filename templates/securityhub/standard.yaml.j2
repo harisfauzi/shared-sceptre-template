@@ -1,0 +1,54 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityHub Standard(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for standard in sceptre_user_data.standards %}
+{%- set standard_name = standard.name %}
+  {{ standard_name }}:
+    Type: AWS::SecurityHub::Standard
+    DeletionPolicy: {{ standard.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ standard.update_replace_policy | default('Delete') }}
+    Properties:
+      StandardsArn: {{ standard.standards_arn | trim }}
+{%- if standard.disabled_standards_controls is defined %}{# BEGIN if standard.disabled_standards_controls is defined #}
+      DisabledStandardsControls:
+{%- for control in standard.disabled_standards_controls %}{# BEGIN for control in standard.disabled_standards_controls #}
+        -
+          StandardsControlArn: {{ control.standards_control_arn | trim }}
+{%- if control.reason is defined %}
+          Reason: {{ control.reason }}
+{%- endif %}
+{%- endfor %}{# END for control in standard.disabled_standards_controls #}
+{%- endif %}{# END if standard.disabled_standards_controls is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for standard in sceptre_user_data.standards %}
+{%- set standard_name = standard.name %}
+  {{ standard_name }}:
+    Description: The ARN for {{ standard_name }}
+    Value:
+      Ref: {{ standard_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ standard_name }}"
+  {{ standard_name }}StandardsSubscriptionArn:
+    Description: The ARN for {{ standard_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ standard_name }}
+        - StandardsSubscriptionArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ standard_name }}-StandardsSubscriptionArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::Standard
+Properties:
+  DisabledStandardsControls:
+    -
+      Reason: String
+      StandardsControlArn: String
+  StandardsArn: String
+#}

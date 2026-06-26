@@ -1,0 +1,191 @@
+---
+Description: {{sceptre_user_data.description|default('Lambda Microvm Image(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for microvm_image in sceptre_user_data.microvm_images %}
+{%- set microvm_image_name = microvm_image.name %}
+  {{ microvm_image_name }}:
+    Type: AWS::Lambda::MicrovmImage
+    DeletionPolicy: {{ microvm_image.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ microvm_image.update_replace_policy | default('Delete') }}
+    Properties:
+      AdditionalOsCapabilities:
+{%- for capability in microvm_image.additional_os_capabilities %}
+        - {{ capability }}
+{%- endfor %}
+      BaseImageArn: {{ microvm_image.base_image_arn | trim }}
+      BaseImageVersion: {{ microvm_image.base_image_version }}
+      BuildRoleArn: {{ microvm_image.build_role_arn | trim }}
+      CodeArtifact:
+        Uri: {{ microvm_image.code_artifact.uri }}
+      CpuConfigurations:
+{%- for config in microvm_image.cpu_configurations %}
+        -
+          Architecture: {{ config.architecture }}
+{%- endfor %}
+      Description: {{ microvm_image.description }}
+      EgressNetworkConnectors:
+{%- for connector in microvm_image.egress_network_connectors %}
+        - {{ connector }}
+{%- endfor %}
+      EnvironmentVariables:
+{%- for key, value in microvm_image.environment_variables.items() %}
+        -
+          Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+      Hooks:
+{%- if microvm_image.hooks.microvm_hooks is defined %}{# BEGIN if microvm_image.hooks.microvm_hooks is defined #}
+        MicrovmHooks:
+{%- if microvm_image.hooks.microvm_hooks.resume is defined %}
+          Resume: {{ microvm_image.hooks.microvm_hooks.resume }}
+{%- endif %}
+{%- if microvm_image.hooks.microvm_hooks.resume_timeout_in_seconds is defined %}
+          ResumeTimeoutInSeconds: {{ microvm_image.hooks.microvm_hooks.resume_timeout_in_seconds }}
+{%- endif %}
+{%- if microvm_image.hooks.microvm_hooks.run is defined %}
+          Run: {{ microvm_image.hooks.microvm_hooks.run }}
+{%- endif %}
+{%- if microvm_image.hooks.microvm_hooks.run_timeout_in_seconds is defined %}
+          RunTimeoutInSeconds: {{ microvm_image.hooks.microvm_hooks.run_timeout_in_seconds }}
+{%- endif %}
+{%- if microvm_image.hooks.microvm_hooks.suspend is defined %}
+          Suspend: {{ microvm_image.hooks.microvm_hooks.suspend }}
+{%- endif %}
+{%- if microvm_image.hooks.microvm_hooks.suspend_timeout_in_seconds is defined %}
+          SuspendTimeoutInSeconds: {{ microvm_image.hooks.microvm_hooks.suspend_timeout_in_seconds }}
+{%- endif %}
+{%- if microvm_image.hooks.microvm_hooks.terminate is defined %}
+          Terminate: {{ microvm_image.hooks.microvm_hooks.terminate }}
+{%- endif %}
+{%- if microvm_image.hooks.microvm_hooks.terminate_timeout_in_seconds is defined %}
+          TerminateTimeoutInSeconds: {{ microvm_image.hooks.microvm_hooks.terminate_timeout_in_seconds }}
+{%- endif %}
+{%- endif %}{# END if microvm_image.hooks.microvm_hooks is defined #}
+{%- if microvm_image.hooks.microvm_image_hooks is defined %}{# BEGIN if microvm_image.hooks.microvm_image_hooks is defined #}
+        MicrovmImageHooks:
+{%- if microvm_image.hooks.microvm_image_hooks.ready is defined %}
+          Ready: {{ microvm_image.hooks.microvm_image_hooks.ready }}
+{%- endif %}
+{%- if microvm_image.hooks.microvm_image_hooks.ready_timeout_in_seconds is defined %}
+          ReadyTimeoutInSeconds: {{ microvm_image.hooks.microvm_image_hooks.ready_timeout_in_seconds }}
+{%- endif %}
+{%- if microvm_image.hooks.microvm_image_hooks.validate is defined %}
+          Validate: {{ microvm_image.hooks.microvm_image_hooks.validate }}
+{%- endif %}
+{%- if microvm_image.hooks.microvm_image_hooks.validate_timeout_in_seconds is defined %}
+          ValidateTimeoutInSeconds: {{ microvm_image.hooks.microvm_image_hooks.validate_timeout_in_seconds }}
+{%- endif %}
+{%- endif %}{# END if microvm_image.hooks.microvm_image_hooks is defined #}
+{%- if microvm_image.hooks.port is defined %}
+        Port: {{ microvm_image.hooks.port }}
+{%- endif %}
+      Logging:
+{%- if microvm_image.logging.cloudwatch is defined %}{# BEGIN if microvm_image.logging.cloudwatch is defined #}
+        CloudWatch:
+{%- if microvm_image.logging.cloudwatch.log_group is defined %}
+          LogGroup: {{ microvm_image.logging.cloudwatch.log_group }}
+{%- endif %}
+{%- if microvm_image.logging.cloudwatch.log_stream is defined %}
+          LogStream: {{ microvm_image.logging.cloudwatch.log_stream }}
+{%- endif %}
+{%- endif %}{# END if microvm_image.logging.cloudwatch is defined #}
+{%- if microvm_image.logging.disabled is defined %}
+        Disabled: {{ microvm_image.logging.disabled | lower }}
+{%- endif %}
+      Name: {{ microvm_image.microvm_image_name }}
+      Resources:
+{%- for resource in microvm_image.resources %}
+        -
+          MinimumMemoryInMiB: {{ resource.minimum_memory_in_mib }}
+{%- endfor %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if microvm_image.tags is defined %}
+{%- for key,value in microvm_image.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for microvm_image in sceptre_user_data.microvm_images %}
+{%- set microvm_image_name = microvm_image.name %}
+  {{ microvm_image_name }}:
+    Description: The resource name for {{ microvm_image_name }}
+    Value:
+      Ref: {{ microvm_image_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ microvm_image_name }}"
+  {{ microvm_image_name }}ImageArn:
+    Description: The ARN for {{ microvm_image_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ microvm_image_name }}
+        - ImageArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ microvm_image_name }}-ImageArn"
+  {{ microvm_image_name }}State:
+    Description: The current state of for {{ microvm_image_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ microvm_image_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ microvm_image_name }}-State"
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::MicrovmImage
+Properties:
+  AdditionalOsCapabilities:
+    - String
+  BaseImageArn: String
+  BaseImageVersion: String
+  BuildRoleArn: String
+  CodeArtifact:
+    Uri: String
+  CpuConfigurations:
+    -
+      Architecture: String
+  Description: String
+  EgressNetworkConnectors:
+    - String
+  EnvironmentVariables:
+    -
+      Key: String
+      Value: String
+  Hooks:
+    MicrovmHooks:
+      Resume: String
+      ResumeTimeoutInSeconds: Integer
+      Run: String
+      RunTimeoutInSeconds: Integer
+      Suspend: String
+      SuspendTimeoutInSeconds: Integer
+      Terminate: String
+      TerminateTimeoutInSeconds: Integer
+    MicrovmImageHooks:
+      Ready: String
+      ReadyTimeoutInSeconds: Integer
+      Validate: String
+      ValidateTimeoutInSeconds: Integer
+    Port: Integer
+  Logging:
+    CloudWatch:
+      LogGroup: String
+      LogStream: String
+    Disabled: Boolean
+  Name: String
+  Resources:
+    -
+      MinimumMemoryInMiB: Integer
+  Tags:
+    - Key: String
+      Value: String
+#}

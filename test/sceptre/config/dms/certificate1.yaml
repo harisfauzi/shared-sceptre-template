@@ -1,0 +1,40 @@
+---
+template:
+  type: file
+  path: dms/certificate.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DMS Certificates for Database Migration
+  certificates:
+    - name: PrimaryDatabaseCert
+      certificate_identifier: primary-db-cert-001
+      certificate_pem: |
+        -----BEGIN CERTIFICATE-----
+        MIIEpDCCAwysCCQC33wnvVbXQzANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAls
+        b2NhbGhvc3QwHhcNMjQwMTAxMTIwMDAwWhcNMjUwMTAxMTIwMDAwWjAUMRIwEAYD
+        VQQDDAlsb2NhbGhvc3QwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDJ
+        sample/certificate/data/base64encodedstring
+        -----END CERTIFICATE-----
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondarySourceCert
+      certificate_identifier: secondary-source-cert-002
+      certificate_pem: |
+        -----BEGIN CERTIFICATE-----
+        MIIEpDCCAwysCCQC33wnvVbXQzANBgkqhkiG9w0BAQsFADAUMRIwEAYDVQQDDAls
+        b2NhbGhvc3QwHhcNMjQwMTAxMTIwMDAwWhcNMjUwMTAxMTIwMDAwWjAUMRIwEAYD
+        VQQDDAlsb2NhbGhvc3QwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDJ
+        sample/certificate/data/base64encodedstring
+        -----END CERTIFICATE-----
+    - name: OracleDatabaseCert
+      certificate_identifier: oracle-db-wallet-cert
+      certificate_wallet: "ewogICJjZXJ0aWZpY2F0ZSI6ICJiYXNlNjRlbmNvZGVkZGF0YSIKfQ=="
+      deletion_policy: Retain
+    - name: TargetReplicationCert
+      certificate_identifier: target-repl-cert-004
+      deletion_policy: Delete
+
+stack_tags:
+  Test: dms-certificate

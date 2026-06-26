@@ -1,0 +1,62 @@
+---
+Description: {{sceptre_user_data.description|default('SES Tenant(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for tenant in sceptre_user_data.tenants %}
+{%- set tenant_name = tenant.name %}
+  {{ tenant_name }}:
+    Type: AWS::SES::Tenant
+    DeletionPolicy: {{ tenant.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ tenant.update_replace_policy | default('Delete') }}
+    Properties:
+      TenantName: {{ tenant.tenant_name }}
+{%- if tenant.resource_associations is defined %}{# BEGIN if tenant.resource_associations is defined #}
+      ResourceAssociations:
+{%- for resource_association in tenant.resource_associations %}
+        -
+          ResourceArn: {{ resource_association.resource_arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if tenant.resource_associations is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if tenant.tags is defined %}
+{%- for key,value in tenant.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for tenant in sceptre_user_data.tenants %}
+{%- set tenant_name = tenant.name %}
+  {{ tenant_name }}:
+    Description: Resource name for {{ tenant_name }}
+    Value:
+      Ref: {{ tenant_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ tenant_name }}"
+  {{ tenant_name }}Arn:
+    Description: Resource ARN for {{ tenant_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ tenant_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ tenant_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::Tenant
+Properties:
+  ResourceAssociations:
+    -
+      ResourceArn: String
+  Tags:
+    - Key: String
+      Value: String
+  TenantName: String
+#}

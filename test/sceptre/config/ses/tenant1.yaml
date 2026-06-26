@@ -1,0 +1,52 @@
+---
+template:
+  type: file
+  path: ses/tenant.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Tenant(s) for testing purposes"
+  tenants:
+    - name: PrimaryTenant
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tenant_name: "primary-tenant"
+      resource_associations:
+        - resource_arn: "arn:aws:ses:us-east-1:123456789012:configuration-set/primary-config-set"
+        - resource_arn: "arn:aws:ses:us-east-1:123456789012:dedicated-ip-pool/primary-pool"
+      tags:
+        TenantType: Production
+        Environment: Primary
+        Owner: TeamA
+
+    - name: StagingTenant
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tenant_name: "staging-tenant"
+      resource_associations:
+        - resource_arn: "arn:aws:ses:us-east-1:123456789012:configuration-set/staging-config-set"
+      tags:
+        TenantType: Staging
+        Environment: Staging
+        Owner: TeamB
+
+    - name: DevelopmentTenant
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tenant_name: "development-tenant"
+      tags:
+        TenantType: Development
+        Environment: Dev
+
+    - name: MultiRegionTenant
+      tenant_name: "multi-region-tenant"
+      resource_associations:
+        - resource_arn: "arn:aws:ses:us-east-1:123456789012:email-identity/tenant-domain.example.com"
+        - resource_arn: "arn:aws:ses:eu-west-1:123456789012:email-identity/tenant-domain.example.com"
+        - resource_arn: "arn:aws:ses:us-west-2:123456789012:email-identity/tenant-domain.example.com"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-tenant

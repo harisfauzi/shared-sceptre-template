@@ -1,0 +1,52 @@
+---
+template:
+  type: file
+  path: ses/dedicated_ip_pool.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Dedicated IP Pool(s) for testing purposes"
+  dedicated_ip_pools:
+    - name: TransactionalEmailPool
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      pool_name: "transactional-email-pool"
+      scaling_mode: "STANDARD"
+      tags:
+        Application: "TransactionalEmailer"
+        Environment: "Production"
+        Purpose: "HighVolumeSending"
+
+    - name: MarketingCampaignsPool
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      pool_name: "marketing-campaigns-pool"
+      scaling_mode: "STANDARD"
+      tags:
+        Application: "MarketingCampaigns"
+        Department: "Marketing"
+        Reputation: "BulkEmail"
+
+    - name: NotificationServicePool
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      pool_name: "notification-service-pool"
+      scaling_mode: "STANDARD"
+      tags:
+        Application: "NotificationService"
+        Environment: "Production"
+
+    - name: DevelopmentTestingPool
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      pool_name: "development-testing-pool"
+      tags:
+        Application: "DevTesting"
+        Environment: "Development"
+        Purpose: "Staging"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-dedicated-ip-pool

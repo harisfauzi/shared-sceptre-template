@@ -1,0 +1,33 @@
+---
+template:
+  type: file
+  path: lambda/event_invoke_config.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Lambda Event Invoke Configs for {{project_code}}
+  event_invoke_configs:
+    - name: ProductionEventInvokeConfig
+      function_name: prod-async-processor
+      qualifier: LIVE
+      maximum_retry_attempts: 2
+      maximum_event_age_in_seconds: 3600
+      destination_config:
+        on_success:
+          destination: "arn:aws:sqs:us-east-1:123456789012:prod-success-queue"
+        on_failure:
+          destination: "arn:aws:sns:us-east-1:123456789012:prod-failure-topic"
+    - name: StagingEventInvokeConfig
+      function_name: staging-event-handler
+      qualifier: "2"
+      maximum_retry_attempts: 1
+      maximum_event_age_in_seconds: 1800
+      destination_config:
+        on_failure:
+          destination: "arn:aws:sqs:us-east-1:123456789012:staging-dlq"
+    - name: DevelopmentEventInvokeConfig
+      function_name: dev-lambda-function
+      qualifier: "1"
+      maximum_retry_attempts: 0
+      maximum_event_age_in_seconds: 900

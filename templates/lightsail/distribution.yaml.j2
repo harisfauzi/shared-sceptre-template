@@ -122,7 +122,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ distribution_name }}"
-
   {{ distribution_name }}DistributionArn:
     Description: The ARN for {{ distribution_name }}
     Value:
@@ -132,7 +131,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ distribution_name }}-DistributionArn"
-
   {{ distribution_name }}Status:
     Description: The status of {{ distribution_name }}
     Value:
@@ -142,10 +140,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ distribution_name }}-Status"
-
-{%- endfor %}
-{#
-# Supported structure as of 20250224:
+{%- endfor %}{#
+# Supported structure as of 2025-02-24:
 Type: AWS::Lightsail::Distribution
 Properties:
   BundleId: String

@@ -1,0 +1,76 @@
+---
+Description: {{sceptre_user_data.description|default('DocDB Global Cluster(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for global_cluster in sceptre_user_data.global_clusters %}
+{%- set global_cluster_name = global_cluster.name %}
+  {{ global_cluster_name }}:
+    Type: AWS::DocDB::GlobalCluster
+    DeletionPolicy: {{ global_cluster.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ global_cluster.update_replace_policy | default('Delete') }}
+    Properties:
+      GlobalClusterIdentifier: {{ global_cluster.global_cluster_identifier | trim }}
+{%- if global_cluster.deletion_protection is defined %}
+      DeletionProtection: {{ global_cluster.deletion_protection | lower }}
+{%- endif %}
+{%- if global_cluster.engine is defined %}
+      Engine: {{ global_cluster.engine }}
+{%- endif %}
+{%- if global_cluster.engine_version is defined %}
+      EngineVersion: {{ global_cluster.engine_version }}
+{%- endif %}
+{%- if global_cluster.source_db_cluster_identifier is defined %}
+      SourceDBClusterIdentifier: {{ global_cluster.source_db_cluster_identifier }}
+{%- endif %}
+{%- if global_cluster.storage_encrypted is defined %}
+      StorageEncrypted: {{ global_cluster.storage_encrypted | lower }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if global_cluster.tags is defined %}
+{%- for key,value in global_cluster.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for global_cluster in sceptre_user_data.global_clusters %}
+{%- set global_cluster_name = global_cluster.name %}
+  {{ global_cluster_name }}GlobalClusterArn:
+    Description: The ARN of the global cluster for {{ global_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ global_cluster_name }}
+        - GlobalClusterArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ global_cluster_name }}-GlobalClusterArn"
+  {{ global_cluster_name }}GlobalClusterResourceId:
+    Description: >
+      The AWS Region-unique, immutable identifier for the global database cluster
+      for {{ global_cluster_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ global_cluster_name }}
+        - GlobalClusterResourceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ global_cluster_name }}-GlobalClusterResourceId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-20:
+Type: AWS::DocDB::GlobalCluster
+Properties:
+  DeletionProtection: Boolean
+  Engine: String
+  EngineVersion: String
+  GlobalClusterIdentifier: String
+  SourceDBClusterIdentifier: String
+  StorageEncrypted: Boolean
+  Tags:
+    - Key: String
+      Value: String
+#}

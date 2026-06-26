@@ -1,0 +1,57 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityHub Finding Aggregator(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for finding_aggregator in sceptre_user_data.finding_aggregators %}
+{%- set finding_aggregator_name = finding_aggregator.name %}
+  {{ finding_aggregator_name }}:
+    Type: AWS::SecurityHub::FindingAggregator
+    DeletionPolicy: {{ finding_aggregator.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ finding_aggregator.update_replace_policy | default('Delete') }}
+    Properties:
+      RegionLinkingMode: {{ finding_aggregator.region_linking_mode }}
+{%- if finding_aggregator.regions is defined %}{# BEGIN if finding_aggregator.regions is defined #}
+      Regions:
+{%- for region in finding_aggregator.regions %}
+        - {{ region }}
+{%- endfor %}
+{%- endif %}{# END if finding_aggregator.regions is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for finding_aggregator in sceptre_user_data.finding_aggregators %}
+{%- set finding_aggregator_name = finding_aggregator.name %}
+  {{ finding_aggregator_name }}:
+    Description: The ARN for {{ finding_aggregator_name }}
+    Value:
+      Ref: {{ finding_aggregator_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ finding_aggregator_name }}"
+  {{ finding_aggregator_name }}FindingAggregatorArn:
+    Description: The ARN for {{ finding_aggregator_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ finding_aggregator_name }}
+        - FindingAggregatorArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ finding_aggregator_name }}-FindingAggregatorArn"
+  {{ finding_aggregator_name }}FindingAggregationRegion:
+    Description: The AWS Region where data is aggregated.
+    Value:
+      Fn::GetAtt:
+        - {{ finding_aggregator_name }}
+        - FindingAggregationRegion
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ finding_aggregator_name }}-FindingAggregationRegion"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::FindingAggregator
+Properties:
+  RegionLinkingMode: String
+  Regions:
+    - String
+#}

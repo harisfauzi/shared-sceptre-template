@@ -60,7 +60,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ disk_name }}"
-
   {{ disk_name }}DiskArn:
     Description: The ARN for {{ disk_name }}
     Value:
@@ -70,7 +69,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ disk_name }}-DiskArn"
-
   {{ disk_name }}LocationAvailabilityZone:
     Description: The Availability Zone where the disk {{ disk_name }} is located.
     Value:
@@ -80,7 +78,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ disk_name }}-Location-AvailabilityZone"
-
   {{ disk_name }}LocationRegionName:
     Description: The AWS Region where the disk {{ disk_name }} is located.
     Value:
@@ -90,7 +87,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ disk_name }}-Location-RegionName"
-
   {{ disk_name }}Path:
     Description: The disk path for {{ disk_name }}
     Value:
@@ -100,7 +96,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ disk_name }}-Path"
-
   {{ disk_name }}ResourceType:
     Description: The resource type of the disk for {{ disk_name }}
     Value:
@@ -110,7 +105,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ disk_name }}-ResourceType"
-
   {{ disk_name }}State:
     Description: The state of the disk for {{ disk_name }}
     Value:
@@ -120,7 +114,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ disk_name }}-State"
-
   {{ disk_name }}SupportCode:
     Description: The support code of the disk for {{ disk_name }}
     Value:
@@ -130,10 +123,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ disk_name }}-SupportCode"
-
-{%- endfor %}
-{#
-# Supported structure as of 20250224:
+{%- endfor %}{#
+# Supported structure as of 2025-02-24:
 Type: AWS::Lightsail::Disk
 Properties:
   AddOns:

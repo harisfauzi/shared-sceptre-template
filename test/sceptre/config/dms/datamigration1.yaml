@@ -1,0 +1,56 @@
+---
+template:
+  type: file
+  path: dms/data_migration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DMS Data Migrations for Production Database Replication
+  data_migrations:
+    - name: PrimarySourceToTargetMigration
+      data_migration_type: "cdc"
+      migration_project_identifier: "arn:aws:dms:us-east-1:123456789012:proj/primary-migration-project"
+      service_access_role_arn: "arn:aws:iam::123456789012:role/dms-service-role"
+      data_migration_identifier: "primary-src-to-tgt-migration-001"
+      data_migration_name: "PrimaryDatabaseMigration"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      data_migration_settings:
+        cloudwatch_logs_enabled: true
+        number_of_jobs: 4
+        selection_rules: '{"rules":[{"rule-type":"selection","rule-id":"1","rule-name":"include-all","object-locator":{"schema-name":"%","table-name":"%"},"rule-action":"include"}]}'
+      source_data_settings:
+        - data_provider_identifier: "arn:aws:dms:us-east-1:123456789012:dataprovider/source-postgres-provider"
+          cdc_start_position: "0"
+          slot_name: "dms_replication_slot"
+      tags:
+        Environment: Production
+        Owner: DataTeam
+        CostCenter: Engineering
+
+    - name: ReplicaToWarehouseMigration
+      data_migration_type: "full-load"
+      migration_project_identifier: "arn:aws:dms:us-east-1:123456789012:proj/warehouse-migration-project"
+      service_access_role_arn: "arn:aws:iam::123456789012:role/dms-service-role"
+      data_migration_identifier: "replica-to-warehouse-migration-002"
+      data_migration_name: "ReplicaWarehouseMigration"
+      deletion_policy: Delete
+      source_data_settings:
+        - data_provider_identifier: "arn:aws:dms:us-east-1:123456789012:dataprovider/replica-mysql-provider"
+          cdc_start_time: "2024-01-15T08:00:00Z"
+      tags:
+        Environment: Staging
+        Purpose: Analytics
+
+    - name: DisasterRecoveryMigration
+      data_migration_type: "full-load-and-cdc"
+      migration_project_identifier: "arn:aws:dms:us-east-1:123456789012:proj/dr-migration-project"
+      service_access_role_arn: "arn:aws:iam::123456789012:role/dms-service-role"
+      deletion_policy: Retain
+      tags:
+        Environment: Production
+        Critical: "true"
+
+stack_tags:
+  Test: dms-data-migration

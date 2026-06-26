@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('SecurityHub Hub(s) for '+s
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for hub in sceptre_user_data.hubs %}
 {%- set hub_name = hub.name %}
   {{ hub_name }}:
@@ -11,26 +10,59 @@ Resources:
     DeletionPolicy: {{ hub.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ hub.update_replace_policy | default('Delete') }}
     Properties:
+{%- if hub.auto_enable_controls is defined %}
+      AutoEnableControls: {{ hub.auto_enable_controls | lower }}
+{%- endif %}
+{%- if hub.control_finding_generator is defined %}
+      ControlFindingGenerator: {{ hub.control_finding_generator }}
+{%- endif %}
+{%- if hub.enable_default_standards is defined %}
+      EnableDefaultStandards: {{ hub.enable_default_standards | lower }}
+{%- endif %}
       Tags:
         SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if hub.tags is defined %}
 {%- for key,value in hub.tags.items() %}
-        "{{ key }}": {{ value }}
+        {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for hub in sceptre_user_data.hubs %}
 {%- set hub_name = hub.name %}
   {{ hub_name }}:
-    Description: Hub Arn for {{ hub_name }}
+    Description: Hub ARN for {{ hub_name }}
     Value:
       Ref: {{ hub_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ hub_name }}"
-
-{%- endfor %}
+  {{ hub_name }}ARN:
+    Description: Hub ARN for {{ hub_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ hub_name }}
+        - ARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hub_name }}-ARN"
+  {{ hub_name }}SubscribedAt:
+    Description: The date and time when Security Hub CSPM was enabled in your account.
+    Value:
+      Fn::GetAtt:
+        - {{ hub_name }}
+        - SubscribedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hub_name }}-SubscribedAt"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::Hub
+Properties:
+  AutoEnableControls: Boolean
+  ControlFindingGenerator: String
+  EnableDefaultStandards: Boolean
+  Tags: 
+    Key: Value
+#}

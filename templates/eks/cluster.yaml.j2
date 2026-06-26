@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('EKS Cluster(s) for '+scept
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for cluster in sceptre_user_data.clusters %}
 {%- set cluster_name = cluster.name %}
   {{ cluster_name }}:
@@ -16,54 +15,213 @@ Resources:
 {%- for subnet_id in cluster.resources_vpc_config.subnet_ids %}
           - {{ subnet_id }}
 {%- endfor %}
-{%- if cluster.resources_vpc_config.security_group_ids is defined %}
+{%- if cluster.resources_vpc_config.security_group_ids is defined %}{# BEGIN if cluster.resources_vpc_config.security_group_ids is defined #}
         SecurityGroupIds:
 {%- for security_group_id in cluster.resources_vpc_config.security_group_ids %}
           - {{ security_group_id }}
 {%- endfor %}
+{%- endif %}{# END if cluster.resources_vpc_config.security_group_ids is defined #}
+{%- if cluster.resources_vpc_config.control_plane_egress_mode is defined %}
+        ControlPlaneEgressMode: {{ cluster.resources_vpc_config.control_plane_egress_mode }}
 {%- endif %}
+{%- if cluster.resources_vpc_config.endpoint_private_access is defined %}
+        EndpointPrivateAccess: {{ cluster.resources_vpc_config.endpoint_private_access | lower }}
+{%- endif %}
+{%- if cluster.resources_vpc_config.endpoint_public_access is defined %}
+        EndpointPublicAccess: {{ cluster.resources_vpc_config.endpoint_public_access | lower }}
+{%- endif %}
+{%- if cluster.resources_vpc_config.public_access_cidrs is defined %}{# BEGIN if cluster.resources_vpc_config.public_access_cidrs is defined #}
+        PublicAccessCidrs:
+{%- for public_access_cidr in cluster.resources_vpc_config.public_access_cidrs %}
+          - {{ public_access_cidr }}
+{%- endfor %}
+{%- endif %}{# END if cluster.resources_vpc_config.public_access_cidrs is defined #}
       RoleArn: {{ cluster.role_arn }}
-{%- if cluster.encryption_config is defined %}{# BEGIN {%- if cluster.encryption_config is defined %} #}
-      EncryptionConfig:
-{%- for encryption_config in cluster.encryption_config %}
-        -
-{%- if encryption_config.provider is defined %}
-          Provider:
-            KeyArn: {{ encryption_config.provider.key_arn }}
+{%- if cluster.access_config is defined %}{# BEGIN if cluster.access_config is defined #}
+      AccessConfig:
+{%- if cluster.access_config.authentication_mode is defined %}
+        AuthenticationMode: {{ cluster.access_config.authentication_mode }}
 {%- endif %}
-{%- if encryption_config.resources is defined %}
+{%- if cluster.access_config.bootstrap_cluster_creator_admin_permissions is defined %}
+        BootstrapClusterCreatorAdminPermissions: {{ cluster.access_config.bootstrap_cluster_creator_admin_permissions | lower }}
+{%- endif %}
+{%- endif %}{# END if cluster.access_config is defined #}
+{%- if cluster.bootstrap_self_managed_addons is defined %}
+      BootstrapSelfManagedAddons: {{ cluster.bootstrap_self_managed_addons | lower }}
+{%- endif %}
+{%- if cluster.compute_config is defined %}{# BEGIN if cluster.compute_config is defined #}
+      ComputeConfig:
+{%- if cluster.compute_config.enabled is defined %}
+        Enabled: {{ cluster.compute_config.enabled | lower }}
+{%- endif %}
+{%- if cluster.compute_config.node_pools is defined %}{# BEGIN if cluster.compute_config.node_pools is defined #}
+        NodePools:
+{%- for node_pool in cluster.compute_config.node_pools %}
+          - {{ node_pool }}
+{%- endfor %}
+{%- endif %}{# END if cluster.compute_config.node_pools is defined #}
+{%- if cluster.compute_config.node_role_arn is defined %}
+        NodeRoleArn: {{ cluster.compute_config.node_role_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if cluster.compute_config is defined #}
+{%- if cluster.control_plane_scaling_config is defined %}{# BEGIN if cluster.control_plane_scaling_config is defined #}
+      ControlPlaneScalingConfig:
+{%- if cluster.control_plane_scaling_config.tier is defined %}
+        Tier: {{ cluster.control_plane_scaling_config.tier }}
+{%- endif %}
+{%- endif %}{# END if cluster.control_plane_scaling_config is defined #}
+{%- if cluster.deletion_protection is defined %}
+      DeletionProtection: {{ cluster.deletion_protection | lower }}
+{%- endif %}
+{%- if cluster.encryption_config is defined %}{# BEGIN if cluster.encryption_config is defined #}
+      EncryptionConfig:
+{%- for encryption_config in cluster.encryption_config %}{# BEGIN for encryption_config in cluster.encryption_config #}
+        -
+{%- if encryption_config.provider is defined %}{# BEGIN if encryption_config.provider is defined #}
+          Provider:
+{%- if encryption_config.provider.key_arn is defined %}
+            KeyArn: {{ encryption_config.provider.key_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if encryption_config.provider is defined #}
+{%- if encryption_config.resources is defined %}{# BEGIN if encryption_config.resources is defined #}
           Resources:
 {%- for resource in encryption_config.resources %}
             - {{ resource }}
 {%- endfor %}
+{%- endif %}{# END if encryption_config.resources is defined #}
+{%- endfor %}{# END for encryption_config in cluster.encryption_config#}
+{%- endif %}{# END if cluster.encryption_config is defined #}
+{%- if cluster.force is defined %}
+      Force: {{ cluster.force | lower }}
 {%- endif %}
-{%- endfor %}
-{%- endif %}{# END {%- if cluster.encryption_config is defined %} #}
-{%- if cluster.kubernetes_network_config is defined %}
+{%- if cluster.kubernetes_network_config is defined %}{# BEGIN if cluster.kubernetes_network_config is defined #}
       KubernetesNetworkConfig:
+{%- if cluster.kubernetes_network_config.elastic_load_balancing is defined %}{# BEGIN if cluster.kubernetes_network_config.elastic_load_balancing is defined #}
+        ElasticLoadBalancing:
+{%- if cluster.kubernetes_network_config.elastic_load_balancing.enabled is defined %}
+          Enabled: {{ cluster.kubernetes_network_config.elastic_load_balancing.enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if cluster.kubernetes_network_config.elastic_load_balancing is defined #}
+{%- if cluster.kubernetes_network_config.ip_family is defined %}
+        IpFamily: {{ cluster.kubernetes_network_config.ip_family }}
+{%- endif %}
+{%- if cluster.kubernetes_network_config.service_ipv4_cidr is defined %}
         ServiceIpv4Cidr: {{ cluster.kubernetes_network_config.service_ipv4_cidr }}
 {%- endif %}
+{%- if cluster.kubernetes_network_config.service_ipv6_cidr is defined %}
+        ServiceIpv6Cidr: {{ cluster.kubernetes_network_config.service_ipv6_cidr }}
+{%- endif %}
+{%- endif %}{# END if cluster.kubernetes_network_config is defined #}
+{%- if cluster.logging is defined %}{# BEGIN if cluster.logging is defined #}
+      Logging:
+{%- if cluster.logging.cluster_logging is defined %}{# BEGIN if cluster.logging.cluster_logging is defined #}
+        ClusterLogging:
+{%- if cluster.logging.cluster_logging.enabled_types is defined %}{# BEGIN if cluster.logging.cluster_logging.enabled_types is defined #}
+          EnabledTypes:
+{%- for enabled_type in cluster.logging.cluster_logging.enabled_types %}
+            -
+              Type: {{ enabled_type.type }}
+{%- endfor %}
+{%- endif %}{# END if cluster.logging.cluster_logging.enabled_types is defined #}
+{%- endif %}{# END if cluster.logging.cluster_logging is defined #}
+{%- endif %}{# END if cluster.logging is defined #}
 {%- if cluster.cluster_name is defined %}
       Name: {{ cluster.cluster_name }}
 {%- endif %}
+{%- if cluster.outpost_config is defined %}{# BEGIN if cluster.outpost_config is defined #}
+      OutpostConfig:
+        ControlPlaneInstanceType: {{ cluster.outpost_config.control_plane_instance_type }}
+        OutpostArns:
+{%- for outpost_arn in cluster.outpost_config.outpost_arns %}
+          - {{ outpost_arn }}
+{%- endfor %}
+{%- if cluster.outpost_config.control_plane_placement is defined %}{# BEGIN if cluster.outpost_config.control_plane_placement is defined #}
+        ControlPlanePlacement:
+{%- if cluster.outpost_config.control_plane_placement.group_name is defined %}
+          GroupName: {{ cluster.outpost_config.control_plane_placement.group_name }}
+{%- endif %}
+{%- if cluster.outpost_config.control_plane_placement.spread_level is defined %}
+          SpreadLevel: {{ cluster.outpost_config.control_plane_placement.spread_level }}
+{%- endif %}
+{%- endif %}{# END if cluster.outpost_config.control_plane_placement is defined #}
+{%- if cluster.outpost_config.etcd_instance_type is defined %}
+        EtcdInstanceType: {{ cluster.outpost_config.etcd_instance_type }}
+{%- endif %}
+{%- if cluster.outpost_config.etcd_placement is defined %}{# BEGIN if cluster.outpost_config.etcd_placement is defined #}
+        EtcdPlacement:
+{%- if cluster.outpost_config.etcd_placement.spread_level is defined %}
+          SpreadLevel: {{ cluster.outpost_config.etcd_placement.spread_level }}
+{%- endif %}
+{%- endif %}{# END if cluster.outpost_config.etcd_placement is defined#}
+{%- endif %}{# END if cluster.outpost_config is defined #}
+{%- if cluster.remote_network_config is defined %}{# BEGIN if cluster.remote_network_config is defined #}
+      RemoteNetworkConfig:
+{%- if cluster.remote_network_config.remote_node_networks is defined %}{# BEGIN if cluster.remote_network_config.remote_node_networks is defined #}
+        RemoteNodeNetworks:
+{%- for remote_node_network in cluster.remote_network_config.remote_node_networks %}{# BEGIN for remote_node_network in cluster.remote_network_config.remote_node_networks #}
+          -
+            Cidrs:
+{%- for cidr in remote_node_network.cidrs %}
+              - {{ cidr }}
+{%- endfor %}
+{%- endfor %}{# END for remote_node_network in cluster.remote_network_config.remote_node_networks #}
+{%- endif %}{# END if cluster.remote_network_config.remote_node_networks is defined #}
+{%- if cluster.remote_network_config.remote_pod_networks is defined %}{# BEGIN if cluster.remote_network_config.remote_pod_networks is defined #}
+        RemotePodNetworks:
+{%- for remote_pod_network in cluster.remote_network_config.remote_pod_networks %}{# BEGIN for remote_pod_network in cluster.remote_network_config.remote_pod_networks #}
+          -
+            Cidrs:
+{%- for cidr in remote_pod_network.cidrs %}
+              - {{ cidr }}
+{%- endfor %}
+{%- endfor %}{# END for remote_pod_network in cluster.remote_network_config.remote_pod_networks #}
+{%- endif %}{# END if cluster.remote_network_config.remote_pod_networks is defined #}
+{%- endif %}{# END if cluster.remote_network_config is defined #}
+{%- if cluster.storage_config is defined %}{# BEGIN if cluster.storage_config is defined #}
+      StorageConfig:
+{%- if cluster.storage_config.block_storage is defined %}{# BEGIN if cluster.storage_config.block_storage is defined #}
+        BlockStorage:
+{%- if cluster.storage_config.block_storage.enabled is defined %}
+          Enabled: {{ cluster.storage_config.block_storage.enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if cluster.storage_config.block_storage is defined #}
+{%- endif %}{# END if cluster.storage_config is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if cluster.tags is defined %}
+{%- for key,value in cluster.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if cluster.upgrade_policy is defined %}{# BEGIN if cluster.upgrade_policy is defined #}
+      UpgradePolicy:
+{%- if cluster.upgrade_policy.support_type is defined %}
+        SupportType: {{ cluster.upgrade_policy.support_type }}
+{%- endif %}
+{%- endif %}{# END if cluster.upgrade_policy is defined #}
 {%- if cluster.version is defined %}
       Version: {{ cluster.version }}
 {%- endif %}
-
+{%- if cluster.zonal_shift_config is defined %}{# BEGIN if cluster.zonal_shift_config is defined #}
+      ZonalShiftConfig:
+{%- if cluster.zonal_shift_config.enabled is defined %}
+        Enabled: {{ cluster.zonal_shift_config.enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if cluster.zonal_shift_config is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for cluster in sceptre_user_data.clusters %}
 {%- set cluster_name = cluster.name %}
   {{ cluster_name }}:
-    Description: The Name of the cluster for {{ cluster_name }}
+    Description: The cluster name for {{ cluster_name }}
     Value:
       Ref: {{ cluster_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}"
-
   {{ cluster_name }}Arn:
     Description: The ARN of the cluster for {{ cluster_name }}
     Value:
@@ -73,7 +231,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Arn"
-
   {{ cluster_name }}CertificateAuthorityData:
     Description: The certificate-authority-data for {{ cluster_name }}
     Value:
@@ -83,7 +240,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-CertificateAuthorityData"
-
   {{ cluster_name }}ClusterSecurityGroupId:
     Description: The cluster security group that was created by Amazon EKS for {{ cluster_name }}
     Value:
@@ -93,7 +249,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-ClusterSecurityGroupId"
-
   {{ cluster_name }}EncryptionConfigKeyArn:
     Description: The ARN of Customer Master Key (CMK) for {{ cluster_name }}
     Value:
@@ -103,7 +258,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-EncryptionConfigKeyArn"
-
   {{ cluster_name }}Endpoint:
     Description: The Endpoint of the cluster for {{ cluster_name }}
     Value:
@@ -113,7 +267,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-Endpoint"
-
   {{ cluster_name }}OpenIdConnectIssuerUrl:
     Description: The issuer URL for the cluster's OIDC identity provider for {{ cluster_name }}
     Value:
@@ -123,5 +276,80 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ cluster_name }}-OpenIdConnectIssuerUrl"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-21:
+Type: AWS::EKS::Cluster
+Properties:
+  AccessConfig:
+    AuthenticationMode: String
+    BootstrapClusterCreatorAdminPermissions: Boolean
+  BootstrapSelfManagedAddons: Boolean
+  ComputeConfig:
+    Enabled: Boolean
+    NodePools:
+      - String
+    NodeRoleArn: String
+  ControlPlaneScalingConfig:
+    Tier: String
+  DeletionProtection: Boolean
+  EncryptionConfig:
+    -
+      Provider:
+        KeyArn: String
+      Resources:
+        - String
+  Force: Boolean
+  KubernetesNetworkConfig:
+    ElasticLoadBalancing:
+      Enabled: Boolean
+    IpFamily: String
+    ServiceIpv4Cidr: String
+    ServiceIpv6Cidr: String
+  Logging:
+    ClusterLogging:
+      EnabledTypes:
+        -
+          Type: String
+  Name: String
+  OutpostConfig:
+    ControlPlaneInstanceType: String
+    ControlPlanePlacement:
+      GroupName: String
+      SpreadLevel: String
+    EtcdInstanceType: String
+    EtcdPlacement:
+      SpreadLevel: String
+    OutpostArns:
+      - String
+  RemoteNetworkConfig:
+    RemoteNodeNetworks:
+      -
+        Cidrs:
+          - String
+    RemotePodNetworks:
+      -
+        Cidrs:
+          - String
+  ResourcesVpcConfig:
+    ControlPlaneEgressMode: String
+    EndpointPrivateAccess: Boolean
+    EndpointPublicAccess: Boolean
+    PublicAccessCidrs:
+      - String
+    SecurityGroupIds:
+      - String
+    SubnetIds:
+      - String
+  RoleArn: String
+  StorageConfig:
+    BlockStorage:
+      Enabled: Boolean
+  Tags:
+    - Key: String
+      Value: String
+  UpgradePolicy:
+    SupportType: String
+  Version: String
+  ZonalShiftConfig:
+    Enabled: Boolean
+#}

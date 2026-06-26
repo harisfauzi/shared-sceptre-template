@@ -1,0 +1,73 @@
+---
+template:
+  type: file
+  path: securityhub/insight.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SecurityHub Insight(s) for testing purposes"
+  insights:
+    - name: CriticalSeverityFindings
+      insight_name: "Critical Severity Findings"
+      group_by_attribute: ResourceId
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      severity_label:
+        - comparison: "EQUALS"
+          value: "CRITICAL"
+      record_state:
+        - comparison: "EQUALS"
+          value: "ACTIVE"
+      resource_type:
+        - comparison: "PREFIX"
+          value: "AwsIam"
+
+    - name: HighConfidenceVulnerabilities
+      insight_name: "High Confidence Vulnerabilities"
+      group_by_attribute: ResourceId
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      confidence:
+        - gte: 80
+      vulnerability_state:
+        - comparison: "EQUALS"
+          value: "OPEN"
+      resource_region:
+        - comparison: "EQUALS"
+          value: "us-east-1"
+
+    - name: ComplianceFailuresInsight
+      insight_name: "Compliance Failures"
+      group_by_attribute: ResourceId
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      compliance_status:
+        - comparison: "EQUALS"
+          value: "FAILED"
+      finding_provider_fields_severity_label:
+        - comparison: "EQUALS"
+          value: "HIGH"
+      created_at:
+        - date_range:
+            unit: "DAYS"
+            value: 30
+
+    - name: NetworkSecurityInsight
+      insight_name: "Network Security Findings"
+      group_by_attribute: ResourceId
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      network_protocol:
+        - comparison: "EQUALS"
+          value: "tcp"
+      network_destination_port:
+        - gte: 1
+          lte: 1024
+      network_source_ip_v4:
+        - cidr: "0.0.0.0/0"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: securityhub-insight

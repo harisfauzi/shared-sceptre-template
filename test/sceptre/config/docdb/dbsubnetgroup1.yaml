@@ -1,0 +1,43 @@
+---
+template:
+  type: file
+  path: docdb/db_subnet_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: DocDB DB Subnet Group(s) for VPC Integration
+  db_subnet_groups:
+    - name: PrimarySubnetGroup
+      db_subnet_group_description: Primary DocDB subnet group for production cluster
+      db_subnet_group_name: primary-docdb-subnet-group
+      subnet_ids:
+        - "subnet-0123456789abcdef0"
+        - "subnet-0123456789abcdef1"
+        - "subnet-0123456789abcdef2"
+      tags:
+        Environment: Production
+        Tier: Primary
+        NetworkTier: Database
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: SecondarySubnetGroup
+      db_subnet_group_description: Secondary DocDB subnet group for read replicas
+      db_subnet_group_name: secondary-docdb-subnet-group
+      subnet_ids:
+        - "subnet-0987654321fedcba0"
+        - "subnet-0987654321fedcba1"
+      tags:
+        Environment: Production
+        Tier: Secondary
+        NetworkTier: Database
+    - name: DevelopmentSubnetGroup
+      db_subnet_group_description: Development DocDB subnet group with minimal subnets
+      subnet_ids:
+        - "subnet-abcdef0123456789"
+      tags:
+        Environment: Development
+        NetworkTier: Database
+
+stack_tags:
+  Test: docdb-subnet-group

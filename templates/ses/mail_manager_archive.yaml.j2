@@ -1,0 +1,75 @@
+---
+Description: {{sceptre_user_data.description|default('SES Mail Manager Archive(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for mail_manager_archive in sceptre_user_data.mail_manager_archives %}
+{%- set mail_manager_archive_name = mail_manager_archive.name %}
+  {{ mail_manager_archive_name }}:
+    Type: AWS::SES::MailManagerArchive
+    DeletionPolicy: {{ mail_manager_archive.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ mail_manager_archive.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if mail_manager_archive.archive_name is defined %}
+      ArchiveName: {{ mail_manager_archive.archive_name }}
+{%- endif %}
+{%- if mail_manager_archive.kms_key_arn is defined %}
+      KmsKeyArn: {{ mail_manager_archive.kms_key_arn | trim }}
+{%- endif %}
+{%- if mail_manager_archive.retention is defined %}
+      Retention:
+        RetentionPeriod: {{ mail_manager_archive.retention.retention_period }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if mail_manager_archive.tags is defined %}
+{%- for key,value in mail_manager_archive.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for mail_manager_archive in sceptre_user_data.mail_manager_archives %}
+{%- set mail_manager_archive_name = mail_manager_archive.name %}
+  {{ mail_manager_archive_name }}ArchiveArn:
+    Description: The ARN of the archive for {{ mail_manager_archive_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_archive_name }}
+        - ArchiveArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_archive_name }}-ArchiveArn"
+  {{ mail_manager_archive_name }}ArchiveId:
+    Description: The unique ID of the archive for {{ mail_manager_archive_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_archive_name }}
+        - ArchiveId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_archive_name }}-ArchiveId"
+  {{ mail_manager_archive_name }}ArchiveState:
+    Description: The current state of the archive for {{ mail_manager_archive_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_archive_name }}
+        - ArchiveState
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_archive_name }}-ArchiveState"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::MailManagerArchive
+Properties:
+  ArchiveName: String
+  KmsKeyArn: String
+  Retention:
+    RetentionPeriod: String
+  Tags:
+    - Key: String
+      Value: String
+#}

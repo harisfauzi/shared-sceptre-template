@@ -1,0 +1,138 @@
+---{#
+# Supported structure as of 2026-06-18:
+-
+  DataProviderArn: String
+  DataProviderIdentifier: String
+  DataProviderName: String
+  SecretsManagerAccessRoleArn: String
+  SecretsManagerSecretId: String
+#}{%- macro prep_data_provider_descriptor(descriptor) %}
+-
+{%- if descriptor.data_provider_arn is defined %}
+  DataProviderArn: {{ descriptor.data_provider_arn | trim }}
+{%- endif %}
+{%- if descriptor.data_provider_identifier is defined %}
+  DataProviderIdentifier: {{ descriptor.data_provider_identifier | trim }}
+{%- endif %}
+{%- if descriptor.data_provider_name is defined %}
+  DataProviderName: {{ descriptor.data_provider_name }}
+{%- endif %}
+{%- if descriptor.secrets_manager_access_role_arn is defined %}
+  SecretsManagerAccessRoleArn: {{ descriptor.secrets_manager_access_role_arn | trim }}
+{%- endif %}
+{%- if descriptor.secrets_manager_secret_id is defined %}
+  SecretsManagerSecretId: {{ descriptor.secrets_manager_secret_id | trim }}
+{%- endif %}
+{%- endmacro %}
+Description: {{sceptre_user_data.description|default('DMS Migration Project(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for migration_project in sceptre_user_data.migration_projects %}
+{%- set migration_project_name = migration_project.name %}
+  {{ migration_project_name }}:
+    Type: AWS::DMS::MigrationProject
+    DeletionPolicy: {{ migration_project.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ migration_project.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if migration_project.description is defined %}
+      Description: {{ migration_project.description }}
+{%- endif %}
+{%- if migration_project.instance_profile_arn is defined %}
+      InstanceProfileArn: {{ migration_project.instance_profile_arn | trim }}
+{%- endif %}
+{%- if migration_project.instance_profile_identifier is defined %}
+      InstanceProfileIdentifier: {{ migration_project.instance_profile_identifier | trim }}
+{%- endif %}
+{%- if migration_project.instance_profile_name is defined %}
+      InstanceProfileName: {{ migration_project.instance_profile_name | trim }}
+{%- endif %}
+{%- if migration_project.migration_project_identifier is defined %}
+      MigrationProjectIdentifier: {{ migration_project.migration_project_identifier | trim }}
+{%- endif %}
+{%- if migration_project.migration_project_name is defined %}
+      MigrationProjectName: {{ migration_project.migration_project_name | trim }}
+{%- endif %}
+{%- if migration_project.schema_conversion_application_attributes is defined %}
+      SchemaConversionApplicationAttributes:
+{%- if migration_project.schema_conversion_application_attributes.s3_bucket_path is defined %}{# BEGIN if migration_project.schema_conversion_application_attributes.s3_bucket_path is defined #}
+        S3BucketPath: {{ migration_project.schema_conversion_application_attributes.s3_bucket_path }}
+{%- endif %}
+{%- if migration_project.schema_conversion_application_attributes.s3_bucket_role_arn is defined %}
+        S3BucketRoleArn: {{ migration_project.schema_conversion_application_attributes.s3_bucket_role_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if migration_project.schema_conversion_application_attributes.s3_bucket_path is defined #}
+{%- if migration_project.source_data_provider_descriptors is defined %}{# BEGIN if migration_project.source_data_provider_descriptors is defined #}
+      SourceDataProviderDescriptors:
+{%- for descriptor in migration_project.source_data_provider_descriptors %}
+        {{- prep_data_provider_descriptor(descriptor) | indent(width=8,first=false) }}
+{%- endfor %}
+{%- endif %}{# END if migration_project.source_data_provider_descriptors is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if migration_project.tags is defined %}
+{%- for key,value in migration_project.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if migration_project.target_data_provider_descriptors is defined %}{# BEGIN if migration_project.target_data_provider_descriptors is defined #}
+      TargetDataProviderDescriptors:
+{%- for descriptor in migration_project.target_data_provider_descriptors %}
+        {{- prep_data_provider_descriptor(descriptor) | indent(width=8,first=false) }}
+{%- endfor %}
+{%- endif %}{# END if migration_project.target_data_provider_descriptors is defined #}
+{%- if migration_project.transformation_rules is defined %}
+      TransformationRules: |-
+        {{ migration_project.transformation_rules | indent(width=8, first=false) }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for migration_project in sceptre_user_data.migration_projects %}
+{%- set migration_project_name = migration_project.name %}
+  {{ migration_project_name }}:
+    Description: Migration project ARN for {{ migration_project_name }}
+    Value:
+      Ref: {{ migration_project_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ migration_project_name }}"
+{%- set migration_project_name = migration_project.name %}
+  {{ migration_project_name }}MigrationProjectArn:
+    Description: Migration project ARN for {{ migration_project_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ migration_project_name }}
+        - MigrationProjectArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ migration_project_name }}-MigrationProjectArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-18:
+Type: AWS::DMS::MigrationProject
+Properties:
+  Description: String
+  InstanceProfileArn: String
+  InstanceProfileIdentifier: String
+  InstanceProfileName: String
+  MigrationProjectIdentifier: String
+  MigrationProjectName: String
+  SchemaConversionApplicationAttributes:
+    S3BucketPath: String
+    S3BucketRoleArn: String
+  SourceDataProviderDescriptors:
+      -
+        DataProviderArn: String
+        DataProviderIdentifier: String
+        DataProviderName: String
+        SecretsManagerAccessRoleArn: String
+        SecretsManagerSecretId: String
+  Tags:
+    - Key: String
+      Value: String
+  TargetDataProviderDescriptors:
+    - DataProviderDescriptor
+  TransformationRules: String
+#}

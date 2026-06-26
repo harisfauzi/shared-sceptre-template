@@ -1,0 +1,247 @@
+---
+template:
+  type: file
+  path: kinesis_firehose/delivery_stream.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{stack_group_config.project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS Kinesis Firehose Delivery Streams - Comprehensive Test
+  use_parameter_for_password: false
+  delivery_streams:
+    - name: AmazonOpenSearchServerlessStream
+      delivery_stream_type: "DirectPut"
+      delivery_stream_name: "prod-aoss-stream"
+      delivery_stream_encryption_configuration_input:
+        key_type: "AWS_OWNED_CMK"
+      amazon_open_search_serverless_destination_configuration:
+        index_name: "prod-events"
+        role_arn: "arn:aws:iam::123456789012:role/firehose-aoss-role"
+        collection_endpoint: "https://prod-aoss.us-east-1.aoss.amazonaws.com"
+        s3_configuration:
+          role_arn: "arn:aws:iam::123456789012:role/firehose-s3-backup-role"
+          bucket_arn: "arn:aws:s3:::prod-aoss-backup"
+          prefix: "aoss-backup/"
+          compression_format: "GZIP"
+          buffering_hints:
+            size_in_mbs: 32
+            interval_in_seconds: 300
+        buffering_hints:
+          size_in_mbs: 128
+          interval_in_seconds: 60
+        retry_options:
+          duration_in_seconds: 300
+        s3_backup_mode: "AllData"
+        cloud_watch_logging_options:
+          enabled: true
+          log_group_name: "/aws/kinesisfirehose/prod-aoss"
+          log_stream_name: "AmazonOpenSearchServerless"
+        processing_configuration:
+          enabled: true
+          processors:
+            - type: "Lambda"
+              _parameters:
+                - parameter_name: "LambdaArn"
+                  parameter_value: "arn:aws:lambda:us-east-1:123456789012:function:data-transformer"
+        vpc_configuration:
+          role_arn: "arn:aws:iam::123456789012:role/firehose-vpc-role"
+          subnet_ids:
+            - "subnet-12345678"
+            - "subnet-87654321"
+          security_group_ids:
+            - "sg-12345678"
+      tags:
+        Environment: Production
+        Team: Search
+        CostCenter: "2001"
+    - name: AmazonOpenSearchServiceStream
+      delivery_stream_type: "DirectPut"
+      delivery_stream_name: "prod-aos-stream"
+      amazonopensearchservice_destination_configuration:
+        index_name: "prod-logs"
+        role_arn: "arn:aws:iam::123456789012:role/firehose-aos-role"
+        domain_arn: "arn:aws:es:us-east-1:123456789012:domain/prod-cluster"
+        cluster_endpoint: "prod-cluster.us-east-1.es.amazonaws.com"
+        index_rotation_period: "OneDay"
+        type_name: "_doc"
+        s3_configuration:
+          role_arn: "arn:aws:iam::123456789012:role/firehose-s3-backup-role"
+          bucket_arn: "arn:aws:s3:::prod-aos-backup"
+          prefix: "aos-backup/"
+          compression_format: "GZIP"
+          buffering_hints:
+            size_in_mbs: 32
+            interval_in_seconds: 300
+        buffering_hints:
+          size_in_mbs: 64
+          interval_in_seconds: 60
+        retry_options:
+          duration_in_seconds: 300
+        s3_backup_mode: "FailedDocumentsOnly"
+        cloud_watch_logging_options:
+          enabled: true
+          log_group_name: "/aws/kinesisfirehose/prod-aos"
+          log_stream_name: "AmazonOpenSearchService"
+        document_id_options:
+          default_document_id_format: "FIREHOSE_DEFAULT"
+      tags:
+        Environment: Production
+        Team: Search
+        CostCenter: "2002"
+    - name: IcebergStream
+      delivery_stream_type: "DirectPut"
+      delivery_stream_name: "prod-iceberg-stream"
+      iceberg_destination_configuration:
+        catalog_configuration:
+          catalog_arn: "arn:aws:glue:us-east-1:123456789012:catalog"
+          warehouse_location: "s3://prod-iceberg-warehouse/warehouse"
+        role_arn: "arn:aws:iam::123456789012:role/firehose-iceberg-role"
+        s3_configuration:
+          role_arn: "arn:aws:iam::123456789012:role/firehose-s3-backup-role"
+          bucket_arn: "arn:aws:s3:::prod-iceberg-backup"
+          prefix: "iceberg-backup/"
+          compression_format: "GZIP"
+          buffering_hints:
+            size_in_mbs: 32
+            interval_in_seconds: 300
+        buffering_hints:
+          size_in_mbs: 256
+          interval_in_seconds: 120
+        append_only: true
+        destination_table_configuration_list:
+          - destination_database_name: "analytics_db"
+            destination_table_name: "events_table"
+            partition_spec:
+              identity:
+                - source_name: "year"
+                - source_name: "month"
+                - source_name: "day"
+            unique_keys:
+              - "event_id"
+        schema_evolution_configuration:
+          enabled: true
+        table_creation_configuration:
+          enabled: true
+        cloud_watch_logging_options:
+          enabled: true
+          log_group_name: "/aws/kinesisfirehose/prod-iceberg"
+          log_stream_name: "IcebergDelivery"
+      tags:
+        Environment: Production
+        Team: DataLake
+        CostCenter: "2003"
+    - name: RedshiftStream
+      delivery_stream_type: "DirectPut"
+      delivery_stream_name: "prod-redshift-stream"
+      redshift_destination_configuration:
+        cluster_jdbc_url: "jdbc:redshift://prod-cluster.us-east-1.redshift.amazonaws.com:5439/analytics"
+        copy_command:
+          data_table_name: "events"
+          data_table_columns: "event_id, event_type, timestamp, event_data"
+          copy_options: "JSON 'auto' TIMEFORMAT 'auto'"
+        role_arn: "arn:aws:iam::123456789012:role/firehose-redshift-role"
+        username: "firehose_user"
+        password: "TempPassword123!"
+        s3_configuration:
+          role_arn: "arn:aws:iam::123456789012:role/firehose-s3-backup-role"
+          bucket_arn: "arn:aws:s3:::prod-redshift-staging"
+          prefix: "redshift-staging/"
+          compression_format: "GZIP"
+          buffering_hints:
+            size_in_mbs: 128
+            interval_in_seconds: 300
+        buffering_hints:
+          size_in_mbs: 32
+          interval_in_seconds: 300
+        retry_options:
+          duration_in_seconds: 3600
+        cloud_watch_logging_options:
+          enabled: true
+          log_group_name: "/aws/kinesisfirehose/prod-redshift"
+          log_stream_name: "RedshiftDelivery"
+        s3_backup_mode: "AllData"
+        s3_backup_configuration:
+          role_arn: "arn:aws:iam::123456789012:role/firehose-s3-backup-role"
+          bucket_arn: "arn:aws:s3:::prod-redshift-backup"
+          prefix: "redshift-backup/"
+          compression_format: "GZIP"
+          buffering_hints:
+            size_in_mbs: 32
+            interval_in_seconds: 900
+      tags:
+        Environment: Production
+        Team: DataWarehouse
+        CostCenter: "2004"
+    - name: SnowflakeStream
+      delivery_stream_type: "DirectPut"
+      delivery_stream_name: "prod-snowflake-stream"
+      snowflake_destination_configuration:
+        account_url: "https://xy12345.us-east-1.snowflakecomputing.com"
+        database: "analytics_db"
+        schema: "public"
+        table: "events"
+        user: "firehose_user"
+        role_arn: "arn:aws:iam::123456789012:role/firehose-snowflake-role"
+        s3_configuration:
+          role_arn: "arn:aws:iam::123456789012:role/firehose-s3-backup-role"
+          bucket_arn: "arn:aws:s3:::prod-snowflake-staging"
+          prefix: "snowflake-staging/"
+          compression_format: "GZIP"
+          buffering_hints:
+            size_in_mbs: 32
+            interval_in_seconds: 300
+        buffering_hints:
+          size_in_mbs: 64
+          interval_in_seconds: 300
+        cloud_watch_logging_options:
+          enabled: true
+          log_group_name: "/aws/kinesisfirehose/prod-snowflake"
+          log_stream_name: "SnowflakeDelivery"
+        content_column_name: "record_content"
+        meta_data_column_name: "record_metadata"
+        data_loading_option: "JWS_TOKEN_PROVIDER"
+        private_key: "private_key_placeholder"
+        key_passphrase: "key_passphrase_placeholder"
+        snowflake_role_configuration:
+          enabled: true
+          snowflake_role: "FIREHOSE_ROLE"
+        snowflake_vpc_configuration:
+          private_link_vpce_id: "vpce-12345678"
+        s3_backup_mode: "FailedDataOnly"
+      tags:
+        Environment: Production
+        Team: DataCloud
+        CostCenter: "2005"
+    - name: SplunkStream
+      delivery_stream_type: "DirectPut"
+      delivery_stream_name: "prod-splunk-stream"
+      splunk_destination_configuration:
+        hec_endpoint: "https://input-splunk.us-east-1.aws.splunkcloud.com"
+        hec_endpoint_type: "Event"
+        hec_token: "splunk_token_placeholder"
+        s3_configuration:
+          role_arn: "arn:aws:iam::123456789012:role/firehose-s3-backup-role"
+          bucket_arn: "arn:aws:s3:::prod-splunk-backup"
+          prefix: "splunk-backup/"
+          compression_format: "GZIP"
+          buffering_hints:
+            size_in_mbs: 32
+            interval_in_seconds: 300
+        buffering_hints:
+          size_in_mbs: 5
+          interval_in_seconds: 300
+        retry_options:
+          duration_in_seconds: 3600
+        hec_acknowledgment_timeout_in_seconds: 180
+        cloud_watch_logging_options:
+          enabled: true
+          log_group_name: "/aws/kinesisfirehose/prod-splunk"
+          log_stream_name: "SplunkDelivery"
+        s3_backup_mode: "AllData"
+      tags:
+        Environment: Production
+        Team: Security
+        CostCenter: "2006"
+
+stack_tags:
+  Test: kinesis-firehose-deliverystream

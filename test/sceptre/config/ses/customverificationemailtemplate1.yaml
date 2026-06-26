@@ -1,0 +1,118 @@
+---
+template:
+  type: file
+  path: ses/custom_verification_email_template.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Custom Verification Email Template(s) for testing purposes"
+  custom_verification_email_templates:
+    - name: TransactionalVerificationTemplate
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      template_name: "transactional-verification"
+      from_email_address: "noreply@transactional.example.com"
+      template_subject: "Verify your email address"
+      template_content: |-
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Email Verification</title>
+          </head>
+          <body>
+            <h1>Verify Your Email Address</h1>
+            <p>Please click the link below to verify your email address:</p>
+            <p><a href="{% raw %}{{{VerificationLink}}}{% endraw %}">Verify Email</a></p>
+            <p>If you did not request this verification, please ignore this email.</p>
+          </body>
+        </html>
+      success_redirection_url: "https://transactional.example.com/verified"
+      failure_redirection_url: "https://transactional.example.com/verification-failed"
+      tags:
+        Application: "TransactionalEmailer"
+        Environment: "Production"
+
+    - name: MarketingOptInVerificationTemplate
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      template_name: "marketing-optin-verification"
+      from_email_address: "verify@marketing.example.com"
+      template_subject: "Confirm Your Marketing Subscription"
+      template_content: |-
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Marketing Subscription Confirmation</title>
+            <style>
+              body { font-family: Arial, sans-serif; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .button { background-color: #007bff; padding: 10px 20px; color: white; text-decoration: none; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h2>Welcome to Our Mailing List!</h2>
+              <p>Thank you for subscribing. Please verify your email address to start receiving our marketing updates.</p>
+              <p><a href="{% raw %}{{{VerificationLink}}}{% endraw %}" class="button">Confirm Subscription</a></p>
+              <p>Best regards,<br>Marketing Team</p>
+            </div>
+          </body>
+        </html>
+      success_redirection_url: "https://marketing.example.com/subscription-confirmed"
+      failure_redirection_url: "https://marketing.example.com/subscription-failed"
+      tags:
+        Application: "MarketingCampaigns"
+        Department: "Marketing"
+
+    - name: AccountSetupVerificationTemplate
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      template_name: "account-setup-verification"
+      from_email_address: "verify@accounts.example.com"
+      template_subject: "Complete Your Account Setup"
+      template_content: |-
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Account Setup</title>
+          </head>
+          <body>
+            <h1>Welcome to Our Platform</h1>
+            <p>To complete your account setup, please verify your email address:</p>
+            <p><a href="{% raw %}{{{VerificationLink}}}{% endraw %}">Verify and Continue</a></p>
+          </body>
+        </html>
+      success_redirection_url: "https://accounts.example.com/setup-complete"
+      failure_redirection_url: "https://accounts.example.com/setup-error"
+
+    - name: SecureAccessVerificationTemplate
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      template_name: "secure-access-verification"
+      from_email_address: "security@secure.example.com"
+      template_subject: "Verify Your Secure Access"
+      template_content: |-
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Security Verification</title>
+          </head>
+          <body>
+            <h1>Security Verification Required</h1>
+            <p>A new device or browser is trying to access your account.</p>
+            <p>If this was you, click the link below to verify:</p>
+            <p><a href="{% raw %}{{{VerificationLink}}}{% endraw %}">Verify Access</a></p>
+            <p><strong>If you did not initiate this, please ignore this email.</strong></p>
+          </body>
+        </html>
+      success_redirection_url: "https://secure.example.com/verified"
+      failure_redirection_url: "https://secure.example.com/access-denied"
+      tags:
+        Application: "SecurityVerification"
+        Sensitivity: "High"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-custom-verification-email-template

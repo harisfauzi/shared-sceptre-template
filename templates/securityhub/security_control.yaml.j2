@@ -1,0 +1,50 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityHub Security Control(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for security_control in sceptre_user_data.security_controls %}
+{%- set security_control_name = security_control.name %}
+  {{ security_control_name }}:
+    Type: AWS::SecurityHub::SecurityControl
+    DeletionPolicy: {{ security_control.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ security_control.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if security_control.parameters is defined %}
+      Parameters:
+        {{ security_control.parameters | indent(width=8, first=false) }}
+{%- elif security_control.parameters_json is defined %}
+      Parameters: |-
+        {{ security_control.parameters_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if security_control.last_update_reason is defined %}
+      LastUpdateReason: {{ security_control.last_update_reason }}
+{%- endif %}
+{%- if security_control.security_control_arn is defined %}
+      SecurityControlArn: {{ security_control.security_control_arn | trim }}
+{%- endif %}
+{%- if security_control.security_control_id is defined %}
+      SecurityControlId: {{ security_control.security_control_id | trim }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for security_control in sceptre_user_data.security_controls %}
+{%- set security_control_name = security_control.name %}
+  {{ security_control_name }}:
+    Description: The ID for {{ security_control_name }}
+    Value:
+      Ref: {{ security_control_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_control_name }}"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::SecurityControl
+Properties:
+  LastUpdateReason: String
+  Parameters:
+    Key: Value
+  SecurityControlArn: String
+  SecurityControlId: String
+#}

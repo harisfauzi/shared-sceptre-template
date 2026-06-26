@@ -1,0 +1,94 @@
+---
+template:
+  type: file
+  path: securityhub/automation_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SecurityHub Automation Rule(s) for testing purposes"
+  automation_rules:
+    - name: CriticalSeverityHandler
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      description: "Automatically handle critical severity findings"
+      rule_name: "CriticalSeverityAutomation"
+      rule_order: 1
+      rule_status: "ENABLED"
+      is_terminal: false
+      actions:
+        - finding_fields_update:
+            severity:
+              label: "CRITICAL"
+              normalized: 90
+            verification_state: "TRUE_POSITIVE"
+            note:
+              text: "Auto-remediated by automation rule"
+              updated_by: "SecurityEngine"
+      criteria:
+        severity_label:
+          - comparison: "EQUALS"
+            value: "CRITICAL"
+        record_state:
+          - comparison: "EQUALS"
+            value: "ACTIVE"
+      tags:
+        Application: "SecurityHub"
+        RuleType: "Critical"
+        Environment: "Production"
+
+    - name: ComplianceViolationHandler
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      description: "Process compliance violations in AWS resources"
+      rule_name: "ComplianceViolationRule"
+      rule_order: 2
+      rule_status: "ENABLED"
+      is_terminal: true
+      actions:
+        - finding_fields_update:
+            severity:
+              label: "HIGH"
+              normalized: 70
+            workflow:
+              status: "NOTIFIED"
+      criteria:
+        compliance_status:
+          - comparison: "EQUALS"
+            value: "FAILED"
+        resource_type:
+          - comparison: "EQUALS"
+            value: "AwsIam::AccessKey"
+      tags:
+        Application: "SecurityHub"
+        RuleType: "Compliance"
+        Team: "Compliance"
+
+    - name: LowConfidenceFindingDismisser
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      description: "Dismiss low confidence findings automatically"
+      rule_name: "LowConfidenceDismissal"
+      rule_order: 3
+      rule_status: "ENABLED"
+      actions:
+        - finding_fields_update:
+            verification_state: "FALSE_POSITIVE"
+            note:
+              text: "Low confidence finding dismissed"
+              updated_by: "AutomationEngine"
+      criteria:
+        confidence:
+          - lte: 30
+        resource_region:
+          - comparison: "EQUALS"
+            value: "us-east-1"
+      tags:
+        Application: "SecurityHub"
+        RuleType: "LowConfidence"
+        Priority: "Low"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: securityhub-automation-rule

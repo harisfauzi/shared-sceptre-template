@@ -13,19 +13,27 @@ Resources:
       AllowedPublishers:
         SigningProfileVersionArns:
 {%- for signing_profile_version_arn in code_signing_config.allowed_publishers.signing_profile_version_arns %}
-          - {{ signing_profile_version_arn }}
+          - {{ signing_profile_version_arn | trim }}
 {%- endfor %}
 {%- if code_signing_config.code_signing_policies is defined %}
       CodeSigningPolicies:
         UntrustedArtifactOnDeployment: {{ code_signing_config.code_signing_policies.untrusted_artifact_on_deployment }}
 {%- endif %}
 {%- if code_signing_config.description is defined %}
-      Description: {{ code_signing_config.code_sha256 }}
+      Description: {{ code_signing_config.description }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if code_signing_config.tags is defined %}
+{%- for key,value in code_signing_config.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
 {%- endif %}
 {%- endfor %}
 
 Outputs:
-
 {%- for code_signing_config in sceptre_user_data.code_signing_configs %}
 {%- set code_signing_config_name = code_signing_config.name %}
   {{ code_signing_config_name }}:
@@ -35,7 +43,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ code_signing_config_name }}"
-
   {{ code_signing_config_name }}CodeSigningConfigArn:
     Description: The ARN for {{ code_signing_config_name }}
     Value:
@@ -45,7 +52,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ code_signing_config_name }}-CodeSigningConfigArn"
-
   {{ code_signing_config_name }}CodeSigningConfigId:
     Description: The Id for {{ code_signing_config_name }}
     Value:
@@ -55,5 +61,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ code_signing_config_name }}-CodeSigningConfigId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::CodeSigningConfig
+Properties:
+  AllowedPublishers:
+    SigningProfileVersionArns:
+      - String
+  CodeSigningPolicies:
+    UntrustedArtifactOnDeployment: String
+  Description: String
+  Tags:
+    - Key: String
+      Value: String
+#}

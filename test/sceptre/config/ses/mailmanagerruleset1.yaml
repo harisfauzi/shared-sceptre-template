@@ -1,0 +1,139 @@
+---
+template:
+  type: file
+  path: ses/mail_manager_rule_set.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Mail Manager Rule Set(s) for testing purposes"
+  mail_manager_rule_sets:
+    - name: SecurityFilteringRuleSet
+      rule_set_name: "security-filtering-rules"
+      rules:
+        - name: "BlockMalwarousAttachments"
+          actions:
+            - drop: true
+          conditions:
+            - string_expression:
+                evaluate:
+                  attribute: "FROM"
+                operator: "CONTAINS"
+                _values:
+                  - "malware-sender@evil.com"
+                  - "phishing@suspicious.com"
+
+        - name: "ArchiveComplianceEmails"
+          actions:
+            - archive:
+                target_archive: "arn:aws:ses:us-east-1:123456789012:archive/compliance-archive"
+                action_failure_policy: "Continue"
+            - add_header:
+                header_name: "X-Archived"
+                header_value: "true"
+          conditions:
+            - string_expression:
+                evaluate:
+                  attribute: "SUBJECT"
+                operator: "CONTAINS"
+                _values:
+                  - "CONFIDENTIAL"
+                  - "COMPLIANCE"
+
+        - name: "LargeMessageDetection"
+          actions:
+            - publish_to_sns:
+                topic_arn: "arn:aws:sns:us-east-1:123456789012:large-email-alerts"
+                role_arn: "arn:aws:iam::123456789012:role/SESMailManagerRole"
+                payload_type: "JSON"
+          conditions:
+            - number_expression:
+                operator: "GREATER_THAN"
+                _value: 52428800
+      tags:
+        Application: "SecurityFiltering"
+        Environment: "Production"
+        Purpose: "MalwareDetection"
+
+    - name: RoutingAndDeliveryRuleSet
+      rule_set_name: "routing-rules"
+      rules:
+        - name: "DeliverToMailbox"
+          actions:
+            - deliver_to_mailbox:
+                mailbox_arn: "arn:aws:ses:us-east-1:123456789012:mailbox/company-mailbox"
+                role_arn: "arn:aws:iam::123456789012:role/SESMailManagerRole"
+                action_failure_policy: "Bounce"
+          conditions:
+            - string_expression:
+                evaluate:
+                  attribute: "RECIPIENT"
+                operator: "CONTAINS"
+                _values:
+                  - "user@company.example.com"
+
+        - name: "RelayExternalMail"
+          actions:
+            - relay:
+                relay: "relay-0123456789abcdef0"
+                mail_from: "relay@company.example.com"
+          conditions:
+            - ip_expression:
+                operator: "CIDR_MATCHES"
+                _values:
+                  - "192.168.1.0/24"
+                  - "10.0.0.0/8"
+
+        - name: "SendViaLambda"
+          actions:
+            - invoke_lambda:
+                function_arn: "arn:aws:lambda:us-east-1:123456789012:function:ProcessEmail"
+                role_arn: "arn:aws:iam::123456789012:role/SESMailManagerRole"
+                invocation_type: "Event"
+                retry_time_minutes: 5
+      tags:
+        Application: "EmailRouting"
+        Environment: "Production"
+        Purpose: "MessageDelivery"
+
+    - name: ComplianceAndLoggingRuleSet
+      rule_set_name: "compliance-logging"
+      rules:
+        - name: "WriteToS3Archive"
+          actions:
+            - write_to_s3:
+                s3_bucket: "email-archive-bucket"
+                role_arn: "arn:aws:iam::123456789012:role/SESMailManagerRole"
+                s3_prefix: "emails/archive"
+                s3_sse_kms_key_id: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+
+        - name: "BounceInvalidRecipients"
+          actions:
+            - bounce:
+                diagnostic_message: "The recipient address was invalid"
+                role_arn: "arn:aws:iam::123456789012:role/SESMailManagerRole"
+                sender: "mailer-daemon@company.example.com"
+                smtp_reply_code: "550"
+                status_code: "5.1.1"
+                action_failure_policy: "Continue"
+          conditions:
+            - string_expression:
+                evaluate:
+                  attribute: "RECIPIENT"
+                operator: "EQUALS"
+                _values:
+                  - "noreply@example.com"
+
+        - name: "SendNotifications"
+          actions:
+            - send:
+                role_arn: "arn:aws:iam::123456789012:role/SESMailManagerRole"
+      tags:
+        Application: "ComplianceLogging"
+        Environment: "Production"
+        Compliance: "Required"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-mail-manager-rule-set

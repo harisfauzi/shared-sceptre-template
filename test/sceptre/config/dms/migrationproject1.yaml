@@ -1,0 +1,140 @@
+---
+template:
+  type: file
+  path: dms/migration_project.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DMS Migration Projects for Schema Conversion and Data Migration Planning
+  migration_projects:
+    - name: PostgresToMysqlMigration
+      migration_project_identifier: postgres-to-mysql-project-001
+      migration_project_name: PostgreSQL to MySQL Migration
+      description: Migration project for converting PostgreSQL source to MySQL target database
+      instance_profile_identifier: prod-replication-profile-001
+      instance_profile_name: Production Replication Instance
+      instance_profile_arn: arn:aws:dms:us-east-1:123456789012:rep:ABCDEFGH-1234-5678-9012-IJKLMNOPQRST
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      schema_conversion_application_attributes:
+        s3_bucket_path: s3://dms-schemas-prod/postgres-to-mysql/
+        s3_bucket_role_arn: arn:aws:iam::123456789012:role/dms-s3-conversion-role
+      source_data_provider_descriptors:
+        - data_provider_identifier: postgres-source-provider-001
+          data_provider_arn: arn:aws:dms:us-east-1:123456789012:dataprovider/postgres-source-provider
+          data_provider_name: PostgreSQL Source
+          secrets_manager_access_role_arn: arn:aws:iam::123456789012:role/dms-secrets-reader
+          secrets_manager_secret_id: postgres-credentials
+      target_data_provider_descriptors:
+        - data_provider_identifier: mysql-target-provider-002
+          data_provider_arn: arn:aws:dms:us-east-1:123456789012:dataprovider/mysql-target-provider
+          data_provider_name: MySQL Target
+          secrets_manager_access_role_arn: arn:aws:iam::123456789012:role/dms-secrets-reader
+          secrets_manager_secret_id: mysql-credentials
+      transformation_rules: |-
+        {
+          "rules": [
+            {
+              "rule-type": "selection",
+              "rule-id": "1",
+              "rule-name": "include-all-tables",
+              "object-locator": {
+                "schema-name": "%",
+                "table-name": "%"
+              },
+              "rule-action": "include"
+            }
+          ]
+        }
+      tags:
+        Environment: Production
+        SourceDatabase: PostgreSQL
+        TargetDatabase: MySQL
+        Owner: DataEngineering
+        CostCenter: Infrastructure
+        ProjectPhase: Implementation
+
+    - name: OracleToPostgresMigration
+      migration_project_identifier: oracle-to-postgres-project-002
+      migration_project_name: Oracle to PostgreSQL Migration
+      description: Complex migration project with schema conversion for Oracle to PostgreSQL
+      instance_profile_identifier: prod-replication-profile-001
+      deletion_policy: Retain
+      schema_conversion_application_attributes:
+        s3_bucket_path: s3://dms-schemas-prod/oracle-to-postgres/
+        s3_bucket_role_arn: arn:aws:iam::123456789012:role/dms-s3-conversion-role
+      source_data_provider_descriptors:
+        - data_provider_name: Oracle Enterprise DB Source
+          secrets_manager_access_role_arn: arn:aws:iam::123456789012:role/dms-secrets-reader
+          secrets_manager_secret_id: oracle-prod-credentials
+      target_data_provider_descriptors:
+        - data_provider_name: PostgreSQL Target Cluster
+          secrets_manager_access_role_arn: arn:aws:iam::123456789012:role/dms-secrets-reader
+          secrets_manager_secret_id: postgres-target-credentials
+      transformation_rules: |-
+        {
+          "rules": [
+            {
+              "rule-type": "selection",
+              "rule-id": "1",
+              "rule-name": "include-production-schemas",
+              "object-locator": {
+                "schema-name": "PROD_%",
+                "table-name": "%"
+              },
+              "rule-action": "include"
+            },
+            {
+              "rule-type": "transformation",
+              "rule-id": "2",
+              "rule-name": "convert-number-to-numeric",
+              "rule-target": "column",
+              "object-locator": {
+                "schema-name": "%",
+                "table-name": "%",
+                "column-name": "%"
+              },
+              "rule-action": "convert-type",
+              "parameters": {
+                "from-type": "number",
+                "to-type": "numeric"
+              }
+            }
+          ]
+        }
+      tags:
+        Environment: Production
+        SourceDatabase: Oracle
+        TargetDatabase: PostgreSQL
+        Complexity: High
+        Owner: DBAdmins
+
+    - name: SqlServerToAuroraMigration
+      migration_project_identifier: sqlserver-to-aurora-project-003
+      migration_project_name: SQL Server to Aurora MySQL
+      description: Streaming replication project for continuous data sync from SQL Server to Aurora
+      instance_profile_identifier: staging-replication-profile-002
+      instance_profile_name: Staging Replication Instance
+      deletion_policy: Delete
+      source_data_provider_descriptors:
+        - data_provider_arn: arn:aws:dms:us-east-1:123456789012:dataprovider/sqlserver-provider
+      target_data_provider_descriptors:
+        - data_provider_arn: arn:aws:dms:us-east-1:123456789012:dataprovider/aurora-mysql-provider
+      tags:
+        Environment: Staging
+        SourceDatabase: SQLServer
+        TargetDatabase: AuroraMySQL
+        ReplicationType: StreamingReplication
+
+    - name: MinimalMigrationProject
+      migration_project_identifier: minimal-project-004
+      migration_project_name: Minimal Configuration Project
+      description: Test project with minimal configuration
+      deletion_policy: Delete
+      tags:
+        Environment: Development
+        Purpose: Testing
+
+stack_tags:
+  Test: dms-migration-project

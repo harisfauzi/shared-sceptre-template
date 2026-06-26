@@ -1,0 +1,27 @@
+---
+template:
+  type: file
+  path: route53resolver/outpost_resolver.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: Sample Outpost Resolvers for Security Testing
+  output_resolvers:
+    - name: ProdOutpostResolver
+      output_resolver_name: Prod-Outpost-Resolver
+      outpost_arn: arn:aws:outposts:us-east-1:123456789012:outpost/op-1234567890abcdef0
+      preferred_instance_type: m5.large
+      instance_count: 2
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Production
+        Purpose: DNSResolution
+    - name: DevOutpostResolver
+      output_resolver_name: Dev-Outpost-Resolver
+      outpost_arn: arn:aws:outposts:us-west-2:123456789012:outpost/op-abcdef0123456789
+      preferred_instance_type: m5.xlarge
+
+stack_tags:
+  Test: route53resolver-outpost-resolver

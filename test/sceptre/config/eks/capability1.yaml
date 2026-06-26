@@ -1,0 +1,90 @@
+---
+template:
+  type: file
+  path: eks/capability.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "EKS Capabilities for cluster features"
+  capabilities:
+    - name: ArgocdCapability
+      capability_name: argocd
+      cluster_name: production-eks-cluster
+      type: PLATFORM
+      delete_propagation_policy: ORPHAN
+      role_arn: "arn:aws:iam::123456789012:role/eks-argocd-capability-role"
+      deletion_policy: Delete
+      configuration:
+        argo_cd:
+          namespace: argocd
+          server_url: "https://argocd.example.com"
+          aws_idc:
+            idc_instance_arn: "arn:aws:sso:::instance/sso-instance-id"
+            idc_managed_application_arn: "arn:aws:sso:::managedApplication/app-id"
+            idc_region: us-east-1
+          network_access:
+            vpce_ids:
+              - vpce-12345678
+              - vpce-87654321
+          rbac_role_mappings:
+            - role: admin
+              identities:
+                - id: admin-group
+                  type: group
+                - id: admin-user@example.com
+                  type: user
+            - role: developer
+              identities:
+                - id: developer-group
+                  type: group
+      tags:
+        CapabilityType: CICD
+        Environment: Production
+
+    - name: BasicCapability
+      capability_name: basic-platform
+      cluster_name: production-eks-cluster
+      type: PLATFORM
+      delete_propagation_policy: CASCADE
+      role_arn: "arn:aws:iam::123456789012:role/eks-basic-capability-role"
+      deletion_policy: Delete
+      tags:
+        CapabilityType: Platform
+        Environment: Production
+
+    - name: AdvancedArgocdCapability
+      capability_name: argocd-advanced
+      cluster_name: production-eks-cluster
+      type: PLATFORM
+      delete_propagation_policy: ORPHAN
+      role_arn: "arn:aws:iam::123456789012:role/eks-argocd-advanced-role"
+      deletion_policy: Retain
+      configuration:
+        argo_cd:
+          namespace: gitops-system
+          server_url: "https://gitops.example.com"
+          aws_idc:
+            idc_instance_arn: "arn:aws:sso:::instance/advanced-sso-id"
+            idc_region: eu-west-1
+          rbac_role_mappings:
+            - role: admin
+              identities:
+                - id: admin-group@example.com
+                  type: group
+            - role: read-only
+              identities:
+                - id: viewers-group
+                  type: group
+                - id: viewer@example.com
+                  type: user
+      tags:
+        CapabilityType: GitOps
+        Environment: Production
+        Team: Platform
+
+stack_tags:
+  Test: eks-capability
+
+
+

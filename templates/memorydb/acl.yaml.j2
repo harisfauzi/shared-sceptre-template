@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('MemoryDB ACL(s) for '+scep
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for acl in sceptre_user_data.acls %}
 {%- set acl_name = acl.name %}
   {{ acl_name }}:
@@ -27,11 +26,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for acl in sceptre_user_data.acls %}
 {%- set acl_name = acl.name %}
   {{ acl_name }}Arn:
@@ -43,16 +40,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ acl_name }}-Arn"
-
-  {{ acl_name }}Name:
-    Description: ACL Name for {{ acl_name }}
-    Value: {{ acl.acl_name }}
-    Export:
-      Name:
-        Fn::Sub: "${AWS::StackName}-{{ acl_name }}-Name"
-
   {{ acl_name }}Status:
-    Description: Status for {{ acl_name }} (creating | active | modifying | deleting)
+    Description: Status for {{ acl_name }}
     Value:
       Fn::GetAtt:
         - {{ acl_name }}
@@ -60,5 +49,14 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ acl_name }}-Status"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-26:
+Type: AWS::MemoryDB::ACL
+Properties:
+  ACLName: String
+  Tags:
+    - Key: String
+      Value: String
+  UserNames:
+    - String
+#}

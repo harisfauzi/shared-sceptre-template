@@ -1,0 +1,101 @@
+---
+Description: {{sceptre_user_data.description|default('Lightsail Disk Snapshot(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for disk_snapshot in sceptre_user_data.disk_snapshots %}
+{%- set disk_snapshot_name = disk_snapshot.name %}
+  {{ disk_snapshot_name }}:
+    Type: AWS::Lightsail::DiskSnapshot
+    DeletionPolicy: {{ disk_snapshot.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ disk_snapshot.update_replace_policy | default('Delete') }}
+    Properties:
+      DiskName: {{ disk_snapshot.disk_name }}
+      DiskSnapshotName: {{ disk_snapshot.disk_snapshot_name }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if disk_snapshot.tags is defined %}
+{%- for key, value in disk_snapshot.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for disk_snapshot in sceptre_user_data.disk_snapshots %}
+{%- set disk_snapshot_name = disk_snapshot.name %}
+  {{ disk_snapshot_name }}CreatedAt:
+    Description: The creation time for {{ disk_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ disk_snapshot_name }}
+        - CreatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_snapshot_name }}-CreatedAt"
+  {{ disk_snapshot_name }}DiskSnapshotArn:
+    Description: The ARN for {{ disk_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ disk_snapshot_name }}
+        - DiskSnapshotArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_snapshot_name }}-DiskSnapshotArn"
+  {{ disk_snapshot_name }}FromDiskName:
+    Description: The unique name of the source disk from which the disk snapshot {{ disk_snapshot_name }} was created.
+    Value:
+      Fn::GetAtt:
+        - {{ disk_snapshot_name }}
+        - FromDiskName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_snapshot_name }}-FromDiskName"
+  {{ disk_snapshot_name }}ResourceType:
+    Description: The resource type of the disk_snapshot for {{ disk_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ disk_snapshot_name }}
+        - ResourceType
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_snapshot_name }}-ResourceType"
+  {{ disk_snapshot_name }}SizeInGb:
+    Description: The size in GB of the disk snapshot {{ disk_snapshot_name }}.
+    Value:
+      Fn::GetAtt:
+        - {{ disk_snapshot_name }}
+        - SizeInGb
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_snapshot_name }}-SizeInGb"
+  {{ disk_snapshot_name }}State:
+    Description: The state of the disk_snapshot for {{ disk_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ disk_snapshot_name }}
+        - State
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_snapshot_name }}-State"
+  {{ disk_snapshot_name }}SupportCode:
+    Description: The support code of the disk_snapshot for {{ disk_snapshot_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ disk_snapshot_name }}
+        - SupportCode
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ disk_snapshot_name }}-SupportCode"
+{%- endfor %}{#
+# Supported structure as of 2026-06-15:
+Type: AWS::Lightsail::DiskSnapshot
+Properties:
+  DiskName: String
+  DiskSnapshotName: String
+  Tags:
+    - Key: String
+      Value: String
+#}

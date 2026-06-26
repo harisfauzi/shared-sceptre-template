@@ -49,7 +49,8 @@ sceptre_user_data:
           provisioned_throughput:
             read_capacity_units: 5
             write_capacity_units: 5
-          contributor_insights_specification: 'true'
+          contributor_insights_specification:
+            enabled: 'true'
         - index_name: "myGSI2"
           key_schema:
             - attribute_name: "NumberOfSongs"
@@ -64,7 +65,8 @@ sceptre_user_data:
           provisioned_throughput:
             read_capacity_units: 5
             write_capacity_units: 5
-          contributor_insights_specification: 'true'
+          contributor_insights_specification:
+            enabled: 'true'
       local_secondary_indexes:
         - index_name: "myLSI"
           key_schema:

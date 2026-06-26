@@ -1,0 +1,68 @@
+---
+template:
+  type: file
+  path: ses/multi_region_endpoint.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Multi Region Endpoint(s) for testing purposes"
+  multi_region_endpoints:
+    - name: PrimaryEmailEndpoint
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      endpoint_name: "primary-email-endpoint"
+      details:
+        route_details:
+          - region: "us-east-1"
+          - region: "eu-west-1"
+          - region: "ap-southeast-1"
+      tags:
+        Application: "PrimaryEmailService"
+        Environment: "Production"
+        Priority: "High"
+
+    - name: MarketingCampaignsEndpoint
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      endpoint_name: "marketing-campaigns-endpoint"
+      details:
+        route_details:
+          - region: "us-west-2"
+          - region: "eu-central-1"
+          - region: "ap-northeast-1"
+      tags:
+        Application: "MarketingService"
+        Environment: "Production"
+        Department: "Marketing"
+
+    - name: TransactionalEmailEndpoint
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      endpoint_name: "transactional-email-endpoint"
+      details:
+        route_details:
+          - region: "us-east-1"
+          - region: "us-west-2"
+          - region: "eu-west-1"
+          - region: "ap-southeast-2"
+      tags:
+        Application: "TransactionalEmailService"
+        Environment: "Production"
+        CriticalService: "true"
+
+    - name: NotificationServiceEndpoint
+      endpoint_name: "notification-service-endpoint"
+      details:
+        route_details:
+          - region: "us-east-1"
+          - region: "eu-west-1"
+      tags:
+        Application: "NotificationService"
+        Environment: "Production"
+        Purpose: "SystemNotifications"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-multi-region-endpoint

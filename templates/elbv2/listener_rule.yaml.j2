@@ -12,50 +12,75 @@ Resources:
     UpdateReplacePolicy: {{ listener_rule.update_replace_policy | default('Delete') }}
     Properties:
       Actions:
-{{- listener_action.prep(listener_rule.actions) }}
+        {{- listener_action.prep(listener_rule.actions) | indent(width=8, first=false)}}
       Conditions:
 {%- for condition in listener_rule.conditions %}
         -
 {%- if condition.field is defined %}
           Field: {{ condition.field }}
 {%- endif%}
-{%- if condition.host_header_config is defined %}
+{%- if condition.host_header_config is defined %}{# BEGIN if condition.host_header_config is defined #}
           HostHeaderConfig:
+{%- if condition.host_header_config.regex_values is defined %}{# BEGIN if condition.host_header_config.regex_values is defined #}
+            RegexValues:
+{%- for value in condition.host_header_config.regex_values %}
+              - {{ value }}
+{%- endfor %}
+{%- endif %}{# END if condition.host_header_config.regex_values is defined #}
+{%- if condition.host_header_config._values is defined %}{# BEGIN if condition.host_header_config._values is defined #}
             Values:
 {%- for value in condition.host_header_config._values %}
               - {{ value }}
 {%- endfor %}
-{%- endif%}
-{%- if condition.http_header_config is defined %}
+{%- endif %}{# END if condition.host_header_config._values is defined #}
+{%- endif %}{# END if condition.host_header_config is defined #}
+{%- if condition.http_header_config is defined %}{# BEGIN if condition.http_header_config is defined #}
           HttpHeaderConfig:
 {%- if condition.http_header_config.http_header_name is defined %}
             HttpHeaderName: {{ condition.http_header_config.http_header_name }}
 {%- endif %}
-{%- if condition.http_header_config._values is defined %}
+{%- if condition.http_header_config.regex_values is defined %}{# BEGIN if condition.http_header_config.regex_values is defined #}
+            RegexValues:
+{%- for value in condition.http_header_config.regex_values %}
+              - {{ value }}
+{%- endfor %}
+{%- endif %}{# END if condition.http_header_config.regex_values is defined #}
+{%- if condition.http_header_config._values is defined %}{# BEGIN if condition.http_header_config._values is defined #}
             Values:
 {%- for value in condition.http_header_config._values %}
               - {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- endif%}
-{%- if condition.http_request_method_config is defined %}
+{%- endif %}{# END if condition.http_header_config._values is defined #}
+{%- endif%}{# END if condition.http_header_config is defined #}
+{%- if condition.http_request_method_config is defined %}{# BEGIN if condition.http_request_method_config is defined #}
           HttpRequestMethodConfig:
+{%- if condition.http_request_method_config._values is defined %}{# BEGIN if condition.http_request_method_config._values is defined #}
             Values:
 {%- for value in condition.http_request_method_config._values %}
               - {{ value }}
 {%- endfor %}
-{%- endif%}
-{%- if condition.path_pattern_config is defined %}
+{%- endif %}{# END if condition.http_request_method_config._values is defined #}
+{%- endif %}{# END if condition.http_request_method_config is defined #}
+{%- if condition.path_pattern_config is defined %}{# BEGIN if condition.path_pattern_config is defined #}
           PathPatternConfig:
+{%- if condition.path_pattern_config.regex_values is defined %}{# BEGIN if condition.path_pattern_config.regex_values is defined #}
+            RegexValues:
+{%- for value in condition.path_pattern_config.regex_values %}
+              - {{ value }}
+{%- endfor %}
+{%- endif %}{# END if condition.path_pattern_config.regex_values is defined #}
+{%- if condition.path_pattern_config._values is defined %}{# BEGIN if condition.path_pattern_config._values is defined #}
             Values:
 {%- for value in condition.path_pattern_config._values %}
               - {{ value }}
 {%- endfor %}
-{%- endif%}
-{%- if condition.query_string_config is defined %}
+{%- endif %}{# END if condition.path_pattern_config._values is defined #}
+{%- endif %}{# END if condition.path_pattern_config is defined #}
+{%- if condition.query_string_config is defined %}{# BEGIN if condition.query_string_config is defined #}
           QueryStringConfig:
+{%- if condition.query_string_config._values is defined %}{# BEGIN if condition.query_string_config._values is defined #}
             Values:
-{%- for value in condition.path_pattern_config._values %}
+{%- for value in condition.query_string_config._values %}{# BEGIN for value in condition.query_string_config._values #}
               -
 {%- if value.key is defined %}
                 Key: {{ value.key }}
@@ -63,26 +88,60 @@ Resources:
 {%- if value.value is defined %}
                 Value: {{ value.value }}
 {%- endif %}
+{%- endfor %}{# END for value in condition.query_string_config._values #}
+{%- endif %}{# END if condition.query_string_config._values is defined #}
+{%- endif %}{# END if condition.query_string_config is defined #}
+{%- if condition.regex_values is defined %}{# BEGIN if condition.regex_values is defined #}
+          RegexValues:
+{%- for value in condition.regex_values %}
+            - {{ value }}
 {%- endfor %}
-{%- endif%}
-{%- if condition.source_ip_config is defined %}
+{%- endif %}{# END if condition.regex_values is defined #}
+{%- if condition.source_ip_config is defined %}{# BEGIN if condition.source_ip_config is defined #}
           SourceIpConfig:
+{%- if condition.source_ip_config._values is defined %}{# BEGIN if condition.source_ip_config._values is defined #}
             Values:
 {%- for value in condition.source_ip_config._values %}
               - {{ value }}
 {%- endfor %}
-{%- endif%}
-{%- if condition._values is defined %}
+{%- endif %}{# END if condition.source_ip_config._values is defined #}
+{%- endif %}{# END if condition.source_ip_config is defined #}
+{%- if condition._values is defined %}{# BEGIN if condition._values is defined #}
           Values:
 {%- for value in condition._values %}
             - {{ value }}
 {%- endfor %}
-{%- endif%}
+{%- endif %}{# END if condition._values is defined #}
 {%- endfor %}
 {%- if listener_rule.listener_arn is defined %}
       ListenerArn: {{ listener_rule.listener_arn }}
 {%- endif %}
       Priority: {{ listener_rule.priority }}
+{%- if listener_rule.transforms is defined %}{# BEGIN if listener_rule.transforms is defined #}
+      Transforms:
+{%- for transform in listener_rule.transforms %}{# BEGIN for transform in listener_rule.transforms #}
+        -
+          Type: {{ transform.type }}
+{%- if transform.host_header_rewrite_config is defined %}{# BEGIN if transform.host_header_rewrite_config is defined #}
+          HostHeaderRewriteConfig:
+            Rewrites:
+{%- for rewrite in transform.host_header_rewrite_config.rewrites %}
+              -
+                Regex: {{ rewrite.regex }}
+                Replace: {{ rewrite.replace }}
+{%- endfor %}
+{%- endif %}{# END if transform.host_header_rewrite_config is defined #}
+{%- if transform.url_rewrite_config is defined %}{# BEGIN if transform.url_rewrite_config is defined #}
+          UrlRewriteConfig:
+            Rewrites:
+{%- for rewrite in transform.url_rewrite_config.rewrites %}
+              -
+                Regex: {{ rewrite.regex }}
+                Replace: {{ rewrite.replace }}
+{%- endfor %}
+{%- endif %}{# END if transform.url_rewrite_config is defined #}
+{%- endfor %}{# END for transform in listener_rule.transforms #}
+{%- endif %}{# END if listener_rule.transforms is defined #}
 {%- endfor %}
 
 Outputs:
@@ -95,10 +154,17 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ listener_rule_name }}"
-
-{%- endfor %}
-{#
-# Supported structure as of 20241028:
+  {{ listener_rule_name }}RuleArn:
+    Description: The ARN of {{ listener_rule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ listener_rule_name }}
+        - RuleArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ listener_rule_name }}-RuleArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-26:
 Type: AWS::ElasticLoadBalancingV2::ListenerRule
 Properties:
   Actions:
@@ -139,6 +205,15 @@ Properties:
         TargetGroupStickinessConfig:
           DurationSeconds: Integer
           Enabled: Boolean
+      JwtValidationConfig:
+        AdditionalClaims:
+          -
+            Format: String
+            Name: String
+            Values:
+              - String
+        Issuer: String
+        JwksEndpoint: String
       Order: Integer
       RedirectConfig:
         Host: String
@@ -153,16 +228,22 @@ Properties:
     -
       Field: String
       HostHeaderConfig:
+        RegexValues:
+          - String
         Values:
           - String
       HttpHeaderConfig:
         HttpHeaderName: String
+        RegexValues:
+          - String
         Values:
           - String
       HttpRequestMethodConfig:
         Values:
           - String
       PathPatternConfig:
+        RegexValues:
+          - String
         Values:
           - String
       QueryStringConfig:
@@ -170,6 +251,8 @@ Properties:
           -
             Key: String
             Value: String
+      RegexValues:
+        - String
       SourceIpConfig:
         Values:
           - String
@@ -177,4 +260,17 @@ Properties:
         - String
   ListenerArn: String
   Priority: Integer
+  Transforms:
+    -
+      HostHeaderRewriteConfig:
+        Rewrites:
+          -
+            Regex: String
+            Replace: String
+      Type: String
+      UrlRewriteConfig:
+        Rewrites:
+          -
+            Regex: String
+            Replace: String
 #}

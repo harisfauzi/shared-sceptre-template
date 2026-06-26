@@ -1,0 +1,44 @@
+---
+template:
+  type: file
+  path: securityhub/standard.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SecurityHub Standard(s) for testing purposes"
+  standards:
+    - name: CisAwsFoundationsBenchmark
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      standards_arn: "arn:aws:securityhub:us-east-1::standards/aws-foundational-security-best-practices/v/1.0.0"
+      disabled_standards_controls:
+        - standards_control_arn: "arn:aws:securityhub:us-east-1:123456789012:control/aws-foundational-security-best-practices/v/1.0.0/CloudFormation.1"
+          reason: "Not applicable to our infrastructure"
+        - standards_control_arn: "arn:aws:securityhub:us-east-1:123456789012:control/aws-foundational-security-best-practices/v/1.0.0/AppConfig.1"
+          reason: "Manual review process in place"
+
+    - name: PciDssV321Standard
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      standards_arn: "arn:aws:securityhub:us-east-1::standards/pci-dss/v/3.2.1"
+      disabled_standards_controls:
+        - standards_control_arn: "arn:aws:securityhub:us-east-1:123456789012:control/pci-dss/v/3.2.1/DynamoDB.1"
+
+    - name: NistCybersecurityFramework
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      standards_arn: "arn:aws:securityhub:us-east-1::standards/nist-csf/v/1.1.0"
+
+    - name: Soc2Standard
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      standards_arn: "arn:aws:securityhub:us-east-1::standards/soc-2/v/1.0.0"
+      disabled_standards_controls:
+        - standards_control_arn: "arn:aws:securityhub:us-east-1:123456789012:control/soc-2/v/1.0.0/Logging.3"
+          reason: "Legacy system exclusion approved by compliance"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: securityhub-standard

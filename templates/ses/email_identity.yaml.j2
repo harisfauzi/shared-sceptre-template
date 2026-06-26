@@ -1,0 +1,93 @@
+---
+Description: {{sceptre_user_data.description|default('SES Email Identity(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for email_identity in sceptre_user_data.email_identities %}
+{%- set email_identity_name = email_identity.name %}
+  {{ email_identity_name }}:
+    Type: AWS::SES::EmailIdentity
+    Properties:
+      EmailIdentity: {{ email_identity.email_identity }}
+{%- if email_identity.configuration_set_attributes is defined %}{# BEGIN if email_identity.configuration_set_attributes is defined #}
+      ConfigurationSetAttributes:
+{%- if email_identity.configuration_set_attributes.configuration_set_name %}
+        ConfigurationSetName: {{ email_identity.configuration_set_attributes.configuration_set_name }}
+{%- endif %}
+{%- endif %}{# END if email_identity.configuration_set_attributes is defined #}
+{%- if email_identity.dkim_attributes is defined %}{# BEGIN if email_identity.dkim_attributes is defined #}
+      DkimAttributes:
+{%- if email_identity.dkim_attributes.signing_enabled is defined %}
+        SigningEnabled: {{ email_identity.dkim_attributes.signing_enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if email_identity.dkim_attributes is defined #}
+{%- if email_identity.dkim_signing_attributes is defined %}{# BEGIN if email_identity.dkim_signing_attributes is defined #}
+      DkimSigningAttributes:
+{%- if email_identity.dkim_signing_attributes.domain_signing_private_key is defined %}
+        DomainSigningPrivateKey: {{ email_identity.dkim_signing_attributes.domain_signing_private_key }}
+{%- endif %}
+{%- if email_identity.dkim_signing_attributes.domain_signing_selector is defined %}
+        DomainSigningSelector: {{ email_identity.dkim_signing_attributes.domain_signing_selector }}
+{%- endif %}
+{%- if email_identity.dkim_signing_attributes.next_signing_key_length is defined %}
+        NextSigningKeyLength: {{ email_identity.dkim_signing_attributes.next_signing_key_length }}
+{%- endif %}
+{%- endif %}{# END if email_identity.dkim_signing_attributes is defined #}
+{%- if email_identity.feedback_attributes is defined %}{# BEGIN if email_identity.feedback_attributes is defined #}
+      FeedbackAttributes:
+{%- if email_identity.feedback_attributes.email_forwarding_enabled is defined %}
+        EmailForwardingEnabled: {{ email_identity.feedback_attributes.email_forwarding_enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if email_identity.feedback_attributes is defined #}
+{%- if email_identity.mail_from_attributes is defined %}{# BEGIN if email_identity.mail_from_attributes is defined #}
+      MailFromAttributes:
+{%- if email_identity.mail_from_attributes.behavior_on_mx_failure is defined %}
+        BehaviorOnMxFailure: {{ email_identity.mail_from_attributes.behavior_on_mx_failure }}
+{%- endif %}
+{%- if email_identity.mail_from_attributes.mail_from_domain is defined %}
+        MailFromDomain: {{ email_identity.mail_from_attributes.mail_from_domain }}
+{%- endif %}
+{%- endif %}{# END if email_identity.mail_from_attributes is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if email_identity.tags is defined %}
+{%- for key,value in email_identity.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for email_identity in sceptre_user_data.email_identities %}
+{%- set email_identity_name = email_identity.name %}
+  {{ email_identity_name }}:
+    Description: Email Identity Name for {{ email_identity_name }}
+    Value:
+      Ref: {{ email_identity_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ email_identity_name }}"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::EmailIdentity
+Properties:
+  ConfigurationSetAttributes:
+    ConfigurationSetName: String
+  DkimAttributes:
+    SigningEnabled: Boolean
+  DkimSigningAttributes:
+    DomainSigningPrivateKey: String
+    DomainSigningSelector: String
+    NextSigningKeyLength: String
+  EmailIdentity: String
+  FeedbackAttributes:
+    EmailForwardingEnabled: Boolean
+  MailFromAttributes:
+    BehaviorOnMxFailure: String
+    MailFromDomain: String
+  Tags:
+    - Key: String
+      Value: String
+#}

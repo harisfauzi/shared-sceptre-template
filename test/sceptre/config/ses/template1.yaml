@@ -1,0 +1,86 @@
+---
+template:
+  type: file
+  path: ses/template.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Email Template(s) for testing purposes"
+  templates:
+    - name: WelcomeEmailTemplate
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      template:
+        subject_part: "Welcome to {% raw %}{{ company_name }}{% endraw %}!"
+        template_name: "welcome-email"
+        html_part: |-
+          <html>
+            <body>
+              <h1>Welcome {% raw %}{{first_name}}{% endraw %}!</h1>
+              <p>Thank you for joining our service.</p>
+            </body>
+          </html>
+        text_part: |-
+          Welcome {% raw %}{{first_name}}{% endraw %}!
+          Thank you for joining our service.
+      tags:
+        EmailType: Transactional
+        Department: Marketing
+
+    - name: PasswordResetTemplate
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      template:
+        subject_part: "Password Reset Request"
+        template_name: "password-reset"
+        html_part: |-
+          <html>
+            <body>
+              <h2>Reset Your Password</h2>
+              <p>Click <a href="{% raw %}{{reset_link}}{% endraw %}">here</a> to reset your password.</p>
+              <p>Link expires in 24 hours.</p>
+            </body>
+          </html>
+        text_part: |-
+          Reset Your Password
+          Click the following link to reset your password: {% raw %}{{reset_link}}{% endraw %}
+          Link expires in 24 hours.
+      tags:
+        EmailType: Security
+        Department: Authentication
+
+    - name: OrderConfirmationTemplate
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      template:
+        subject_part: "Order Confirmation #{% raw %}{{order_id}}{% endraw %}"
+        template_name: "order-confirmation"
+        html_part: |-
+          <html>
+            <body>
+              <h3>Your Order Confirmed</h3>
+              <p>Order ID: {% raw %}{{order_id}}{% endraw %}</p>
+              <p>Total: ${% raw %}{{total_amount}}{% endraw %}</p>
+            </body>
+          </html>
+        text_part: |-
+          Order Confirmation
+          Order ID: {% raw %}{{order_id}}{% endraw %}
+          Total: ${% raw %}{{total_amount}}{% endraw %}
+
+    - name: NotificationTemplate
+      template:
+        subject_part: "System Notification: {% raw %}{{notification_type}}{% endraw %}"
+        template_name: "system-notification"
+        html_part: |-
+          <html>
+            <body>
+              <p>{% raw %}{{message}}{% endraw %}</p>
+            </body>
+          </html>
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-template

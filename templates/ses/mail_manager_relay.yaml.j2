@@ -1,0 +1,70 @@
+---
+Description: {{sceptre_user_data.description|default('SES Mail Manager Relay(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for mail_manager_relay in sceptre_user_data.mail_manager_relays %}
+{%- set mail_manager_relay_name = mail_manager_relay.name %}
+  {{ mail_manager_relay_name }}:
+    Type: AWS::SES::MailManagerRelay
+    DeletionPolicy: {{ mail_manager_relay.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ mail_manager_relay.update_replace_policy | default('Delete') }}
+    Properties:
+      Authentication:
+{%- if mail_manager_relay.authentication.no_authentication is defined %}
+        NoAuthentication: {}
+{%- endif %}
+{%- if mail_manager_relay.authentication.secret_arn is defined %}
+        SecretArn: {{ mail_manager_relay.authentication.secret_arn | trim }}
+{%- endif %}
+      ServerName: {{ mail_manager_relay.server_name }}
+      ServerPort: {{ mail_manager_relay.server_port }}
+{%- if mail_manager_relay.relay_name is defined %}
+      RelayName: {{ mail_manager_relay.relay_name }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if mail_manager_relay.tags is defined %}
+{%- for key,value in mail_manager_relay.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for mail_manager_relay in sceptre_user_data.mail_manager_relays %}
+{%- set mail_manager_relay_name = mail_manager_relay.name %}
+  {{ mail_manager_relay_name }}RelayArn:
+    Description: The ARN of the relay for {{ mail_manager_relay_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_relay_name }}
+        - RelayArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_relay_name }}-RelayArn"
+  {{ mail_manager_relay_name }}RelayId:
+    Description: The unique ID of the relay for {{ mail_manager_relay_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_relay_name }}
+        - RelayId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_relay_name }}-RelayId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::MailManagerRelay
+Properties:
+  Authentication:
+    NoAuthentication: Json
+    SecretArn: String
+  RelayName: String
+  ServerName: String
+  ServerPort: Number
+  Tags:
+    - Key: String
+      Value: String
+#}

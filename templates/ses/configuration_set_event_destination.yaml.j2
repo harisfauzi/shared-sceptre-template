@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('SES ConfigurationSetEventDestination(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('SES Configuration Set Event Destination(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for configuration_set_event_destination in sceptre_user_data.configuration_set_event_destinations %}
 {%- set configuration_set_event_destination_name = configuration_set_event_destination.name %}
   {{ configuration_set_event_destination_name }}:
@@ -17,7 +16,7 @@ Resources:
 {%- for type in configuration_set_event_destination.event_destination.matching_event_types %}
           - {{ type }}
 {%- endfor %}
-{%- if configuration_set_event_destination.event_destination.cloud_watch_destination is defined %}
+{%- if configuration_set_event_destination.event_destination.cloud_watch_destination is defined %}{# BEGIN if configuration_set_event_destination.event_destination.cloud_watch_destination is defined #}
         CloudWatchDestination:
           DimensionConfigurations:
 {%- for configuration in configuration_set_event_destination.event_destination.cloud_watch_destination.dimension_configurations %}
@@ -25,9 +24,13 @@ Resources:
               DimensionName: {{ configuration.dimension_name }}
               DimensionValueSource: {{ configuration.dimension_value_source }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if configuration_set_event_destination.event_destination.cloud_watch_destination is defined #}
 {%- if configuration_set_event_destination.event_destination.enabled is defined %}
-        Enabled: {{ configuration_set_event_destination.event_destination.enabled }}
+        Enabled: {{ configuration_set_event_destination.event_destination.enabled | lower }}
+{%- endif %}
+{%- if configuration_set_event_destination.event_destination.event_bridge_destination is defined %}
+        EventBridgeDestination:
+          EventBusArn: {{ configuration_set_event_destination.event_destination.event_bridge_destination.event_bus_arn | trim }}
 {%- endif %}
 {%- if configuration_set_event_destination.event_destination.kinesis_firehose_destination is defined %}
         KinesisFirehoseDestination:
@@ -37,5 +40,31 @@ Resources:
 {%- if configuration_set_event_destination.event_destination.name is defined %}
         Name: {{ configuration_set_event_destination.event_destination.name }}
 {%- endif %}
-
-{%- endfor %}
+{%- if configuration_set_event_destination.event_destination.sns_destination is defined %}
+        SnsDestination:
+          TopicARN: {{ configuration_set_event_destination.event_destination.sns_destination.topic_arn | trim }}
+{%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::ConfigurationSetEventDestination
+Properties:
+  ConfigurationSetName: String
+  EventDestination:
+    CloudWatchDestination:
+      DimensionConfigurations:
+        -
+          DefaultDimensionValue: String
+          DimensionName: String
+          DimensionValueSource: String
+    Enabled: Boolean
+    EventBridgeDestination:
+      EventBusArn: String
+    KinesisFirehoseDestination:
+      DeliveryStreamARN: String
+      IAMRoleARN: String
+    MatchingEventTypes:
+      - String
+    Name: String
+    SnsDestination:
+      TopicARN: String
+#}

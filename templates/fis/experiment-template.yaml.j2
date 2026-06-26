@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('FIS ExperimentTemplate(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('FIS Experiment Template(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for experiment_template in sceptre_user_data.experiment_templates %}
 {%- set experiment_template_name = experiment_template.name %}
   {{ experiment_template_name }}:
@@ -14,13 +13,13 @@ Resources:
       Description: {{experiment_template.description}}
       RoleArn: {{experiment_template.role_arn | trim}}
       StopConditions:
-{%- for stop_condition in experiment_template.stop_conditions %}
+{%- for stop_condition in experiment_template.stop_conditions %}{# BEGIN for stop_condition in experiment_template.stop_conditions #}
         -
           Source: {{stop_condition.source}}
 {%- if stop_condition.value is defined %}
           Value: {{stop_condition.value}}
 {%- endif %}
-{%- endfor %}
+{%- endfor %}{# END for stop_condition in experiment_template.stop_conditions #}
       Tags:
         SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
 {%- if experiment_template.tags is defined %}
@@ -29,97 +28,120 @@ Resources:
 {%- endfor %}
 {%- endif %}
       Targets:
-{%- for key,target in experiment_template.targets.items() %}{# BEGIN {%- for key,target in experiment_template.targets.items() %} #}
-        {{key}}:
-          ResourceType: {{target.resource_type}}
-          SelectionMode: {{target.selection_mode}}
-{%- if target.filters is defined %}{# BEGIN {%- if target.filters is defined %} #}
+{%- for key,target in experiment_template.targets.items() %}{# BEGIN for key,target in experiment_template.targets.items() #}
+        {{ key }}:
+          ResourceType: {{ target.resource_type }}
+          SelectionMode: {{ target.selection_mode }}
+{%- if target.filters is defined %}{# BEGIN if target.filters is defined #}
           Filters:
-{%- for _filter in target.filters %}
+{%- for _filter in target.filters %}{# BEGIN for _filter in target.filters #}
             -
-              Path: {{_filter.path}}
+              Path: {{ _filter.path }}
               Values:
 {%- for value in _filter._values %}
-                - {{value}}
+                - {{ value }}
 {%- endfor %}
-{%- endfor %}
-{%- endif %}{# END {%- if target.filters is defined %} #}
-{%- if target.parameters is defined %}
+{%- endfor %}{# END for _filter in target.filters #}
+{%- endif %}{# END if target.filters is defined #}
+{%- if target.parameters is defined %}{# BEGIN if target.parameters is defined #}
           Parameters:
 {%- for key,value in target.parameters.items() %}
-            {{key}}: {{value}}
+            {{ key }}: {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- if target.resource_arns is defined %}
+{%- endif %}{# END if target.parameters is defined #}
+{%- if target.resource_arns is defined %}{# BEGIN if target.resource_arns is defined #}
           ResourceArns:
 {%- for resource_arn in target.resource_arns %}
-            - {{resource_arn}}
+            - {{ resource_arn | trim }}
 {%- endfor %}
-{%- endif %}
-{%- if target.resource_tags is defined %}
+{%- endif %}{# END if target.resource_arns is defined #}
+{%- if target.resource_tags is defined %}{# BEGIN if target.resource_tags is defined #}
           ResourceTags:
 {%- for key,value in target.resource_tags.items() %}
-            {{key}}: {{value}}
+            {{ key }}: {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}{# END {%- for key,target in experiment_template.targets.items() %} #}
-{%- if experiment_template.actions is defined %}{# BEGIN {%- if experiment_template.actions is defined %} #}
+{%- endif %}{# END if target.resource_tags is defined #}
+{%- endfor %}{# END for key,target in experiment_template.targets.items() #}
+{%- if experiment_template.actions is defined %}{# BEGIN if experiment_template.actions is defined #}
       Actions:
-{%- for key,action in experiment_template.actions.items() %}
-        {{key}}:
-          ActionId: {{action.action_id}}
+{%- for key,action in experiment_template.actions.items() %}{# BEGIN for key,action in experiment_template.actions.items() #}
+        {{ key }}:
+          ActionId: {{ action.action_id }}
 {%- if action.description is defined %}
-          Description: {{action.description}}
+          Description: {{ action.description }}
 {%- endif %}
 {%- if action.parameters is defined %}
           Parameters:
 {%- for key,value in action.parameters.items() %}
-            {{key}}: {{value}}
+            {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-{%- if action.start_after is defined %}
+{%- if action.start_after is defined %}{# BEGIN if action.start_after is defined#}
           StartAfter:
 {%- for after_action in action.start_after %}
-            - {{after_action}}
+            - {{ after_action }}
 {%- endfor %}
-{%- endif %}
-{%- if action.targets is defined %}
+{%- endif %}{# END if action.start_after is defined #}
+{%- if action.targets is defined %}{# BEGIN if action.targets is defined #}
           Targets:
 {%- for key,value in action.targets.items() %}
-            {{key}}: {{value}}
+            {{ key }}: {{ value }}
 {%- endfor %}
-{%- endif %}
-{%- endfor %}
-{%- endif %}{# END {%- if experiment_template.actions is defined %} #}
-{%- if experiment_template.experiment_options is defined %}{# BEGIN {%- if experiment_template.experiment_options is defined %} #}
+{%- endif %}{# END if action.targets is defined #}
+{%- endfor %}{# END for key,action in experiment_template.actions.items() #}
+{%- endif %}{# END if experiment_template.actions is defined #}
+{%- if experiment_template.experiment_options is defined %}{# BEGIN if experiment_template.experiment_options is defined #}
       ExperimentOptions:
 {%- if experiment_template.experiment_options.account_targeting is defined %}
-        AccountTargeting: {{experiment_template.experiment_options.account_targeting}}
+        AccountTargeting: {{ experiment_template.experiment_options.account_targeting }}
 {%- endif %}
 {%- if experiment_template.experiment_options.empty_target_resolution_mode is defined %}
-        EmptyTargetResolutionMode: {{experiment_template.experiment_options.empty_target_resolution_mode}}
+        EmptyTargetResolutionMode: {{ experiment_template.experiment_options.empty_target_resolution_mode }}
 {%- endif %}
-{%- endif %}{# END {%- if experiment_template.experiment_options is defined %} #}
-{%- if experiment_template.log_configuration is defined %}{# BEGIN {%- if experiment_template.log_configuration is defined %} #}
+{%- endif %}{# END if experiment_template.experiment_options is defined #}
+{%- if experiment_template.experiment_report_configuration is defined %}{# BEGIN if experiment_template.experiment_report_configuration is defined #}
+      ExperimentReportConfiguration:
+        Outputs:
+          ExperimentReportS3Configuration:
+            BucketName: {{ experiment_template.experiment_report_configuration.outputs.experiment_report_s3_configuration.bucket_name }}
+{%- if experiment_template.experiment_report_configuration.outputs.experiment_report_s3_configuration.prefix is defined %}
+            Prefix: {{ experiment_template.experiment_report_configuration.outputs.experiment_report_s3_configuration.prefix }}
+{%- endif %}
+{%- if experiment_template.experiment_report_configuration.data_sources is defined %}{# BEGIN if experiment_template.experiment_report_configuration.data_sources is defined #}
+        DataSources:
+{%- if experiment_template.experiment_report_configuration.data_sources.cloud_watch_dashboards is defined %}{# BEGIN if experiment_template.experiment_report_configuration.data_sources.cloud_watch_dashboards is defined #}
+          CloudWatchDashboards:
+{%- for dashboard in experiment_template.experiment_report_configuration.data_sources.cloud_watch_dashboards %}
+            -
+              DashboardIdentifier: {{ dashboard.dashboard_identifier }}
+{%- endfor %}
+{%- endif %}{# END if experiment_template.experiment_report_configuration.data_sources.cloud_watch_dashboards is defined #}
+{%- endif %}{# END if experiment_template.experiment_report_configuration.data_sources is defined #}
+{%- if experiment_template.experiment_report_configuration.post_experiment_duration is defined %}
+        PostExperimentDuration: {{ experiment_template.experiment_report_configuration.post_experiment_duration }}
+{%- endif %}
+{%- if experiment_template.experiment_report_configuration.pre_experiment_duration is defined %}
+        PreExperimentDuration: {{ experiment_template.experiment_report_configuration.pre_experiment_duration }}
+{%- endif %}
+{%- endif %}{# END if experiment_template.experiment_report_configuration is defined #}
+{%- if experiment_template.log_configuration is defined %}{# BEGIN if experiment_template.log_configuration is defined #}
       LogConfiguration:
-        LogSchemaVersion: {{experiment_template.log_configuration.log_schema_version}}
+        LogSchemaVersion: {{ experiment_template.log_configuration.log_schema_version }}
 {%- if experiment_template.log_configuration.cloud_watch_logs_configuration is defined %}
         CloudWatchLogsConfiguration:
-          LogGroupArn: {{experiment_template.log_configuration.cloud_watch_logs_configuration.log_group_arn}}
+          LogGroupArn: {{ experiment_template.log_configuration.cloud_watch_logs_configuration.log_group_arn | trim }}
 {%- endif %}
-{%- if experiment_template.log_configuration.s3_configuration is defined %}
+{%- if experiment_template.log_configuration.s3_configuration is defined %}{# BEGIN if experiment_template.log_configuration.s3_configuration is defined #}
         S3Configuration:
-          BucketName: {{experiment_template.log_configuration.s3_configuration.bucket_name}}
-{%- if experiment_template.log_configuration.s3_configuration.s3_configuration.prefix is defined %}
-          Prefix: {{experiment_template.log_configuration.s3_configuration.s3_configuration.prefix}}
+          BucketName: {{ experiment_template.log_configuration.s3_configuration.bucket_name }}
+{%- if experiment_template.log_configuration.s3_configuration.prefix is defined %}
+          Prefix: {{ experiment_template.log_configuration.s3_configuration.prefix }}
 {%- endif %}
-{%- endif %}
-{%- endif %}{# END {%- if experiment_template.log_configuration is defined %} #}
-
+{%- endif %}{# END if experiment_template.log_configuration.s3_configuration is defined #}
+{%- endif %}{# END if experiment_template.log_configuration is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for experiment_template in sceptre_user_data.experiment_templates %}
 {%- set experiment_template_name = experiment_template.name %}
   {{ experiment_template_name }}:
@@ -129,5 +151,71 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ experiment_template_name }}"
-
-{%- endfor %}
+  {{ experiment_template_name }}Id:
+    Description: The Template ID for {{ experiment_template_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ experiment_template_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ experiment_template_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-06-22:
+Type: AWS::FIS::ExperimentTemplate
+Properties:
+  Actions:
+    Key:
+      ActionId: String
+      Description: String
+      Parameters:
+        Key: Value
+      StartAfter:
+        - String
+      Targets:
+        Key: Value
+  Description: String
+  ExperimentOptions:
+    AccountTargeting: String
+    EmptyTargetResolutionMode: String
+  ExperimentReportConfiguration:
+    DataSources:
+      CloudWatchDashboards:
+        -
+          DashboardIdentifier: String
+    Outputs:
+      ExperimentReportS3Configuration:
+        BucketName: String
+        Prefix: String
+    PostExperimentDuration: String
+    PreExperimentDuration: String
+  LogConfiguration:
+    CloudWatchLogsConfiguration:
+      LogGroupArn: String
+    LogSchemaVersion: Integer
+    S3Configuration:
+      BucketName: String
+      Prefix: String
+  RoleArn: String
+  StopConditions:
+    -
+      Source: String
+      Value: String
+  Tags:
+    Key: Value
+  Targets:
+    Key:
+      Filters:
+        -
+          Path: String
+          Values:
+            - String
+      Parameters:
+        Key: Value
+      ResourceArns:
+        - String
+      ResourceTags:
+        Key: Value
+      ResourceType: String
+      SelectionMode: String
+#}

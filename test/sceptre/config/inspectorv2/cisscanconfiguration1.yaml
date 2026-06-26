@@ -1,0 +1,51 @@
+---
+template:
+  type: file
+  path: inspectorv2/cis_scan_configuration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: InspectorV2 CIS Scan Configurations for {{project_code}}
+  cis_scan_configurations:
+    - name: WeeklyProductionScan
+      scan_name: prod-cis-weekly-scan
+      security_level: LEVEL_1
+      schedule:
+        weekly:
+          days:
+            - MONDAY
+            - WEDNESDAY
+            - FRIDAY
+          start_time:
+            time_of_day: "02:00"
+            time_zone: "America/New_York"
+      targets:
+        account_ids:
+          - "123456789012"
+        target_resource_tags:
+          - Environment: Production
+          - Service: WebServers
+      tags:
+        ScanType: Compliance
+        Environment: Production
+    - name: DailyStaging
+      scan_name: staging-cis-daily-scan
+      security_level: LEVEL_2
+      schedule:
+        daily:
+          start_time:
+            time_of_day: "03:00"
+            time_zone: "America/Chicago"
+      targets:
+        account_ids:
+          - "123456789012"
+          - "234567890123"
+        target_resource_tags:
+          - Environment: Staging
+      tags:
+        ScanType: Compliance
+        Environment: Staging
+
+stack_tags:
+  Test: inspectorv2-cisscanconfiguration

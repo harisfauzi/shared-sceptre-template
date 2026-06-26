@@ -1,0 +1,33 @@
+---
+template:
+  type: file
+  path: inspectorv2/code_security_integration.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: InspectorV2 Code Security Integrations for {{project_code}}
+  code_security_integrations:
+    - name: GitLabSelfManagedIntegration
+      code_security_integration_name: gitlab-integration
+      type: GITLAB_SELF_MANAGED
+      create_integration_details:
+        gitlab_self_managed:
+          access_token: "glpat-abcdef123456"
+          instance_url: "https://gitlab.example.com"
+      tags:
+        RepositoryType: GitLab
+        Environment: Production
+    - name: GitHubIntegration
+      code_security_integration_name: github-integration
+      type: GITHUB
+      update_integration_details:
+        github:
+          code: "gho_code_example_12345"
+          installation_id: "12345678"
+      tags:
+        RepositoryType: GitHub
+        Environment: Production
+
+stack_tags:
+  Test: inspectorv2-codesecurityintegration1

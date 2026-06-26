@@ -1,0 +1,53 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityHub Policy Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for policy_association in sceptre_user_data.policy_associations %}
+{%- set policy_association_name = policy_association.name %}
+  {{ policy_association_name }}:
+    Type: AWS::SecurityHub::PolicyAssociation
+    DeletionPolicy: {{ policy_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ policy_association.update_replace_policy | default('Delete') }}
+    Properties:
+      ConfigurationPolicyId: {{ policy_association.configuration_policy_id | trim }}
+      TargetId: {{ policy_association.target_id | trim }}
+      TargetType: {{ policy_association.target_type }}
+{%- endfor %}
+
+Outputs:
+{%- for policy_association in sceptre_user_data.policy_associations %}
+{%- set policy_association_name = policy_association.name %}
+  {{ policy_association_name }}:
+    Description: The association ID for {{ policy_association_name }}
+    Value:
+      Ref: {{ policy_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ policy_association_name }}"
+  {{ policy_association_name }}AssociationIdentifier:
+    Description: The association ID for {{ policy_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ policy_association_name }}
+        - AssociationIdentifier
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ policy_association_name }}-AssociationIdentifier"
+  {{ policy_association_name }}AssociationStatus:
+    Description: The current status of the association between the specified target and the configuration for {{ policy_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ policy_association_name }}
+        - AssociationStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ policy_association_name }}-AssociationStatus"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::PolicyAssociation
+Properties:
+  ConfigurationPolicyId: String
+  TargetId: String
+  TargetType: String
+#}

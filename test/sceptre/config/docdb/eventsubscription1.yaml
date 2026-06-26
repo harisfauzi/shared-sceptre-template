@@ -1,0 +1,54 @@
+---
+template:
+  type: file
+  path: docdb/event_subscription.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: DocDB Event Subscription(s) for Monitoring and Alerts
+  event_subscriptions:
+    - name: PrimaryClusterEventSubscription
+      sns_topic_arn: "arn:aws:sns:us-east-1:123456789012:docdb-primary-events"
+      subscription_name: primary-cluster-events
+      enabled: true
+      source_type: db-cluster
+      source_ids:
+        - "primary-docdb-cluster"
+      event_categories:
+        - availability
+        - failover
+        - maintenance
+        - notification
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: InstanceEventSubscription
+      sns_topic_arn: "arn:aws:sns:us-east-1:123456789012:docdb-instance-events"
+      subscription_name: instance-level-events
+      enabled: true
+      source_type: db-instance
+      source_ids:
+        - "primary-docdb-instance-01"
+        - "primary-docdb-instance-02"
+        - "primary-docdb-instance-03"
+      event_categories:
+        - availability
+        - failover
+        - maintenance
+    - name: AllEventsSubscription
+      sns_topic_arn: "arn:aws:sns:us-east-1:123456789012:docdb-all-events"
+      subscription_name: all-docdb-events
+      enabled: true
+      event_categories:
+        - availability
+        - failover
+        - maintenance
+        - notification
+        - configuration change
+    - name: ParameterGroupEventSubscription
+      sns_topic_arn: "arn:aws:sns:us-east-1:123456789012:docdb-param-group-events"
+      enabled: false
+      source_type: db-cluster-parameter-group
+
+stack_tags:
+  Test: docdb-event-subscription

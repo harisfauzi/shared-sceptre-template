@@ -1,0 +1,1113 @@
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-secretsmanagerconfiguration.html
+# as of 2026-06-26:
+Enabled: Boolean
+RoleARN: String
+SecretARN: String
+#}
+{%- macro prep_secrets_manager_configuration(config) %}
+{%- if config.enabled is defined %}
+Enabled: {{ config.enabled | lower }}
+{%- endif %}
+{%- if config.role_arn is defined %}
+RoleARN: {{ config.role_arn | trim }}
+{%- endif %}
+{%- if config.secret_arn is defined %}
+SecretARN: {{ config.secret_arn | trim }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as of 2026-06-26:
+Exclude:
+  - String
+Include:
+  - String
+#}
+{%- macro prep_database_columns(config) %}
+{%- if config.exclude is defined %}
+Exclude:
+{%- for item in config.exclude %}
+  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- if config.include is defined %}
+Include:
+{%- for item in config.include %}
+  - {{ item }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-cloudwatchloggingoptions.html
+# as of 2026-06-26:
+Enabled: Boolean
+LogGroupName: String
+LogStreamName: String
+#}
+{%- macro prep_cloud_watch_logging_options(options) %}
+{%- if options.enabled is defined %}
+Enabled: {{ options.enabled | lower }}
+{%- endif %}
+{%- if options.log_group_name is defined %}
+LogGroupName: {{ options.log_group_name }}
+{%- endif %}
+{%- if options.log_stream_name is defined %}
+LogStreamName: {{ options.log_stream_name }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-bufferinghints.html
+# as of 2026-06-26:
+IntervalInSeconds: Integer
+SizeInMBs: Integer
+#}{%- macro prep_buffering_hints(buffering_hints) %}
+{%- if buffering_hints.interval_in_seconds is defined %}
+IntervalInSeconds: {{ buffering_hints.interval_in_seconds }}
+{%- endif %}
+{%- if buffering_hints.size_in_mbs is defined %}
+SizeInMBs: {{ buffering_hints.size_in_mbs }}
+{%- endif %}
+{%- endmacro %}
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-s3destinationconfiguration.html
+# as of 2026-06-26:
+BucketARN: String
+BufferingHints:
+  IntervalInSeconds: Integer
+  SizeInMBs: Integer
+CloudWatchLoggingOptions:
+  Enabled: Boolean
+  LogGroupName: String
+  LogStreamName: String
+CompressionFormat: String
+EncryptionConfiguration:
+  KMSEncryptionConfig:
+    AWSKMSKeyARN: String
+  NoEncryptionConfig: String
+ErrorOutputPrefix: String
+Prefix: String
+RoleARN: String
+#}{%- macro prep_s3_destination_configuration(configuration) %}
+BucketARN: {{ configuration.bucket_arn | trim }}
+RoleARN: {{ configuration.role_arn | trim }}
+{%- if configuration.buffering_hints is defined %}
+BufferingHints:
+  {{- prep_buffering_hints(configuration.buffering_hints) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if configuration.cloud_watch_logging_options is defined %}
+CloudWatchLoggingOptions:
+  {{- prep_cloud_watch_logging_options(configuration.cloud_watch_logging_options) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if configuration.compression_format is defined %}
+CompressionFormat: {{ configuration.compression_format }}
+{%- endif %}
+{%- if configuration.encryption_configuration is defined %}{# BEGIN if configuration.encryption_configuration is defined #}
+EncryptionConfiguration:
+{%- if configuration.encryption_configuration.kms_encryption_config is defined %}
+  KMSEncryptionConfig:
+    AWSKMSKeyARN: {{ configuration.encryption_configuration.kms_encryption_config.aws_kms_key_arn | trim }}
+{%- endif %}
+{%- if configuration.encryption_configuration.no_encryption_config is defined %}
+  NoEncryptionConfig: NoEncryption
+{%- endif %}
+{%- endif %}{# END if configuration.encryption_configuration is defined #}
+{%- if configuration.error_output_prefix is defined %}
+ErrorOutputPrefix: {{ configuration.error_output_prefix }}
+{%- endif %}
+{%- if configuration.prefix is defined %}
+Prefix: {{ configuration.prefix }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-processingconfiguration.html
+# as of 2026-06-26:
+Enabled: Boolean
+Processors:
+  -
+    Type: String
+    Parameters:
+      - ParameterName: String
+        ParameterValue: String
+#}{%- macro prep_processing_configuration(config) %}
+{%- if config.enabled is defined %}
+Enabled: {{ config.enabled | lower}}
+{%- endif %}
+{%- if config.processors is defined %}{# BEGIN if config.processors is defined #}
+Processors:
+{%- for processor in config.processors %}{# BEGIN for processor in config.processors #}
+  -
+    Type: {{ processor.type }}
+{%- if processor._parameters is defined %}{# BEGIN if processor._parameters is defined #}
+    Parameters:
+{%- for param in processor._parameters %}
+      - ParameterName: {{ param.parameter_name }}
+        ParameterValue: {{ param.parameter_value }}
+{%- endfor %}
+{%- endif %}{# END if processor._parameters is defined #}
+{%- endfor %}{# END for processor in config.processors #}
+{%- endif %}{# END if config.processors is defined #}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-vpcconfiguration.html
+# as of 2026-06-26:
+RoleARN: String
+SecurityGroupIds:
+  - String
+SubnetIds:
+  - String
+#}{%- macro prep_vpc_configuration(config) %}
+RoleARN: {{ config.role_arn | trim }}
+SecurityGroupIds:
+{%- for security_group_id in config.security_group_ids %}
+  - {{ security_group_id | trim }}
+{%- endfor %}
+SubnetIds:
+{%- for subnet_id in config.subnet_ids %}
+  - {{ subnet_id | trim }}
+{%- endfor %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-amazonopensearchserverlessdestinationconfiguration.html
+# as of 2026-06-26:
+BufferingHints:
+  IntervalInSeconds: Integer
+  SizeInMBs: Integer
+CloudWatchLoggingOptions:
+  Enabled: Boolean
+  LogGroupName: String
+  LogStreamName: String
+CollectionEndpoint: String
+IndexName: String
+ProcessingConfiguration:
+  Enabled: Boolean
+  Processors:
+    -
+      Parameters:
+        -
+          ParameterName: String
+          ParameterValue: String
+      Type: String
+RetryOptions:
+  DurationInSeconds: Integer
+RoleARN: String
+S3BackupMode: String
+S3Configuration:
+  BucketARN: String
+  BufferingHints:
+    IntervalInSeconds: Integer
+    SizeInMBs: Integer
+  CloudWatchLoggingOptions:
+    Enabled: Boolean
+    LogGroupName: String
+    LogStreamName: String
+  CompressionFormat: String
+  EncryptionConfiguration:
+    KMSEncryptionConfig:
+      AWSKMSKeyARN: String
+    NoEncryptionConfig: String
+  ErrorOutputPrefix: String
+  Prefix: String
+  RoleARN: String
+VpcConfiguration:
+  RoleARN: String
+  SecurityGroupIds:
+    - String
+  SubnetIds:
+    - String
+#}{%- macro prep_amazon_open_search_serverless_destination_configuration(config) %}
+IndexName: {{ config.index_name }}
+RoleARN: {{ config.role_arn | trim }}
+S3Configuration:
+  {{- prep_s3_destination_configuration(config.s3_configuration) | indent(width=2, first=false) }}
+{%- if config.buffering_hints is defined %}
+BufferingHints:
+  {{- prep_buffering_hints(config.buffering_hints) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.cloud_watch_logging_options is defined %}
+CloudWatchLoggingOptions:
+  {{- prep_cloud_watch_logging_options(config.cloud_watch_logging_options) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.collection_endpoint is defined %}
+CollectionEndpoint: {{ config.collection_endpoint }}
+{%- endif %}
+{%- if config.processing_configuration is defined %}
+ProcessingConfiguration:
+  {{- prep_processing_configuration(config.processing_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.retry_options is defined %}{# BEGIN if config.retry_options is defined #}
+RetryOptions:
+{%- if config.retry_options.duration_in_seconds is defined %}
+  DurationInSeconds: {{ config.retry_options.duration_in_seconds }}
+{%- endif %}
+{%- endif %}{# END if config.retry_options is defined #}
+{%- if config.s3_backup_mode is defined %}
+S3BackupMode: {{ config.s3_backup_mode }}
+{%- endif %}
+{%- if config.vpc_configuration is defined %}
+VpcConfiguration:
+  {{- prep_vpc_configuration(config.vpc_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-amazonopensearchserverlessdestinationconfiguration.html
+# as of 2026-06-26:
+BufferingHints:
+  IntervalInSeconds: Integer
+  SizeInMBs: Integer
+CloudWatchLoggingOptions:
+  Enabled: Boolean
+  LogGroupName: String
+  LogStreamName: String
+ClusterEndpoint: String
+DocumentIdOptions:
+  DefaultDocumentIdFormat: String
+DomainARN: String
+IndexName: String
+IndexRotationPeriod: String
+ProcessingConfiguration:
+  Enabled: Boolean
+  Processors:
+    -
+      Parameters:
+        -
+          ParameterName: String
+          ParameterValue: String
+      Type: String
+RetryOptions:
+  DurationInSeconds: Integer
+RoleARN: String
+S3BackupMode: String
+S3Configuration:
+  BucketARN: String
+  BufferingHints:
+    IntervalInSeconds: Integer
+    SizeInMBs: Integer
+  CloudWatchLoggingOptions:
+    Enabled: Boolean
+    LogGroupName: String
+    LogStreamName: String
+  CompressionFormat: String
+  EncryptionConfiguration:
+    KMSEncryptionConfig:
+      AWSKMSKeyARN: String
+    NoEncryptionConfig: String
+  ErrorOutputPrefix: String
+  Prefix: String
+  RoleARN: String
+TypeName: String
+VpcConfiguration:
+  RoleARN: String
+  SecurityGroupIds:
+    - String
+  SubnetIds:
+    - String
+#}{%- macro prep_amazonopensearchservice_destination_configuration(config) %}
+IndexName: {{ config.index_name }}
+RoleARN: {{ config.role_arn | trim }}
+S3Configuration:
+  {{- prep_s3_destination_configuration(config.s3_configuration) | indent(width=2, first=false) }}
+{%- if config.buffering_hints is defined %}
+BufferingHints:
+  {{- prep_buffering_hints(config.buffering_hints) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.cloud_watch_logging_options is defined %}
+CloudWatchLoggingOptions:
+  {{- prep_cloud_watch_logging_options(config.cloud_watch_logging_options) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.cluster_endpoint is defined %}
+ClusterEndpoint: {{ config.cluster_endpoint }}
+{%- endif %}
+{%- if config.document_id_options is defined %}
+DocumentIdOptions:
+  DefaultDocumentIdFormat: {{ config.document_id_options.default_document_id_format }}
+{%- endif %}
+{%- if config.domain_arn is defined %}
+DomainARN: {{ config.domain_arn | trim }}
+{%- endif %}
+{%- if config.index_rotation_period is defined %}
+IndexRotationPeriod: {{ config.index_rotation_period }}
+{%- endif %}
+{%- if config.processing_configuration is defined %}
+ProcessingConfiguration:
+  {{- prep_processing_configuration(config.processing_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.retry_options is defined %}{# BEGIN if config.retry_options is defined #}
+RetryOptions:
+{%- if config.retry_options.duration_in_seconds is defined %}
+  DurationInSeconds: {{ config.retry_options.duration_in_seconds }}
+{%- endif %}
+{%- endif %}{# END if config.retry_options is defined #}
+{%- if config.s3_backup_mode is defined %}
+S3BackupMode: {{ config.s3_backup_mode }}
+{%- endif %}
+{%- if config.type_name is defined %}
+TypeName: {{ config.type_name }}
+{%- endif %}
+{%- if config.vpc_configuration is defined %}
+VpcConfiguration:
+  {{- prep_vpc_configuration(config.vpc_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-databasesourceconfiguration.html
+# as of 2026-06-26:
+Columns:
+  Exclude:
+    - String
+  Include:
+    - String
+Databases:
+  Exclude:
+    - String
+  Include:
+    - String
+DatabaseSourceAuthenticationConfiguration:
+  SecretsManagerConfiguration:
+    Enabled: Boolean
+    RoleARN: String
+    SecretARN: String
+DatabaseSourceVPCConfiguration:
+  VpcEndpointServiceName: String
+Digest: String
+Endpoint: String
+Port: Integer
+PublicCertificate: String
+SnapshotWatermarkTable: String
+SSLMode: String
+SurrogateKeys:
+  - String
+Tables:
+  Exclude:
+    - String
+  Include:
+    - String
+Type: String
+#}{%- macro prep_database_source_configuration(config) %}
+Databases:
+  {{- prep_database_columns(config.databases) | indent(width=2, first=false) }}
+DatabaseSourceAuthenticationConfiguration:
+  SecretsManagerConfiguration:
+    {{- prep_secrets_manager_configuration(config.database_source_authentication_configuration.secrets_manager_configuration) | indent(width=4, first=false) }}
+DatabaseSourceVPCConfiguration:
+  VpcEndpointServiceName: {{ config.database_source_vpc_configuration.vpc_endpoint_service_name | trim }}
+Endpoint: {{ config.endpoint | trim }}
+Port: {{ config.port }}
+SnapshotWatermarkTable: {{ config.snapshot_watermark_table | trim }}
+Tables:
+  {{- prep_database_columns(config.tables) | indent(width=2, first=false) }}
+Type: {{ config.type }}
+{%- if config.columns is defined %}
+Columns:
+  {{- prep_database_columns(config.columns) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.digest is defined %}
+Digest: {{ config.digest }}
+{%- endif %}
+{%- if config.public_certificate is defined %}
+PublicCertificate: |-
+  {{ config.public_certificate | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.ssl_mode is defined %}
+SSLMode: {{ config.ssl_mode }}
+{%- endif %}
+{%- if config.surrogate_keys is defined %}{# BEGIN if config.surrogate_keys is defined #}
+SurrogateKeys:
+{%- for key in config.surrogate_keys %}
+  - {{ key }}
+{%- endfor %}
+{%- endif %}{# END if config.surrogate_keys is defined #}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-elasticsearchdestinationconfiguration.html
+# as of 2026-06-26:
+BufferingHints:
+  IntervalInSeconds: Integer
+  SizeInMBs: Integer
+CloudWatchLoggingOptions:
+  Enabled: Boolean
+  LogGroupName: String
+  LogStreamName: String
+ClusterEndpoint: String
+DocumentIdOptions:
+  DefaultDocumentIdFormat: String
+DomainARN: String
+IndexName: String
+IndexRotationPeriod: String
+ProcessingConfiguration:
+  Enabled: Boolean
+  Processors:
+    -
+      Parameters:
+        -
+          ParameterName: String
+          ParameterValue: String
+      Type: String
+RetryOptions:
+  DurationInSeconds: Integer
+RoleARN: String
+S3BackupMode: String
+S3Configuration:
+  BucketARN: String
+  BufferingHints:
+    IntervalInSeconds: Integer
+    SizeInMBs: Integer
+  CloudWatchLoggingOptions:
+    Enabled: Boolean
+    LogGroupName: String
+    LogStreamName: String
+  CompressionFormat: String
+  EncryptionConfiguration:
+    KMSEncryptionConfig:
+      AWSKMSKeyARN: String
+    NoEncryptionConfig: String
+  ErrorOutputPrefix: String
+  Prefix: String
+  RoleARN: String
+TypeName: String
+VpcConfiguration:
+  RoleARN: String
+  SecurityGroupIds:
+    - String
+  SubnetIds:
+    - String
+#}{%- macro prep_elasticsearch_destination_configuration(config) %}
+IndexName: {{ config.index_name }}
+RoleARN: {{ config.role_arn | trim }}
+S3Configuration:
+  {{- prep_s3_destination_configuration(config.s3_configuration) | indent(width=2, first=false) }}
+{%- if config.buffering_hints is defined %}
+BufferingHints:
+  {{- prep_buffering_hints(config.buffering_hints) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.cloud_watch_logging_options is defined %}
+CloudWatchLoggingOptions:
+  {{- prep_cloud_watch_logging_options(config.cloud_watch_logging_options) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.cluster_endpoint is defined %}
+ClusterEndpoint: {{ config.cluster_endpoint }}
+{%- endif %}
+{%- if config.document_id_options is defined %}
+DocumentIdOptions:
+  DefaultDocumentIdFormat: {{ config.document_id_options.default_document_id_format }}
+{%- endif %}
+{%- if config.domain_arn is defined %}
+DomainARN: {{ config.domain_arn | trim }}
+{%- endif %}
+{%- if config.index_rotation_period is defined %}
+IndexRotationPeriod: {{ config.index_rotation_period }}
+{%- endif %}
+{%- if config.processing_configuration is defined %}
+ProcessingConfiguration:
+  {{- prep_processing_configuration(config.processing_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.retry_options is defined %}{# BEGIN if config.retry_options is defined #}
+RetryOptions:
+{%- if config.retry_options.duration_in_seconds is defined %}
+  DurationInSeconds: {{ config.retry_options.duration_in_seconds }}
+{%- endif %}
+{%- endif %}{# END if config.retry_options is defined #}
+{%- if config.s3_backup_mode is defined %}
+S3BackupMode: {{ config.s3_backup_mode }}
+{%- endif %}
+{%- if config.type_name is defined %}
+TypeName: {{ config.type_name }}
+{%- endif %}
+{%- if config.vpc_configuration is defined %}
+VpcConfiguration:
+  {{- prep_vpc_configuration(config.vpc_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-httpendpointdestinationconfiguration.html
+# as of 2026-06-26:
+BufferingHints:
+  IntervalInSeconds: Integer
+  SizeInMBs: Integer
+CloudWatchLoggingOptions:
+  Enabled: Boolean
+  LogGroupName: String
+  LogStreamName: String
+EndpointConfiguration:
+  AccessKey: String
+  Name: String
+  Url: String
+ProcessingConfiguration:
+  Enabled: Boolean
+  Processors:
+    -
+      Parameters:
+        -
+          ParameterName: String
+          ParameterValue: String
+      Type: String
+RequestConfiguration:
+  CommonAttributes:
+    -
+      AttributeName: String
+      AttributeValue: String
+  ContentEncoding: String
+RetryOptions:
+  DurationInSeconds: Integer
+RoleARN: String
+S3BackupMode: String
+S3Configuration:
+  BucketARN: String
+  BufferingHints:
+    IntervalInSeconds: Integer
+    SizeInMBs: Integer
+  CloudWatchLoggingOptions:
+    Enabled: Boolean
+    LogGroupName: String
+    LogStreamName: String
+  CompressionFormat: String
+  EncryptionConfiguration:
+    KMSEncryptionConfig:
+      AWSKMSKeyARN: String
+    NoEncryptionConfig: String
+  ErrorOutputPrefix: String
+  Prefix: String
+  RoleARN: String
+SecretsManagerConfiguration:
+  Enabled: Boolean
+  RoleARN: String
+  SecretARN: String
+#}{%- macro prep_http_endpoint_destination_configuration(config) %}
+EndpointConfiguration:
+  Url: {{ config.endpoint_configuration.url }}
+{%- if config.endpoint_configuration.access_key is defined %}
+  AccessKey: {{ config.endpoint_configuration.access_key }}
+{%- endif %}
+{%- if config.endpoint_configuration.name is defined %}
+  Name: {{ config.endpoint_configuration.name }}
+{%- endif %}
+S3Configuration:
+  {{- prep_s3_destination_configuration(config.s3_configuration) | indent(width=2, first=false) }}
+{%- if config.buffering_hints is defined %}
+BufferingHints:
+  {{- prep_buffering_hints(config.buffering_hints) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.cloud_watch_logging_options is defined %}
+CloudWatchLoggingOptions:
+  {{- prep_cloud_watch_logging_options(config.cloud_watch_logging_options) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.processing_configuration is defined %}
+ProcessingConfiguration:
+  {{- prep_processing_configuration(config.processing_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.request_configuration is defined %}{# BEGIN if config.request_configuration is defined #}
+RequestConfiguration:
+{%- if config.request_configuration.common_attributes is defined %}{# BEGIN if config.request_configuration.common_attributes is defined #}
+  CommonAttributes:
+{%- for attribute in config.request_configuration.common_attributes %}
+    -
+      AttributeName: {{ attribute.attribute_name }}
+      AttributeValue: {{ attribute.attribute_value }}
+{%- endfor %}
+{%- endif %}{# END if config.request_configuration.common_attributes is defined #}
+{%- if config.request_configuration.content_encoding is defined %}
+  ContentEncoding: {{ config.request_configuration.content_encoding }}
+{%- endif %}
+{%- endif %}{# END if config.request_configuration is defined #}
+{%- if config.retry_options is defined %}{# BEGIN if config.retry_options is defined #}
+RetryOptions:
+{%- if config.retry_options.duration_in_seconds is defined %}
+  DurationInSeconds: {{ config.retry_options.duration_in_seconds }}
+{%- endif %}
+{%- endif %}{# END if config.retry_options is defined #}
+{%- if config.role_arn is defined %}
+RoleARN: {{ config.role_arn | trim }}
+{%- endif %}
+{%- if config.s3_backup_mode is defined %}
+S3BackupMode: {{ config.s3_backup_mode }}
+{%- endif %}
+{%- if config.secrets_manager_configuration is defined %}
+SecretsManagerConfiguration:
+  {{- prep_secrets_manager_configuration(config.secrets_manager_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-icebergdestinationconfiguration.html
+# as of 2026-06-26:
+AppendOnly: Boolean
+BufferingHints:
+  IntervalInSeconds: Integer
+  SizeInMBs: Integer
+CatalogConfiguration:
+  CatalogArn: String
+  WarehouseLocation: String
+CloudWatchLoggingOptions:
+  Enabled: Boolean
+  LogGroupName: String
+  LogStreamName: String
+DestinationTableConfigurationList:
+  -
+    DestinationDatabaseName: String
+    DestinationTableName: String
+    PartitionSpec:
+      Identity:
+        -
+          SourceName: String
+    S3ErrorOutputPrefix: String
+    UniqueKeys:
+      - String
+ProcessingConfiguration:
+  Enabled: Boolean
+  Processors:
+    -
+      Parameters:
+        -
+          ParameterName: String
+          ParameterValue: String
+      Type: String
+RetryOptions:
+  DurationInSeconds: Integer
+RoleARN: String
+s3BackupMode: String
+S3Configuration:
+  BucketARN: String
+  BufferingHints:
+    IntervalInSeconds: Integer
+    SizeInMBs: Integer
+  CloudWatchLoggingOptions:
+    Enabled: Boolean
+    LogGroupName: String
+    LogStreamName: String
+  CompressionFormat: String
+  EncryptionConfiguration:
+    KMSEncryptionConfig:
+      AWSKMSKeyARN: String
+    NoEncryptionConfig: String
+  ErrorOutputPrefix: String
+  Prefix: String
+  RoleARN: String
+SchemaEvolutionConfiguration:
+  Enabled: Boolean
+TableCreationConfiguration:
+  Enabled: Boolean
+#}{%- macro prep_iceberg_destination_configuration(config) %}
+CatalogConfiguration:
+{%- if config.catalog_configuration.catalog_arn is defined %}
+  CatalogArn: {{ config.catalog_configuration.catalog_arn | trim }}
+{%- endif %}
+{%- if config.catalog_configuration.warehouse_location is defined %}
+  WarehouseLocation: {{ config.catalog_configuration.warehouse_location }}
+{%- endif %}
+RoleARN: {{ config.role_arn | trim }}
+S3Configuration:
+  {{- prep_s3_destination_configuration(config.s3_configuration) | indent(width=2, first=false) }}
+{%- if config.append_only is defined %}
+AppendOnly: {{ config.append_only | lower }}
+{%- endif %}
+{%- if config.buffering_hints is defined %}
+BufferingHints:
+  {{- prep_buffering_hints(config.buffering_hints) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.cloud_watch_logging_options is defined %}
+CloudWatchLoggingOptions:
+  {{- prep_cloud_watch_logging_options(config.cloud_watch_logging_options) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.destination_table_configuration_list is defined %}{# BEGIN if config.destination_table_configuration_list is defined #}
+DestinationTableConfigurationList:
+{%- for table_config in config.destination_table_configuration_list %}{# BEGIN for table_config in config.destination_table_configuration_list #}
+  -
+    DestinationDatabaseName: {{ table_config.destination_database_name }}
+    DestinationTableName: {{ table_config.destination_table_name }}
+{%- if table_config.partition_spec is defined %}{# BEGIN if table_config.partition_spec is defined #}
+    PartitionSpec:
+{%- if table_config.partition_spec.identity is defined %}{# BEGIN if table_config.partition_spec.identity is defined #}
+      Identity:
+{%- for identity in table_config.partition_spec.identity %}
+        -
+          SourceName: {{ identity.source_name }}
+{%- endfor %}
+{%- endif %}{# END if table_config.partition_spec.identity is defined #}
+{%- endif %}{# END if table_config.partition_spec is defined #}
+{%- if table_config.s3_error_output_prefix is defined %}
+    S3ErrorOutputPrefix: {{ table_config.s3_error_output_prefix }}
+{%- endif %}
+{%- if table_config.unique_keys is defined %}{# BEGIN if table_config.unique_keys is defined #}
+    UniqueKeys:
+{%- for key in table_config.unique_keys %}
+      - {{ key }}
+{%- endfor %}
+{%- endif %}{# END if table_config.unique_keys is defined #}
+{%- endfor %}{# END for table_config in config.destination_table_configuration_list #}
+{%- endif %}{# END if config.destination_table_configuration_list is defined #}
+{%- if config.processing_configuration is defined %}
+ProcessingConfiguration:
+  {{- prep_processing_configuration(config.processing_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.retry_options is defined %}{# BEGIN if config.retry_options is defined #}
+RetryOptions:
+{%- if config.retry_options.duration_in_seconds is defined %}
+  DurationInSeconds: {{ config.retry_options.duration_in_seconds }}
+{%- endif %}
+{%- endif %}{# END if config.retry_options is defined #}
+{%- if config.s3_backup_mode is defined %}
+S3BackupMode: {{ config.s3_backup_mode }}
+{%- endif %}
+{%- if config.schema_evolution_configuration is defined %}{# BEGIN if config.schema_evolution_configuration is defined #}
+SchemaEvolutionConfiguration:
+{%- if config.schema_evolution_configuration.enabled is defined %}
+  Enabled: {{ config.schema_evolution_configuration.enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if config.schema_evolution_configuration is defined #}
+{%- if config.table_creation_configuration is defined %}{# BEGIN if config.table_creation_configuration is defined #}
+TableCreationConfiguration:
+{%- if config.table_creation_configuration.enabled is defined %}
+  Enabled: {{ config.table_creation_configuration.enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if config.table_creation_configuration is defined #}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-redshiftdestinationconfiguration.html
+# as of 2026-06-26:
+CloudWatchLoggingOptions:
+  Enabled: Boolean
+  LogGroupName: String
+  LogStreamName: String
+ClusterJDBCURL: String
+CopyCommand:
+  CopyOptions: String
+  DataTableColumns: String
+  DataTableName: String
+Password: String
+ProcessingConfiguration:
+  Enabled: Boolean
+  Processors:
+    -
+      Parameters:
+        -
+          ParameterName: String
+          ParameterValue: String
+      Type: String
+RetryOptions:
+  DurationInSeconds: Integer
+RoleARN: String
+S3BackupConfiguration:
+  BucketARN: String
+  BufferingHints:
+    IntervalInSeconds: Integer
+    SizeInMBs: Integer
+  CloudWatchLoggingOptions:
+    Enabled: Boolean
+    LogGroupName: String
+    LogStreamName: String
+  CompressionFormat: String
+  EncryptionConfiguration:
+    KMSEncryptionConfig:
+      AWSKMSKeyARN: String
+    NoEncryptionConfig: String
+  ErrorOutputPrefix: String
+  Prefix: String
+  RoleARN: String
+S3BackupMode: String
+S3Configuration:
+  BucketARN: String
+  BufferingHints:
+    IntervalInSeconds: Integer
+    SizeInMBs: Integer
+  CloudWatchLoggingOptions:
+    Enabled: Boolean
+    LogGroupName: String
+    LogStreamName: String
+  CompressionFormat: String
+  EncryptionConfiguration:
+    KMSEncryptionConfig:
+      AWSKMSKeyARN: String
+    NoEncryptionConfig: String
+  ErrorOutputPrefix: String
+  Prefix: String
+  RoleARN: String
+SecretsManagerConfiguration:
+  Enabled: Boolean
+  RoleARN: String
+  SecretARN: String
+Username: String
+#}{%- macro prep_redshift_destination_configuration(config, use_parameter_for_password=false, delivery_stream_name='') %}
+ClusterJDBCURL: {{ config.cluster_jdbc_url }}
+CopyCommand:
+  DataTableName: {{ config.copy_command.data_table_name }}
+{%- if config.copy_command.copy_options is defined %}
+  CopyOptions: {{ config.copy_command.copy_options }}
+{%- endif %}
+{%- if config.copy_command.data_table_columns is defined %}
+  DataTableColumns: {{ config.copy_command.data_table_columns }}
+{%- endif %}
+RoleARN: {{ config.role_arn | trim }}
+S3Configuration:
+  {{- prep_s3_destination_configuration(config.s3_configuration) | indent(width=2, first=false) }}
+{%- if config.cloud_watch_logging_options is defined %}
+CloudWatchLoggingOptions:
+  {{- prep_cloud_watch_logging_options(config.cloud_watch_logging_options) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.password is defined %}{# BEGIN if config.password is defined #}
+{%- if use_parameter_for_password %}
+Password:
+  Ref: {{ delivery_stream_name }}RedshiftDestinationPassword
+{%- else %}
+Password: {{ config.password }}
+{%- endif %}
+{%- endif %}{# END if config.password is defined #}
+{%- if config.processing_configuration is defined %}
+ProcessingConfiguration:
+  {{- prep_processing_configuration(config.processing_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.retry_options is defined %}{# BEGIN if config.retry_options is defined #}
+RetryOptions:
+{%- if config.retry_options.duration_in_seconds is defined %}
+  DurationInSeconds: {{ config.retry_options.duration_in_seconds }}
+{%- endif %}
+{%- endif %}{# END if config.retry_options is defined #}
+{%- if config.s3_backup_configuration is defined %}
+S3BackupConfiguration:
+  {{- prep_s3_destination_configuration(config.s3_backup_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.s3_backup_mode is defined %}
+S3BackupMode: {{ config.s3_backup_mode }}
+{%- endif %}
+{%- if config.secrets_manager_configuration is defined %}
+SecretsManagerConfiguration:
+  {{- prep_secrets_manager_configuration(config.secrets_manager_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.username is defined %}
+Username: {{ config.username }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-snowflakedestinationconfiguration.html
+# as of 2026-06-26:
+AccountUrl: String
+BufferingHints:
+  IntervalInSeconds: Integer
+  SizeInMBs: Integer
+CloudWatchLoggingOptions:
+  Enabled: Boolean
+  LogGroupName: String
+  LogStreamName: String
+ContentColumnName: String
+Database: String
+DataLoadingOption: String
+KeyPassphrase: String
+MetaDataColumnName: String
+PrivateKey: String
+ProcessingConfiguration:
+  Enabled: Boolean
+  Processors:
+    - Type: String
+      Parameters:
+        - ParameterName: String
+          ParameterValue: String
+RetryOptions:
+  DurationInSeconds: Integer
+RoleARN: String
+S3BackupMode: String
+S3Configuration:
+  BucketARN: String
+  BufferingHints:
+    IntervalInSeconds: Integer
+    SizeInMBs: Integer
+  CloudWatchLoggingOptions:
+    Enabled: Boolean
+    LogGroupName: String
+    LogStreamName: String
+  CompressionFormat: String
+  EncryptionConfiguration:
+    KMSEncryptionConfig:
+      AWSKMSKeyARN: String
+    NoEncryptionConfig: String
+  ErrorOutputPrefix: String
+  Prefix: String
+  RoleARN: String
+Schema: String
+SecretsManagerConfiguration:
+  Enabled: Boolean
+  RoleARN: String
+  SecretARN: String
+SnowflakeRoleConfiguration:
+  Enabled: Boolean
+  SnowflakeRole: String
+SnowflakeVpcConfiguration:
+  PrivateLinkVpceId: String
+Table: String
+User: String
+#}{%- macro prep_snowflake_destination_configuration(config) %}
+AccountUrl: {{ config.account_url }}
+Database: {{ config.database }}
+RoleARN: {{ config.role_arn | trim }}
+S3Configuration:
+  {{- prep_s3_destination_configuration(config.s3_configuration) | indent(width=2, first=false) }}
+Schema: {{ config.schema }}
+Table: {{ config.table }}
+{%- if config.buffering_hints is defined %}
+BufferingHints:
+  {{- prep_buffering_hints(config.buffering_hints) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.cloud_watch_logging_options is defined %}
+CloudWatchLoggingOptions:
+  {{- prep_cloud_watch_logging_options(config.cloud_watch_logging_options) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.content_column_name is defined %}
+ContentColumnName: {{ config.content_column_name }}
+{%- endif %}
+{%- if config.data_loading_option is defined %}
+DataLoadingOption: {{ config.data_loading_option }}
+{%- endif %}
+{%- if config.key_passphrase is defined %}{# NOTE: Only retrieve the key passphrase from secrets manager in production environment #}
+KeyPassphrase: {{ config.key_passphrase }}
+{%- endif %}
+{%- if config.meta_data_column_name is defined %}
+MetaDataColumnName: {{ config.meta_data_column_name }}
+{%- endif %}
+{%- if config.private_key is defined %}{# NOTE: Only retrieve the private key from secrets manager in production environment #}
+PrivateKey: {{ config.private_key }}
+{%- elif config.private_key_content is defined %}
+PrivateKeyContent: |-
+  {{ config.private_key_content | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.processing_configuration is defined %}
+ProcessingConfiguration:
+  {{- prep_processing_configuration(config.processing_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.retry_options is defined %}{# BEGIN if config.retry_options is defined #}
+RetryOptions:
+{%- if config.retry_options.duration_in_seconds is defined %}
+  DurationInSeconds: {{ config.retry_options.duration_in_seconds }}
+{%- endif %}
+{%- endif %}{# END if config.retry_options is defined #}
+{%- if config.s3_backup_mode is defined %}
+S3BackupMode: {{ config.s3_backup_mode }}
+{%- endif %}
+{%- if config.secrets_manager_configuration is defined %}
+SecretsManagerConfiguration:
+  {{- prep_secrets_manager_configuration(config.secrets_manager_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.snowflake_role_configuration is defined %}{# BEGIN if config.snowflake_role_configuration is defined #}
+SnowflakeRoleConfiguration:
+{%- if config.snowflake_role_configuration.enabled is defined %}
+  Enabled: {{ config.snowflake_role_configuration.enabled | lower }}
+{%- endif %}
+{%- if config.snowflake_role_configuration.snowflake_role is defined %}
+  SnowflakeRole: {{ config.snowflake_role_configuration.snowflake_role | trim }}
+{%- endif %}
+{%- endif %}{# END if config.snowflake_role_configuration is defined #}
+{%- if config.snowflake_vpc_configuration is defined %}
+SnowflakeVpcConfiguration:
+  PrivateLinkVpceId: {{ config.snowflake_vpc_configuration.private_link_vpce_id | trim }}
+{%- endif %}
+{%- if config.user is defined %}
+User: {{ config.user }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-kinesisfirehose-deliverystream-splunkdestinationconfiguration.html
+# as of 2026-06-26:
+BufferingHints:
+  IntervalInSeconds: Integer
+  SizeInMBs: Integer
+CloudWatchLoggingOptions:
+  Enabled: Boolean
+  LogGroupName: String
+  LogStreamName: String
+HECAcknowledgmentTimeoutInSeconds: Integer
+HECEndpoint: String
+HECEndpointType: String
+HECToken: String
+ProcessingConfiguration:
+  Enabled: Boolean
+  Processors:
+    - Type: String
+      Parameters:
+        - ParameterName: String
+          ParameterValue: String
+RetryOptions:
+  DurationInSeconds: Integer
+S3BackupMode: String
+S3Configuration:
+  BucketARN: String
+  BufferingHints:
+    IntervalInSeconds: Integer
+    SizeInMBs: Integer
+  CloudWatchLoggingOptions:
+    Enabled: Boolean
+    LogGroupName: String
+    LogStreamName: String
+  CompressionFormat: String
+  EncryptionConfiguration:
+    KMSEncryptionConfig:
+      AWSKMSKeyARN: String
+    NoEncryptionConfig: String
+  ErrorOutputPrefix: String
+  Prefix: String
+  RoleARN: String
+SecretsManagerConfiguration:
+  Enabled: Boolean
+  RoleARN: String
+  SecretARN: String
+#}{%- macro prep_splunk_destination_configuration(config) %}
+HECEndpoint: {{ config.hec_endpoint }}
+HECEndpointType: {{ config.hec_endpoint_type }}
+S3Configuration:
+  {{- prep_s3_destination_configuration(config.s3_configuration) | indent(width=2, first=false) }}
+{%- if config.buffering_hints is defined %}
+BufferingHints:
+  {{- prep_buffering_hints(config.buffering_hints) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.cloud_watch_logging_options is defined %}
+CloudWatchLoggingOptions:
+  {{- prep_cloud_watch_logging_options(config.cloud_watch_logging_options) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.hec_acknowledgment_timeout_in_seconds is defined %}
+HECAcknowledgmentTimeoutInSeconds: {{ config.hec_acknowledgment_timeout_in_seconds }}
+{%- endif %}
+{%- if config.hec_token is defined %}
+HECToken: {{ config.hec_token }}
+{%- endif %}
+{%- if config.processing_configuration is defined %}
+ProcessingConfiguration:
+  {{- prep_processing_configuration(config.processing_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if config.retry_options is defined %}{# BEGIN if config.retry_options is defined #}
+RetryOptions:
+{%- if config.retry_options.duration_in_seconds is defined %}
+  DurationInSeconds: {{ config.retry_options.duration_in_seconds }}
+{%- endif %}
+{%- endif %}{# END if config.retry_options is defined #}
+{%- if config.s3_backup_mode is defined %}
+S3BackupMode: {{ config.s3_backup_mode }}
+{%- endif %}
+{%- if config.secrets_manager_configuration is defined %}
+SecretsManagerConfiguration:
+  {{- prep_secrets_manager_configuration(config.secrets_manager_configuration) | indent(width=2, first=false) }}
+{%- endif %}
+{%- endmacro %}

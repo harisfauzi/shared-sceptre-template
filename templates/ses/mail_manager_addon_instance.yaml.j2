@@ -1,0 +1,63 @@
+---
+Description: {{sceptre_user_data.description|default('SES Mail Manager Addon Instance(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for mail_manager_addon_instance in sceptre_user_data.mail_manager_addon_instances %}
+{%- set mail_manager_addon_instance_name = mail_manager_addon_instance.name %}
+  {{ mail_manager_addon_instance_name }}:
+    Type: AWS::SES::MailManagerAddonInstance
+    DeletionPolicy: {{ mail_manager_addon_instance.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ mail_manager_addon_instance.update_replace_policy | default('Delete') }}
+    Properties:
+      AddonSubscriptionId: {{ mail_manager_addon_instance.addon_subscription_id }}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if mail_manager_addon_instance.tags is defined %}
+{%- for key,value in mail_manager_addon_instance.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for mail_manager_addon_instance in sceptre_user_data.mail_manager_addon_instances %}
+{%- set mail_manager_addon_instance_name = mail_manager_addon_instance.name %}
+  {{ mail_manager_addon_instance_name }}AddonInstanceArn:
+    Description: The ARN of the Add On instance for {{ mail_manager_addon_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_addon_instance_name }}
+        - AddonInstanceArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_addon_instance_name }}-AddonInstanceArn"
+  {{ mail_manager_addon_instance_name }}AddonInstanceId:
+    Description: The unique ID of the Add On instance for {{ mail_manager_addon_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_addon_instance_name }}
+        - AddonInstanceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_addon_instance_name }}-AddonInstanceId"
+  {{ mail_manager_addon_instance_name }}AddonName:
+    Description: The name of the Add On for the instance for {{ mail_manager_addon_instance_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ mail_manager_addon_instance_name }}
+        - AddonName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ mail_manager_addon_instance_name }}-AddonName"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SES::MailManagerAddonInstance
+Properties:
+  AddonSubscriptionId: String
+  Tags:
+    - Key: String
+      Value: String
+#}

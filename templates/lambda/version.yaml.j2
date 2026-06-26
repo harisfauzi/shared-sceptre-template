@@ -15,26 +15,49 @@ Resources:
       CodeSha256: {{ version.code_sha256 }}
 {%- endif %}
 {%- if version.description is defined %}
-      Description: {{ version.code_sha256 }}
+      Description: {{ version.description }}
 {%- endif %}
+{%- if version.function_scaling_config is defined %}{# BEGIN if version.function_scaling_config is defined #}
+      FunctionScalingConfig:
+{%- if version.function_scaling_config.max_execution_environments is defined %}
+        MaxExecutionEnvironments: {{ version.function_scaling_config.max_execution_environments }}
+{%- endif %}
+{%- if version.function_scaling_config.min_execution_environments is defined %}
+        MinExecutionEnvironments: {{ version.function_scaling_config.min_execution_environments }}
+{%- endif %}
+{%- endif %}{# END if version.function_scaling_config is defined #}
 {%- if version.provisioned_concurrency_configuration is defined %}
       ProvisionedConcurrencyConfig:
-        ProvisionedConcurrentExecutions: {{ provisioned_concurrency_configuration.provisioned_concurrent_executions }}
+        ProvisionedConcurrentExecutions: {{ version.provisioned_concurrency_configuration.provisioned_concurrent_executions }}
 {%- endif %}
+{%- if version.runtime_policy is defined %}{# BEGIN if version.runtime_policy is defined #}
+      RuntimePolicy:
+        UpdateRuntimeOn: {{ version.runtime_policy.update_runtime_on }}
+{%- if version.runtime_policy.runtime_version_arn is defined %}
+        RuntimeVersionArn: {{ version.runtime_policy.runtime_version_arn }}
+{%- endif %}
+{%- endif %}{# END if version.runtime_policy is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for version in sceptre_user_data.versions %}
 {%- set version_name = version.name %}
   {{ version_name }}:
-    Description: Version ARN for {{ version_name }}
+    Description: The ARN for {{ version_name }}
     Value:
       Ref: {{ version_name }}
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ version_name }}"
-
+  {{ version_name }}FunctionArn:
+    Description: The ARN of the function for {{ version_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ version_name }}
+        - FunctionArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ version_name }}-FunctionArn"
   {{ version_name }}Version:
     Description: The version number for {{ version_name }}
     Value:
@@ -44,5 +67,19 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ version_name }}-Version"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Lambda::Version
+Properties:
+  CodeSha256: String
+  Description: String
+  FunctionName: String
+  FunctionScalingConfig:
+    MaxExecutionEnvironments: Integer
+    MinExecutionEnvironments: Integer
+  ProvisionedConcurrencyConfig:
+    ProvisionedConcurrentExecutions: Integer
+  RuntimePolicy:
+    RuntimeVersionArn: String
+    UpdateRuntimeOn: String
+#}

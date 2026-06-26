@@ -1,0 +1,73 @@
+---
+template:
+  type: file
+  path: securityhub/automation_rule_v2.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SecurityHub Automation Rule V2(s) for testing purposes"
+  automation_rule_v2s:
+    - name: CriticalFindingsHandler
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      description: "Automatically handle critical severity findings"
+      rule_name: "CriticalFindingsAutomation"
+      rule_order: 1
+      rule_status: "ENABLED"
+      actions:
+        - type: "FINDING_FIELDS_UPDATE"
+          finding_fields_update:
+            comment: "Auto-remediated by automation rule"
+            severity_id: 40
+            status_id: 0
+      ocsf_finding_criteria:
+        composite_filters:
+          - operator: "OR"
+            number_filters:
+              - field_name: "severity.value"
+                filter:
+                  gte: 90
+            string_filters:
+              - field_name: "status.value"
+                filter:
+                  comparison: "EQUALS"
+                  value: "ACTIVE"
+      tags:
+        Application: "SecurityHub"
+        RuleType: "CriticalFindings"
+        Environment: "Production"
+
+    - name: ComplianceViolationProcessor
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      description: "Process compliance violations across accounts"
+      rule_name: "ComplianceViolationRule"
+      rule_order: 2
+      rule_status: "ENABLED"
+      actions:
+        - type: "FINDING_FIELDS_UPDATE"
+          finding_fields_update:
+            comment: "Compliance violation detected and logged"
+            severity_id: 70
+      ocsf_finding_criteria:
+        composite_filters:
+          - operator: "AND"
+            string_filters:
+              - field_name: "compliance.status"
+                filter:
+                  comparison: "EQUALS"
+                  value: "FAILED"
+              - field_name: "resource.type"
+                filter:
+                  comparison: "PREFIX"
+                  value: "AwsIam"
+      tags:
+        Application: "SecurityHub"
+        RuleType: "Compliance"
+        Team: "Compliance"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: securityhub-automation-rule-v2

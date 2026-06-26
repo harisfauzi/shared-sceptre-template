@@ -1,0 +1,113 @@
+---
+Description: {{sceptre_user_data.description|default('InspectorV2 CIS Scan Configuration(s) for '+sceptre_user_data.project_code) }}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for cis_scan_configuration in sceptre_user_data.cis_scan_configurations %}
+{%- set cis_scan_configuration_name = cis_scan_configuration.name %}
+  {{ cis_scan_configuration_name }}:
+    Type: AWS::InspectorV2::CisScanConfiguration
+    DeletionPolicy: {{ cis_scan_configuration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ cis_scan_configuration.update_replace_policy | default('Delete') }}
+    Properties:
+      ScanName: {{ cis_scan_configuration.scan_name }}
+      Schedule:
+{%- if cis_scan_configuration.schedule.daily is defined %}{# BEGIN if cis_scan_configuration.schedule.daily is defined #}
+        Daily:
+          StartTime:
+            TimeOfDay: {{ cis_scan_configuration.schedule.daily.start_time.time_of_day }}
+            TimeZone: {{ cis_scan_configuration.schedule.daily.start_time.time_zone }}
+{%- endif %}{# END if cis_scan_configuration.schedule.daily is defined #}
+{%- if cis_scan_configuration.schedule.monthly is defined %}{# BEGIN if cis_scan_configuration.schedule.monthly is defined #}
+        Monthly:
+          Day: {{ cis_scan_configuration.schedule.monthly.day }}
+          StartTime:
+            TimeOfDay: {{ cis_scan_configuration.schedule.monthly.start_time.time_of_day }}
+            TimeZone: {{ cis_scan_configuration.schedule.monthly.start_time.time_zone }}
+{%- endif %}{# END if cis_scan_configuration.schedule.monthly is defined #}
+{%- if cis_scan_configuration.schedule.one_time is defined %}
+        OneTime:
+          {{ cis_scan_configuration.schedule.one_time | indent(width=10, first=false) }}
+{%- elif cis_scan_configuration.schedule.one_time_json is defined %}
+        OneTime: |-
+          {{ cis_scan_configuration.schedule.one_time_json | indent(width=10, first=false) }}
+{%- endif %}
+{%- if cis_scan_configuration.schedule.weekly is defined %}{# BEGIN if cis_scan_configuration.schedule.weekly is defined #}
+        Weekly:
+          Days:
+{%- for day in cis_scan_configuration.schedule.weekly.days %}
+            - {{ day }}
+{%- endfor %}
+          StartTime:
+            TimeOfDay: {{ cis_scan_configuration.schedule.weekly.start_time.time_of_day }}
+            TimeZone: {{ cis_scan_configuration.schedule.weekly.start_time.time_zone }}
+{%- endif %}{# END if cis_scan_configuration.schedule.weekly is defined #}
+      SecurityLevel: {{ cis_scan_configuration.security_level | default('LEVEL_1') }}
+      Targets:
+        AccountIds:
+{%- for account_id in cis_scan_configuration.targets.account_ids %}
+          - {{ account_id }}
+{%- endfor %}
+        TargetResourceTags:
+{%- for tag in cis_scan_configuration.targets.target_resource_tags %}
+          - {{ tag }}
+{%- endfor %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if cis_scan_configuration.tags is defined%}
+{%- for key,value in cis_scan_configuration.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for cis_scan_configuration in sceptre_user_data.cis_scan_configurations %}
+{%- set cis_scan_configuration_name = cis_scan_configuration.name %}
+  {{ cis_scan_configuration_name }}:
+    Description: The ARN for {{ cis_scan_configuration_name }}
+    Value:
+      Ref: {{ cis_scan_configuration_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cis_scan_configuration_name }}"
+  {{ cis_scan_configuration_name }}Arn:
+    Description: The ARN for {{ cis_scan_configuration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ cis_scan_configuration_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ cis_scan_configuration_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::InspectorV2::CisScanConfiguration
+Properties:
+  ScanName: String
+  Schedule:
+    Daily:
+      StartTime:
+        TimeOfDay: String
+        TimeZone: String
+    Monthly:
+      Day: String
+      StartTime:
+        TimeOfDay: String
+        TimeZone: String
+    OneTime: Json
+    Weekly:
+      Days:
+        - String
+      StartTime:
+        TimeOfDay: String
+        TimeZone: String
+  SecurityLevel: String
+  Tags:
+    Key: Value
+  Targets:
+    AccountIds:
+      - String
+    TargetResourceTags:
+      - String
+#}

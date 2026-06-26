@@ -54,7 +54,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}"
-
   {{ load_balancer_name }}LoadBalancerArn:
     Description: The ARN for {{ load_balancer_name }}
     Value:
@@ -64,9 +63,8 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ load_balancer_name }}-LoadBalancerArn"
-{%- endfor %}
-{#
-# Supported structure as of 20250224:
+{%- endfor %}{#
+# Supported structure as of 2025-02-24:
 Type: AWS::Lightsail::LoadBalancer
 Properties:
   AttachedInstances:

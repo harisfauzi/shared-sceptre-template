@@ -3,7 +3,6 @@ Description: {{sceptre_user_data.description|default('ImageBuilder Component(s) 
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for component in sceptre_user_data.components %}
 {%- set component_name = component.name %}
   {{ component_name }}:
@@ -18,8 +17,8 @@ Resources:
       ChangeDescription: {{ component.change_description }}
 {%- endif %}
 {%- if component.data is defined %}
-      Data: |
-{{ component.data | indent(width=8,first=true) }}
+      Data: |-
+        {{ component.data | indent(width=8,first=false) }}
 {%- endif %}
 {%- if component.description is defined %}
       Description: {{ component.description }}
@@ -27,12 +26,12 @@ Resources:
 {%- if component.kms_key_id is defined %}
       KmsKeyId: {{ component.kms_key_id | trim }}
 {%- endif %}
-{%- if component.supported_os_versions is defined %}
+{%- if component.supported_os_versions is defined %}{# BEGIN if component.supported_os_versions is defined #}
       SupportedOsVersions:
 {%- for supported_os_version in component.supported_os_versions %}
         - {{ supported_os_version }}
 {%- endfor %}
-{%- endif %}
+{%- endif %}{# END if component.supported_os_versions is defined #}
 {%- if component.uri is defined %}
       Uri: {{ component.uri }}
 {%- endif %}
@@ -43,11 +42,9 @@ Resources:
         {{ key }}: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for component in sceptre_user_data.components %}
 {%- set component_name = component.name %}
   {{ component_name }}:
@@ -57,7 +54,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ component_name }}"
-
   {{ component_name }}Arn:
     Description: The ARN for {{ component_name }}
     Value:
@@ -67,7 +63,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ component_name }}-Arn"
-
   {{ component_name }}Name:
     Description: The Name for {{ component_name }}
     Value:
@@ -77,7 +72,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ component_name }}-Name"
-
   {{ component_name }}Type:
     Description: Component type for {{ component_name }}
     Value:
@@ -87,5 +81,20 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ component_name }}-Type"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-22:
+Type: AWS::ImageBuilder::Component
+Properties:
+  ChangeDescription: String
+  Data: String
+  Description: String
+  KmsKeyId: String
+  Name: String
+  Platform: String
+  SupportedOsVersions:
+    - String
+  Tags:
+    Key: Value
+  Uri: String
+  Version: String
+#}

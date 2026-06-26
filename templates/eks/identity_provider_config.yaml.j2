@@ -1,0 +1,94 @@
+---
+Description: {{sceptre_user_data.description|default('EKS Identity Provider Config(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for identity_provider_config in sceptre_user_data.identity_provider_configs %}
+{%- set identity_provider_config_name = identity_provider_config.name %}
+  {{ identity_provider_config_name }}:
+    Type: AWS::EKS::IdentityProviderConfig
+    DeletionPolicy: {{ identity_provider_config.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ identity_provider_config.update_replace_policy | default('Delete') }}
+    Properties:
+      ClusterName: {{ identity_provider_config.cluster_name }}
+      Type: {{ identity_provider_config.type }}
+{%- if identity_provider_config.identity_provider_config_name is defined %}
+      IdentityProviderConfigName: {{ identity_provider_config.identity_provider_config_name }}
+{%- endif %}
+{%- if identity_provider_config.oidc is defined %}{# BEGIN if identity_provider_config.oidc is defined #}
+      Oidc:
+        ClientId: {{ identity_provider_config.oidc.client_id }}
+        IssuerUrl: {{ identity_provider_config.oidc.issuer_url }}
+{%- if identity_provider_config.oidc.groups_claim is defined %}
+        GroupsClaim: {{ identity_provider_config.oidc.groups_claim }}
+{%- endif %}
+{%- if identity_provider_config.oidc.groups_prefix is defined %}
+        GroupsPrefix: {{ identity_provider_config.oidc.groups_prefix }}
+{%- endif %}
+{%- if identity_provider_config.oidc.required_claims is defined %}{# BEGIN if identity_provider_config.oidc.required_claims is defined #}
+        RequiredClaims:
+{%- for key,value in identity_provider_config.oidc.required_claims.items() %}
+          -
+            Key: {{ key }}
+            Value: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if identity_provider_config.oidc.required_claims is defined #}
+{%- if identity_provider_config.oidc.username_claim is defined %}
+        UsernameClaim: {{ identity_provider_config.oidc.username_claim }}
+{%- endif %}
+{%- if identity_provider_config.oidc.username_prefix is defined %}
+        UsernamePrefix: {{ identity_provider_config.oidc.username_prefix }}
+{%- endif %}
+{%- endif %}{# END if identity_provider_config.oidc is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if identity_provider_config.tags is defined %}
+{%- for key,value in identity_provider_config.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for identity_provider_config in sceptre_user_data.identity_provider_configs %}
+{%- set identity_provider_config_name = identity_provider_config.name %}
+  {{ identity_provider_config_name }}:
+    Description: Resource name for {{ identity_provider_config_name }}
+    Value:
+      Ref: {{ identity_provider_config_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ identity_provider_config_name }}"
+  {{ identity_provider_config_name }}IdentityProviderConfigArn:
+    Description: The ARN for {{ identity_provider_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ identity_provider_config_name }}
+        - IdentityProviderConfigArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ identity_provider_config_name }}-IdentityProviderConfigArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-21:
+Type: AWS::EKS::IdentityProviderConfig
+Properties:
+  ClusterName: String
+  IdentityProviderConfigName: String
+  Oidc:
+    ClientId: String
+    GroupsClaim: String
+    GroupsPrefix: String
+    IssuerUrl: String
+    RequiredClaims:
+      -
+        Key: String
+        Value: String
+    UsernameClaim: String
+    UsernamePrefix: String
+  Tags:
+    - Key: String
+      Value: String
+  Type: String
+#}

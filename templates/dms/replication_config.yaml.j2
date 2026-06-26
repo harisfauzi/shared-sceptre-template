@@ -1,0 +1,127 @@
+---
+Description: {{sceptre_user_data.description|default('DMS Replication Config(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for replication_config in sceptre_user_data.replication_configs %}
+{%- set replication_config_name = replication_config.name %}
+  {{ replication_config_name }}:
+    Type: AWS::DMS::ReplicationConfig
+    DeletionPolicy: {{ replication_config.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ replication_config.update_replace_policy | default('Delete') }}
+    Properties:
+      ComputeConfig:
+        MaxCapacityUnits: {{ replication_config.compute_config.max_capacity_units }}
+{%- if replication_config.compute_config.availability_zone is defined %}
+        AvailabilityZone: {{ replication_config.compute_config.availability_zone }}
+{%- endif %}
+{%- if replication_config.compute_config.dns_name_servers is defined %}
+        DnsNameServers: {{ replication_config.compute_config.dns_name_servers }}
+{%- endif %}
+{%- if replication_config.compute_config.kms_key_id is defined %}
+        KmsKeyId: {{ replication_config.compute_config.kms_key_id }}
+{%- endif %}
+{%- if replication_config.compute_config.min_capacity_units is defined %}
+        MinCapacityUnits: {{ replication_config.compute_config.min_capacity_units }}
+{%- endif %}
+{%- if replication_config.compute_config.multi_az is defined %}
+        MultiAZ: {{ replication_config.compute_config.multi_az | lower }}
+{%- endif %}
+{%- if replication_config.compute_config.preferred_maintenance_window is defined %}
+        PreferredMaintenanceWindow: {{ replication_config.compute_config.preferred_maintenance_window }}
+{%- endif %}
+{%- if replication_config.compute_config.replication_subnet_group_id is defined %}
+        ReplicationSubnetGroupId: {{ replication_config.compute_config.replication_subnet_group_id | trim }}
+{%- endif %}
+{%- if replication_config.compute_config.vpc_security_group_ids is defined %}{# BEGIN if replication_config.compute_config.vpc_security_group_ids is defined #}
+        VpcSecurityGroupIds:
+{%- for sg_id in replication_config.compute_config.vpc_security_group_ids %}
+          - {{ sg_id }}
+{%- endfor %}
+{%- endif %}{# END if replication_config.compute_config.vpc_security_group_ids is defined #}
+      ReplicationConfigIdentifier: {{ replication_config.replication_config_identifier }}
+      ReplicationType: {{ replication_config.replication_type }}
+      SourceEndpointArn: {{ replication_config.source_endpoint_arn | trim }}
+{%- if replication_config.table_mappings is defined %}
+      TableMappings:
+        {{ replication_config.table_mappings | indent(width=8, first=false) }}
+{%- elif replication_config.table_mappings_json is defined %}
+      TableMappings: |-
+        {{ replication_config.table_mappings_json | indent(width=8, first=false) }}
+{%- endif %}
+      TargetEndpointArn: {{ replication_config.target_endpoint_arn | trim }}
+{%- if replication_config.replication_settings is defined %}
+      ReplicationSettings:
+        {{ replication_config.replication_settings | indent(width=8, first=false) }}
+{%- elif replication_config.replication_settings_json is defined %}
+      ReplicationSettings: |-
+        {{ replication_config.replication_settings_json | indent(width=8, first=false) }}
+{%- endif %}
+{%- if replication_config.resource_identifier is defined %}
+      ResourceIdentifier: {{ replication_config.resource_identifier | trim }}
+{%- endif %}
+{%- if replication_config.supplemental_settings is defined %}
+      SupplementalSettings:
+        {{ replication_config.supplemental_settings | indent(width=8, first=false) }}
+{%- elif replication_config.supplemental_settings_json is defined %}
+      SupplementalSettings: |-
+        {{ replication_config.supplemental_settings_json | indent(width=8, first=false) }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if replication_config.tags is defined %}
+{%- for key,value in replication_config.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for replication_config in sceptre_user_data.replication_configs %}
+{%- set replication_config_name = replication_config.name %}
+  {{ replication_config_name }}:
+    Description: The ARN for {{ replication_config_name }}
+    Value:
+      Ref: {{ replication_config_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_config_name }}"
+{%- set replication_config_name = replication_config.name %}
+  {{ replication_config_name }}ReplicationConfigArn:
+    Description: The ARN for {{ replication_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ replication_config_name }}
+        - ReplicationConfigArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ replication_config_name }}-ReplicationConfigArn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-18:
+Type: AWS::DMS::ReplicationConfig
+Properties:
+  ComputeConfig:
+    AvailabilityZone: String
+    DnsNameServers: String
+    KmsKeyId: String
+    MaxCapacityUnits: Integer
+    MinCapacityUnits: Integer
+    MultiAZ: Boolean
+    PreferredMaintenanceWindow: String
+    ReplicationSubnetGroupId: String
+    VpcSecurityGroupIds:
+      - String
+  ReplicationConfigIdentifier: String
+  ReplicationSettings: Json
+  ReplicationType: String
+  ResourceIdentifier: String
+  SourceEndpointArn: String
+  SupplementalSettings: Json
+  TableMappings: Json
+  Tags:
+    - Key: String
+      Value: String
+  TargetEndpointArn: String
+#}

@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('Inspector AssessmentTemplate(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Inspector Assessment Template(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for assessment_template in sceptre_user_data.assessment_templates %}
 {%- set assessment_template_name = assessment_template.name %}
   {{ assessment_template_name }}:
@@ -20,18 +19,16 @@ Resources:
 {%- if assessment_template.assessment_template_name is defined %}
       AssessmentTemplateName: {{ assessment_template.assessment_template_name }}
 {%- endif %}
-{%- if assessment_template.user_attributes_for_findings is defined %}
+{%- if assessment_template.user_attributes_for_findings is defined %}{# BEGIN if assessment_template.user_attributes_for_findings is defined #}
       UserAttributesForFindings:
 {%- for key,value in assessment_template.user_attributes_for_findings.items() %}
         - Key: {{ key }}
           Value: {{ value }}
 {%- endfor %}
-{%- endif %}
-
+{%- endif %}{# END if assessment_template.user_attributes_for_findings is defined #}
 {%- endfor %}
 
 Outputs:
-
 {%- for assessment_template in sceptre_user_data.assessment_templates %}
 {%- set assessment_template_name = assessment_template.name %}
   {{ assessment_template_name }}:
@@ -41,7 +38,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ assessment_template_name }}"
-
   {{ assessment_template_name }}Arn:
     Description: The ARN for {{ assessment_template_name }}
     Value:
@@ -51,5 +47,16 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ assessment_template_name }}-Arn"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Inspector::AssessmentTemplate
+Properties:
+  AssessmentTargetArn: String
+  AssessmentTemplateName: String
+  DurationInSeconds: Integer
+  RulesPackageArns:
+    - String
+  UserAttributesForFindings:
+    - Key: String
+      Value: String
+#}

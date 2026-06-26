@@ -1,0 +1,96 @@
+---
+Description: {{sceptre_user_data.description|default('InspectorV2 Code Security Scan Configuration(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for code_security_scan_configuration in sceptre_user_data.code_security_scan_configurations %}
+{%- set code_security_scan_configuration_name = code_security_scan_configuration.name %}
+  {{ code_security_scan_configuration_name }}:
+    Type: AWS::InspectorV2::CodeSecurityScanConfiguration
+    DeletionPolicy: {{ code_security_scan_configuration.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ code_security_scan_configuration.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if code_security_scan_configuration.configuration is defined %}{# BEGIN if code_security_scan_configuration.configuration is defined #}
+      Configuration:
+        ruleSetCategories:
+{%- for category in code_security_scan_configuration.configuration.rule_set_categories %}
+          - {{ category }}
+{%- endfor %}
+{%- if code_security_scan_configuration.configuration.continuous_integration_scan_configuration is defined %}{# BEGIN if code_security_scan_configuration.configuration.continuous_integration_scan_configuration is defined #}
+        continuousIntegrationScanConfiguration:
+          supportedEvents:
+{%- for event in code_security_scan_configuration.configuration.continuous_integration_scan_configuration.supported_events %}
+            - {{ event }}
+{%- endfor %}
+{%- endif %}{# END if code_security_scan_configuration.configuration.continuous_integration_scan_configuration is defined #}
+{%- if code_security_scan_configuration.configuration.periodic_scan_configuration is defined %}{# BEGIN if code_security_scan_configuration.configuration.periodic_scan_configuration is defined #}
+        periodicScanConfiguration:
+{%- if code_security_scan_configuration.configuration.periodic_scan_configuration.frequency is defined %}
+          frequency: {{ code_security_scan_configuration.configuration.periodic_scan_configuration.frequency }}
+{%- endif %}
+{%- if code_security_scan_configuration.configuration.periodic_scan_configuration.frequency_expression is defined %}
+          frequencyExpression: {{ code_security_scan_configuration.configuration.periodic_scan_configuration.frequency_expression }}
+{%- endif %}
+{%- endif %}{# END if code_security_scan_configuration.configuration.periodic_scan_configuration is defined #}
+{%- endif %}{# END if code_security_scan_configuration.configuration is defined #}
+{%- if code_security_scan_configuration.level is defined %}
+      Level: {{ code_security_scan_configuration.level }}
+{%- endif %}
+{%- if code_security_scan_configuration.name is defined %}
+      Name: {{ code_security_scan_configuration.code_security_scan_configuration_name }}
+{%- endif %}
+{%- if code_security_scan_configuration.scope_settings is defined %}{# BEGIN if code_security_scan_configuration.scope_settings is defined #}
+      ScopeSettings:
+{%- if code_security_scan_configuration.scope_settings.project_selection_scope is defined %}
+        projectSelectionScope: {{ code_security_scan_configuration.scope_settings.project_selection_scope }}
+{%- endif %}
+{%- endif %}{# END if code_security_scan_configuration.scope_settings is defined #}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if code_security_scan_configuration.tags is defined%}
+{%- for key,value in code_security_scan_configuration.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for code_security_scan_configuration in sceptre_user_data.code_security_scan_configurations %}
+{%- set code_security_scan_configuration_name = code_security_scan_configuration.name %}
+  {{ code_security_scan_configuration_name }}:
+    Description: The ARN for {{ code_security_scan_configuration_name }}
+    Value:
+      Ref: {{ code_security_scan_configuration_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ code_security_scan_configuration_name }}"
+  {{ code_security_scan_configuration_name }}Arn:
+    Description: The ARN for {{ code_security_scan_configuration_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ code_security_scan_configuration_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ code_security_scan_configuration_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2026-06-25:
+Type: AWS::Inspector::ResourceGroup
+Type: AWS::InspectorV2::CodeSecurityScanConfiguration
+Properties:
+  Configuration:
+    continuousIntegrationScanConfiguration:
+      supportedEvents:
+        - String
+    periodicScanConfiguration:
+      frequency: String
+      frequencyExpression: String
+    ruleSetCategories:
+      - String
+  Level: String
+  Name: String
+  ScopeSettings:
+    projectSelectionScope: String
+  Tags:
+    Key: Value
+#}

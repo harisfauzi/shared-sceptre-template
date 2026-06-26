@@ -1,0 +1,56 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityHub Hub V2(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for hub_v2 in sceptre_user_data.hub_v2s %}
+{%- set hub_v2_name = hub_v2.name %}
+  {{ hub_v2_name }}:
+    Type: AWS::SecurityHub::HubV2
+    DeletionPolicy: {{ hub_v2.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ hub_v2.update_replace_policy | default('Delete') }}
+    Properties:
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if hub_v2.tags is defined %}
+{%- for key,value in hub_v2.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for hub_v2 in sceptre_user_data.hub_v2s %}
+{%- set hub_v2_name = hub_v2.name %}
+  {{ hub_v2_name }}:
+    Description: The ARN for {{ hub_v2_name }}
+    Value:
+      Ref: {{ hub_v2_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hub_v2_name }}"
+  {{ hub_v2_name }}HubV2Arn:
+    Description: The ARN for {{ hub_v2_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ hub_v2_name }}
+        - HubV2Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hub_v2_name }}-HubV2Arn"
+  {{ hub_v2_name }}SubscribedAt:
+    Description: The date and time when the service was enabled in the account.
+    Value:
+      Fn::GetAtt:
+        - {{ hub_v2_name }}
+        - SubscribedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ hub_v2_name }}-SubscribedAt"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::HubV2
+Properties:
+  Tags:
+    Key: Value
+#}

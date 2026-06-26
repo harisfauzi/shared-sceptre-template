@@ -4,14 +4,14 @@ template:
   path: memorydb/parameter_group.yaml.j2
 
 sceptre_user_data:
-  project_code: "{{ stack_group_config.project_code }}"
-  source_repo_url: {{ git_repo }}
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
   parameter_groups:
     - name: parametergroup1
       parameter_group_name: redis7-parametergroup1
       family: redis7
       description: Test parameter group
-      parameters:
+      parameters: |-
         hash-max-listpack-entries: 128
         latency-tracking: "yes"
       tags:
@@ -20,7 +20,7 @@ sceptre_user_data:
       parameter_group_name: memorydb_redis6-parametergroup2
       family: memorydb_redis6
       description: Test parameter group
-      parameters:
+      parameters: |-
         maxmemory-policy: volatile-lru
         lfu-decay-time: 2
       tags:

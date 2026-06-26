@@ -1,0 +1,169 @@
+---
+template:
+  type: file
+  path: dms/replication_config.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DMS Replication Configs for Database Replication Tasks
+  replication_configs:
+    - name: FullLoadAndCdcReplication
+      replication_config_identifier: full-load-cdc-replication-001
+      replication_type: full-load-and-cdc
+      source_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:source-postgres-001
+      target_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:target-mysql-001
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      compute_config:
+        max_capacity_units: 128
+        min_capacity_units: 2
+        multi_az: true
+        availability_zone: us-east-1a
+        replication_subnet_group_id: dms-subnet-group-prod
+        preferred_maintenance_window: sun:03:00-sun:04:00
+        vpc_security_group_ids:
+          - sg-0123456789abcdef0
+          - sg-0987654321fedcba0
+        kms_key_id: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
+      table_mappings_json: |-
+        {
+          "rules": [
+            {
+              "rule-type": "selection",
+              "rule-id": "1",
+              "rule-name": "include-production-tables",
+              "object-locator": {
+                "schema-name": "public",
+                "table-name": "prod_%"
+              },
+              "rule-action": "include"
+            }
+          ]
+        }
+      replication_settings_json: |-
+        {
+          "TargetMetadata": {
+            "TargetSchema": "",
+            "SupportLobs": true,
+            "FullLobMode": false,
+            "LimitedSizeLobMode": true,
+            "LobMaxSize": 32,
+            "InlineLobMaxSize": 0,
+            "LoadMaxFileSize": 512000,
+            "BatchApplyEnabled": false,
+            "ParallelLoadThreads": 0,
+            "ParallelLoadQueuesPerThread": 1,
+            "ParallelApplyThreads": 0
+          },
+          "FullLoadSettings": {
+            "TargetSchemaTableCount": 1000,
+            "MaxFullLoadSubTasks": 8,
+            "CommitRate": 50000
+          }
+        }
+      supplemental_settings_json: |-
+        {
+          "SourceMetadata": {
+            "EngineCode": "postgres",
+            "BinaryLogPosition": null,
+            "ServerVersion": "13.0"
+          }
+        }
+      tags:
+        Environment: Production
+        ReplicationType: FullLoadAndCdc
+        Owner: DataEngineering
+        CostCenter: Infrastructure
+        MigrationWave: Wave1
+
+    - name: CdcOnlyReplication
+      replication_config_identifier: cdc-only-replication-002
+      replication_type: cdc
+      source_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:source-oracle-001
+      target_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:target-postgres-001
+      deletion_policy: Retain
+      compute_config:
+        max_capacity_units: 64
+        min_capacity_units: 4
+        multi_az: true
+        availability_zone: us-east-1b
+        replication_subnet_group_id: dms-subnet-group-prod
+        vpc_security_group_ids:
+          - sg-0abcdef0123456789
+      table_mappings_json: |-
+        {
+          "rules": [
+            {
+              "rule-type": "selection",
+              "rule-id": "1",
+              "rule-name": "include-all-schemas",
+              "object-locator": {
+                "schema-name": "%",
+                "table-name": "%"
+              },
+              "rule-action": "include"
+            }
+          ]
+        }
+      replication_settings_json: |-
+        {
+          "ChangeProcessingTuning": {
+            "BatchApplyEnabled": true,
+            "MinTransactionSize": 1000,
+            "CommitTimeout": 1,
+            "MemoryLimitTotal": 1024,
+            "MemoryKeepTime": 60,
+            "StatementCacheSize": 50
+          }
+        }
+      tags:
+        Environment: Production
+        ReplicationType: CdcOnly
+        Purpose: ContinuousSync
+
+    - name: FullLoadReplication
+      replication_config_identifier: full-load-replication-003
+      replication_type: full-load
+      source_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:source-mssql-001
+      target_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:target-aurora-001
+      deletion_policy: Delete
+      compute_config:
+        max_capacity_units: 32
+        availability_zone: us-east-1c
+        replication_subnet_group_id: dms-subnet-group-staging
+        vpc_security_group_ids:
+          - sg-0fedcba9876543210
+      table_mappings_json: |-
+        {
+          "rules": [
+            {
+              "rule-type": "selection",
+              "rule-id": "1",
+              "rule-name": "include-schemas",
+              "object-locator": {
+                "schema-name": "dbo",
+                "table-name": "%"
+              },
+              "rule-action": "include"
+            }
+          ]
+        }
+      tags:
+        Environment: Staging
+        ReplicationType: FullLoad
+
+    - name: MinimalReplicationConfig
+      replication_config_identifier: minimal-replication-config-004
+      replication_type: full-load
+      source_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:source-mysql-001
+      target_endpoint_arn: arn:aws:dms:us-east-1:123456789012:endpoint:target-redshift-001
+      deletion_policy: Delete
+      compute_config:
+        max_capacity_units: 16
+      tags:
+        Environment: Development
+        Purpose: Testing
+
+stack_tags:
+  Test: dms-replication-config

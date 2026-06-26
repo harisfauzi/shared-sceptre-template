@@ -1,0 +1,206 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityRule Automation Rule V2(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for automation_rule_v2 in sceptre_user_data.automation_rule_v2s %}
+{%- set automation_rule_v2_name = automation_rule_v2.name %}
+  {{ automation_rule_v2_name }}:
+    Type: AWS::SecurityHub::AutomationRuleV2
+    DeletionPolicy: {{ automation_rule_v2.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ automation_rule_v2.update_replace_policy | default('Delete') }}
+    Properties:
+      Actions:
+{%- for action in automation_rule_v2.actions %}{# BEGIN for action in automation_rule_v2.actions #}
+        -
+          ExternalIntegrationConfiguration:
+            ConnectorArn: String
+          FindingFieldsUpdate:
+            Comment: String
+            SeverityId: Integer
+            StatusId: Integer
+          Type: String
+{%- endfor %}{# END for action in automation_rule_v2.actions#}
+      Criteria:
+        OcsfFindingCriteria:
+{%- if automation_rule_v2.ocsf_finding_criteria.composite_filters is defined %}{# BEGIN if automation_rule_v2.ocsf_finding_criteria.composite_filters is defined #}
+          CompositeFilters:
+{%- for composite_filter in automation_rule_v2.ocsf_finding_criteria.composite_filters %}{# BEGIN for composite_filter in automation_rule_v2.ocsf_finding_criteria.composite_filters #}
+            -
+{%- if composite_filter.boolean_filters is defined %}{# BEGIN if composite_filter.boolean_filters is defined #}
+              BooleanFilters:
+{%- for boolean_filter in composite_filter.boolean_filters %}
+                -
+                  FieldName: {{ boolean_filter.field_name }}
+                  Filter:
+                    Value: {{ boolean_filter.filter.value | lower }}
+{%- endfor %}
+{%- endif %}{# END if composite_filter.boolean_filters is defined #}
+{%- if composite_filter.date_filters is defined %}{# BEGIN if composite_filter.date_filters is defined #}
+              DateFilters:
+{%- for date_filter in composite_filter.date_filters %}{# BEGIN for date_filter in composite_filter.date_filters #}
+                -
+                  FieldName: {{ date_filter.field_name }}
+                  Filter:
+{%- if date_filter.filter.date_range is defined %}
+                    DateRange:
+                      Unit: {{ date_filter.filter.date_range.unit }}
+                      Value: {{ date_filter.filter.date_range.value }}
+{%- endif %}
+{%- if date_filter.filter.end is defined %}
+                    End: {{ date_filter.filter.end }}
+{%- endif %}
+{%- if date_filter.filter.start is defined %}
+                    Start: {{ date_filter.filter.start }}
+{%- endif %}
+{%- endfor %}{# END for date_filter in composite_filter.date_filters #}
+{%- endif %}{# END if composite_filter.date_filters is defined #}
+{%- if composite_filter.map_filters is defined %}{# BEGIN if composite_filter.map_filters is defined #}
+              MapFilters:
+{%- for map_filter in composite_filter.map_filters %}{# BEGIN for map_filter in composite_filter.map_filters #}
+                -
+                  FieldName: {{ map_filter.field_name }}
+                  Filter:
+                    Comparison: {{ map_filter.filter.comparison }}
+                    Key: {{ map_filter.filter.key }}
+                    Value: {{ map_filter.filter.value }}
+{%- endfor %}{# END for map_filter in composite_filter.map_filters #}
+{%- endif %}{# END if composite_filter.map_filters is defined #}
+{%- if composite_filter.number_filters is defined %}{# BEGIN if composite_filter.number_filters is defined #}
+              NumberFilters:
+{%- for number_filter in composite_filter.number_filters %}{# BEGIN for number_filter in composite_filter.number_filters #}
+                -
+                  FieldName: {{ number_filter.field_name }}
+                  Filter:
+{%- if number_filter.filter.eq is defined %}
+                    Eq: {{ number_filter.filter.eq }}
+{%- endif %}
+{%- if number_filter.filter.gte is defined %}
+                    Gte: {{ number_filter.filter.gte }}
+{%- endif %}
+{%- if number_filter.filter.lte is defined %}
+                    Lte: {{ number_filter.filter.lte }}
+{%- endif %}
+{%- endfor %}{# END for number_filter in composite_filter.number_filters #}
+{%- endif %}{# END if composite_filter.number_filters is defined #}
+{%- if composite_filter.operator is defined %}
+              Operator: {{ composite_filter.operator }}
+{%- endif %}
+{%- if composite_filter.string_filters is defined %}{# BEGIN if composite_filter.string_filters is defined #}
+              StringFilters:
+{%- for string_filter in composite_filter.string_filters %}{# BEGIN for string_filter in composite_filter.string_filters #}
+                -
+                  FieldName: {{ string_filter.field_name }}
+                  Filter:
+                    Comparison: {{ string_filter.filter.comparison }}
+                    Value: {{ string_filter.filter.value }}
+{%- endfor %}{# END for string_filter in composite_filter.string_filters #}
+{%- endif %}{# END if composite_filter.string_filters is defined #}
+{%- endfor %}{# END for composite_filter in automation_rule_v2.ocsf_finding_criteria.composite_filters #}
+{%- endif %}{# END if automation_rule_v2.ocsf_finding_criteria.composite_filters is defined #}
+{%- if automation_rule_v2.ocsf_finding_criteria.composite_operator is defined %}
+          CompositeOperator: {{ automation_rule_v2.ocsf_finding_criteria.composite_operator }}
+{%- endif %}
+      Description: {{ automation_rule_v2.description }}
+      RuleName: {{ automation_rule_v2.rule_name }}
+      RuleOrder: {{ automation_rule_v2.rule_order }}
+{%- if automation_rule_v2.rule_status is defined %}
+      RuleStatus: {{ automation_rule_v2.rule_status }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if automation_rule_v2.tags is defined %}
+{%- for key,value in automation_rule_v2.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for automation_rule_v2 in sceptre_user_data.automation_rule_v2s %}
+{%- set automation_rule_v2_name = automation_rule_v2.name %}
+  {{ automation_rule_v2_name }}:
+    Description: Rule V2 ARN for {{ automation_rule_v2_name }}
+    Value:
+      Ref: {{ automation_rule_v2_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ automation_rule_v2_name }}"
+  {{ automation_rule_v2_name }}RuleArn:
+    Description: Rule ARN for {{ automation_rule_v2_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ automation_rule_v2_name }}
+        - RuleArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ automation_rule_v2_name }}-RuleArn"
+  {{ automation_rule_v2_name }}RuleId:
+    Description: Rule ID for {{ automation_rule_v2_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ automation_rule_v2_name }}
+        - RuleId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ automation_rule_v2_name }}-RuleId"
+{%- endfor %}{#
+# Supported structure as of 2026-06-14:
+Type: AWS::SecurityHub::AutomationRuleV2
+Properties:
+  Actions:
+    -
+      ExternalIntegrationConfiguration:
+        ConnectorArn: String
+      FindingFieldsUpdate:
+        Comment: String
+        SeverityId: Integer
+        StatusId: Integer
+      Type: String
+  Criteria:
+    OcsfFindingCriteria:
+      CompositeFilters:
+        -
+          BooleanFilters:
+            -
+              FieldName: String
+              Filter:
+                Value: Boolean
+          DateFilters:
+            -
+              FieldName: String
+              Filter:
+                DateRange:
+                  Unit: String
+                  Value: Number
+                End: String
+                Start: String
+          MapFilters:
+            -
+              FieldName: String
+              Filter:
+                Comparison: String
+                Key: String
+                Value: String
+          NumberFilters:
+            -
+              FieldName: String
+              Filter:
+                Eq: Number
+                Gte: Number
+                Lte: Number
+          Operator: String
+          StringFilters:
+            -
+              FieldName: String
+              Filter:
+                Comparison: String
+                Value: String
+      CompositeOperator: String
+  Description: String
+  RuleName: String
+  RuleOrder: Number
+  RuleStatus: String
+  Tags:
+    Key: Value
+#}

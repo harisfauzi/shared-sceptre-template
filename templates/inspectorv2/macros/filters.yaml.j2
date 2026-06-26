@@ -1,46 +1,117 @@
-{%- macro prep_string_filter(string_filter) %}
+{# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-inspectorv2-filter-stringfilter.html
+# as of 2026-06-25:
+Comparison: String
+Value: String
+#}{%- macro prep_string_filter(string_filter) %}
 Comparison: {{ string_filter.comparison}}
-Value: {{ string_filter._value }}
+Value: {{ string_filter.value }}
 {%- endmacro %}
-{%- macro prep_number_filter(number_filter) %}
-{%- if number_filter.lower_inclusive. is defined %}
+{# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-inspectorv2-filter-numberfilter.html
+# as of 2026-06-25:
+LowerInclusive: Number
+UpperInclusive: Number
+Value: String
+#}{%- macro prep_number_filter(number_filter) %}
+{%- if number_filter.lower_inclusive is defined %}
 LowerInclusive: {{ number_filter.lower_inclusive }}
 {%- endif %}
-{%- if number_filter.upper_inclusive. is defined %}
+{%- if number_filter.upper_inclusive is defined %}
 UpperInclusive: {{ number_filter.upper_inclusive}}
 {%- endif %}
 {%- endmacro %}
-{%- macro prep_date_filter(date_filter) %}
-{%- if date_filter.end_inclusive. is defined %}
+{# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-inspectorv2-filter-datefilter.html
+# as of 2026-06-25:
+EndInclusive: Integer
+StartInclusive: Integer
+#}{%- macro prep_date_filter(date_filter) %}
+{%- if date_filter.end_inclusive is defined %}
 EndInclusive: {{ date_filter.end_inclusive }}
 {%- endif %}
-{%- if date_filter.start_inclusive. is defined %}
+{%- if date_filter.start_inclusive is defined %}
 StartInclusive: {{ date_filter.start_inclusive}}
 {%- endif %}
 {%- endmacro %}
-{%- macro prep_port_range_filter(port_range_filter) %}
-{%- if port_range_filter.end_inclusive. is defined %}
-EndInclusive: {{ port_range_filter.end_inclusive }}
-{%- endif %}
-{%- if port_range_filter.begin_inclusive. is defined %}
+{# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-inspectorv2-filter-portrangefilter.html
+# as of 2026-06-25:
+BeginInclusive: Integer
+EndInclusive: Integer
+#}{%- macro prep_port_range_filter(port_range_filter) %}
+{%- if port_range_filter.begin_inclusive is defined %}
 BeginInclusive: {{ port_range_filter.begin_inclusive}}
 {%- endif %}
+{%- if port_range_filter.end_inclusive is defined %}
+EndInclusive: {{ port_range_filter.end_inclusive }}
+{%- endif %}
 {%- endmacro %}
-{%- macro prep_map_filter(map_filter) %}
+{# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-inspectorv2-filter-mapfilter.html
+# as of 2026-06-25:
+Comparison: String
+Key: String
+Value: String
+#}{%- macro prep_map_filter(map_filter) %}
 Comparison: {{ map_filter.comparison }}
 {%- if map_filter.key is defined %}
 Key: {{ map_filter.key }}
 {%- endif %}
-{%- if map_filter._value is defined %}
-Value: {{ map_filter._value }}
+{%- if map_filter.value is defined %}
+Value: {{ map_filter.value }}
 {%- endif %}
 {%- endmacro %}
-{%- macro prep_package_filter(package_filter) %}
-Comparison: {{ map_filter.comparison }}
-{%- if map_filter.key is defined %}
-Key: {{ map_filter.key }}
+{# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-inspectorv2-filter-packagefilter.html
+# as of 2026-06-25:
+Architecture:
+  StringFilter
+Epoch:
+  NumberFilter
+FilePath:
+  StringFilter
+Name:
+  StringFilter
+Release:
+  StringFilter
+SourceLambdaLayerArn:
+  StringFilter
+SourceLayerHash:
+  StringFilter
+Version:
+  StringFilter
+#}{%- macro prep_package_filter(package_filter) %}
+{%- if package_filter.architecture is defined %}
+Architecture:
+  {{- prep_string_filter(package_filter.architecture) | indent(width=2, first=false)}}
 {%- endif %}
-{%- if map_filter._value is defined %}
-Value: {{ map_filter._value }}
+{%- if package_filter.epoch is defined %}
+Epoch:
+  {{- prep_number_filter(package_filter.epoch) | indent(width=2, first=false)}}
+{%- endif %}
+{%- if package_filter.file_path is defined %}
+FilePath:
+  {{- prep_string_filter(package_filter.file_path) | indent(width=2, first=false)}}
+{%- endif %}
+{%- if package_filter.name is defined %}
+Name:
+  {{- prep_string_filter(package_filter.name) | indent(width=2, first=false)}}
+{%- endif %}
+{%- if package_filter.release is defined %}
+Release:
+  {{- prep_string_filter(package_filter.release) | indent(width=2, first=false)}}
+{%- endif %}
+{%- if package_filter.source_lambda_layer_arn is defined %}
+SourceLambdaLayerArn:
+  {{- prep_string_filter(package_filter.source_lambda_layer_arn) | indent(width=2, first=false)}}
+{%- endif %}
+{%- if package_filter.source_layer_hash is defined %}
+SourceLayerHash:
+  {{- prep_string_filter(package_filter.source_layer_hash) | indent(width=2, first=false)}}
+{%- endif %}
+{%- if package_filter.version is defined %}
+Version:
+  {{- prep_string_filter(package_filter.version) | indent(width=2, first=false)}}
 {%- endif %}
 {%- endmacro %}

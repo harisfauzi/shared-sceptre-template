@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('DMS EventSubscription(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('DMS Event Subscription(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for event_subscription in sceptre_user_data.event_subscriptions %}
 {%- set event_subscription_name = event_subscription.name %}
   {{ event_subscription_name }}:
@@ -13,7 +12,7 @@ Resources:
     Properties:
       SnsTopicArn: {{ event_subscription.sns_topic_arn | trim }}
 {%- if event_subscription.enabled is defined %}
-      Enabled: {{ event_subscription.enabled }}
+      Enabled: {{ event_subscription.enabled | lower }}
 {%- endif %}
 {%- if event_subscription.event_categories is defined %}
       EventCategories:
@@ -42,11 +41,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for event_subscription in sceptre_user_data.event_subscriptions %}
 {%- set event_subscription_name = event_subscription.name %}
   {{ event_subscription_name }}:
@@ -56,5 +53,19 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ event_subscription_name }}"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-18:
+Type: AWS::DMS::EventSubscription
+Properties:
+  Enabled: Boolean
+  EventCategories:
+    - String
+  SnsTopicArn: String
+  SourceIds:
+    - String
+  SourceType: String
+  SubscriptionName: String
+  Tags:
+    - Key: String
+      Value: String
+#}

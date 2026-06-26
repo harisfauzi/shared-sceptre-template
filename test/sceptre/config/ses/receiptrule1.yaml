@@ -1,0 +1,101 @@
+---
+template:
+  type: file
+  path: ses/receipt_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Receipt Rule(s) for testing purposes"
+  receipt_rules:
+    - name: AddHeaderRule
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      rule_set_name: "inbound-email-processing"
+      rule:
+        name: "add-header-rule"
+        enabled: true
+        scan_enabled: false
+        actions:
+          - add_header_action:
+              header_name: "X-Custom-Header"
+              header_value: "EmailProcessed"
+
+    - name: S3ArchivingRule
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      rule_set_name: "compliance-archiving"
+      after: "AddHeaderRule"
+      rule:
+        name: "s3-archiving-rule"
+        enabled: true
+        recipients:
+          - "archive@example.com"
+          - "records@example.com"
+        actions:
+          - s3_action:
+              bucket_name: "email-archive-bucket"
+              object_key_prefix: "incoming-emails/"
+              iam_role_arn: "arn:aws:iam::123456789012:role/SESEmailArchiveRole"
+              kms_key_arn: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+
+    - name: BounceFilterRule
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      rule_set_name: "spam-filtering"
+      rule:
+        name: "bounce-filter-rule"
+        enabled: true
+        scan_enabled: true
+        tls_policy: "Require"
+        actions:
+          - bounce_action:
+              sender: "noreply@example.com"
+              message: "Email rejected due to spam detection"
+              smtp_reply_code: "550"
+              status_code: "5.7.1"
+              topic_arn: "arn:aws:sns:us-east-1:123456789012:EmailBounceTopic"
+
+    - name: LambdaProcessingRule
+      rule_set_name: "notification-routing"
+      rule:
+        name: "lambda-processing-rule"
+        enabled: true
+        actions:
+          - lambda_action:
+              function_arn: "arn:aws:lambda:us-east-1:123456789012:function:EmailProcessor"
+              invocation_type: "Event"
+              topic_arn: "arn:aws:sns:us-east-1:123456789012:LambdaInvocationTopic"
+
+    - name: SnsNotificationRule
+      rule_set_name: "notification-routing"
+      rule:
+        name: "sns-notification-rule"
+        enabled: true
+        recipients:
+          - "alerts@example.com"
+        actions:
+          - sns_action:
+              topic_arn: "arn:aws:sns:us-east-1:123456789012:EmailNotificationTopic"
+              encoding: "UTF-8"
+
+    - name: ComplexMultiActionRule
+      rule_set_name: "default-processing"
+      rule:
+        name: "multi-action-rule"
+        enabled: true
+        scan_enabled: true
+        actions:
+          - add_header_action:
+              header_name: "X-Processing-Status"
+              header_value: "MultiAction"
+          - s3_action:
+              bucket_name: "email-logs-bucket"
+              object_key_prefix: "processed/"
+          - sns_action:
+              topic_arn: "arn:aws:sns:us-east-1:123456789012:ProcessingStatusTopic"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-receipt-rule

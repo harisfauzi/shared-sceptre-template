@@ -1,0 +1,78 @@
+---
+template:
+  type: file
+  path: dms/replication_subnet_group.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: AWS DMS Replication Subnet Groups for VPC Networking
+  replication_subnet_groups:
+    - name: ProductionReplicationSubnetGroup
+      replication_subnet_group_identifier: prod-replication-subnet-group-001
+      description: Production DMS replication subnet group spanning multiple availability zones
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      subnet_ids:
+        - subnet-0123456789abcdef0
+        - subnet-0987654321fedcba0
+        - subnet-0abcdef0123456789
+      tags:
+        Environment: Production
+        Network: DMSReplication
+        Owner: NetworkTeam
+        CostCenter: Infrastructure
+        DataClassification: Confidential
+        Availability: MultiAZ
+
+    - name: StagingReplicationSubnetGroup
+      replication_subnet_group_identifier: staging-replication-subnet-group-002
+      description: Staging environment DMS replication subnet group for testing
+      deletion_policy: Delete
+      subnet_ids:
+        - subnet-0fedcba9876543210
+        - subnet-0123456789abcdef1
+      tags:
+        Environment: Staging
+        Network: DMSReplication
+        Purpose: Testing
+
+    - name: DevelopmentReplicationSubnetGroup
+      replication_subnet_group_identifier: dev-replication-subnet-group-003
+      description: Development DMS replication subnet group
+      deletion_policy: Delete
+      subnet_ids:
+        - subnet-0abcdef0123456781
+        - subnet-0987654321fedcba1
+      tags:
+        Environment: Development
+        Network: DMSReplication
+        DataClassification: Internal
+
+    - name: DisasterRecoverySubnetGroup
+      replication_subnet_group_identifier: dr-replication-subnet-group-004
+      description: Disaster recovery DMS replication subnet group with cross-region redundancy
+      deletion_policy: Retain
+      subnet_ids:
+        - subnet-0fedcba9876543211
+        - subnet-0123456789abcdef2
+        - subnet-0abcdef0123456782
+        - subnet-0987654321fedcba2
+      tags:
+        Environment: Production
+        Network: DMSReplication
+        Purpose: DisasterRecovery
+        Critical: "true"
+        Availability: MultiAZ
+        Owner: DBAdmins
+        RPO: "1-hour"
+        RTO: "4-hours"
+
+    - name: MinimalReplicationSubnetGroup
+      description: Minimal replication subnet group for quick setup
+      deletion_policy: Delete
+      subnet_ids:
+        - subnet-0fedcba9876543212
+
+stack_tags:
+  Test: dms-replication-subnet-group

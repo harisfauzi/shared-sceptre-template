@@ -1,9 +1,8 @@
 ---
-Description: {{sceptre_user_data.description|default('Route53Resolver ResolverRule(s) for '+sceptre_user_data.project_code)}}
+Description: {{sceptre_user_data.description|default('Route53Resolver Resolver Rule(s) for '+sceptre_user_data.project_code)}}
 AWSTemplateFormatVersion: "2010-09-09"
 
 Resources:
-
 {%- for resolver_rule in sceptre_user_data.resolver_rules %}
 {%- set resolver_rule_name = resolver_rule.name %}
   {{ resolver_rule_name }}:
@@ -11,17 +10,22 @@ Resources:
     DeletionPolicy: {{ resolver_rule.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ resolver_rule.update_replace_policy | default('Delete') }}
     Properties:
-      DomainName: {{ resolver_rule.domain_name }}
       RuleType: {{ resolver_rule.rule_type }}
+{%- if resolver_rule.delegation_record is defined %}
+      DelegationRecord: {{ resolver_rule.delegation_record }}
+{%- endif %}
+{%- if resolver_rule.domain_name is defined %}
+      DomainName: {{ resolver_rule.domain_name }}
+{%- endif %}
 {%- if resolver_rule.resolver_rule_name is defined %}
       Name: {{ resolver_rule.resolver_rule_name }}
 {%- endif %}
 {%- if resolver_rule.resolver_endpoint_id is defined %}
       ResolverEndpointId: {{ resolver_rule.resolver_endpoint_id | trim }}
 {%- endif %}
-{%- if resolver_rule.target_ips is defined %}
+{%- if resolver_rule.target_ips is defined %}{# BEGIN if resolver_rule.target_ips is defined #}
       TargetIps:
-{%- for target_ip in resolver_rule.target_ips %}
+{%- for target_ip in resolver_rule.target_ips %}{# BEGIN for target_ip in resolver_rule.target_ips #}
         -
 {%- if target_ip.ip is defined %}
           Ip: {{target_ip.ip}}
@@ -32,8 +36,14 @@ Resources:
 {%- if target_ip.port is defined %}
           Port: {{target_ip.port}}
 {%- endif %}
-{%- endfor %}
+{%- if target_ip.protocol is defined %}
+          Protocol: {{target_ip.protocol}}
 {%- endif %}
+{%- if target_ip.server_name_indication is defined %}
+          ServerNameIndication: {{target_ip.server_name_indication}}
+{%- endif %}
+{%- endfor %}{# END for target_ip in resolver_rule.target_ips #}
+{%- endif %}{# END if resolver_rule.target_ips is defined #}
       Tags:
         - Key: SourceRepoURL
           Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
@@ -43,11 +53,9 @@ Resources:
           Value: {{ value }}
 {%- endfor %}
 {%- endif %}
-
 {%- endfor %}
 
 Outputs:
-
 {%- for resolver_rule in sceptre_user_data.resolver_rules %}
 {%- set resolver_rule_name = resolver_rule.name %}
   {{ resolver_rule_name }}:
@@ -57,7 +65,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}"
-
   {{ resolver_rule_name }}Arn:
     Description: The ARN for {{ resolver_rule_name }}
     Value:
@@ -67,7 +74,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-Arn"
-
   {{ resolver_rule_name }}DomainName:
     Description: >
       DNS queries for this domain name are forwarded to the IP addresses that are specified in TargetIps.
@@ -78,8 +84,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-DomainName"
-
-{%- if resolver_rule.resolver_rule_name is defined %}
   {{ resolver_rule_name }}Name:
     Description: >
       A friendly name for {{ resolver_rule_name }} that lets you
@@ -91,8 +95,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-Name"
-
-{%- endif %}
   {{ resolver_rule_name }}ResolverEndpointId:
     Description: >
       The ID of the outbound endpoint that {{ resolver_rule_name }} is associated with.
@@ -103,7 +105,6 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-ResolverEndpointId"
-
   {{ resolver_rule_name }}ResolverRuleId:
     Description: The ResolverRule Id for {{ resolver_rule_name }}
     Value:
@@ -113,5 +114,23 @@ Outputs:
     Export:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ resolver_rule_name }}-ResolverRuleId"
-
-{%- endfor %}
+{%- endfor %}{#
+# Supported structure as of 2026-06-19:
+Type: AWS::Route53Resolver::ResolverRule
+Properties:
+  DelegationRecord: String
+  DomainName: String
+  Name: String
+  ResolverEndpointId: String
+  RuleType: String
+  Tags:
+    - Key: String
+      Value: String
+  TargetIps:
+    -
+      Ip: String
+      Ipv6: String
+      Port: String
+      Protocol: String
+      ServerNameIndication: String
+#}

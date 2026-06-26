@@ -1,0 +1,54 @@
+---
+template:
+  type: file
+  path: ses/mail_manager_addon_subscription.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "SES Mail Manager Addon Subscription(s) for testing purposes"
+  mail_manager_addon_subscriptions:
+    - name: SpamFilterSubscription
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      addon_name: "SpamFilter"
+      tags:
+        Application: "EmailSecurity"
+        AddonType: "SpamFilter"
+        Environment: "Production"
+        Vendor: "AWS"
+
+    - name: PhishingDetectionSubscription
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      addon_name: "PhishingDetection"
+      tags:
+        Application: "EmailSecurity"
+        AddonType: "PhishingProtection"
+        Environment: "Production"
+        Vendor: "AWS"
+
+    - name: MailArchiveSubscription
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      addon_name: "MailArchive"
+      tags:
+        Application: "Compliance"
+        AddonType: "Archive"
+        Department: "Legal"
+        Vendor: "AWS"
+
+    - name: AdvancedAnalyticsSubscription
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      addon_name: "AdvancedAnalytics"
+      tags:
+        Application: "Analytics"
+        AddonType: "Reporting"
+        Environment: "Production"
+        Vendor: "AWS"
+
+stack_tags:
+  Environment: Test
+  ManagedBy: Sceptre
+  Test: ses-mail-manager-addon-subscription
