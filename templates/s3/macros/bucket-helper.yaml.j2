@@ -1,0 +1,76 @@
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-bucket-metadatatableencryptionconfiguration.html
+# as of 2026-07-05:
+KmsKeyArn: String
+SseAlgorithm: String
+#}{%- macro prep_metadata_table_encryption_configuration(metadata_table_encryption_configuration) %}
+SseAlgorithm: {{ metadata_table_encryption_configuration.sse_algorithm }}
+{%- if metadata_table_encryption_configuration.kms_key_arn is defined %}
+KmsKeyArn: {{ metadata_table_encryption_configuration.kms_key_arn | trim }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-bucket-notificationfilter.html
+S3Key:
+  Rules:
+    -
+      Name: String
+      Value: String
+#}{%- macro prep_notification_filter(notification_filter) %}
+S3Key:
+  Rules:
+{%- for rule in notification_filter.s3_key.rules %}
+    -
+      Name: {{ rule.name }}
+      Value: {{ rule.value }}
+{%- endfor %}
+{%- endmacro %}
+
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-bucket-noncurrentversiontransition.html
+# as of 2026-07-05:
+NewerNoncurrentVersions: Integer
+StorageClass: String
+TransitionInDays: Integer
+#}{%- macro prep_noncurrent_version_transition(transition) %}
+StorageClass: {{ transition.storage_class }}
+TransitionInDays: {{ transition.transition_in_days }}
+{%- if transition.newer_noncurrent_versions is defined %}
+NewerNoncurrentVersions: {{ transition.newer_noncurrent_versions }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-bucket-transition.html
+# as of 2026-07-05:
+StorageClass: String
+TransitionDate: String
+TransitionInDays: Integer
+#}{%- macro prep_transition(transition) %}
+StorageClass: {{transition.storage_class}}
+{%- if transition.transition_date is defined %}
+TransitionDate: {{ transition.transition_date }}
+{%- endif %}
+{%- if transition.transition_in_days is defined %}
+TransitionInDays: {{ transition.transition_in_days }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-bucket-destination.html
+# as of 2026-07-05:
+BucketAccountId: String
+BucketArn: String
+Format: String
+Prefix: String
+#}{%- macro prep_destination(destination) %}
+BucketArn: {{ destination.bucket_arn | trim }}
+Format: {{ destination.format }}
+{%- if destination.bucket_account_id is defined %}
+BucketAccountId: {{ destination.bucket_account_id | trim }}
+{%- endif %}
+{%- if destination.prefix is defined %}
+Prefix: {{ destination.prefix }}
+{%- endif %}
+{%- endmacro %}
