@@ -1,0 +1,87 @@
+---
+template:
+  type: file
+  path: securityagent/security_requirement_pack.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test SecurityAgent Security Requirement Pack with comprehensive Jinja2 template coverage.
+  security_requirement_packs:
+    - name: BasicSecurityRequirementPack
+      security_requirement_pack_name: BasicSecurityRequirementPack
+      tags:
+        Environment: Development
+        Purpose: BasicSecurityRequirements
+
+    - name: WithRequirementsSecurityRequirementPack
+      security_requirement_pack_name: WithRequirementsSecurityRequirementPack
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      description: Security requirement pack with compliance requirements
+      security_requirements:
+        - name: EncryptionAtRest
+          description: All data must be encrypted at rest using customer-managed keys
+          domain: DATA_PROTECTION
+          evaluation: VERIFY_ENCRYPTION_KEYS
+        - name: MfaRequired
+          description: Multi-factor authentication must be enabled for all user accounts
+          domain: IDENTITY_ACCESS
+          evaluation: CHECK_MFA_ENABLED
+        - name: NetworkSegmentation
+          description: Production systems must be in isolated network segments
+          domain: NETWORK_SECURITY
+          evaluation: VALIDATE_NETWORK_ISOLATION
+      status: ACTIVE
+      tags:
+        Environment: Production
+        Application: ComplianceRequirements
+        Owner: SecurityTeam
+
+    - name: FullFeaturedSecurityRequirementPack
+      security_requirement_pack_name: FullFeaturedSecurityRequirementPack
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      description: Comprehensive security requirement pack with remediation guidance
+      kms_key_id: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
+      security_requirements:
+        - name: EncryptionInTransit
+          description: All data in transit must be encrypted using TLS 1.2 or higher
+          domain: NETWORK_SECURITY
+          evaluation: VERIFY_TLS_VERSION
+          remediation: Update service configuration to enforce TLS 1.2 minimum
+        - name: AccessLogging
+          description: All API calls must be logged for audit purposes
+          domain: AUDIT_LOGGING
+          evaluation: CHECK_API_LOGGING_ENABLED
+          remediation: Enable CloudTrail and ALB access logs for all services
+        - name: VulnerabilityScanning
+          description: Container images must be scanned for vulnerabilities before deployment
+          domain: VULNERABILITY_MANAGEMENT
+          evaluation: SCAN_CONTAINER_IMAGES
+          remediation: Integrate container image scanning in CI/CD pipeline
+        - name: PasswordPolicy
+          description: Password policies must enforce minimum 14 characters with complexity requirements
+          domain: IDENTITY_ACCESS
+          evaluation: VALIDATE_PASSWORD_POLICY
+          remediation: Configure IAM password policy with minimum 14 characters and complexity
+        - name: BackupStrategy
+          description: Critical data must have automated daily backups with 30-day retention
+          domain: DISASTER_RECOVERY
+          evaluation: VERIFY_BACKUP_FREQUENCY
+          remediation: Enable AWS Backup with daily snapshots and 30-day retention policy
+        - name: AccessControl
+          description: Implement least privilege access using role-based access control
+          domain: IDENTITY_ACCESS
+          evaluation: AUDIT_IAM_PERMISSIONS
+          remediation: Review and trim IAM policies to enforce least privilege principle
+      status: ACTIVE
+      tags:
+        Environment: Production
+        Application: FullCompliancePack
+        CostCenter: Security
+        DataClassification: Sensitive
+        Owner: CloudEngineering
+
+stack_tags:
+  Test: securityagent-security-requirement-pack

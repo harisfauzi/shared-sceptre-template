@@ -1,0 +1,78 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityAgent Security Requirement Pack(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for security_requirement_pack in sceptre_user_data.security_requirement_packs %}
+{%- set security_requirement_pack_name = security_requirement_pack.name %}
+  {{ security_requirement_pack_name }}:
+    Type: AWS::SecurityAgent::SecurityRequirementPack
+    DeletionPolicy: {{ security_requirement_pack.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ security_requirement_pack.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ security_requirement_pack.security_requirement_pack_name }}
+{%- if security_requirement_pack.description is defined %}
+      Description: {{ security_requirement_pack.description }}
+{%- endif %}
+{%- if security_requirement_pack.kms_key_id is defined %}
+      KmsKeyId: {{ security_requirement_pack.kms_key_id | trim }}
+{%- endif %}
+{%- if security_requirement_pack.security_requirements is defined %}{# BEGIN if security_requirement_pack.security_requirements is defined #}
+      SecurityRequirements:
+{%- for requirement in security_requirement_pack.security_requirements %}{# BEGIN for requirement in security_requirement_pack.security_requirements #}
+        -
+          Description: {{ requirement.description }}
+          Domain: {{ requirement.domain }}
+          Evaluation: {{ requirement.evaluation }}
+          Name: {{ requirement.name }}
+{%- if requirement.remediation is defined %}
+          Remediation: {{ requirement.remediation }}
+{%- endif %}
+{%- endfor %}{# END for requirement in security_requirement_pack.security_requirements #}
+{%- endif %}{# END if security_requirement_pack.security_requirements is defined #}
+{%- if security_requirement_pack.status is defined %}
+      Status: {{ security_requirement_pack.status }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if security_requirement_pack.tags is defined %}
+{%- for key,value in security_requirement_pack.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for security_requirement_pack in sceptre_user_data.security_requirement_packs %}
+{%- set security_requirement_pack_name = security_requirement_pack.name %}
+  {{ security_requirement_pack_name }}PackId:
+    Description: The pack ID for {{ security_requirement_pack_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ security_requirement_pack_name }}
+        - PackId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ security_requirement_pack_name }}-PackId"
+{%- endfor %}{#
+# Supported structure as of 2026-07-05
+Type: AWS::SecurityAgent::SecurityRequirementPack
+Properties:
+  Description: String
+  KmsKeyId: String
+  Name: String
+  SecurityRequirements:
+    -
+      Description: String
+      Domain: String
+      Evaluation: String
+      Name: String
+      Remediation: String
+  Status: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

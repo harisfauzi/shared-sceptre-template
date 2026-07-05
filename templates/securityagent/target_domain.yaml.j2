@@ -1,0 +1,73 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityAgent Target Domain(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for target_domain in sceptre_user_data.target_domains %}
+{%- set target_domain_name = target_domain.name %}
+  {{ target_domain_name }}:
+    Type: AWS::SecurityAgent::TargetDomain
+    DeletionPolicy: {{ target_domain.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ target_domain.update_replace_policy | default('Delete') }}
+    Properties:
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if target_domain.tags is defined %}
+{%- for key,value in target_domain.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+      TargetDomainName: {{ target_domain.target_domain_name }}
+      VerificationMethod: {{ target_domain.verification_method }}
+{%- endfor %}
+
+Outputs:
+{%- for target_domain in sceptre_user_data.target_domains %}
+{%- set target_domain_name = target_domain.name %}
+  {{ target_domain_name }}:
+    Description: The target domain ID for {{ target_domain_name }}
+    Value:
+      Ref: {{ target_domain_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ target_domain_name }}"
+  {{ target_domain_name }}TargetDomainId:
+    Description: The target domain ID for {{ target_domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ target_domain_name }}
+        - TargetDomainId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ target_domain_name }}-TargetDomainId"
+  {{ target_domain_name }}CreatedAt:
+    Description: The creation timestamp for {{ target_domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ target_domain_name }}
+        - CreatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ target_domain_name }}-CreatedAt"
+  {{ target_domain_name }}VerificationStatus:
+    Description: The verification status for {{ target_domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ target_domain_name }}
+        - VerificationStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ target_domain_name }}-VerificationStatus"
+{%- endfor %}{#
+# Supported structure as of 2026-07-05
+Type: AWS::SecurityAgent::TargetDomain
+Properties:
+  Tags:
+    -
+      Key: String
+      Value: String
+  TargetDomainName: String
+  VerificationMethod: String
+#}
