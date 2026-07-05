@@ -1,0 +1,67 @@
+---
+template:
+  type: file
+  path: s3vectors/index.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test S3Vectors Index with comprehensive Jinja2 template coverage.
+  indexes:
+    - name: BasicIndex
+      data_type: FLOAT32
+      dimension: 1536
+      distance_metric: COSINE
+      vector_bucket_name: basic-embeddings-bucket
+      tags:
+        Environment: Development
+        Purpose: EmbeddingIndexing
+        ModelType: OpenAI
+
+    - name: WithMetadataIndex
+      data_type: INT8
+      dimension: 768
+      distance_metric: EUCLIDEAN
+      vector_bucket_arn: "arn:aws:s3:us-east-1:123456789012:vectorb/metadata-embeddings-bucket"
+      index_name: QuickAccessMetadataIndex
+      metadata_configuration:
+        non_filterable_metadata_keys:
+          - internal_id
+          - debug_flag
+          - temporary_marker
+      tags:
+        Environment: Production
+        Application: MetadataSearch
+        Owner: DataEngineering
+        CostCenter: Analytics
+
+    - name: FullFeaturedIndex
+      data_type: FLOAT32
+      dimension: 2048
+      distance_metric: DOT_PRODUCT
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      vector_bucket_name: full-featured-embeddings-bucket
+      vector_bucket_arn: "arn:aws:s3:us-east-1:123456789012:vectorb/full-featured-embeddings-bucket"
+      index_name: ProductionHighDimensionalIndex
+      encryption_configuration:
+        sse_type: SSE_KMS
+        kms_key_arn: "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012"
+      metadata_configuration:
+        non_filterable_metadata_keys:
+          - system_version
+          - ingestion_timestamp
+          - source_system
+          - batch_id
+          - processing_metadata
+      tags:
+        Environment: Production
+        Application: SemanticSearch
+        CostCenter: AI
+        DataClassification: Sensitive
+        Owner: CloudEngineering
+        CreatedBy: AutomatedWorkflow
+        ManagedBy: Terraform
+
+stack_tags:
+  Test: s3vectors-index

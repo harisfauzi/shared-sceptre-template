@@ -32,6 +32,34 @@ Resources:
 {%- endif %}{# END if config.server_side_encryption_by_default is defined #}
 {%- endfor %}{# END for config in directory_bucket.bucket_encryption.server_side_encryption_configuration #}
 {%- endif %}{# END if directory_bucket.bucket_encryption is defined #}
+{%- if directory_bucket.inventory_configurations is defined %}{# BEGIN if directory_bucket.inventory_configurations is defined #}
+      InventoryConfigurations:
+{%- for config in directory_bucket.inventory_configurations %}{# BEGIN for config in directory_bucket.inventory_configurations #}
+        -
+          Destination:
+            BucketArn: {{ config.destination.bucket_arn | trim }}
+            Format: {{ config.destination.format }}
+{%- if config.destination.bucket_account_id is defined %}
+            BucketAccountId: {{ config.destination.bucket_account_id }}
+{%- endif %}
+{%- if config.destination.prefix is defined %}
+            Prefix: {{ config.destination.prefix }}
+{%- endif %}
+          Enabled: {{ config.enabled | lower }}
+          Id: {{ config.id }}
+          IncludedObjectVersions: {{ config.included_object_versions }}
+          ScheduleFrequency: {{ config.schedule_frequency }}
+{%- if config.optional_fields is defined %}{# BEGIN if config.optional_fields is defined #}
+          OptionalFields:
+{%- for field in config.optional_fields %}
+            - {{ field }}
+{%- endfor %}
+{%- endif %}{# END if config.optional_fields is defined #}
+{%- if config.prefix is defined %}
+          Prefix: {{ config.prefix }}
+{%- endif %}
+{%- endfor %}{# END for config in directory_bucket.inventory_configurations #}
+{%- endif %}{# END if directory_bucket.inventory_configurations is defined #}
 {%- if directory_bucket.lifecycle_configuration is defined %}{# BEGIN if directory_bucket.lifecycle_configuration is defined #}
       LifecycleConfiguration:
         Rules:
@@ -85,7 +113,7 @@ Resources:
 {%- endif %}
 {%- if directory_bucket.bucket_policy is defined %}{# BEGIN if directory_bucket.bucket_policy is defined #}
   {{ directory_bucket_name }}Policy:
-    Type: AWS::S3::BucketPolicy
+    Type: AWS::S3Express::BucketPolicy
     DeletionPolicy: {{ directory_bucket.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ directory_bucket.update_replace_policy | default('Delete') }}
     Properties:
@@ -97,7 +125,7 @@ Resources:
 {%- else %}
       PolicyDocument:
         {{ directory_bucket.bucket_policy.policy_document | indent(width=8, first=false) }}
-{%- endif %}  
+{%- endif %}
 {%- endif %}{# END if directory_bucket.bucket_policy is defined #}
 {%- endfor %}
 
@@ -130,7 +158,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ directory_bucket_name }}-AvailabilityZoneName"
 {%- endfor %}{#
-# Supported structure as of 2026-04-21:
+# Supported structure as of 2026-07-05:
 Type: AWS::S3Express::DirectoryBucket
 Properties:
   BucketEncryption:
@@ -142,6 +170,20 @@ Properties:
           SSEAlgorithm: String
   BucketName: String
   DataRedundancy: String
+  InventoryConfigurations:
+    -
+      Destination:
+        BucketAccountId: String
+        BucketArn: String
+        Format: String
+        Prefix: String
+      Enabled: Boolean
+      Id: String
+      IncludedObjectVersions: String
+      OptionalFields:
+        - String
+      Prefix: String
+      ScheduleFrequency: String
   LifecycleConfiguration:
     Rules:
       -

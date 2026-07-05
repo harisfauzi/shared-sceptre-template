@@ -1,0 +1,102 @@
+---
+template:
+  type: file
+  path: s3outposts/access_point.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test S3Outposts AccessPoint with comprehensive Jinja2 template coverage.
+  access_points:
+    - name: BasicAccessPoint
+      bucket: outposts-bucket-12345
+      access_point_name: BasicAccessPoint
+      vpc_configuration:
+        vpc_id: vpc-0123456789abcdef0
+      tags:
+        Environment: Development
+        Purpose: BasicS3OutpostsAccess
+
+    - name: WithPolicyAccessPoint
+      bucket: outposts-bucket-67890
+      access_point_name: WithPolicyAccessPoint
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      policy: |-
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::123456789012:role/S3OutpostsAccessRole
+            Action:
+              - s3-outposts:GetObject
+              - s3-outposts:PutObject
+            Resource: arn:aws:s3-outposts:us-east-1:123456789012:outpost/op-0123456789abcdef0/accesspoint/*
+          - Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::123456789012:role/S3OutpostsAccessRole
+            Action:
+              - s3-outposts:ListBucket
+            Resource: arn:aws:s3-outposts:us-east-1:123456789012:outpost/op-0123456789abcdef0/accesspoint/*
+      vpc_configuration:
+        vpc_id: vpc-abcdef0123456789
+      tags:
+        Environment: Production
+        Application: PolicyControlledAccess
+        Owner: DataTeam
+
+    - name: FullFeaturedAccessPoint
+      bucket: outposts-bucket-complete
+      access_point_name: FullFeaturedAccessPoint
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      policy_json: |-
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::123456789012:role/ComplianceAuditRole"
+              },
+              "Action": [
+                "s3-outposts:GetObject",
+                "s3-outposts:GetObjectVersion"
+              ],
+              "Resource": "arn:aws:s3-outposts:us-east-1:123456789012:outpost/op-fedcba9876543210/accesspoint/*/object/*"
+            },
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "arn:aws:iam::123456789012:role/ComplianceAuditRole"
+              },
+              "Action": [
+                "s3-outposts:ListBucket",
+                "s3-outposts:ListBucketVersions"
+              ],
+              "Resource": "arn:aws:s3-outposts:us-east-1:123456789012:outpost/op-fedcba9876543210/accesspoint/*"
+            },
+            {
+              "Effect": "Deny",
+              "Principal": "*",
+              "Action": "s3-outposts:*",
+              "Resource": "*",
+              "Condition": {
+                "StringNotEquals": {
+                  "aws:SourceVpc": "vpc-fedcba9876543210"
+                }
+              }
+            }
+          ]
+        }
+      vpc_configuration:
+        vpc_id: vpc-fedcba9876543210
+      tags:
+        Environment: Production
+        Application: FullCompliance
+        CostCenter: Security
+        DataClassification: Sensitive
+        Owner: CloudEngineering
+
+stack_tags:
+  Test: s3outposts-accesspoint

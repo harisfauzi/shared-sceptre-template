@@ -1,0 +1,87 @@
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-storagelens-encryption.html
+# as of 2026-07-05:
+SSEKMS:
+  KeyId: String
+SSES3: Json
+#}{%- macro prep_encryption(encryption) %}
+{%- if encryption.sse_kms is defined %}
+SSEKMS:
+  KeyId: {{ encryption.sse_kms.key_id | trim }}
+{%- endif %}
+{%- if encryption.sse_s3_json is defined %}
+SSES3: |
+  {{ encryption.sse_s3_json | indent(width=2, first=false)}}
+{%- elif encryption.sse_s3 is defined %}
+SSES3:
+  {{ encryption.sse_s3 | indent(width=2, first=false)}}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-storagelens-bucketsandregions.html
+# as of 2026-07-05:
+Buckets:
+  - String
+Regions:
+  - String
+#}{%- macro prep_buckets_and_regions(obj) %}
+{%- if obj.buckets is defined %}{# BEGIN if obj.buckets is defined #}
+Buckets:
+{%- for bucket in obj.buckets %}
+  - {{ bucket }}
+{%- endfor %}
+{%- endif %}{# END if obj.buckets is defined #}
+{%- if obj.regions is defined %}{# BEGIN if obj.regions is defined #}
+Regions:
+{%- for region in obj.regions %}
+  - {{ region }}
+{%- endfor %}
+{%- endif %}{# END if obj.regions is defined #}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-storagelens-s3bucketdestination.html
+# as of 2026-07-05:
+AccountId: String
+Arn: String
+Encryption:
+  SSEKMS:
+    KeyId: String
+  SSES3: Json
+Format: String
+OutputSchemaVersion: String
+Prefix: String
+#}{%- macro prep_s3_bucket_destination(obj) %}
+AccountId: {{ obj.account_id | trim  }}
+Arn: {{ obj.arn | trim }}
+Format: {{ obj.format }}
+OutputSchemaVersion: {{ obj.output_schema_version }}
+{%- if obj.encryption is defined %}{# BEGIN if obj.encryption is defined #}
+Encryption:
+  {{- prep_encryption(obj.encryption) | indent(width=2, first=false) }}
+{%- endif %}{# END if obj.encryption is defined #}
+{%- if obj.prefix is defined %}
+Prefix: {{ obj.prefix }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-s3-storagelens-storagelenstabledestination.html
+# as of 2026-07-05:
+Encryption:
+  SSEKMS:
+    KeyId: String
+  SSES3: Json
+IsEnabled: Boolean
+#}{%- macro prep_storage_lens_table_destination(obj) %}
+IsEnabled: {{ obj.is_enabled | lower }}
+{%- if obj.encryption is defined %}
+Encryption:
+  {{- prep_encryption(obj.encryption) | indent(width=2, first=false) }}
+{%- endif %}
+{%- endmacro %}

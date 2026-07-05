@@ -1,0 +1,80 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityAgent Application(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Type: AWS::SecurityAgent::Application
+    DeletionPolicy: {{ application.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ application.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if application.default_kms_key_id is defined %}
+      DefaultKmsKeyId: {{ application.default_kms_key_id | trim }}
+{%- endif %}
+{%- if application.idc_configuration is defined %}{# BEGIN if application.idc_configuration is defined #}
+      IdCConfiguration:
+{%- if application.idc_configuration.idc_application_arn is defined %}
+        IdCApplicationArn: {{ application.idc_configuration.idc_application_arn | trim }}
+{%- endif %}
+{%- if application.idc_configuration.idc_instance_arn is defined %}
+        IdCInstanceArn: {{ application.idc_configuration.idc_instance_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if application.idc_configuration is defined #}
+{%- if application.role_arn is defined %}
+      RoleArn: {{ application.role_arn | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if application.tags is defined %}
+{%- for key,value in application.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Description: The application ID for {{ application_name }}
+    Value:
+      Ref: {{ application_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}"
+  {{ application_name }}ApplicationId:
+    Description: The application ID for {{ application_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ application_name }}
+        - ApplicationId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}-ApplicationId"
+  {{ application_name }}ApplicationName:
+    Description: The name of the Security Agent application for {{ application_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ application_name }}
+        - ApplicationName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}-ApplicationName"
+{%- endfor %}{#
+# Supported structure as of 2026-07-05
+Type: AWS::SecurityAgent::Application
+Properties:
+  DefaultKmsKeyId: String
+  IdCConfiguration:
+    IdCApplicationArn: String
+    IdCInstanceArn: String
+  RoleArn: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

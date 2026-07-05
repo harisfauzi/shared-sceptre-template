@@ -24,7 +24,7 @@ Resources:
       Policy:
         {{ access_point.policy | indent(width=8, first=false) }}
 {%- endif %}
-{%- if access_point.public_access_block_configuration is defined %}
+{%- if access_point.public_access_block_configuration is defined %}{# BEGIN if access_point.public_access_block_configuration is defined #}
       PublicAccessBlockConfiguration:
 {%- if access_point.public_access_block_configuration.block_public_acls is defined %}
         BlockPublicAcls: {{ access_point.public_access_block_configuration.block_public_acls | lower }}
@@ -38,6 +38,15 @@ Resources:
 {%- if access_point.public_access_block_configuration.restrict_public_buckets is defined %}
         RestrictPublicBuckets: {{ access_point.public_access_block_configuration.restrict_public_buckets | lower }}
 {%- endif %}
+{%- endif %}{# END if access_point.public_access_block_configuration is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if access_point.tags is defined %}
+{%- for key,value in access_point.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
 {%- endif %}
 {%- if access_point.vpc_configuration is defined %}
       VpcConfiguration:
@@ -83,7 +92,7 @@ Outputs:
       Name:
         Fn::Sub: "${AWS::StackName}-{{ access_point_name }}-NetworkOrigin"
 {%- endfor %}{#
-# Supported structure as of 2025-04-22:
+# Supported structure as of 2026-07-05:
 Type: AWS::S3::AccessPoint
 Properties:
   Bucket: String
@@ -95,6 +104,9 @@ Properties:
     BlockPublicPolicy: Boolean
     IgnorePublicAcls: Boolean
     RestrictPublicBuckets: Boolean
+  Tags:
+    - Key: String
+      Value: String
   VpcConfiguration:
     VpcId: String
 #}
