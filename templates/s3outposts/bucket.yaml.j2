@@ -1,0 +1,142 @@
+---
+Description: {{sceptre_user_data.description|default('S3Outposts Bucket(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for bucket in sceptre_user_data.buckets %}
+{%- set bucket_name = bucket.name %}
+  {{ bucket_name }}:
+    Type: AWS::S3Outposts::Bucket
+    DeletionPolicy: {{ bucket.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ bucket.update_replace_policy | default('Delete') }}
+    Properties:
+      BucketName: {{ bucket.bucket_name }}
+      OutpostId: {{ bucket.outpost_id }}
+{%- if bucket.lifecycle_configuration is defined %}{# BEGIN if bucket.lifecycle_configuration is defined #}
+      LifecycleConfiguration:
+        Rules:
+{%- for rule in bucket.lifecycle_configuration.rules %}{# BEGIN for rule in bucket.lifecycle_configuration.rules #}
+          -
+{%- if rule.abort_incomplete_multipart_upload is defined %}
+            AbortIncompleteMultipartUpload:
+              DaysAfterInitiation: {{ rule.abort_incomplete_multipart_upload.days_after_initiation }}
+{%- endif %}
+{%- if rule.expiration_date is defined %}
+            ExpirationDate: {{ rule.expiration_date }}
+{%- endif %}
+{%- if rule.expiration_in_days is defined %}
+            ExpirationInDays: {{ rule.expiration_in_days }}
+{%- endif %}
+{%- if rule.filter is defined %}{# BEGIN if rule.filter is defined #}
+            Filter:
+{%- if rule.filter.and_operator is defined %}{# BEGIN if rule.filter.and_operator is defined #}
+              AndOperator:
+{%- if rule.filter.and_operator.prefix is defined %}
+                Prefix: {{ rule.filter.and_operator.prefix }}
+{%- endif %}
+                Tags:
+{%- for tag in rule.filter.and_operator.tags %}
+                  -
+                    Key: {{ tag.key }}
+                    Value: {{ tag.value }}
+{%- endfor %}
+{%- endif %}{# END if rule.filter.and_operator is defined #}
+{%- if rule.filter.prefix is defined %}
+              Prefix: {{ rule.filter.prefix }}
+{%- endif %}
+{%- if rule.filter.tag is defined %}
+              Tag:
+                Key: {{ rule.filter.tag.key }}
+                Value: {{ rule.filter.tag.value }}
+{%- endif %}
+{%- endif %}{# END if rule.filter is defined #}
+{%- if rule.id is defined %}
+            Id: {{ rule.id }}
+{%- endif %}
+{%- if rule.status is defined %}
+            Status: {{ rule.status }}
+{%- endif %}
+{%- endfor %}{# END for rule in bucket.lifecycle_configuration.rules #}
+{%- endif %}{# END if bucket.lifecycle_configuration is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if bucket.tags is defined %}
+{%- for key,value in bucket.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if bucket.bucket_policy is defined %}{# BEGIN if bucket.bucket_policy is defined #}
+  {{ bucket_name }}Policy:
+    Type: AWS::S3Outposts::BucketPolicy
+    DeletionPolicy: {{ bucket.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ bucket.update_replace_policy | default('Delete') }}
+    Properties:
+      Bucket:
+        Ref: {{ bucket_name }}
+{%- if bucket.bucket_policy.policy_document_json is defined %}
+      PolicyDocument: |
+        {{ bucket.bucket_policy.policy_document_json | indent(width=8, first=false) }}
+{%- else %}
+      PolicyDocument:
+        {{ bucket.bucket_policy.policy_document | indent(width=8, first=false) }}
+{%- endif %}
+{%- endif %}{# END if bucket.bucket_policy is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for bucket in sceptre_user_data.buckets %}
+{%- set bucket_name = bucket.name %}
+  {{ bucket_name }}:
+    Description: The ARN for {{ bucket_name }}
+    Value:
+      Ref: {{ bucket_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ bucket_name }}"
+  {{ bucket_name }}Arn:
+    Description: The ARN for {{ bucket_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ bucket_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ bucket_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2026-07-05:
+Type: AWS::S3Outposts::Bucket
+Properties:
+  BucketName: String
+  LifecycleConfiguration:
+    Rules:
+      -
+        AbortIncompleteMultipartUpload:
+          DaysAfterInitiation: Integer
+        ExpirationDate: String
+        ExpirationInDays: Integer
+        Filter:
+          AndOperator:
+            Prefix: String
+            Tags:
+              -
+                Key: String
+                Value: String
+          Prefix: String
+          Tag:
+            Key: String
+            Value: String
+        Id: String
+        Status: String
+  OutpostId: String
+  Tags:
+    -
+      Key: String
+      Value: String
+
+Type: AWS::S3Outposts::BucketPolicy
+Properties:
+  Bucket: String
+  PolicyDocument: Json
+#}

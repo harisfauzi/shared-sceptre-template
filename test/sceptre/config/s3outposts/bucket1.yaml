@@ -1,0 +1,120 @@
+---
+template:
+  type: file
+  path: s3outposts/bucket.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test S3Outposts Bucket with comprehensive Jinja2 template coverage.
+  buckets:
+    - name: BasicBucket
+      bucket_name: outposts-basic-bucket
+      outpost_id: op-0123456789abcdef0
+      tags:
+        Environment: Development
+        Purpose: BasicS3OutpostsBucket
+
+    - name: WithLifecycleBucket
+      bucket_name: outposts-lifecycle-bucket
+      outpost_id: op-abcdef0123456789a
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      lifecycle_configuration:
+        rules:
+          - id: ExpireOldLogs
+            status: Enabled
+            filter:
+              prefix: logs/
+            expiration_in_days: 90
+          - id: AbortIncompleteUploads
+            status: Enabled
+            filter:
+              prefix: uploads/
+            abort_incomplete_multipart_upload:
+              days_after_initiation: 7
+          - id: TagBasedRetention
+            status: Enabled
+            filter:
+              tag:
+                key: Retention
+                value: Temporary
+            expiration_in_days: 30
+          - id: ComplexFilteredRule
+            status: Enabled
+            filter:
+              and_operator:
+                prefix: archive/
+                tags:
+                  - key: Type
+                    value: Archive
+                  - key: Classification
+                    value: NonCritical
+            expiration_in_days: 180
+      tags:
+        Environment: Production
+        Application: LifecycleManagement
+        Owner: DataTeam
+
+    - name: FullFeaturedBucket
+      bucket_name: outposts-complete-bucket
+      outpost_id: op-fedcba9876543210
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      lifecycle_configuration:
+        rules:
+          - id: TransitionToStorage
+            status: Enabled
+            filter:
+              prefix: data/
+            expiration_in_days: 365
+          - id: CleanupPartialUploads
+            status: Enabled
+            abort_incomplete_multipart_upload:
+              days_after_initiation: 1
+      bucket_policy:
+        policy_document: |-
+          Version: "2012-10-17"
+          Statement:
+            - Sid: AllowGetObject
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3OutpostsReadRole
+              Action:
+                - s3-outposts:GetObject
+                - s3-outposts:GetObjectVersion
+              Resource: arn:aws:s3-outposts:us-east-1:123456789012:outpost/op-fedcba9876543210/bucket/outposts-complete-bucket/object/*
+            - Sid: AllowListBucket
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3OutpostsReadRole
+              Action:
+                - s3-outposts:ListBucket
+                - s3-outposts:ListBucketVersions
+              Resource: arn:aws:s3-outposts:us-east-1:123456789012:outpost/op-fedcba9876543210/bucket/outposts-complete-bucket
+            - Sid: AllowAdminAccess
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3OutpostsAdminRole
+              Action:
+                - s3-outposts:*
+              Resource:
+                - arn:aws:s3-outposts:us-east-1:123456789012:outpost/op-fedcba9876543210/bucket/outposts-complete-bucket
+                - arn:aws:s3-outposts:us-east-1:123456789012:outpost/op-fedcba9876543210/bucket/outposts-complete-bucket/object/*
+            - Sid: DenyUnencryptedObjectUploads
+              Effect: Deny
+              Principal: "*"
+              Action: s3-outposts:PutObject
+              Resource: arn:aws:s3-outposts:us-east-1:123456789012:outpost/op-fedcba9876543210/bucket/outposts-complete-bucket/object/*
+              Condition:
+                StringNotEquals:
+                  s3-outposts:x-amz-server-side-encryption: AES256
+      tags:
+        Environment: Production
+        Application: ComplianceStorage
+        CostCenter: Security
+        DataClassification: Sensitive
+        Owner: CloudEngineering
+
+stack_tags:
+  Test: s3outposts-bucket

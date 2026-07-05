@@ -1,0 +1,253 @@
+---
+Description: {{sceptre_user_data.description|default('S3Tables Table(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for table in sceptre_user_data.tables %}
+{%- set table_name = table.name %}
+  {{ table_name }}:
+    Type: AWS::S3Tables::Table
+    DeletionPolicy: {{ table.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ table.update_replace_policy | default('Delete') }}
+    Properties:
+      Namespace: {{ table.namespace }}
+      OpenTableFormat: ICEBERG
+      TableBucketARN: {{ table.table_bucket_arn | trim }}
+      TableName: {{ table.table_name }}
+{%- if table.compaction is defined %}{# BEGIN if table.compaction is defined #}
+      Compaction:
+{%- if table.compaction.status is defined %}
+        Status: {{ table.compaction.status }}
+{%- endif %}
+{%- if table.compaction.target_file_size_mb is defined %}
+        TargetFileSizeMB: {{ table.compaction.target_file_size_mb }}
+{%- endif %}
+{%- endif %}{# END if table.compaction is defined #}
+{%- if table.iceberg_metadata is defined %}{# BEGIN if table.iceberg_metadata is defined #}
+      IcebergMetadata:
+{%- if table.iceberg_metadata.iceberg_partition_spec is defined %}{# BEGIN if table.iceberg_metadata.iceberg_partition_spec is defined #}
+        IcebergPartitionSpec:
+          Fields:
+{%- for field in table.iceberg_metadata.iceberg_partition_spec.fields %}{# BEGIN for field in table.iceberg_metadata.iceberg_partition_spec.fields #}
+            -
+              Name: {{ field.name }}
+              SourceId: {{ field.source_id }}
+              Transform: {{ field.transform }}
+{%- if field.field_id is defined %}
+              FieldId: {{ field.field_id }}
+{%- endif %}
+{%- endfor %}{# END for field in table.iceberg_metadata.iceberg_partition_spec.fields #}
+{%- if table.iceberg_metadata.iceberg_partition_spec.spec_id is defined %}
+          SpecId: {{ table.iceberg_metadata.iceberg_partition_spec.spec_id }}
+{%- endif %}
+{%- endif %}{# END if table.iceberg_metadata.iceberg_partition_spec is defined #}
+{%- if table.iceberg_metadata.iceberg_schema is defined %}{# BEGIN if table.iceberg_metadata.iceberg_schema is defined #}
+        IcebergSchema:
+          SchemaFieldList:
+{%- for item in table.iceberg_metadata.iceberg_schema.schema_field_list %}{# BEGIN for item in table.iceberg_metadata.iceberg_schema.schema_field_list is defined #}
+            -
+              Name: {{ item.name }}
+              Type: {{ item.type }}
+{%- if item.id is defined %}
+              Id: {{ item.id }}
+{%- endif %}
+{%- if item.required is defined %}
+              Required: {{ item.required | lower }}
+{%- endif %}
+{%- endfor %}{# END for item in table.iceberg_metadata.iceberg_schema.schema_field_list is defined #}
+{%- endif %}{# END if table.iceberg_metadata.iceberg_schema is defined #}
+{%- if table.iceberg_metadata.iceberg_schema_v2 is defined %}{# BEGIN if table.iceberg_metadata.iceberg_schema_v2 is defined #}
+        IcebergSchemaV2:
+          SchemaV2FieldList:
+{%- for item in table.iceberg_metadata.iceberg_schema_v2.schema_v2_field_list %}{# BEGIN for item in table.iceberg_metadata.iceberg_schema_v2.schema_v2_field_list is defined #}
+            -
+              Id: {{ item.id }}
+              Name: {{ item.name }}
+              Required: {{ item.required | lower }}
+              Type: {{ item.type }}
+{%- if item.doc is defined %}
+              Doc: {{ item.doc }}
+{%- endif %}
+{%- endfor %}{# END for item in table.iceberg_metadata.iceberg_schema_v2.schema_v2_field_list is defined #}
+          SchemaV2FieldType: struct
+{%- if table.iceberg_metadata.iceberg_schema_v2.identifier_field_ids is defined %}{# BEGIN if table.iceberg_metadata.iceberg_schema_v2.identifier_field_ids is defined #}
+          IdentifierFieldIds:
+{%- for id in table.iceberg_metadata.iceberg_schema_v2.identifier_field_ids %}
+            - {{ id }}
+{%- endfor %}
+{%- endif %}{# END if table.iceberg_metadata.iceberg_schema_v2.identifier_field_ids is defined #}
+          SchemaId: {{ table.iceberg_metadata.iceberg_schema_v2.schema_id }}
+{%- endif %}{# END if table.iceberg_metadata.iceberg_schema_v2 is defined #}
+{%- if table.iceberg_metadata.iceberg_sort_order is defined %}{# BEGIN if table.iceberg_metadata.iceberg_sort_order is defined #}
+        IcebergSortOrder:
+          Fields:
+{%- for field in table.iceberg_metadata.iceberg_sort_order.fields %}
+            -
+              Direction: {{ field.direction }}
+              NullOrder: {{ field.null_order }}
+              SourceId: {{ field.source_id }}
+              Transform: {{ field.transform }}
+{%- endfor %}
+{%- if table.iceberg_metadata.iceberg_sort_order.order_id is defined %}
+          OrderId: {{ table.iceberg_metadata.iceberg_sort_order.order_id }}
+{%- endif %}
+{%- endif %}{# END if table.iceberg_metadata.iceberg_sort_order is defined #}
+{%- if table.iceberg_metadata.table_properties is defined %}{# BEGIN if table.iceberg_metadata.table_properties is defined #}
+        TableProperties:
+{%- for key,value in table.iceberg_metadata.table_properties.items() %}
+          {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if table.iceberg_metadata.table_properties is defined #}
+{%- endif %}{# END if table.iceberg_metadata is defined #}
+{%- if table.snapshot_management is defined %}{# BEGIN if table.snapshot_management is defined #}
+      SnapshotManagement:
+{%- if table.snapshot_management.max_snapshot_age_hours is defined %}
+        MaxSnapshotAgeHours: {{ table.snapshot_management.max_snapshot_age_hours }}
+{%- endif %}
+{%- if table.snapshot_management.min_snapshots_to_keep is defined %}
+        MinSnapshotsToKeep: {{ table.snapshot_management.min_snapshots_to_keep }}
+{%- endif %}
+{%- if table.snapshot_management.status is defined %}
+        Status: {{ table.snapshot_management.status }}
+{%- endif %}
+{%- endif %}{# END if table.snapshot_management is defined #}
+{%- if table.storage_class_configuration is defined %}{# BEGIN if table.storage_class_configuration is defined #}
+      StorageClassConfiguration:
+{%- if table.storage_class_configuration.storage_class is defined %}
+        StorageClass: {{ table.storage_class_configuration.storage_class }}
+{%- endif %}
+{%- endif %}{# END if table.storage_class_configuration is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if table.tags is defined %}
+{%- for key,value in table.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if table.without_metadata is defined %}
+      WithoutMetadata: Yes
+{%- endif %}
+{%- if table.table_policy is defined %}{# BEGIN if table.table_policy is defined #}
+  {{ table_name }}Policy:
+    Type: AWS::S3Tables::TablePolicy
+    DeletionPolicy: {{ table.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ table.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if table.table_policy.resource_policy_json is defined %}
+      ResourcePolicy: |-
+        {{ table.table_policy.resource_policy_json | indent(width=8, first=false) }}
+{%- else %}
+      ResourcePolicy:
+        {{ table.table_policy.resource_policy | indent(width=8, first=false) }}
+{%- endif %}
+      TableARN:
+        Fn::GetAtt:
+          - {{ table_name }}
+          - TableARN
+{%- endif %}{# END if table.table_policy is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for table in sceptre_user_data.tables %}
+{%- set table_name = table.name %}
+  {{ table_name }}:
+    Description: The table name for {{ table_name }}
+    Value:
+      Ref: {{ table_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ table_name }}"
+  {{ table_name }}TableARN:
+    Description: The ARN for {{ table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ table_name }}
+        - TableARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ table_name }}-TableARN"
+  {{ table_name }}VersionToken:
+    Description: The version token for {{ table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ table_name }}
+        - VersionToken
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ table_name }}-VersionToken"
+  {{ table_name }}WarehouseLocation:
+    Description: The warehouse location for {{ table_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ table_name }}
+        - WarehouseLocation
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ table_name }}-WarehouseLocation"
+{%- endfor %}{#
+# Supported structure as of 2026-07-05:
+Type: AWS::S3Tables::Table
+Properties:
+  Compaction:
+    Status: String
+    TargetFileSizeMB: Integer
+  IcebergMetadata:
+    IcebergPartitionSpec:
+      Fields:
+        -
+          FieldId: Integer
+          Name: String
+          SourceId: Integer
+          Transform: String
+      SpecId: Integer
+    IcebergSchema:
+      SchemaFieldList:
+        -
+          Id: Integer
+          Name: String
+          Required: Boolean
+          Type: String
+    IcebergSchemaV2:
+      IdentifierFieldIds:
+        - Integer
+      SchemaId: Integer
+      SchemaV2FieldList:
+        -
+          Doc: String
+          Id: Integer
+          Name: String
+          Required: Boolean
+          Type: String
+      SchemaV2FieldType: String
+    IcebergSortOrder:
+      Fields:
+        -
+          Direction: String
+          NullOrder: String
+          SourceId: Integer
+          Transform: String
+      OrderId: Integer
+    TableProperties:
+      Key: Value
+  Namespace: String
+  OpenTableFormat: String
+  SnapshotManagement:
+    MaxSnapshotAgeHours: Integer
+    MinSnapshotsToKeep: Integer
+    Status: String
+  StorageClassConfiguration:
+    StorageClass: String
+  TableBucketARN: String
+  TableName: String
+  Tags:
+    - Key: String
+      Value: String
+  WithoutMetadata: String
+
+Type: AWS::S3Tables::TablePolicy
+Properties:
+  ResourcePolicy: Json
+  TableARN: String
+#}

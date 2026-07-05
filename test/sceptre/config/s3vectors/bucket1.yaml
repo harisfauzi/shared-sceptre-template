@@ -1,0 +1,78 @@
+---
+template:
+  type: file
+  path: s3vectors/bucket.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test S3Vectors VectorBucket with comprehensive Jinja2 template coverage.
+  vector_buckets:
+    - name: BasicVectorBucket
+      vector_bucket_name: basic-vector-bucket
+      tags:
+        Environment: Development
+        Purpose: BasicVectorStorage
+
+    - name: WithEncryptionVectorBucket
+      vector_bucket_name: encrypted-vector-bucket
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      encryption_configuration:
+        sse_type: SSE_S3
+      tags:
+        Environment: Production
+        Application: EncryptedVectorStorage
+        Owner: DataTeam
+
+    - name: FullFeaturedVectorBucket
+      vector_bucket_name: full-featured-vector-bucket
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      encryption_configuration:
+        sse_type: SSE_KMS
+        kms_key_arn: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
+      vector_bucket_policy:
+        policy: |-
+          Version: "2012-10-17"
+          Statement:
+            - Sid: AllowVectorBucketRead
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3VectorsReadRole
+              Action:
+                - s3-vectors:GetObject
+                - s3-vectors:DescribeVector
+              Resource: arn:aws:s3:us-east-1:123456789012:vectorb/full-featured-vector-bucket/*
+            - Sid: AllowVectorBucketWrite
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3VectorsWriteRole
+              Action:
+                - s3-vectors:PutObject
+                - s3-vectors:DeleteObject
+              Resource: arn:aws:s3:us-east-1:123456789012:vectorb/full-featured-vector-bucket/*
+            - Sid: AllowVectorBucketAdmin
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3VectorsAdminRole
+              Action:
+                - s3-vectors:*
+              Resource: arn:aws:s3:us-east-1:123456789012:vectorb/full-featured-vector-bucket
+            - Sid: DenyUnencryptedObjectUpload
+              Effect: Deny
+              Principal: "*"
+              Action: s3-vectors:PutObject
+              Resource: arn:aws:s3:us-east-1:123456789012:vectorb/full-featured-vector-bucket/*
+              Condition:
+                StringNotEquals:
+                  s3-vectors:x-amz-server-side-encryption: aws:kms
+      tags:
+        Environment: Production
+        Application: VectorSearch
+        CostCenter: AI
+        DataClassification: Sensitive
+        Owner: CloudEngineering
+
+stack_tags:
+  Test: s3vectors-bucket

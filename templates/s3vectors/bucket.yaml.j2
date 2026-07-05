@@ -1,0 +1,91 @@
+---
+Description: {{sceptre_user_data.description|default('S3Vectors Vector Bucket(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for vector_bucket in sceptre_user_data.vector_buckets %}
+{%- set vector_bucket_name = vector_bucket.name %}
+  {{ vector_bucket_name }}:
+    Type: AWS::S3Vectors::VectorBucket
+    DeletionPolicy: {{ vector_bucket.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vector_bucket.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if vector_bucket.encryption_configuration is defined %}{# BEGIN if vector_bucket.encryption_configuration is defined #}
+      EncryptionConfiguration:
+{%- if vector_bucket.encryption_configuration.kms_key_arn is defined %}
+        KmsKeyArn: {{ vector_bucket.encryption_configuration.kms_key_arn | trim }}
+{%- endif %}
+{%- if vector_bucket.encryption_configuration.sse_type is defined %}
+        SseType: {{ vector_bucket.encryption_configuration.sse_type }}
+{%- endif %}
+{%- endif %}{# END if vector_bucket.encryption_configuration is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if vector_bucket.tags is defined %}
+{%- for key,value in vector_bucket.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if vector_bucket.vector_bucket_name is defined %}
+      VectorBucketName: {{ vector_bucket.vector_bucket_name }}
+{%- endif %}
+{%- if vector_bucket.vector_bucket_policy is defined %}{# BEGIN if vector_bucket.vector_bucket_policy is defined #}
+  {{ vector_bucket_name }}Policy:
+    Type: AWS::S3Vectors::VectorBucketPolicy
+    DeletionPolicy: {{ vector_bucket.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ vector_bucket.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if vector_bucket.vector_bucket_policy.policy_json is defined %}
+      Policy: |-
+        {{ vector_bucket.vector_bucket_policy.policy_json | indent(width=8, first=false) }}
+{%- else %}
+      Policy:
+        {{ vector_bucket.vector_bucket_policy.policy | indent(width=8, first=false) }}
+{%- endif %}
+      VectorBucketArn:
+        Fn::GetAtt:
+          - {{ vector_bucket_name }}
+          - VectorBucketArn
+{%- endif %}{# END if vector_bucket.vector_bucket_policy is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for vector_bucket in sceptre_user_data.vector_buckets %}
+{%- set vector_bucket_name = vector_bucket.name %}
+  {{ vector_bucket_name }}:
+    Description: The ARN for {{ vector_bucket_name }}
+    Value:
+      Ref: {{ vector_bucket_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vector_bucket_name }}"
+  {{ vector_bucket_name }}VectorBucketArn:
+    Description: The ARN for {{ vector_bucket_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ vector_bucket_name }}
+        - VectorBucketArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ vector_bucket_name }}-VectorBucketArn"
+{%- endfor %}{#
+# Supported structure as of 2026-07-05:
+Type: AWS::S3Vectors::VectorBucket
+Properties:
+  EncryptionConfiguration:
+    KmsKeyArn: String
+    SseType: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  VectorBucketName: String
+
+Type: AWS::S3Vectors::VectorBucketPolicy
+Properties:
+  Policy: Json
+  VectorBucketArn: String
+  VectorBucketName: String
+#}

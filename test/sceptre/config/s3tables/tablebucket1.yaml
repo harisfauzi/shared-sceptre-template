@@ -1,0 +1,90 @@
+---
+template:
+  type: file
+  path: s3tables/table_bucket.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test S3Tables TableBucket with comprehensive Jinja2 template coverage.
+  table_buckets:
+    - name: BasicTableBucket
+      table_bucket_name: basic-table-bucket
+      tags:
+        Environment: Development
+        Purpose: BasicS3TablesStorage
+
+    - name: WithConfigurationTableBucket
+      table_bucket_name: configured-table-bucket
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      encryption_configuration:
+        sse_algorithm: SSE_S3
+      metrics_configuration:
+        status: Enabled
+      storage_class_configuration:
+        storage_class: INTELLIGENT_TIERING
+      tags:
+        Environment: Production
+        Application: ConfiguredStorage
+        Owner: DataTeam
+
+    - name: FullFeaturedTableBucket
+      table_bucket_name: full-featured-table-bucket
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      encryption_configuration:
+        sse_algorithm: SSE_KMS
+        kms_key_arn: arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012
+      metrics_configuration:
+        status: Enabled
+      replication_configuration:
+        role: arn:aws:iam::123456789012:role/S3TablesReplicationRole
+        rules:
+          - destinations:
+              - destination_table_bucket_arn: arn:aws:s3:us-west-2:123456789012:tableb/replicated-table-bucket
+              - destination_table_bucket_arn: arn:aws:s3:eu-west-1:123456789012:tableb/backup-table-bucket
+      storage_class_configuration:
+        storage_class: EXPRESS_ONEZONE
+      unreferenced_file_removal:
+        status: Enabled
+        unreferenced_days: 30
+        noncurrent_days: 90
+      table_bucket_policy:
+        resource_policy: |-
+          Version: "2012-10-17"
+          Statement:
+            - Sid: AllowTableAccess
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3TablesAccessRole
+              Action:
+                - s3tables:GetObject
+                - s3tables:PutObject
+                - s3tables:DeleteObject
+              Resource: arn:aws:s3:us-east-1:123456789012:tableb/full-featured-table-bucket/*
+            - Sid: AllowTableManagement
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3TablesAdminRole
+              Action:
+                - s3tables:*
+              Resource: arn:aws:s3:us-east-1:123456789012:tableb/full-featured-table-bucket
+            - Sid: DenyUnencryptedObjectUpload
+              Effect: Deny
+              Principal: "*"
+              Action: s3tables:PutObject
+              Resource: arn:aws:s3:us-east-1:123456789012:tableb/full-featured-table-bucket/*
+              Condition:
+                StringNotEquals:
+                  s3tables:x-amz-server-side-encryption: aws:kms
+      namespace: production.analytics
+      tags:
+        Environment: Production
+        Application: FullCompliance
+        CostCenter: Analytics
+        DataClassification: Sensitive
+        Owner: CloudEngineering
+
+stack_tags:
+  Test: s3tables-table-bucket
