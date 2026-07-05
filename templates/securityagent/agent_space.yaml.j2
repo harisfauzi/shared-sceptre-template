@@ -1,0 +1,260 @@
+---
+Description: {{sceptre_user_data.description|default('SecurityAgent Agent Space(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for agent_space in sceptre_user_data.agent_spaces %}
+{%- set agent_space_name = agent_space.name %}
+  {{ agent_space_name }}:
+    Type: AWS::SecurityAgent::AgentSpace
+    DeletionPolicy: {{ agent_space.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ agent_space.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ agent_space.agent_space_name}}
+{%- if agent_space.aws_resources is defined %}{# BEGIN if agent_space.aws_resources is defined #}
+      AwsResources:
+{%- if agent_space.aws_resources.iam_roles is defined %}{# BEGIN if agent_space.aws_resources.iam_roles is defined #}
+        IamRoles:
+{%- for role in agent_space.aws_resources.iam_roles %}
+          - {{ role }}
+{%- endfor %}
+{%- endif %}{# END if agent_space.aws_resources.iam_roles is defined #}
+{%- if agent_space.aws_resources.lambda_function_arns is defined %}{# BEGIN if agent_space.aws_resources.lambda_function_arns is defined #}
+        LambdaFunctionArns:
+{%- for arn in agent_space.aws_resources.lambda_function_arns %}
+          - {{ arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if agent_space.aws_resources.lambda_function_arns is defined #}
+{%- if agent_space.aws_resources.log_groups is defined %}{# BEGIN if agent_space.aws_resources.log_groups is defined #}
+        LogGroups:
+{%- for log_group in agent_space.aws_resources.log_groups %}
+          - {{ log_group }}
+{%- endfor %}
+{%- endif %}{# END if agent_space.aws_resources.log_groups is defined #}
+{%- if agent_space.aws_resources.s3_buckets is defined %}{# BEGIN if agent_space.aws_resources.s3_buckets is defined #}
+        S3Buckets:
+{%- for s3_bucket in agent_space.aws_resources.s3_buckets %}
+          - {{ s3_bucket }}
+{%- endfor %}
+{%- endif %}{# END if agent_space.aws_resources.s3_buckets is defined #}
+{%- if agent_space.aws_resources.secret_arns is defined %}{# BEGIN if agent_space.aws_resources.secret_arns is defined #}
+        SecretArns:
+{%- for secret_arn in agent_space.aws_resources.secret_arns %}
+          - {{ secret_arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if agent_space.aws_resources.secret_arns is defined #}
+{%- if agent_space.aws_resources.vpcs is defined %}{# BEGIN if agent_space.aws_resources.vpcs is defined #}
+        Vpcs:
+{%- for vpc in agent_space.aws_resources.vpcs %}{# BEGIN for vpc in agent_space.aws_resources.vpcs #}
+          -
+{%- if vpc.security_group_arns is defined %}{# BEGIN if vpc.security_group_arns is defined #}
+            SecurityGroupArns:
+{%- for sg_arn in vpc.security_group_arns %}
+              - {{ sg_arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if vpc.security_group_arns is defined #}
+{%- if vpc.subnet_arns is defined %}{# BEGIN if vpc.subnet_arns is defined #}
+            SubnetArns:
+{%- for subnet_arn in vpc.subnet_arns %}
+              - {{ subnet_arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if vpc.subnet_arns is defined #}
+{%- if vpc.vpc_arn is defined %}
+            VpcArn: {{ vpc.vpc_arn | trim }}
+{%- endif %}
+{%- endfor %}{# END for vpc in agent_space.aws_resources.vpcs #}
+{%- endif %}{# END if agent_space.aws_resources.vpcs is defined #}
+{%- endif %}{# END if agent_space.aws_resources is defined #}
+{%- if agent_space.code_review_settings is defined %}{# BEGIN if agent_space.code_review_settings is defined #}
+      CodeReviewSettings:
+        ControlsScanning: {{ agent_space.code_review_settings.controls_scanning | lower }}
+        GeneralPurposeScanning: {{ agent_space.code_review_settings.general_purpose_scanning | lower }}
+{%- endif %}{# END if agent_space.code_review_settings is defined #}
+{%- if agent_space.description is defined %}
+      Description: {{ agent_space.description }}
+{%- endif %}
+{%- if agent_space.integrated_resources is defined %}{# BEGIN if agent_space.integrated_resources is defined #}
+      IntegratedResources:
+{%- for resource in agent_space.integrated_resources %}{# BEGIN for resource in agent_space.integrated_resources #}
+        -
+          Integration: {{ resource.integration | trim }}
+          ProviderResources:
+{%- for provider_resource in resource.provider_resources %}{# BEGIN for provider_resource in resource.provider_resources #}
+            -
+{%- if provider_resource.bitbucket_capabilities is defined %}{# BEGIN if provider_resource.bitbucket_capabilities is defined #}
+              BitbucketCapabilities:
+                LeaveComments: {{ provider_resource.bitbucket_capabilities.leave_comments | lower }}
+                RemediateCode: {{ provider_resource.bitbucket_capabilities.remediate_code | lower }}
+{%- endif %}{# END if provider_resource.bitbucket_capabilities is defined #}
+{%- if provider_resource.bitbucket_repository is defined %}{# BEGIN if provider_resource.bitbucket_repository is defined #}
+              BitbucketRepository:
+                Name: {{ provider_resource.bitbucket_repository.name }}
+                Workspace: {{ provider_resource.bitbucket_repository.workspace }}
+{%- endif %}{# END if provider_resource.bitbucket_repository is defined #}
+{%- if provider_resource.confluence_capabilities is defined %}{# BEGIN if provider_resource.confluence_capabilities is defined #}
+              ConfluenceCapabilities:
+{%- if provider_resource.confluence_capabilities.create_document is defined %}
+                CreateDocument: {{ provider_resource.confluence_capabilities.create_document | lower }}
+{%- endif %}
+{%- if provider_resource.confluence_capabilities.fetch_document is defined %}
+                FetchDocument: {{ provider_resource.confluence_capabilities.fetch_document | lower }}
+{%- endif %}
+{%- if provider_resource.confluence_capabilities.update_document is defined %}
+                UpdateDocument: {{ provider_resource.confluence_capabilities.update_document | lower }}
+{%- endif %}
+{%- endif %}{# END if provider_resource.confluence_capabilities is defined #}
+{%- if provider_resource.confluence_document is defined %}{# BEGIN if provider_resource.confluence_document is defined #}
+              ConfluenceDocument:
+                Name: {{ provider_resource.confluence_document.name }}
+                PageId: {{ provider_resource.confluence_document.page_id }}
+                SpaceKey: {{ provider_resource.confluence_document.space_key }}
+{%- if provider_resource.confluence_document.space_title is defined %}
+                SpaceTitle: {{ provider_resource.confluence_document.space_title }}
+{%- endif %}
+{%- if provider_resource.confluence_document.title is defined %}
+                Title: {{ provider_resource.confluence_document.title }}
+{%- endif %}
+{%- endif %}{# END if provider_resource.confluence_document is defined #}
+{%- if provider_resource.github_capabilities is defined %}{# BEGIN if provider_resource.github_capabilities is defined #}
+              GitHubCapabilities:
+                LeaveComments: {{ provider_resource.github_capabilities.leave_comments | lower }}
+                RemediateCode: {{ provider_resource.github_capabilities.remediate_code | lower }}
+{%- endif %}{# END if provider_resource.github_capabilities is defined #}
+{%- if provider_resource.github_repository is defined %}{# BEGIN if provider_resource.github_repository is defined #}
+              GitHubRepository:
+                Name: {{ provider_resource.github_repository.name }}
+                Owner: {{ provider_resource.github_repository.owner }}
+{%- endif %}{# END if provider_resource.github_repository is defined #}
+{%- if provider_resource.gitlab_capabilities is defined %}{# BEGIN if provider_resource.gitlab_capabilities is defined #}
+              GitLabCapabilities:
+{%- if provider_resource.gitlab_capabilities.leave_comments is defined %}
+                LeaveComments: {{ provider_resource.gitlab_capabilities.leave_comments | lower }}
+{%- endif %}
+{%- if provider_resource.gitlab_capabilities.remediate_code is defined %}
+                RemediateCode: {{ provider_resource.gitlab_capabilities.remediate_code | lower }}
+{%- endif %}
+{%- endif %}{# END if provider_resource.gitlab_capabilities is defined #}
+{%- if provider_resource.gitlab_repository is defined %}{# BEGIN if provider_resource.gitlab_repository is defined #}
+              GitLabRepository:
+                Name: {{ provider_resource.gitlab_repository.name }}
+                Namespace: {{ provider_resource.gitlab_repository.namespace }}
+{%- endif %}{# END if provider_resource.gitlab_repository is defined #}
+{%- endfor %}{# END for provider_resource in resource.provider_resources #}
+{%- endfor %}{# END for resource in agent_space.integrated_resources #}
+{%- endif %}{# END if agent_space.integrated_resources is defined #}
+{%- if agent_space.kms_key_id is defined %}
+      KmsKeyId: {{ agent_space.kms_key_id | trim }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if agent_space.tags is defined %}
+{%- for key,value in agent_space.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if agent_space.target_domain_ids is defined %}{# BEGIN if agent_space.target_domain_ids is defined #}
+      TargetDomainIds:
+{%- for domain_id in agent_space.target_domain_ids %}
+        - {{ domain_id }}
+{%- endfor %}
+{%- endif %}{# END if agent_space.target_domain_ids is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for agent_space in sceptre_user_data.agent_spaces %}
+{%- set agent_space_name = agent_space.name %}
+  {{ agent_space_name }}:
+    Description: The agent space ID for {{ agent_space_name }}
+    Value:
+      Ref: {{ agent_space_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ agent_space_name }}"
+  {{ agent_space_name }}AgentSpaceId:
+    Description: The agent space ID for {{ agent_space_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ agent_space_name }}
+        - AgentSpaceId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ agent_space_name }}-AgentSpaceId"
+  {{ agent_space_name }}CreatedAt:
+    Description: The creation timestamp for {{ agent_space_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ agent_space_name }}
+        - CreatedAt
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ agent_space_name }}-CreatedAt"
+{%- endfor %}{#
+# Supported structure as of 2026-07-05
+Type: AWS::SecurityAgent::AgentSpace
+Properties:
+  AwsResources:
+    IamRoles:
+      - String
+    LambdaFunctionArns:
+      - String
+    LogGroups:
+      - String
+    S3Buckets:
+      - String
+    SecretArns:
+      - String
+    Vpcs:
+      -
+        SecurityGroupArns:
+          - String
+        SubnetArns:
+          - String
+        VpcArn: String
+  CodeReviewSettings:
+    ControlsScanning: Boolean
+    GeneralPurposeScanning: Boolean
+  Description: String
+  IntegratedResources:
+    -
+      Integration: String
+      ProviderResources:
+        -
+          BitbucketCapabilities:
+            LeaveComments: Boolean
+            RemediateCode: Boolean
+          BitbucketRepository:
+            Name: String
+            Workspace: String
+          ConfluenceCapabilities:
+            CreateDocument: Boolean
+            FetchDocument: Boolean
+            UpdateDocument: Boolean
+          ConfluenceDocument:
+            Name: String
+            PageId: String
+            SpaceKey: String
+            SpaceTitle: String
+            Title: String
+          GitHubCapabilities:
+            LeaveComments: Boolean
+            RemediateCode: Boolean
+          GitHubRepository:
+            Name: String
+            Owner: String
+          GitLabCapabilities:
+            LeaveComments: Boolean
+            RemediateCode: Boolean
+          GitLabRepository:
+            Name: String
+            Namespace: String
+  KmsKeyId: String
+  Name: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  TargetDomainIds:
+    - String
+#}
