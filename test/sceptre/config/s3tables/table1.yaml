@@ -1,0 +1,190 @@
+---
+template:
+  type: file
+  path: s3tables/table.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: CloudFormation template to test S3Tables Table with comprehensive Jinja2 template coverage.
+  tables:
+    - name: BasicTable
+      namespace: default
+      table_name: basic_table
+      table_bucket_arn: arn:aws:s3:us-east-1:123456789012:tableb/basic-table-bucket
+      tags:
+        Environment: Development
+        Purpose: BasicS3TablesTable
+
+    - name: WithIcebergMetadataTable
+      namespace: analytics.staging
+      table_name: staging_events
+      table_bucket_arn: arn:aws:s3:us-east-1:123456789012:tableb/analytics-table-bucket
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      compaction:
+        status: Enabled
+        target_file_size_mb: 512
+      iceberg_metadata:
+        iceberg_schema:
+          schema_field_list:
+            - id: 1
+              name: event_id
+              type: string
+              required: true
+            - id: 2
+              name: event_timestamp
+              type: timestamp
+              required: true
+            - id: 3
+              name: user_id
+              type: long
+              required: false
+            - id: 4
+              name: event_data
+              type: string
+              required: false
+        iceberg_partition_spec:
+          spec_id: 0
+          fields:
+            - source_id: 2
+              field_id: 1000
+              name: year
+              transform: year
+            - source_id: 2
+              field_id: 1001
+              name: month
+              transform: month
+      snapshot_management:
+        status: Enabled
+        min_snapshots_to_keep: 5
+        max_snapshot_age_hours: 2160
+      storage_class_configuration:
+        storage_class: INTELLIGENT_TIERING
+      tags:
+        Environment: Production
+        Application: EventTracking
+        Owner: DataTeam
+
+    - name: FullFeaturedTable
+      namespace: production.analytics
+      table_name: events_v2
+      table_bucket_arn: arn:aws:s3:us-east-1:123456789012:tableb/production-table-bucket
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      compaction:
+        status: Enabled
+        target_file_size_mb: 1024
+      iceberg_metadata:
+        iceberg_schema_v2:
+          schema_id: 1
+          schema_v2_field_list:
+            - id: 1
+              name: event_id
+              type: string
+              required: true
+              doc: Unique event identifier
+            - id: 2
+              name: event_timestamp
+              type: timestamp
+              required: true
+              doc: Event occurrence timestamp in UTC
+            - id: 3
+              name: user_id
+              type: long
+              required: true
+              doc: User identifier
+            - id: 4
+              name: session_id
+              type: string
+              required: false
+              doc: User session identifier
+            - id: 5
+              name: event_properties
+              type: string
+              required: false
+              doc: JSON encoded event properties
+            - id: 6
+              name: country
+              type: string
+              required: false
+              doc: User country code
+          identifier_field_ids:
+            - 1
+            - 2
+        iceberg_partition_spec:
+          spec_id: 0
+          fields:
+            - source_id: 2
+              field_id: 1000
+              name: event_year
+              transform: year
+            - source_id: 2
+              field_id: 1001
+              name: event_month
+              transform: month
+            - source_id: 2
+              field_id: 1002
+              name: event_day
+              transform: day
+            - source_id: 6
+              field_id: 1003
+              name: country_bucket
+              transform: bucket[10]
+        iceberg_sort_order:
+          order_id: 0
+          fields:
+            - source_id: 2
+              transform: identity
+              direction: DESC
+              null_order: NULLS_LAST
+            - source_id: 3
+              transform: identity
+              direction: ASC
+              null_order: NULLS_FIRST
+        table_properties:
+          write.format.default: parquet
+          read.parquet.compression-codec: snappy
+          commit.retry.num-retries: "3"
+      snapshot_management:
+        status: Enabled
+        min_snapshots_to_keep: 10
+        max_snapshot_age_hours: 4320
+      storage_class_configuration:
+        storage_class: EXPRESS_ONEZONE
+      table_policy:
+        resource_policy: |-
+          Version: "2012-10-17"
+          Statement:
+            - Sid: AllowTableRead
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3TablesReadRole
+              Action:
+                - s3tables:GetObject
+                - s3tables:DescribeTable
+              Resource: arn:aws:s3:us-east-1:123456789012:tableb/production-table-bucket/table/production.analytics/events_v2
+            - Sid: AllowTableWrite
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3TablesWriteRole
+              Action:
+                - s3tables:PutObject
+                - s3tables:DeleteObject
+              Resource: arn:aws:s3:us-east-1:123456789012:tableb/production-table-bucket/table/production.analytics/events_v2
+            - Sid: AllowTableAdmin
+              Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3TablesAdminRole
+              Action:
+                - s3tables:*
+              Resource: arn:aws:s3:us-east-1:123456789012:tableb/production-table-bucket/table/production.analytics/events_v2
+      tags:
+        Environment: Production
+        Application: EventAnalytics
+        CostCenter: Analytics
+        DataClassification: Sensitive
+        Owner: CloudEngineering
+
+stack_tags:
+  Test: s3tables-table

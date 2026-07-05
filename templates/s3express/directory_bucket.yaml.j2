@@ -113,7 +113,7 @@ Resources:
 {%- endif %}
 {%- if directory_bucket.bucket_policy is defined %}{# BEGIN if directory_bucket.bucket_policy is defined #}
   {{ directory_bucket_name }}Policy:
-    Type: AWS::S3::BucketPolicy
+    Type: AWS::S3Express::BucketPolicy
     DeletionPolicy: {{ directory_bucket.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ directory_bucket.update_replace_policy | default('Delete') }}
     Properties:

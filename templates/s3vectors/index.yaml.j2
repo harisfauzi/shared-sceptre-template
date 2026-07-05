@@ -1,0 +1,101 @@
+---
+Description: {{sceptre_user_data.description|default('S3Vectors Index(es) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for index in sceptre_user_data.indexes %}
+{%- set index_name = index.name %}
+  {{ index_name }}:
+    Type: AWS::S3Vectors::Index
+    DeletionPolicy: {{ index.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ index.update_replace_policy | default('Delete') }}
+    Properties:
+      DataType: {{ index.data_type }}
+      Dimension: {{ index.dimension }}
+      DistanceMetric: {{ index.distance_metric }}
+{%- if index.encryption_configuration is defined %}{# BEGIN if index.encryption_configuration is defined #}
+      EncryptionConfiguration:
+{%- if index.encryption_configuration.kms_key_arn is defined %}
+        KmsKeyArn: {{ index.encryption_configuration.kms_key_arn }}
+{%- endif %}
+{%- if index.encryption_configuration.sse_type is defined %}
+        SseType: {{ index.encryption_configuration.sse_type }}
+{%- endif %}
+{%- endif %}{# END if index.encryption_configuration is defined #}
+{%- if index.index_name is defined %}
+      IndexName: {{ index.index_name }}
+{%- endif %}
+{%- if index.metadata_configuration is defined %}{# BEGIN if index.metadata_configuration is defined #}
+      MetadataConfiguration:
+{%- if index.metadata_configuration.non_filterable_metadata_keys is defined %}{# BEGIN if index.metadata_configuration.non_filterable_metadata_keys is defined #}
+        NonFilterableMetadataKeys:
+{%- for key in index.metadata_configuration.non_filterable_metadata_keys %}
+          - {{ key }}
+{%- endfor %}
+{%- endif %}{# END if index.metadata_configuration.non_filterable_metadata_keys is defined #}
+{%- endif %}{# END if index.metadata_configuration is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if index.tags is defined %}
+{%- for key,value in index.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if index.vector_bucket_arn is defined %}
+      VectorBucketArn: {{ index.vector_bucket_arn | trim }}
+{%- endif %}
+{%- if index.vector_bucket_name is defined %}
+      VectorBucketName: {{ index.vector_bucket_name }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for index in sceptre_user_data.indexes %}
+{%- set index_name = index.name %}
+  {{ index_name }}:
+    Description: The ARN for {{ index_name }}
+    Value:
+      Ref: {{ index_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ index_name }}"
+  {{ index_name }}CreationTime:
+    Description: The creation time for {{ index_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ index_name }}
+        - CreationTime
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ index_name }}-CreationTime"
+  {{ index_name }}IndexArn:
+    Description: The ARN for {{ index_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ index_name }}
+        - IndexArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ index_name }}-IndexArn"
+{%- endfor %}{#
+# Supported structure as of 2026-07-05:
+Type: AWS::S3Vectors::Index
+Properties:
+  DataType: String
+  Dimension: Integer
+  DistanceMetric: String
+  EncryptionConfiguration:
+    KmsKeyArn: String
+    SseType: String
+  IndexName: String
+  MetadataConfiguration:
+    NonFilterableMetadataKeys:
+      - String
+  Tags:
+    - Key: String
+      Value: String
+  VectorBucketArn: String
+  VectorBucketName: String
+#}
