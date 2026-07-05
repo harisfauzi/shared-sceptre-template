@@ -1,0 +1,82 @@
+---
+template:
+  type: file
+  path: s3objectlambda/access_point.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ stack_group_config.project_code }}"
+  source_repo_url: {{ git_repo }}
+  description: CloudFormation template to test S3ObjectLambda AccessPoint with comprehensive Jinja2 template coverage.
+  access_points:
+    - name: BasicAccessPoint
+      access_point_name: BasicAccessPoint
+      object_lambda_configuration:
+        supporting_access_point: arn:aws:s3:us-east-1:123456789012:accesspoint/source-ap
+        transformation_configurations:
+          - actions:
+              - GetObject
+            content_transformation:
+              aws_lambda:
+                function_arn: arn:aws:lambda:us-east-1:123456789012:function:BasicProcessor
+
+    - name: AdvancedAccessPoint
+      access_point_name: AdvancedAccessPoint
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      object_lambda_configuration:
+        supporting_access_point: arn:aws:s3:us-east-1:123456789012:accesspoint/source-ap-advanced
+        transformation_configurations:
+          - actions:
+              - GetObject
+              - HeadObject
+            content_transformation:
+              aws_lambda:
+                function_arn: arn:aws:lambda:us-east-1:123456789012:function:DataTransformer
+                function_payload: '{"version":"1.0","transformType":"encryption"}'
+          - actions:
+              - PutObject
+            content_transformation:
+              aws_lambda:
+                function_arn: arn:aws:lambda:us-east-1:123456789012:function:ValidationProcessor
+        allowed_features:
+          - GetObject-PartNumber
+          - HeadObject-PartNumber
+        cloud_watch_metrics_enabled: true
+
+    - name: FullFeaturedAccessPoint
+      access_point_name: FullFeaturedAccessPoint
+      object_lambda_configuration:
+        supporting_access_point: arn:aws:s3:us-east-1:123456789012:accesspoint/source-ap-full
+        transformation_configurations:
+          - actions:
+              - GetObject
+              - HeadObject
+              - ListBucket
+            content_transformation:
+              aws_lambda:
+                function_arn: arn:aws:lambda:us-east-1:123456789012:function:ComprehensiveProcessor
+                function_payload: |-
+                  {
+                    "version": "2.0",
+                    "transformations": ["redact", "encrypt"],
+                    "audit": true
+                  }
+        allowed_features:
+          - GetObject-Range
+          - GetObject-PartNumber
+          - HeadObject-PartNumber
+        cloud_watch_metrics_enabled: true
+      access_point_policy:
+        policy_document: |-
+          Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Principal:
+                AWS: arn:aws:iam::123456789012:role/S3ObjectLambdaRole
+              Action:
+                - s3-object-lambda:GetObject
+                - s3-object-lambda:HeadObject
+              Resource: "*"
+
+stack_tags:
+  Test: s3files-accesspoint
