@@ -1,0 +1,70 @@
+---
+template:
+  type: file
+  path: appstream/image_builder.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  image_builders:
+    - name: ImageBuilder1
+      image_builder_name: MyImageBuilder1
+      instance_type: stream.image-builder.standard.medium
+      description: "Image builder with VPC configuration"
+      display_name: "My Image Builder 1"
+      enable_default_internet_access: true
+      appstream_agent_version: LATEST
+      vpc_config:
+        security_group_ids:
+          - sg-12345678
+        subnet_ids:
+          - subnet-11111111
+      root_volume_config:
+        volume_size_in_gb: 100
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        Owner: TeamA
+        CostCenter: Engineering
+    - name: ImageBuilder2
+      image_builder_name: MyImageBuilder2
+      instance_type: stream.image-builder.standard.large
+      description: "Image builder with software installation and domain join"
+      display_name: "My Image Builder 2"
+      domain_join_info:
+        directory_name: corp.example.com
+        organizational_unit_distinguished_name: "OU=ImageBuilders,OU=Computers,DC=corp,DC=example,DC=com"
+      softwares_to_install:
+        - "7-Zip"
+        - "Notepad++"
+        - "Google Chrome"
+      softwares_to_uninstall:
+        - "Internet Explorer"
+      iam_role_arn: "arn:aws:iam::123456789012:role/AppStreamImageBuilderRole"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Development
+        Owner: TeamB
+    - name: ImageBuilder3
+      image_builder_name: MyImageBuilder3
+      instance_type: stream.image-builder.standard.medium
+      description: "Image builder with VPC endpoints"
+      display_name: "My Image Builder 3"
+      enable_default_internet_access: false
+      access_endpoints:
+        - endpoint_type: STREAMING
+          vpce_id: vpce-12345678
+      image_name: AppStream-WinServer2019-07-07-2026
+      vpc_config:
+        security_group_ids:
+          - sg-87654321
+          - sg-11223344
+        subnet_ids:
+          - subnet-22222222
+          - subnet-33333333
+      tags:
+        Environment: QA
+        Owner: TeamC
+        InstanceType: ImageBuilder

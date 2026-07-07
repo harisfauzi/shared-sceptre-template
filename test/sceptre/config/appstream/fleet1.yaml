@@ -1,0 +1,79 @@
+---
+template:
+  type: file
+  path: appstream/fleet.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  fleets:
+    - name: Fleet1
+      fleet_name: MyAppStreamFleet1
+      instance_type: stream.standard.medium
+      compute_capacity:
+        desired_instances: 2
+      description: "Production fleet with basic configuration"
+      display_name: "My Fleet 1"
+      enable_default_internet_access: true
+      fleet_type: PERMANENT
+      image_name: AppStream-WinServer2019-07-07-2026
+      disconnect_timeout_in_seconds: 300
+      idle_disconnect_timeout_in_seconds: 600
+      max_user_duration_in_seconds: 28800
+      max_sessions_per_instance: 2
+      platform: WINDOWS_SERVER_2019
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      creation_policy:
+        start_fleet: true
+      tags:
+        Environment: Production
+        Owner: TeamA
+        CostCenter: Engineering
+    - name: Fleet2
+      fleet_name: MyAppStreamFleet2
+      instance_type: stream.standard.large
+      compute_capacity:
+        desired_instances: 1
+        desired_sessions: 5
+      description: "Development fleet with VPC and domain join"
+      display_name: "My Fleet 2"
+      domain_join_info:
+        directory_name: corp.example.com
+        organizational_unit_distinguished_name: "OU=AppStream,OU=Computers,DC=corp,DC=example,DC=com"
+      disable_imdsv1: false
+      max_concurrent_sessions: 10
+      vpc_config:
+        security_group_ids:
+          - sg-12345678
+          - sg-87654321
+        subnet_ids:
+          - subnet-11111111
+          - subnet-22222222
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      update_policy:
+        stop_before_update: true
+        start_after_update: true
+      tags:
+        Environment: Development
+        Owner: TeamB
+    - name: Fleet3
+      fleet_name: MyAppStreamFleet3
+      instance_type: stream.standard.small
+      compute_capacity:
+        desired_instances: 3
+      description: "Fleet with custom USB device filtering and session script"
+      root_volume_config:
+        volume_size_in_gb: 100
+      session_script_s3_location:
+        s3_bucket: my-appstream-scripts
+        s3_key: scripts/session-setup.ps1
+      stream_view: APPLICATION
+      usb_device_filter_strings:
+        - "1234:5678"
+        - "abcd:efgh"
+      iam_role_arn: "arn:aws:iam::123456789012:role/AppStreamFleetRole"
+      tags:
+        Environment: QA
+        Owner: TeamC

@@ -1,0 +1,117 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream App Block Builder(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for app_block_builder in sceptre_user_data.app_block_builders %}
+{%- set app_block_builder_name = app_block_builder.name %}
+  {{ app_block_builder_name }}:
+    Type: AWS::AppStream::AppBlockBuilder
+    DeletionPolicy: {{ app_block_builder.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ app_block_builder.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ app_block_builder.app_block_builder_name }}
+      InstanceType: {{ app_block_builder.instance_type }}
+      Platform: {{ app_block_builder.platform }}
+{%- if app_block_builder.vpc_config is defined %}{# BEGIN if app_block_builder.vpc_config is defined #}
+      VpcConfig:
+{%- if app_block_builder.vpc_config.security_group_ids is defined %}{# BEGIN if app_block_builder.vpc_config.security_group_ids is defined #}
+        SecurityGroupIds:
+{%- for sg_id in app_block_builder.vpc_config.security_group_ids %}
+          - {{ sg_id }}
+{%- endfor %}
+{%- endif %}{# END if app_block_builder.vpc_config.security_group_ids is defined #}
+{%- if app_block_builder.vpc_config.subnet_ids is defined %}{# BEGIN if app_block_builder.vpc_config.subnet_ids is defined #}
+        SubnetIds:
+{%- for subnet_id in app_block_builder.vpc_config.subnet_ids %}
+          - {{ subnet_id }}
+{%- endfor %}
+{%- endif %}{# END if app_block_builder.vpc_config.subnet_ids is defined #}
+{%- endif %}{# END if app_block_builder.vpc_config is defined #}
+{%- if app_block_builder.access_endpoints is defined %}{# BEGIN if app_block_builder.access_endpoints is defined #}
+      AccessEndpoints:
+{%- for endpoint in app_block_builder.access_endpoints %}
+        -
+          EndpointType: {{ endpoint.endpoint_type }}
+          VpceId: {{ endpoint.vpce_id }}
+{%- endfor %}
+{%- endif %}{# END if app_block_builder.access_endpoints is defined #}
+{%- if app_block_builder.app_block_arns is defined %}{# BEGIN if app_block_builder.app_block_arns is defined #}
+      AppBlockArns:
+{%- for app_block_arn in app_block_builder.app_block_arns %}
+        - {{ app_block_arn | trim }}
+{%- endfor %}
+{%- endif %}{# END if app_block_builder.app_block_arns is defined #}
+{%- if app_block_builder.description is defined %}
+      Description: {{ app_block_builder.description }}
+{%- endif %}
+{%- if app_block_builder.display_name is defined %}
+      DisplayName: {{ app_block_builder.display_name }}
+{%- endif %}
+{%- if app_block_builder.enable_default_internet_access is defined %}
+      EnableDefaultInternetAccess: {{ app_block_builder.enable_default_internet_access | lower }}
+{%- endif %}
+{%- if app_block_builder.iam_role_arn is defined %}
+      IamRoleArn: {{ app_block_builder.iam_role_arn | trim }}
+{%- endif %}
+      Tags:
+        -
+          Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if app_block_builder.tags is defined %}
+{%- for key,value in app_block_builder.tags.items() %}
+        -
+          Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for app_block_builder in sceptre_user_data.app_block_builders %}
+{%- set app_block_builder_name = app_block_builder.name %}
+  {{ app_block_builder_name }}:
+    Description: The name of {{ app_block_builder_name }}
+    Value:
+      Ref: {{ app_block_builder_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ app_block_builder_name }}"
+  {{ app_block_builder_name }}Arn:
+    Description: The ARN of {{ app_block_builder_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ app_block_builder_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ app_block_builder_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::AppBlockBuilder
+Properties:
+  AccessEndpoints:
+    -
+      EndpointType: String
+      VpceId: String
+  AppBlockArns:
+    - String
+  Description: String
+  DisplayName: String
+  EnableDefaultInternetAccess: Boolean
+  IamRoleArn: String
+  InstanceType: String
+  Name: String
+  Platform: String
+  Tags:
+    - Tag
+  VpcConfig:
+    SecurityGroupIds:
+      - String
+    SubnetIds:
+      - String
+  Tags:
+    -
+        Key: String
+        Value: String
+#}

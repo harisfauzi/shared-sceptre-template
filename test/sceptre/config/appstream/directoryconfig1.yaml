@@ -1,0 +1,48 @@
+---
+template:
+  type: file
+  path: appstream/directory_config.yaml.j2
+
+parameters:
+  DirectoryConfig1AccountPassword: randompassword123
+  DirectoryConfig2AccountPassword: randompassword456
+  DirectoryConfig3AccountPassword: randompassword789
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  use_parameter_for_password: true
+  directory_configs:
+    - name: DirectoryConfig1
+      directory_name: corp.example.com
+      organizational_unit_distinguished_names:
+        - "OU=AppStream,OU=Computers,DC=corp,DC=example,DC=com"
+        - "OU=Development,OU=Computers,DC=corp,DC=example,DC=com"
+      service_account_credentials:
+        account_name: appstream_service
+        account_password: "!Ref DirectoryConfig1AccountPassword"
+      certificate_based_auth_properties:
+        certificate_authority_arn: "arn:aws:acm-pca:us-east-1:123456789012:certificate-authority/12345678-1234-1234-1234-123456789012"
+        status: ENABLED
+      deletion_policy: Retain
+      update_replace_policy: Retain
+    - name: DirectoryConfig2
+      directory_name: dev.example.com
+      organizational_unit_distinguished_names:
+        - "OU=AppStreamDev,OU=Computers,DC=dev,DC=example,DC=com"
+      service_account_credentials:
+        account_name: appstream_dev_service
+        account_password: "!Ref DirectoryConfig2AccountPassword"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: DirectoryConfig3
+      directory_name: prod.example.com
+      organizational_unit_distinguished_names:
+        - "OU=AppStreamProd,OU=Computers,DC=prod,DC=example,DC=com"
+        - "OU=Production,OU=Computers,DC=prod,DC=example,DC=com"
+        - "OU=SpecialAccess,OU=Computers,DC=prod,DC=example,DC=com"
+      service_account_credentials:
+        account_name: appstream_prod_service
+        account_password: "!Ref DirectoryConfig3AccountPassword"
+      certificate_based_auth_properties:
+        certificate_authority_arn: "arn:aws:acm-pca:us-east-1:123456789012:certificate-authority/87654321-4321-4321-4321-210987654321"
+        status: DISABLED

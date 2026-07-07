@@ -1,0 +1,64 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream Directory Config(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}{# BEGIN if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password #}
+Parameters:
+{%- for directory_config in sceptre_user_data.directory_configs %}{# BEGIN for directory_config in sceptre_user_data.directory_configs #}
+{%- set directory_config_name = directory_config.name %}
+{%- if directory_config.service_account_credentials is defined and directory_config.service_account_credentials.account_password is defined %}
+  {{ directory_config_name }}AccountPassword:
+    Type: String
+    Description: AccountPassword for {{ directory_config_name }} DirectoryConfig
+    Default: ''
+    NoEcho: true
+{%- endif %}
+{%- endfor %}{# END for directory_config in sceptre_user_data.directory_configs #}
+{%- endif %}{# END if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password #}
+
+Resources:
+{%- for directory_config in sceptre_user_data.directory_configs %}
+{%- set directory_config_name = directory_config.name %}
+  {{ directory_config_name }}:
+    Type: AWS::AppStream::DirectoryConfig
+    DeletionPolicy: {{ directory_config.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ directory_config.update_replace_policy | default('Delete') }}
+    Properties:
+      DirectoryName: {{ directory_config.directory_name }}
+      OrganizationalUnitDistinguishedNames:
+{%- for ou in directory_config.organizational_unit_distinguished_names %}
+        - {{ ou }}
+{%- endfor %}
+      ServiceAccountCredentials:
+        AccountName: {{ directory_config.service_account_credentials.account_name }}
+{%- if directory_config.service_account_credentials.account_password is defined %}
+{%- if sceptre_user_data.use_parameter_for_password is defined and sceptre_user_data.use_parameter_for_password %}
+        AccountPassword:
+          Ref: {{ directory_config_name }}AccountPassword
+{%- else %}
+        AccountPassword: {{ directory_config.service_account_credentials.account_password }}
+{%- endif %}
+{%- endif %}
+{%- if directory_config.certificate_based_auth_properties is defined %}{# BEGIN if directory_config.certificate_based_auth_properties is defined #}
+      CertificateBasedAuthProperties:
+{%- if directory_config.certificate_based_auth_properties.certificate_authority_arn is defined %}
+        CertificateAuthorityArn: {{ directory_config.certificate_based_auth_properties.certificate_authority_arn }}
+{%- endif %}
+{%- if directory_config.certificate_based_auth_properties.status is defined %}
+        Status: {{ directory_config.certificate_based_auth_properties.status }}
+{%- endif %}
+{%- endif %}{# END if directory_config.certificate_based_auth_properties is defined #}
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::DirectoryConfig
+Properties:
+  CertificateBasedAuthProperties:
+    CertificateAuthorityArn: String
+    Status: String
+  DirectoryName: String
+  OrganizationalUnitDistinguishedNames:
+    - String
+  ServiceAccountCredentials:
+    AccountName: String
+    AccountPassword: String
+#}

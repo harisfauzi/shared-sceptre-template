@@ -1,0 +1,153 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream Image Builder(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for image_builder in sceptre_user_data.image_builders %}
+{%- set image_builder_name = image_builder.name %}
+  {{ image_builder_name }}:
+    Type: AWS::AppStream::ImageBuilder
+    DeletionPolicy: {{ image_builder.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ image_builder.update_replace_policy | default('Delete') }}
+    Properties:
+      InstanceType: {{ image_builder.instance_type }}
+      Name: {{ image_builder.image_builder_name }}
+{%- if image_builder.access_endpoints is defined %}{# BEGIN if image_builder.access_endpoints is defined #}
+      AccessEndpoints:
+{%- for endpoint in image_builder.access_endpoints %}
+        -
+          EndpointType: {{ endpoint.endpoint_type }}
+          VpceId: {{ endpoint.vpce_id | trim }}
+{%- endfor %}
+{%- endif %}{# END if image_builder.access_endpoints is defined #}
+{%- if image_builder.appstream_agent_version is defined %}
+      AppstreamAgentVersion: {{ image_builder.appstream_agent_version }}
+{%- endif %}
+{%- if image_builder.description is defined %}
+      Description: {{ image_builder.description }}
+{%- endif %}
+{%- if image_builder.display_name is defined %}
+      DisplayName: {{ image_builder.display_name }}
+{%- endif %}
+{%- if image_builder.domain_join_info is defined %}{# BEGIN if image_builder.domain_join_info is defined #}
+      DomainJoinInfo:
+{%- if image_builder.domain_join_info.directory_name is defined %}
+        DirectoryName: {{ image_builder.domain_join_info.directory_name }}
+{%- endif %}
+{%- if image_builder.domain_join_info.organizational_unit_distinguished_name is defined %}
+        OrganizationalUnitDistinguishedName: {{ image_builder.domain_join_info.organizational_unit_distinguished_name }}
+{%- endif %}
+{%- endif %}{# END if image_builder.domain_join_info is defined #}
+{%- if image_builder.enable_default_internet_access is defined %}
+      EnableDefaultInternetAccess: {{ image_builder.enable_default_internet_access | lower }}
+{%- endif %}
+{%- if image_builder.iam_role_arn is defined %}
+      IamRoleArn: {{ image_builder.iam_role_arn }}
+{%- endif %}
+{%- if image_builder.image_arn is defined %}
+      ImageArn: {{ image_builder.image_arn }}
+{%- endif %}
+{%- if image_builder.image_name is defined %}
+      ImageName: {{ image_builder.image_name }}
+{%- endif %}
+{%- if image_builder.root_volume_config is defined %}{# BEGIN if image_builder.root_volume_config is defined #}
+      RootVolumeConfig:
+{%- if image_builder.root_volume_config.volume_size_in_gb is defined %}
+        VolumeSizeInGb: {{ image_builder.root_volume_config.volume_size_in_gb }}
+{%- endif %}
+{%- endif %}{# END if image_builder.root_volume_config is defined #}
+{%- if image_builder.softwares_to_install is defined %}{# BEGIN if image_builder.softwares_to_install is defined #}
+      SoftwaresToInstall:
+{%- for software in image_builder.softwares_to_install %}
+        - {{ software }}
+{%- endfor %}
+{%- endif %}{# END if image_builder.softwares_to_install is defined #}
+{%- if image_builder.softwares_to_uninstall is defined %}{# BEGIN if image_builder.softwares_to_uninstall is defined #}
+      SoftwaresToUninstall:
+{%- for software in image_builder.softwares_to_uninstall %}
+        - {{ software }}
+{%- endfor %}
+{%- endif %}{# END if image_builder.softwares_to_uninstall is defined #}
+      Tags:
+        -
+          Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if image_builder.tags is defined %}
+{%- for key,value in image_builder.tags.items() %}
+        -
+          Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if image_builder.vpc_config is defined %}{# BEGIN if image_builder.vpc_config is defined #}
+      VpcConfig:
+{%- if image_builder.vpc_config.security_group_ids is defined %}{# BEGIN if image_builder.vpc_config.security_group_ids is defined #}
+        SecurityGroupIds:
+{%- for sg_id in image_builder.vpc_config.security_group_ids %}
+          - {{ sg_id }}
+{%- endfor %}
+{%- endif %}{# END if image_builder.vpc_config.security_group_ids is defined #}
+{%- if image_builder.vpc_config.subnet_ids is defined %}{# BEGIN if image_builder.vpc_config.subnet_ids is defined #}
+        SubnetIds:
+{%- for subnet_id in image_builder.vpc_config.subnet_ids %}
+          - {{ subnet_id }}
+{%- endfor %}
+{%- endif %}{# END if image_builder.vpc_config.subnet_ids is defined #}
+{%- endif %}{# END if image_builder.vpc_config is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for image_builder in sceptre_user_data.image_builders %}
+{%- set image_builder_name = image_builder.name %}
+  {{ image_builder_name }}:
+    Description: The name of {{ image_builder_name }}
+    Value:
+      Ref: {{ image_builder_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ image_builder_name }}"
+  {{ image_builder_name }}StreamingUrl:
+    Description: The URL to start an image builder streaming session for {{ image_builder_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ image_builder_name }}
+        - StreamingUrl
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ image_builder_name }}-StreamingUrl"
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::ImageBuilder
+Properties:
+  AccessEndpoints:
+    -
+      EndpointType: String
+      VpceId: String
+  AppstreamAgentVersion: String
+  Description: String
+  DisplayName: String
+  DomainJoinInfo:
+    DirectoryName: String
+    OrganizationalUnitDistinguishedName: String
+  EnableDefaultInternetAccess: Boolean
+  IamRoleArn: String
+  ImageArn: String
+  ImageName: String
+  InstanceType: String
+  Name: String
+  RootVolumeConfig:
+    VolumeSizeInGb: Integer
+  SoftwaresToInstall:
+    - String
+  SoftwaresToUninstall:
+    - String
+  Tags:
+    -
+        Key: String
+        Value: String
+  VpcConfig:
+    SecurityGroupIds:
+      - String
+    SubnetIds:
+      - String
+#}

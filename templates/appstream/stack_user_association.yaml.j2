@@ -1,0 +1,27 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream Stack User Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for stack_user_association in sceptre_user_data.stack_user_associations %}
+{%- set stack_user_association_name = stack_user_association.name %}
+  {{ stack_user_association_name }}:
+    Type: AWS::AppStream::StackUserAssociation
+    DeletionPolicy: {{ stack_user_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ stack_user_association.update_replace_policy | default('Delete') }}
+    Properties:
+      AuthenticationType: {{ stack_user_association.authentication_type }}
+      StackName: {{ stack_user_association.stack_name }}
+      UserName: {{ stack_user_association.user_name }}
+{%- if stack_user_association.send_email_notification is defined %}
+      SendEmailNotification: {{ stack_user_association.send_email_notification | lower }}
+{%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::StackUserAssociation
+Properties:
+  AuthenticationType: String
+  SendEmailNotification: Boolean
+  StackName: String
+  UserName: String
+#}

@@ -1,0 +1,105 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream Application(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Type: AWS::AppStream::Application
+    DeletionPolicy: {{ application.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ application.update_replace_policy | default('Delete') }}
+    Properties:
+      AppBlockArn: {{ application.app_block_arn | trim }}
+      IconS3Location:
+        S3Bucket: {{ application.icon_s3_location.s3_bucket }}
+        S3Key: {{ application.icon_s3_location.s3_key }}
+      InstanceFamilies:
+{%- for family in application.instance_families %}
+        - {{ family }}
+{%- endfor %}
+      LaunchPath: {{ application.launch_path }}
+      Name: {{ application.application_name }}
+      Platforms:
+{%- for platform in application.platforms %}
+        - {{ platform }}
+{%- endfor %}
+{%- if application.attributes_to_delete is defined %}{# BEGIN if application.attributes_to_delete is defined #}
+      AttributesToDelete:
+{%- for attribute in application.attributes_to_delete %}
+        - {{ attribute }}
+{%- endfor %}
+{%- endif %}{# END if application.attributes_to_delete is defined #}
+{%- if application.description is defined %}
+      Description: {{ application.description }}
+{%- endif %}
+{%- if application.display_name is defined %}
+      DisplayName: {{ application.display_name }}
+{%- endif %}
+{%- if application.launch_parameters is defined %}
+      LaunchParameters: |-
+        {{ application.launch_parameters | indent(width=8, first=false) }}
+{%- endif %}
+      Tags:
+        -
+          TagItems:
+            Key: SourceRepoURL
+            Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if application.tags is defined %}
+{%- for key,value in application.tags.items() %}
+        -
+          TagItems:
+            Key: {{ key }}
+            Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if application.working_directory is defined %}
+      WorkingDirectory: {{ application.working_directory }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for application in sceptre_user_data.applications %}
+{%- set application_name = application.name %}
+  {{ application_name }}:
+    Description: The ARN of {{ application_name }}
+    Value:
+      Ref: {{ application_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}"
+  {{ application_name }}Arn:
+    Description: The ARN of {{ application_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ application_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::Application
+Properties:
+  AppBlockArn: String
+  AttributesToDelete:
+    - String
+  Description: String
+  DisplayName: String
+  IconS3Location:
+    S3Bucket: String
+    S3Key: String
+  InstanceFamilies:
+    - String
+  LaunchParameters: String
+  LaunchPath: String
+  Name: String
+  Platforms:
+    - String
+  Tags:
+    -
+      TagItems:
+        Key: String
+        Value: String
+  WorkingDirectory: String
+#}

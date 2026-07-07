@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: appstream/app_block.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  app_blocks:
+    - name: AppBlock1
+      app_block_name: MyAppBlock1
+      source_s3_location:
+        s3_bucket: my-appstream-artifacts
+        s3_key: app-blocks/myapp.zip
+      description: "Sample app block with basic configuration"
+      display_name: "My App Block 1"
+      packaging_type: CUSTOM
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        Owner: TeamA
+        CostCenter: Engineering
+    - name: AppBlock2
+      app_block_name: MyAppBlock2
+      source_s3_location:
+        s3_bucket: my-appstream-artifacts
+        s3_key: app-blocks/otherapp.zip
+      description: "Sample app block with setup scripts"
+      display_name: "My App Block 2"
+      setup_script_details:
+        executable_path: C:\setupscripts\setup.exe
+        script_s3_location:
+          s3_bucket: my-scripts-artifacts
+          s3_key: setup.exe
+        timeout_in_seconds: 300
+        executable_parameters: "/silent /install"
+      post_setup_script_details:
+        executable_path: C:\setupscripts\cleanup.exe
+        script_s3_location:
+          s3_bucket: my-scripts-artifacts
+          s3_key: cleanup.exe
+        timeout_in_seconds: 60
+      packaging_type: CUSTOM
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Development
+        Owner: TeamB
+        CostCenter: QA
