@@ -1,0 +1,32 @@
+---
+template:
+  type: file
+  path: appstream/stack_user_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  stack_user_associations:
+    - name: StackUserAssociation1
+      user_name: john.doe@example.com
+      stack_name: MyAppStreamStack1
+      authentication_type: USERPOOL
+      send_email_notification: true
+      deletion_policy: Retain
+      update_replace_policy: Retain
+    - name: StackUserAssociation2
+      user_name: jane.smith@example.com
+      stack_name: MyAppStreamStack1
+      authentication_type: SAML
+      send_email_notification: false
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: StackUserAssociation3
+      user_name: bob.wilson@example.com
+      stack_name: MyAppStreamStack2
+      authentication_type: USERPOOL
+    - name: StackUserAssociation4
+      user_name: alice.johnson@example.com
+      stack_name: MyAppStreamStack2
+      authentication_type: SAML
+      send_email_notification: true

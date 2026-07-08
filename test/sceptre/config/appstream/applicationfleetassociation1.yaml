@@ -1,0 +1,22 @@
+---
+template:
+  type: file
+  path: appstream/application_fleet_association.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  application_fleet_associations:
+    - name: AppFleetAssociation1
+      application_arn: "arn:aws:appstream:us-east-1:123456789012:application/default/MyApplication1"
+      fleet_name: MyAppStreamFleet1
+      deletion_policy: Retain
+      update_replace_policy: Retain
+    - name: AppFleetAssociation2
+      application_arn: "arn:aws:appstream:us-east-1:123456789012:application/default/MyApplication2"
+      fleet_name: MyAppStreamFleet2
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: AppFleetAssociation3
+      application_arn: "arn:aws:appstream:us-east-1:123456789012:application/default/MyApplication3"
+      fleet_name: MyAppStreamFleet3

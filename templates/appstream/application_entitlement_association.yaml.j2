@@ -1,0 +1,37 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream Application Entitlement Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for application_entitlement_association in sceptre_user_data.application_entitlement_associations %}
+{%- set application_entitlement_association_name = application_entitlement_association.name %}
+  {{ application_entitlement_association_name }}:
+    Type: AWS::AppStream::ApplicationEntitlementAssociation
+    DeletionPolicy: {{ application_entitlement_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ application_entitlement_association.update_replace_policy | default('Delete') }}
+    Properties:
+      ApplicationIdentifier: {{ application_entitlement_association.application_identifier }}
+      EntitlementName: {{ application_entitlement_association.entitlement_name }}
+      StackName: {{ application_entitlement_association.stack_name }}
+{%- endfor %}
+
+Outputs:
+{%- for application_entitlement_association in sceptre_user_data.application_entitlement_associations %}
+{%- set application_entitlement_association_name = application_entitlement_association.name %}
+  {{ application_entitlement_association_name }}:
+    Description: >-
+      The combination of the StackName, EntitlementName, and ApplicationIdentifier
+      for {{ application_entitlement_association_name }}
+    Value:
+      Ref: {{ application_entitlement_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_entitlement_association_name }}"
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::ApplicationEntitlementAssociation
+Properties:
+  ApplicationIdentifier: String
+  EntitlementName: String
+  StackName: String
+#}

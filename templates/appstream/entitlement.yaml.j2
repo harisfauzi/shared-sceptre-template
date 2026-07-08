@@ -1,0 +1,49 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream Entitlement(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for entitlement in sceptre_user_data.entitlements %}
+{%- set entitlement_name = entitlement.name %}
+  {{ entitlement_name }}:
+    Type: AWS::AppStream::Entitlement
+    DeletionPolicy: {{ entitlement.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ entitlement.update_replace_policy | default('Delete') }}
+    Properties:
+      AppVisibility: {{ entitlement.app_visibility }}
+      Attributes:
+{%- for attribute in entitlement.attributes %}
+        -
+          Name: {{ attribute.name }}
+          Value: {{ attribute.value }}
+{%- endfor %}
+      Name: {{ entitlement.entitlement_name }}
+      StackName: {{ entitlement.stack_name }}
+{%- if entitlement.description is defined %}
+      Description: {{ entitlement.description }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for entitlement in sceptre_user_data.entitlements %}
+{%- set entitlement_name = entitlement.name %}
+  {{ entitlement_name }}:
+    Description: The combination of the StackName and Name for {{ entitlement_name }}
+    Value:
+      Ref: {{ entitlement_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ entitlement_name }}"
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::Entitlement
+Properties:
+  AppVisibility: String
+  Attributes:
+    -
+      Name: String
+      Value: String
+  Description: String
+  Name: String
+  StackName: String
+#}

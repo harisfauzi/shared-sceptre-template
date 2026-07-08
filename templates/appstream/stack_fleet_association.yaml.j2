@@ -1,0 +1,21 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream Stack Fleet Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for stack_fleet_association in sceptre_user_data.stack_fleet_associations %}
+{%- set stack_fleet_association_name = stack_fleet_association.name %}
+  {{ stack_fleet_association_name }}:
+    Type: AWS::AppStream::StackFleetAssociation
+    DeletionPolicy: {{ stack_fleet_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ stack_fleet_association.update_replace_policy | default('Delete') }}
+    Properties:
+      FleetName: {{ stack_fleet_association.fleet_name }}
+      StackName: {{ stack_fleet_association.stack_name }}
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::StackFleetAssociation
+Properties:
+  FleetName: String
+  StackName: String
+#}

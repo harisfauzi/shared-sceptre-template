@@ -1,0 +1,40 @@
+---
+template:
+  type: file
+  path: appstream/entitlement.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  entitlements:
+    - name: Entitlement1
+      entitlement_name: MyEntitlement1
+      app_visibility: ALL
+      stack_name: MyAppStreamStack1
+      attributes:
+        - name: SAML_NAME_ID_FORMAT
+          value: urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress
+        - name: SAML_NAME_ID_ATTRIBUTE
+          value: email
+      description: "Entitlement for all users with SAML integration"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+    - name: Entitlement2
+      entitlement_name: MyEntitlement2
+      app_visibility: ASSOCIATED
+      stack_name: MyAppStreamStack1
+      attributes:
+        - name: SAML_NAME_ID_FORMAT
+          value: urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified
+      description: "Entitlement for associated users only"
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: Entitlement3
+      entitlement_name: MyEntitlement3
+      app_visibility: ALL
+      stack_name: MyAppStreamStack2
+      attributes:
+        - name: SAML_NAME_ID_FORMAT
+          value: urn:oasis:names:tc:SAML:1.1:nameid-format:windowsDomainQualifiedName
+        - name: SAML_NAME_ID_ATTRIBUTE
+          value: sAMAccountName
