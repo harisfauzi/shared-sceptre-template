@@ -38,13 +38,17 @@ Resources:
 {%- if mail_manager_ingress_point.ingress_point_name is defined %}
       IngressPointName: {{ mail_manager_ingress_point.ingress_point_name }}
 {%- endif %}
-{%- if mail_manager_ingress_point.network_configuration is defined %}
+{%- if mail_manager_ingress_point.network_configuration is defined %}{# BEGIN if mail_manager_ingress_point.network_configuration is defined #}
       NetworkConfiguration:
+{%- if mail_manager_ingress_point.network_configuration.private_network_configuration is defined %}
         PrivateNetworkConfiguration:
-          VpcEndpointId: String
-        PublicNetworkConfiguration:
-          IpType: String
+          VpcEndpointId: {{ mail_manager_ingress_point.network_configuration.private_network_configuration.vpc_endpoint_id | trim }}
 {%- endif %}
+{%- if mail_manager_ingress_point.network_configuration.public_network_configuration is defined %}
+        PublicNetworkConfiguration:
+          IpType: {{ mail_manager_ingress_point.network_configuration.public_network_configuration.ip_type }}
+{%- endif %}
+{%- endif %}{# END if mail_manager_ingress_point.network_configuration is defined #}
 {%- if mail_manager_ingress_point.status_to_update is defined %}
       StatusToUpdate: {{ mail_manager_ingress_point.status_to_update }}
 {%- endif %}
