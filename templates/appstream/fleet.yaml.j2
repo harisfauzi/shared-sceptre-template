@@ -1,0 +1,179 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream Fleet(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for fleet in sceptre_user_data.fleets %}
+{%- set fleet_name = fleet.name %}
+  {{ fleet_name }}:
+    Type: AWS::AppStream::Fleet
+    DeletionPolicy: {{ fleet.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ fleet.update_replace_policy | default('Delete') }}
+{%- if fleet.creation_policy is defined %}{# BEGIN if fleet.creation_policy is defined #}
+    CreationPolicy:
+{%- if fleet.creation_policy.start_fleet is defined %}
+      StartFleet: {{ fleet.creation_policy.start_fleet | lower }}
+{%- endif %}
+{%- endif %}{# END if fleet.creation_policy is defined #}
+{%- if fleet.update_policy is defined %}{# BEGIN if fleet.update_policy is defined #}
+    UpdatePolicy:
+{%- if fleet.update_policy.stop_before_update is defined %}
+      StopBeforeUpdate: {{ fleet.update_policy.stop_before_update | lower }}
+{%- endif %}
+{%- if fleet.update_policy.start_after_update is defined %}
+      StartAfterUpdate: {{ fleet.update_policy.start_after_update | lower }}
+{%- endif %}
+{%- endif %}{# END if fleet.update_policy is defined #}
+    Properties:
+      Name: {{ fleet.fleet_name }}
+      InstanceType: {{ fleet.instance_type }}
+{%- if fleet.compute_capacity is defined %}{# BEGIN if fleet.compute_capacity is defined #}
+      ComputeCapacity:
+{%- if fleet.compute_capacity.desired_instances is defined %}
+        DesiredInstances: {{ fleet.compute_capacity.desired_instances }}
+{%- endif %}
+{%- if fleet.compute_capacity.desired_sessions is defined %}
+        DesiredSessions: {{ fleet.compute_capacity.desired_sessions }}
+{%- endif %}
+{%- endif %}{# END if fleet.compute_capacity is defined #}
+{%- if fleet.description is defined %}
+      Description: {{ fleet.description }}
+{%- endif %}
+{%- if fleet.disable_imdsv1 is defined %}
+      DisableIMDSV1: {{ fleet.disable_imdsv1 | lower }}
+{%- endif %}
+{%- if fleet.disconnect_timeout_in_seconds is defined %}
+      DisconnectTimeoutInSeconds: {{ fleet.disconnect_timeout_in_seconds }}
+{%- endif %}
+{%- if fleet.display_name is defined %}
+      DisplayName: {{ fleet.display_name }}
+{%- endif %}
+{%- if fleet.domain_join_info is defined %}{# BEGIN if fleet.domain_join_info is defined #}
+      DomainJoinInfo:
+{%- if fleet.domain_join_info.directory_name is defined %}
+        DirectoryName: {{ fleet.domain_join_info.directory_name }}
+{%- endif %}
+{%- if fleet.domain_join_info.organizational_unit_distinguished_name is defined %}
+        OrganizationalUnitDistinguishedName: {{ fleet.domain_join_info.organizational_unit_distinguished_name }}
+{%- endif %}
+{%- endif %}{# END if fleet.domain_join_info is defined #}
+{%- if fleet.enable_default_internet_access is defined %}
+      EnableDefaultInternetAccess: {{ fleet.enable_default_internet_access | lower }}
+{%- endif %}
+{%- if fleet.fleet_type is defined %}
+      FleetType: {{ fleet.fleet_type }}
+{%- endif %}
+{%- if fleet.iam_role_arn is defined %}
+      IamRoleArn: {{ fleet.iam_role_arn }}
+{%- endif %}
+{%- if fleet.idle_disconnect_timeout_in_seconds is defined %}
+      IdleDisconnectTimeoutInSeconds: {{ fleet.idle_disconnect_timeout_in_seconds }}
+{%- endif %}
+{%- if fleet.image_arn is defined %}
+      ImageArn: {{ fleet.image_arn }}
+{%- endif %}
+{%- if fleet.image_name is defined %}
+      ImageName: {{ fleet.image_name }}
+{%- endif %}
+{%- if fleet.max_concurrent_sessions is defined %}
+      MaxConcurrentSessions: {{ fleet.max_concurrent_sessions }}
+{%- endif %}
+{%- if fleet.max_sessions_per_instance is defined %}
+      MaxSessionsPerInstance: {{ fleet.max_sessions_per_instance }}
+{%- endif %}
+{%- if fleet.max_user_duration_in_seconds is defined %}
+      MaxUserDurationInSeconds: {{ fleet.max_user_duration_in_seconds }}
+{%- endif %}
+{%- if fleet.platform is defined %}
+      Platform: {{ fleet.platform }}
+{%- endif %}
+{%- if fleet.root_volume_config is defined %}{# BEGIN if fleet.root_volume_config is defined #}
+      RootVolumeConfig:
+{%- if fleet.root_volume_config.volume_size_in_gb is defined %}
+        VolumeSizeInGb: {{ fleet.root_volume_config.volume_size_in_gb }}
+{%- endif %}
+{%- endif %}{# END if fleet.root_volume_config is defined #}
+{%- if fleet.session_script_s3_location is defined %}
+      SessionScriptS3Location:
+        S3Bucket: {{ fleet.session_script_s3_location.s3_bucket }}
+        S3Key: {{ fleet.session_script_s3_location.s3_key }}
+{%- endif %}
+{%- if fleet.stream_view is defined %}
+      StreamView: {{ fleet.stream_view }}
+{%- endif %}
+      Tags:
+        -
+          Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if fleet.tags is defined %}
+{%- for key,value in fleet.tags.items() %}
+        -
+          Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if fleet.usb_device_filter_strings is defined %}{# BEGIN if fleet.usb_device_filter_strings is defined #}
+      UsbDeviceFilterStrings:
+{%- for string in fleet.usb_device_filter_strings %}
+        - {{ string }}
+{%- endfor %}
+{%- endif %}{# END if fleet.usb_device_filter_strings is defined #}
+{%- if fleet.vpc_config is defined %}{# BEGIN if fleet.vpc_config is defined #}
+      VpcConfig:
+{%- if fleet.vpc_config.security_group_ids is defined %}{# BEGIN if fleet.vpc_config.security_group_ids is defined #}
+        SecurityGroupIds:
+{%- for sg_id in fleet.vpc_config.security_group_ids %}
+          - {{ sg_id }}
+{%- endfor %}
+{%- endif %}{# END if fleet.vpc_config.security_group_ids is defined #}
+{%- if fleet.vpc_config.subnet_ids is defined %}{# BEGIN if fleet.vpc_config.subnet_ids is defined #}
+        SubnetIds:
+{%- for subnet_id in fleet.vpc_config.subnet_ids %}
+          - {{ subnet_id }}
+{%- endfor %}
+{%- endif %}{# END if fleet.vpc_config.subnet_ids is defined #}
+{%- endif %}{# END if fleet.vpc_config is defined #}
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::Fleet
+Properties:
+  ComputeCapacity:
+    DesiredInstances: Integer
+    DesiredSessions: Integer
+  Description: String
+  DisableIMDSV1: Boolean
+  DisconnectTimeoutInSeconds: Integer
+  DisplayName: String
+  DomainJoinInfo:
+    DirectoryName: String
+    OrganizationalUnitDistinguishedName: String
+  EnableDefaultInternetAccess: Boolean
+  FleetType: String
+  IamRoleArn: String
+  IdleDisconnectTimeoutInSeconds: Integer
+  ImageArn: String
+  ImageName: String
+  InstanceType: String
+  MaxConcurrentSessions: Integer
+  MaxSessionsPerInstance: Integer
+  MaxUserDurationInSeconds: Integer
+  Name: String
+  Platform: String
+  RootVolumeConfig:
+    VolumeSizeInGb: Integer
+  SessionScriptS3Location:
+    S3Bucket: String
+    S3Key: String
+  StreamView: String
+  Tags:
+    -
+      Key: String
+      Value: String
+  UsbDeviceFilterStrings:
+    - String
+  VpcConfig:
+    SecurityGroupIds:
+      - String
+    SubnetIds:
+      - String
+#}

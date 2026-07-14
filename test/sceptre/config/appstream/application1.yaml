@@ -1,0 +1,50 @@
+---
+template:
+  type: file
+  path: appstream/application.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  applications:
+    - name: Application1
+      application_name: MyApplication1
+      app_block_arn: "arn:aws:appstream:us-east-1:123456789012:app-block/MyAppBlock1"
+      icon_s3_location:
+        s3_bucket: my-appstream-icons
+        s3_key: icons/app1-icon.png
+      instance_families:
+        - stream.standard.small
+        - stream.standard.medium
+      launch_path: "C:\\Program Files\\MyApp\\app.exe"
+      platforms:
+        - WINDOWS
+      description: "My example application with full configuration"
+      display_name: "My Application 1"
+      launch_parameters: "/start"
+      working_directory: "C:\\Program Files\\MyApp"
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      tags:
+        Environment: Production
+        Owner: TeamA
+        CostCenter: Engineering
+    - name: Application2
+      application_name: MyApplication2
+      app_block_arn: "arn:aws:appstream:us-east-1:123456789012:app-block/MyAppBlock2"
+      icon_s3_location:
+        s3_bucket: my-appstream-icons
+        s3_key: icons/app2-icon.png
+      instance_families:
+        - stream.standard.large
+      launch_path: "C:\\Program Files\\MyApp2\\launcher.exe"
+      platforms:
+        - WINDOWS
+      description: "My example application with minimal configuration"
+      attributes_to_delete:
+        - LAUNCH_PATH
+      deletion_policy: Delete
+      update_replace_policy: Delete
+      tags:
+        Environment: Development
+        Owner: TeamB

@@ -1,0 +1,42 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream Application Fleet Association(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for application_fleet_association in sceptre_user_data.application_fleet_associations %}
+{%- set application_fleet_association_name = application_fleet_association.name %}
+  {{ application_fleet_association_name }}:
+    Type: AWS::AppStream::ApplicationFleetAssociation
+    DeletionPolicy: {{ application_fleet_association.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ application_fleet_association.update_replace_policy | default('Delete') }}
+    Properties:
+      ApplicationArn: {{ application_fleet_association.application_arn | trim }}
+      FleetName: {{ application_fleet_association.fleet_name }}
+{%- endfor %}
+
+Outputs:
+{%- for application_fleet_association in sceptre_user_data.application_fleet_associations %}
+{%- set application_fleet_association_name = application_fleet_association.name %}
+  {{ application_fleet_association_name }}:
+    Description: The name of {{ application_fleet_association_name }}
+    Value:
+      Ref: {{ application_fleet_association_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_fleet_association_name }}"
+  {{ application_fleet_association_name }}Arn:
+    Description: The ARN of {{ application_fleet_association_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ application_fleet_association_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ application_fleet_association_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::ApplicationFleetAssociation
+Properties:
+  ApplicationArn: String
+  FleetName: String
+#}

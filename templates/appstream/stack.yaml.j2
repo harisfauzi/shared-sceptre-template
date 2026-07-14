@@ -1,0 +1,190 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream Stack(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for stack in sceptre_user_data.stacks %}
+{%- set stack_name = stack.name %}
+  {{ stack_name }}:
+    Type: AWS::AppStream::Stack
+    DeletionPolicy: {{ stack.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ stack.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if stack.access_endpoints is defined %}{# BEGIN if stack.access_endpoints is defined #}
+      AccessEndpoints:
+{%- for endpoint in stack.access_endpoints %}
+        -
+          EndpointType: {{ endpoint.endpoint_type }}
+          VpceId: {{ endpoint.vpce_id }}
+{%- endfor %}
+{%- endif %}{# END if stack.access_endpoints is defined #}
+{%- if stack.agent_access_config is defined %}{# BEGIN if stack.agent_access_config is defined #}
+      AgentAccessConfig:
+        ScreenImageFormat: {{ stack.agent_access_config.screen_image_format }}
+        ScreenResolution: {{ stack.agent_access_config.screen_resolution }}
+        Settings:
+{%- for setting in stack.agent_access_config.settings %}
+          -
+            AgentAction: {{ setting.agent_action }}
+            Permission: {{ setting.permission }}
+{%- endfor %}
+        S3BucketArn: {{ stack.agent_access_config.s3_bucket_arn | trim }}
+        ScreenshotsUploadEnabled: {{ stack.agent_access_config.screenshots_upload_enabled | lower }}
+        UserControlMode: {{ stack.agent_access_config.user_control_mode }}
+{%- endif %}{# END if stack.agent_access_config is defined #}
+{%- if stack.application_settings is defined %}{# BEGIN if stack.application_settings is defined #}
+      ApplicationSettings:
+        Enabled: {{ stack.application_settings.enabled | lower }}
+{%- if stack.application_settings.settings_group is defined %}
+        SettingsGroup: {{ stack.application_settings.settings_group }}
+{%- endif %}
+{%- endif %}{# END if stack.application_settings is defined #}
+{%- if stack.attributes_to_delete is defined %}{# BEGIN if stack.attributes_to_delete is defined #}
+      AttributesToDelete:
+{%- for attribute in stack.attributes_to_delete %}
+        - {{ attribute }}
+{%- endfor %}
+{%- endif %}{# END if stack.attributes_to_delete is defined #}
+{%- if stack.content_redirection is defined %}{# BEGIN if stack.content_redirection is defined #}
+      ContentRedirection:
+{%- if stack.content_redirection.host_to_client is defined %}{# BEGIN stack.content_redirection.host_to_client is defined #}
+        HostToClient:
+          Enabled: {{ stack.content_redirection.host_to_client.enabled | lower }}
+{%- if stack.content_redirection.host_to_client.allowed_urls is defined %}{# BEGIN if stack.content_redirection.host_to_client.allowed_urls is defined #}
+          AllowedUrls:
+{%- for url in stack.content_redirection.host_to_client.allowed_urls %}
+            - {{ url }}
+{%- endfor %}
+{%- endif %}{# END if stack.content_redirection.host_to_client.allowed_urls is defined #}
+{%- if stack.content_redirection.host_to_client.denied_urls is defined %}{# BEGIN if stack.content_redirection.host_to_client.denied_urls is defined #}
+          DeniedUrls:
+{%- for url in stack.content_redirection.host_to_client.denied_urls %}
+            - {{ url }}
+{%- endfor %}
+{%- endif %}{# END if stack.content_redirection.host_to_client.denied_urls is defined #}
+{%- endif %}{# END if stack.content_redirection.host_to_client is defined #}
+{%- endif %}{# END if stack.content_redirection is defined #}
+{%- if stack.delete_storage_connectors is defined %}
+      DeleteStorageConnectors: {{ stack.delete_storage_connectors | lower }}
+{%- endif %}
+{%- if stack.description is defined %}
+      Description: {{ stack.description }}
+{%- endif %}
+{%- if stack.display_name is defined %}
+      DisplayName: {{ stack.display_name }}
+{%- endif %}
+{%- if stack.embed_host_domains is defined %}{# BEGIN if stack.embed_host_domains is defined #}
+      EmbedHostDomains:
+{%- for domain in stack.embed_host_domains %}
+        - {{ domain }}
+{%- endfor %}
+{%- endif %}{# END if stack.embed_host_domains is defined #}
+{%- if stack.feedback_url is defined %}
+      FeedbackURL: {{ stack.feedback_url }}
+{%- endif %}
+{%- if stack.stack_name is defined %}
+      Name: {{ stack.stack_name }}
+{%- endif %}
+{%- if stack.redirect_url is defined %}
+      RedirectURL: {{ stack.redirect_url }}
+{%- endif %}
+{%- if stack.storage_connectors is defined %}{# BEGIN if stack.storage_connectors is defined #}
+      StorageConnectors:
+{%- for connector in stack.storage_connectors %}{# BEGIN for connector in stack.storage_connectors #}
+        -
+          ConnectorType: {{ connector.connector_type }}
+{%- if connector.domains is defined %}{# BEGIN if connector.domains is defined #}
+          Domains:
+{%- for domain in connector.domains %}
+            - {{ domain }}
+{%- endfor %}
+{%- endif %}{# END if connector.domains is defined #}
+{%- if connector.resource_identifier is defined %}
+          ResourceIdentifier: {{ connector.resource_identifier }}
+{%- endif %}
+{%- endfor %}{# END for connector in stack.storage_connectors #}
+{%- endif %}{# END if stack.storage_connectors is defined #}
+{%- if stack.streaming_experience_settings is defined %}{# BEGIN if stack.streaming_experience_settings is defined #}
+      StreamingExperienceSettings:
+{%- if stack.streaming_experience_settings.preferred_protocol is defined %}
+        PreferredProtocol: {{ stack.streaming_experience_settings.preferred_protocol }}
+{%- endif %}
+{%- endif %}{# END if stack.streaming_experience_settings is defined #}
+      Tags:
+        -
+          Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if stack.tags is defined %}
+{%- for key,value in stack.tags.items() %}
+        -
+          Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if stack.user_settings is defined %}{# BEGIN if stack.user_settings is defined #}
+      UserSettings:
+{%- for setting in stack.user_settings %}{# BEGIN for setting in stack.user_settings #}
+        -
+          Action: {{ setting.action }}
+          Permission: {{ setting.permission }}
+{%- if setting.maximum_length is defined %}
+          MaximumLength: {{ setting.maximum_length }}
+{%- endif %}
+{%- endfor %}{# END for setting in stack.user_settings #}
+{%- endif %}{# END if stack.user_settings is defined #}
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::Stack
+Properties:
+  AccessEndpoints:
+    -
+      EndpointType: String
+      VpceId: String
+  AgentAccessConfig:
+    S3BucketArn: String
+    ScreenImageFormat: String
+    ScreenResolution: String
+    ScreenshotsUploadEnabled: Boolean
+    Settings:
+      -
+        AgentAction: String
+        Permission: String
+    UserControlMode: String
+  ApplicationSettings:
+    Enabled: Boolean
+    SettingsGroup: String
+  AttributesToDelete:
+    - String
+  ContentRedirection:
+    HostToClient:
+      AllowedUrls:
+        - String
+      DeniedUrls:
+        - String
+      Enabled: Boolean
+  DeleteStorageConnectors: Boolean
+  Description: String
+  DisplayName: String
+  EmbedHostDomains:
+    - String
+  FeedbackURL: String
+  Name: String
+  RedirectURL: String
+  StorageConnectors:
+    -
+      ConnectorType: String
+      Domains:
+        - String
+      ResourceIdentifier: String
+  StreamingExperienceSettings:
+    PreferredProtocol: String
+  Tags:
+    -
+        Key: String
+        Value: String
+  UserSettings:
+    -
+      Action: String
+      MaximumLength: Integer
+      Permission: String
+#}

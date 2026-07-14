@@ -1,0 +1,122 @@
+---{#
+# Supported structure
+# as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-appstream-appblock-scriptdetails.html
+# as of 2026-07-07
+ExecutableParameters: String
+ExecutablePath: String
+ScriptS3Location:
+  S3Bucket: String
+  S3Key: String
+TimeoutInSeconds: Integer
+#}
+{%- macro prep_script_details(details) %}
+ExecutablePath: {{ details.executable_path }}
+ScriptS3Location:
+  S3Bucket: {{ details.script_s3_location.s3_bucket }}
+{%- if details.script_s3_location.s3_key is defined %}
+  S3Key: {{ details.script_s3_location.s3_key }}
+{%- endif %}
+TimeoutInSeconds: {{ details.timeout_in_seconds }}
+{%- if details.executable_parameters is defined %}
+ExecutableParameters: {{ details.executable_parameters }}
+{%- endif %}
+{%- endmacro %}
+Description: {{sceptre_user_data.description|default('AppStream App Block(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for app_block in sceptre_user_data.app_blocks %}
+{%- set app_block_name = app_block.name %}
+  {{ app_block_name }}:
+    Type: AWS::AppStream::AppBlock
+    DeletionPolicy: {{ app_block.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ app_block.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ app_block.app_block_name }}
+      SourceS3Location:
+        S3Bucket: {{ app_block.source_s3_location.s3_bucket }}
+{%- if app_block.source_s3_location.s3_key is defined %}
+        S3Key: {{ app_block.source_s3_location.s3_key }}
+{%- endif %}
+{%- if app_block.description is defined %}
+      Description: {{ app_block.description }}
+{%- endif %}
+{%- if app_block.display_name is defined %}
+      DisplayName: {{ app_block.display_name }}
+{%- endif %}
+{%- if app_block.packaging_type is defined %}
+      PackagingType: {{ app_block.packaging_type }}
+{%- endif %}
+{%- if app_block.post_setup_script_details is defined %}{# BEGIN if app_block.post_setup_script_details is defined #}
+      PostSetupScriptDetails:
+        {{- prep_script_details(app_block.post_setup_script_details) | indent(width=8, first=false) }}
+{%- endif %}{# END if app_block.post_setup_script_details is defined #}
+{%- if app_block.setup_script_details is defined %}{# BEGIN if app_block.setup_script_details is defined #}
+      SetupScriptDetails:
+        {{- prep_script_details(app_block.setup_script_details) | indent(width=8, first=false) }}
+{%- endif %}{# END if app_block.setup_script_details is defined #}
+      Tags:
+        -
+          TagItems:
+            Key: SourceRepoURL
+            Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if app_block.tags is defined %}
+{%- for key,value in app_block.tags.items() %}
+        -
+          TagItems:
+            Key: {{ key }}
+            Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for app_block in sceptre_user_data.app_blocks %}
+{%- set app_block_name = app_block.name %}
+  {{ app_block_name }}:
+    Description: The ARN of {{ app_block_name }}
+    Value:
+      Ref: {{ app_block_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ app_block_name }}"
+  {{ app_block_name }}Arn:
+    Description: The ARN of {{ app_block_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ app_block_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ app_block_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::AppBlock
+Properties:
+  Description: String
+  DisplayName: String
+  Name: String
+  PackagingType: String
+  PostSetupScriptDetails:
+    ExecutableParameters: String
+    ExecutablePath: String
+    ScriptS3Location:
+      S3Bucket: String
+      S3Key: String
+    TimeoutInSeconds: Integer
+  SetupScriptDetails:
+    ExecutableParameters: String
+    ExecutablePath: String
+    ScriptS3Location:
+      S3Bucket: String
+      S3Key: String
+    TimeoutInSeconds: Integer
+  SourceS3Location:
+    S3Bucket: String
+    S3Key: String
+  Tags:
+    -
+      TagItems:
+        Key: String
+        Value: String
+#}

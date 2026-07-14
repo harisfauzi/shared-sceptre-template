@@ -1,0 +1,33 @@
+---
+Description: {{sceptre_user_data.description|default('AppStream User(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for user in sceptre_user_data.users %}
+{%- set user_name = user.name %}
+  {{ user_name }}:
+    Type: AWS::AppStream::User
+    DeletionPolicy: {{ user.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ user.update_replace_policy | default('Delete') }}
+    Properties:
+      UserName: {{ user.user_name }}
+      AuthenticationType: {{ user.authentication_type }}
+{%- if user.first_name is defined %}
+      FirstName: {{ user.first_name }}
+{%- endif %}
+{%- if user.last_name is defined %}
+      LastName: {{ user.last_name }}
+{%- endif %}
+{%- if user.message_action is defined %}
+      MessageAction: {{ user.message_action }}
+{%- endif %}
+{%- endfor %}{#
+# Supported structure as of 2026-07-07
+Type: AWS::AppStream::User
+Properties:
+  AuthenticationType: String
+  FirstName: String
+  LastName: String
+  MessageAction: String
+  UserName: String
+#}

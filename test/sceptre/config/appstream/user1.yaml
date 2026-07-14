@@ -1,0 +1,35 @@
+---
+template:
+  type: file
+  path: appstream/user.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  users:
+    - name: User1
+      user_name: john.doe@example.com
+      authentication_type: USERPOOL
+      first_name: John
+      last_name: Doe
+      message_action: SUPPRESS
+      deletion_policy: Retain
+      update_replace_policy: Retain
+    - name: User2
+      user_name: jane.smith@example.com
+      authentication_type: SAML
+      first_name: Jane
+      last_name: Smith
+      deletion_policy: Delete
+      update_replace_policy: Delete
+    - name: User3
+      user_name: bob.wilson@example.com
+      authentication_type: USERPOOL
+      first_name: Bob
+      last_name: Wilson
+      message_action: RESEND
+    - name: User4
+      user_name: alice.johnson@example.com
+      authentication_type: SAML
+      first_name: Alice
+      last_name: Johnson
