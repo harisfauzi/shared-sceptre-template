@@ -10,7 +10,7 @@ Resources:
     DeletionPolicy: {{ domain.deletion_policy | default('Delete') }}
     UpdateReplacePolicy: {{ domain.update_replace_policy | default('Delete') }}
     Properties:
-      AutoSubDomainIAMRole: {{ domain.app_id }}
+      AppId: {{ domain.app_id }}
       DomainName: {{ domain.domain_name }}
       SubDomainSettings:
 {%- for setting in domain.sub_domain_settings %}
@@ -111,7 +111,7 @@ Outputs:
 # Supported structure as of 2026-08-10
 Type: AWS::Amplify::Domain
 Properties:
-  AutoSubDomainIAMRole: String
+  AppId: String
   AutoSubDomainCreationPatterns:
     - String
   AutoSubDomainIAMRole: String
