@@ -1,0 +1,37 @@
+---
+template:
+  type: file
+  path: amplify/domain.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample Amplify domains generated from Jinja2"
+  domains:
+    - name: MarketingDomain
+      app_id: arn:aws:iam::111122223333:role/service-role/amplify-domain-role
+      domain_name: example.com
+      sub_domain_settings:
+        - branch_name: main
+          prefix: "''"
+        - branch_name: develop
+          prefix: dev
+      auto_sub_domain_creation_patterns:
+        - feature/*
+        - bugfix/*
+      enable_auto_sub_domain: true
+      certificate_settings:
+        certificate_type: CUSTOM
+        custom_certificate_arn: arn:aws:acm:us-east-1:111122223333:certificate/11111111-2222-3333-4444-555555555555
+
+    - name: AdminDomain
+      app_id: arn:aws:iam::111122223333:role/service-role/amplify-domain-role
+      domain_name: admin.example.com
+      auto_sub_domain_iam_role: arn:aws:iam::111122223333:role/service-role/amplify-subdomain-role
+      sub_domain_settings:
+        - branch_name: main
+          prefix: portal
+      enable_auto_sub_domain: false
+
+stack_tags:
+  Test: amplify-domain

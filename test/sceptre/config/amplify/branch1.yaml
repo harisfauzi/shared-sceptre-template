@@ -1,0 +1,52 @@
+---
+template:
+  type: file
+  path: amplify/branch.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample Amplify branches generated from Jinja2"
+  branches:
+    - name: MainBranch
+      app_id: d123exampleapp
+      branch_name: main
+      description: Primary production branch
+      enable_auto_build: true
+      enable_performance_mode: true
+      enable_pull_request_preview: false
+      enable_skew_protection: true
+      framework: React
+      stage: PRODUCTION
+      environment_variables:
+        - name: ApiBaseUrl
+          value: https://api.example.com
+        - name: NodeEnv
+          value: production
+      tags:
+        Owner: PlatformTeam
+        Environment: Production
+
+    - name: DevelopBranch
+      app_id: d123exampleapp
+      branch_name: develop
+      description: Shared development branch
+      backend:
+        stack_arn: arn:aws:cloudformation:us-east-1:111122223333:stack/sample-backend/abc123
+      enable_auto_build: true
+      enable_performance_mode: false
+      enable_pull_request_preview: true
+      pull_request_environment_name: PrPreview
+      framework: React
+      stage: DEVELOPMENT
+      environment_variables:
+        - name: FeatureToggle
+          value: Enabled
+        - name: LogLevel
+          value: debug
+      tags:
+        Owner: PlatformTeam
+        Environment: Development
+
+stack_tags:
+  Test: amplify-branch
