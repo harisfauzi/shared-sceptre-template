@@ -1,0 +1,56 @@
+---
+template:
+  type: file
+  path: xray/sampling_rule.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Sample X-Ray sampling rules generated from Jinja2"
+  sampling_rules:
+    - name: CheckoutSamplingRule
+      sampling_rule:
+        rule_name: CheckoutSamplingRule
+        fixed_rate: 0.10
+        host: "'*'"
+        http_method: "'*'"
+        priority: 1000
+        reservoir_size: 10
+        resource_arn: "'*'"
+        service_name: checkout-service
+        service_type: AWS::EC2::Instance
+        url_path: "/checkout*"
+        attributes:
+          Environment: Test
+          Team: Platform
+        sampling_rate_boost:
+          cooldown_window_minutes: 10
+          max_rate: 0.25
+        version: 1
+      tags:
+        Environment: Test
+        Team: Platform
+
+    - name: PaymentSamplingRule
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      sampling_rule:
+        rule_name: PaymentSamplingRule
+        fixed_rate: 0.20
+        host: "'*'"
+        http_method: POST
+        priority: 900
+        reservoir_size: 20
+        resource_arn: "'*'"
+        service_name: payment-service
+        service_type: AWS::Lambda::Function
+        url_path: "/payments*"
+        attributes:
+          Environment: Test
+          Team: CorePayments
+      tags:
+        Environment: Test
+        Team: CorePayments
+
+stack_tags:
+  Test: xray-sampling-rule

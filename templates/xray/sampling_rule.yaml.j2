@@ -1,0 +1,101 @@
+---
+Description: {{sceptre_user_data.description|default('XRay Sampling Rule(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for sampling_rule in sceptre_user_data.sampling_rules %}
+{%- set sampling_rule_name = sampling_rule.name %}
+  {{ sampling_rule_name }}:
+    Type: AWS::XRay::SamplingRule
+    DeletionPolicy: {{ sampling_rule.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ sampling_rule.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if sampling_rule.sampling_rule is defined %}{# BEGIN if sampling_rule.sampling_rule is defined #}
+      SamplingRule:
+{%- if sampling_rule.sampling_rule.rule_arn is defined %}
+        RuleARN: {{ sampling_rule.sampling_rule.rule_arn | trim }}
+{%- endif %}
+{%- if sampling_rule.sampling_rule.rule_name is defined %}
+        RuleName: {{ sampling_rule.sampling_rule.rule_name }}
+{%- endif %}
+        FixedRate: {{ sampling_rule.sampling_rule.fixed_rate }}
+        Host: {{ sampling_rule.sampling_rule.host }}
+        HTTPMethod: {{ sampling_rule.sampling_rule.http_method }}
+        Priority: {{ sampling_rule.sampling_rule.priority }}
+        ReservoirSize: {{ sampling_rule.sampling_rule.reservoir_size }}
+        ResourceARN: {{ sampling_rule.sampling_rule.resource_arn | trim }}
+        ServiceName: {{ sampling_rule.sampling_rule.service_name }}
+        ServiceType: {{ sampling_rule.sampling_rule.service_type }}
+        URLPath: {{ sampling_rule.sampling_rule.url_path }}
+{%- if sampling_rule.sampling_rule.attributes is defined %}{# BEGIN if sampling_rule.sampling_rule.attributes is defined #}
+        Attributes:
+{%- for key,value in sampling_rule.sampling_rule.attributes.items() %}
+          {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if sampling_rule.sampling_rule.attributes is defined #}
+{%- if sampling_rule.sampling_rule.sampling_rate_boost is defined %}
+        SamplingRateBoost:
+          CooldownWindowMinutes: {{ sampling_rule.sampling_rule.sampling_rate_boost.cooldown_window_minutes }}
+          MaxRate: {{ sampling_rule.sampling_rule.sampling_rate_boost.max_rate }}
+{%- endif %}
+{%- if sampling_rule.sampling_rule.version is defined %}
+        Version: {{ sampling_rule.sampling_rule.version }}
+{%- endif %}
+{%- endif %}{# END if sampling_rule.sampling_rule is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if sampling_rule.tags is defined %}
+{%- for key,value in sampling_rule.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for sampling_rule in sceptre_user_data.sampling_rules %}
+{%- set sampling_rule_name = sampling_rule.name %}
+  {{ sampling_rule_name }}:
+    Description: The ARN for {{ sampling_rule_name }}
+    Value:
+      Ref: {{ sampling_rule_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ sampling_rule_name }}"
+  {{ sampling_rule_name }}RuleARN:
+    Description: The ARN for {{ sampling_rule_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ sampling_rule_name }}
+        - RuleARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ sampling_rule_name }}-RuleARN"
+{%- endfor %}{#
+# Supported structure as of 2026-08-10
+Type: AWS::XRay::SamplingRule
+Properties:
+  SamplingRule:
+    Attributes:
+      Key: Value
+    FixedRate: Number
+    Host: String
+    HTTPMethod: String
+    Priority: Integer
+    ReservoirSize: Integer
+    ResourceARN: String
+    RuleARN: String
+    RuleName: String
+    SamplingRateBoost:
+      CooldownWindowMinutes: Integer
+      MaxRate: Number
+    ServiceName: String
+    ServiceType: String
+    URLPath: String
+    Version: Integer
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
