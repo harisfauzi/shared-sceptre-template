@@ -1,0 +1,42 @@
+---
+Description: {{sceptre_user_data.description|default('XRay Transaction Search Config(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for transaction_search_config in sceptre_user_data.transaction_search_configs %}
+{%- set transaction_search_config_name = transaction_search_config.name %}
+  {{ transaction_search_config_name }}:
+    Type: AWS::XRay::TransactionSearchConfig
+    DeletionPolicy: {{ transaction_search_config.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ transaction_search_config.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if transaction_search_config.indexing_percentage is defined %}
+      IndexingPercentage: {{ transaction_search_config.indexing_percentage }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for transaction_search_config in sceptre_user_data.transaction_search_configs %}
+{%- set transaction_search_config_name = transaction_search_config.name %}
+  {{ transaction_search_config_name }}:
+    Description: The AWS Account ID for {{ transaction_search_config_name }}
+    Value:
+      Ref: {{ transaction_search_config_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transaction_search_config_name }}"
+  {{ transaction_search_config_name }}AccountId:
+    Description: The AWS Account ID for {{ transaction_search_config_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ transaction_search_config_name }}
+        - AccountId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ transaction_search_config_name }}-AccountId"
+{%- endfor %}{#
+# Supported structure as of 2026-08-10
+Type: AWS::XRay::TransactionSearchConfig
+Properties:
+  IndexingPercentage: Number
+#}

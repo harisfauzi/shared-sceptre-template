@@ -1,0 +1,54 @@
+---
+template:
+  type: file
+  path: xray/resource_policy.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{ project_code }}"
+  source_repo_url: "{{ git_repo }}"
+  description: "Sample X-Ray resource policies generated from Jinja2"
+  resource_policies:
+    - name: TraceReadPolicy
+      policy_name: TraceReadPolicy
+      policy_document: |-
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowReadOnlyTraceAccess",
+              "Effect": "Allow",
+              "Principal": {"AWS": "arn:aws:iam::111122223333:role/ReadOnlyRole"},
+              "Action": [
+                "xray:GetTraceSummaries",
+                "xray:BatchGetTraces"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      bypass_policy_lockout_check: false
+
+    - name: TraceIngestPolicy
+      policy_name: TraceIngestPolicy
+      deletion_policy: Retain
+      update_replace_policy: Retain
+      policy_document: |-
+        {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Sid": "AllowTraceIngestion",
+              "Effect": "Allow",
+              "Principal": {"Service": "lambda.amazonaws.com"},
+              "Action": [
+                "xray:PutTraceSegments",
+                "xray:PutTelemetryRecords"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      bypass_policy_lockout_check: true
+
+stack_tags:
+  Test: xray-resource-policy
