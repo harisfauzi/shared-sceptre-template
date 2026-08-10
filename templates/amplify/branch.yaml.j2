@@ -1,0 +1,126 @@
+---
+{%- import "macros/helper.yaml.j2" as helper %}
+Description: {{sceptre_user_data.description|default('Amplify Branch(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for branch in sceptre_user_data.branches %}
+{%- set branch_name = branch.name %}
+  {{ branch_name }}:
+    Type: AWS::Amplify::Branch
+    DeletionPolicy: {{ branch.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ branch.update_replace_policy | default('Delete') }}
+    Properties:
+      AppId: {{ branch.app_id }}
+      BranchName: {{ branch.branch_name }}
+{%- if branch.backend is defined %}{# BEGIN if branch.backend is defined #}
+      Backend:
+{%- if branch.backend.stack_arn is defined %}
+        StackArn: {{ branch.backend.stack_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if branch.backend is defined #}
+{%- if branch.basic_auth_config is defined %}
+      BasicAuthConfig:
+        {{- helper.prep_basicauthconfig(branch.basic_auth_config) | indent(width=8, first=false) }}
+{%- endif %}
+{%- if branch.build_spec is defined %}
+      BuildSpec: {{ branch.build_spec }}
+{%- endif %}
+{%- if branch.compute_role_arn is defined %}
+      ComputeRoleArn: {{ branch.compute_role_arn | trim }}
+{%- endif %}
+{%- if branch.description is defined %}
+      Description: {{ branch.description }}
+{%- endif %}
+{%- if branch.enable_auto_build is defined %}
+      EnableAutoBuild: {{ branch.enable_auto_build | lower }}
+{%- endif %}
+{%- if branch.enable_performance_mode is defined %}
+      EnablePerformanceMode: {{ branch.enable_performance_mode | lower }}
+{%- endif %}
+{%- if branch.enable_pull_request_preview is defined %}
+      EnablePullRequestPreview: {{ branch.enable_pull_request_preview | lower }}
+{%- endif %}
+{%- if branch.enable_skew_protection is defined %}
+      EnableSkewProtection: {{ branch.enable_skew_protection | lower }}
+{%- endif %}
+{%- if branch.environment_variables is defined %}{# BEGIN if branch.environment_variables is defined #}
+      EnvironmentVariables:
+{%- for environment_variable in branch.environment_variables %}
+        -
+          Name: {{ environment_variable.name }}
+          Value: {{ environment_variable.value }}
+{%- endfor %}
+{%- endif %}{# END if branch.environment_variables is defined #}
+{%- if branch.framework is defined %}
+      Framework: {{ branch.framework }}
+{%- endif %}
+{%- if branch.pull_request_environment_name is defined %}
+      PullRequestEnvironmentName: {{ branch.pull_request_environment_name }}
+{%- endif %}
+{%- if branch.stage is defined %}
+      Stage: {{ branch.stage }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if branch.tags is defined %}
+{%- for key,value in branch.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for branch in sceptre_user_data.branches %}
+{%- set branch_name = branch.name %}
+  {{ branch_name }}BranchName:
+    Description: Name for a branch {{ branch_name }}, part of an Amplify App
+    Value:
+      Fn::GetAtt:
+        - {{ branch_name }}
+        - BranchName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ branch_name }}-BranchName"
+  {{ branch_name }}Arn:
+    Description: The ARN for {{ branch_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ branch_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ branch_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2026-08-10
+Type: AWS::Amplify::Branch
+Properties:
+  AppId: String
+  Backend:
+    StackArn: String
+  BasicAuthConfig:
+    EnableBasicAuth: Boolean
+    Password: String
+    Username: String
+  BranchName: String
+  BuildSpec: String
+  ComputeRoleArn: String
+  Description: String
+  EnableAutoBuild: Boolean
+  EnablePerformanceMode: Boolean
+  EnablePullRequestPreview: Boolean
+  EnableSkewProtection: Boolean
+  EnvironmentVariables:
+    -
+      Name: String
+      Value: String
+  Framework: String
+  PullRequestEnvironmentName: String
+  Stage: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
