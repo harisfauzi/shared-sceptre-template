@@ -1,0 +1,78 @@
+---
+Description: {{sceptre_user_data.description|default('CertificateManager Acme Domain Validation(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for acme_domain_validation in sceptre_user_data.acme_domain_validations %}
+{%- set acme_domain_validation_name = acme_domain_validation.name %}
+  {{ acme_domain_validation_name }}:
+    Type: AWS::CertificateManager::AcmeDomainValidation
+    DeletionPolicy: {{ acme_domain_validation.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ acme_domain_validation.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if acme_domain_validation.acme_endpoint_arn is defined %}
+      AcmeEndpointArn: {{ acme_domain_validation.acme_endpoint_arn | trim }}
+{%- endif %}
+{%- if acme_domain_validation.domain_name is defined %}
+      DomainName: {{ acme_domain_validation.domain_name }}
+{%- endif %}
+{%- if acme_domain_validation.prevalidation_options is defined %}{# BEGIN if acme_domain_validation.prevalidation_options is defined #}
+      PrevalidationOptions:
+        DnsPrevalidation:
+{%- if acme_domain_validation.prevalidation_options.dns_prevalidation.domain_scope is defined %}{# BEGIN if acme_domain_validation.prevalidation_options.dns_prevalidation.domain_scope is defined #}
+          DomainScope:
+{%- if acme_domain_validation.prevalidation_options.dns_prevalidation.domain_scope.exact_domain is defined %}
+            ExactDomain: {{ acme_domain_validation.prevalidation_options.dns_prevalidation.domain_scope.exact_domain }}
+{%- endif %}
+{%- if acme_domain_validation.prevalidation_options.dns_prevalidation.domain_scope.subdomains is defined %}
+            Subdomains: {{ acme_domain_validation.prevalidation_options.dns_prevalidation.domain_scope.subdomains }}
+{%- endif %}
+{%- if acme_domain_validation.prevalidation_options.dns_prevalidation.domain_scope.wildcards is defined %}
+            Wildcards: {{ acme_domain_validation.prevalidation_options.dns_prevalidation.domain_scope.wildcards }}
+{%- endif %}
+{%- endif %}{# END if acme_domain_validation.prevalidation_options.dns_prevalidation.domain_scope is defined #}
+{%- if acme_domain_validation.prevalidation_options.dns_prevalidation.hosted_zone_id is defined %}
+          HostedZoneId: {{ acme_domain_validation.prevalidation_options.dns_prevalidation.hosted_zone_id | trim }}
+{%- endif %}
+{%- endif %}{# END if acme_domain_validation.prevalidation_options is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if acme_domain_validation.tags is defined %}
+{%- for key,value in acme_domain_validation.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for acme_domain_validation in sceptre_user_data.acme_domain_validations %}
+{%- set acme_domain_validation_name = acme_domain_validation.name %}
+  {{ acme_domain_validation_name }}Arn:
+    Description: ARN for {{ acme_domain_validation_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ acme_domain_validation_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ acme_domain_validation_name }}-Arn"
+{%- endfor %}{#
+# Supported structure as of 2026-08-14:
+Type: AWS::CertificateManager::AcmeDomainValidation
+Properties:
+  AcmeEndpointArn: String
+  DomainName: String
+  PrevalidationOptions:
+    DnsPrevalidation:
+      DomainScope:
+        ExactDomain: String
+        Subdomains: String
+        Wildcards: String
+      HostedZoneId: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

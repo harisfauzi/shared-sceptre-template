@@ -1,0 +1,83 @@
+---
+Description: {{sceptre_user_data.description|default('CertificateManager Acme Endpoint(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for acme_endpoint in sceptre_user_data.acme_endpoints %}
+{%- set acme_endpoint_name = acme_endpoint.name %}
+  {{ acme_endpoint_name }}:
+    Type: AWS::CertificateManager::AcmeEndpoint
+    DeletionPolicy: {{ acme_endpoint.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ acme_endpoint.update_replace_policy | default('Delete') }}
+    Properties:
+      AuthorizationBehavior: {{ acme_endpoint.authorization_behavior }}
+      CertificateAuthority:
+        PublicCertificateAuthority:
+{%- if acme_endpoint.certificate_authority.public_certificate_authority.allowed_key_algorithms is defined %}
+          AllowedKeyAlgorithms:
+{%- for algorithm in acme_endpoint.certificate_authority.public_certificate_authority.allowed_key_algorithms %}
+            - {{ algorithm }}
+{%- endfor %}
+{%- endif %}
+{%- if acme_endpoint.certificate_tags is defined %}
+      CertificateTags:
+{%- for key,value in acme_endpoint.certificate_tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if acme_endpoint.contact is defined %}
+      Contact: {{ acme_endpoint.contact }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if acme_endpoint.tags is defined %}
+{%- for key,value in acme_endpoint.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for acme_endpoint in sceptre_user_data.acme_endpoints %}
+{%- set acme_endpoint_name = acme_endpoint.name %}
+  {{ acme_endpoint_name }}AcmeEndpointArn:
+    Description: ARN for {{ acme_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ acme_endpoint_name }}
+        - AcmeEndpointArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ acme_endpoint_name }}-AcmeEndpointArn"
+  {{ acme_endpoint_name }}EndpointUrl:
+    Description: Endpoint URL for {{ acme_endpoint_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ acme_endpoint_name }}
+        - EndpointUrl
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ acme_endpoint_name }}-EndpointUrl"
+{%- endfor %}{#
+# Supported structure as of 2026-08-14:
+Type: AWS::CertificateManager::AcmeEndpoint
+Properties:
+  AuthorizationBehavior: String
+  CertificateAuthority:
+    PublicCertificateAuthority:
+      AllowedKeyAlgorithms:
+        - String
+  CertificateTags:
+  Tags:
+    -
+      Key: String
+      Value: String
+  Contact: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

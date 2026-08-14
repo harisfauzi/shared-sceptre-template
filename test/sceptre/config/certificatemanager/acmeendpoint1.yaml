@@ -1,0 +1,42 @@
+---
+template:
+  type: file
+  path: certificatemanager/acme_endpoint.yaml.j2
+
+sceptre_user_data:
+  # Custom template description (optional - defaults to CertificateManager Acme Endpoint(s) for <project_code>)
+  description: "CertificateManager AcmeEndpoint Test Suite covering all template variables"
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  acme_endpoints:
+    # ========== Test: Full properties with allowed key algorithms, certificate tags, contact and tags ==========
+    - name: ExampleAcmeEndpoint
+      authorization_behavior: PASSTHROUGH
+      certificate_authority:
+        public_certificate_authority:
+          allowed_key_algorithms:
+            - RSA_2048
+            - EC_prime256v1
+      certificate_tags:
+        Environment: Production
+        Team: PlatformTeam
+      contact: platform-team@example.com
+      tags:
+        Owner: PlatformTeam
+        Service: CertificateManager
+
+    # ========== Test: Minimal required properties only ==========
+    - name: MinimalAcmeEndpoint
+      authorization_behavior: STRICT
+      certificate_authority:
+        public_certificate_authority:
+          allowed_key_algorithms:
+            - EC_prime256v1
+      tags:
+        Owner: PlatformTeam
+        Service: CertificateManager
+
+stack_tags:
+  TestSuite: "CertificateManager AcmeEndpoint Coverage"
+  TemplateVersion: "AcmeEndpoint Test"
+  Version: "1.0.0"
