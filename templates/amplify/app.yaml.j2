@@ -1,0 +1,233 @@
+---
+{%- import "macros/helper.yaml.j2" as helper %}
+Description: {{sceptre_user_data.description|default('Amplify App(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for app in sceptre_user_data.apps %}
+{%- set app_name = app.name %}
+  {{ app_name }}:
+    Type: AWS::Amplify::App
+    DeletionPolicy: {{ app.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ app.update_replace_policy | default('Delete') }}
+    Properties:
+      Name: {{ app.app_name }}
+{%- if app.access_token is defined %}
+      AccessToken: {{ app.access_token }}
+{%- endif %}
+{%- if app.oauth_token is defined %}
+      OauthToken: {{ app.oauth_token }}
+{%- endif %}
+{%- if app.auto_branch_creation_config is defined %}{# BEGIN if app.auto_branch_creation_config is defined #}
+      AutoBranchCreationConfig:
+{%- if app.auto_branch_creation_config.auto_branch_creation_patterns is defined %}{# BEGIN if app.auto_branch_creation_config.auto_branch_creation_patterns is defined #}
+        AutoBranchCreationPatterns:
+{%- for pattern in app.auto_branch_creation_config.auto_branch_creation_patterns %}
+          - {{ pattern }}
+{%- endfor %}
+{%- endif %}{# END if app.auto_branch_creation_config.auto_branch_creation_patterns is defined #}
+{%- if app.auto_branch_creation_config.basic_auth_config is defined %}
+        BasicAuthConfig:
+          {{- helper.prep_basicauthconfig(app.auto_branch_creation_config.basic_auth_config) | indent(width=10, first=false) }}
+{%- endif %}
+{%- if app.auto_branch_creation_config.build_spec is defined %}
+        BuildSpec: {{ app.auto_branch_creation_config.build_spec }}
+{%- endif %}
+{%- if app.auto_branch_creation_config.enable_auto_branch_creation is defined %}
+        EnableAutoBranchCreation: {{ app.auto_branch_creation_config.enable_auto_branch_creation | lower }}
+{%- endif %}
+{%- if app.auto_branch_creation_config.enable_auto_build is defined %}
+        EnableAutoBuild: {{ app.auto_branch_creation_config.enable_auto_build | lower }}
+{%- endif %}
+{%- if app.auto_branch_creation_config.enable_performance_mode is defined %}
+        EnablePerformanceMode: {{ app.auto_branch_creation_config.enable_performance_mode | lower }}
+{%- endif %}
+{%- if app.auto_branch_creation_config.enable_pull_request_preview is defined %}
+        EnablePullRequestPreview: {{ app.auto_branch_creation_config.enable_pull_request_preview | lower }}
+{%- endif %}
+{%- if app.auto_branch_creation_config.environment_variables is defined %}{# BEGIN if app.auto_branch_creation_config.environment_variables is defined #}
+        EnvironmentVariables:
+{%- for environment_variable in app.auto_branch_creation_config.environment_variables %}
+          -
+            Name: {{ environment_variable.name }}
+            Value: {{ environment_variable.value }}
+{%- endfor %}
+{%- endif %}{# END if app.auto_branch_creation_config.environment_variables is defined #}
+{%- if app.auto_branch_creation_config.framework is defined %}
+        Framework: {{ app.auto_branch_creation_config.framework }}
+{%- endif %}
+{%- if app.auto_branch_creation_config.pull_request_environment_name is defined %}
+        PullRequestEnvironmentName: {{ app.auto_branch_creation_config.pull_request_environment_name }}
+{%- endif %}
+{%- if app.auto_branch_creation_config.stage is defined %}
+        Stage: {{ app.auto_branch_creation_config.stage }}
+{%- endif %}
+{%- endif %}{# END if app.auto_branch_creation_config is defined #}
+{%- if app.basic_auth_config is defined %}
+      BasicAuthConfig:
+        {{- helper.prep_basicauthconfig(app.basic_auth_config) | indent(width=8, first=false) }}
+{%- endif %}
+{%- if app.build_spec is defined %}
+      BuildSpec: {{ app.build_spec }}
+{%- endif %}
+{%- if app.cache_config is defined %}{# BEGIN if app.cache_config is defined #}
+      CacheConfig:
+{%- if app.cache_config.type is defined %}
+        Type: {{ app.cache_config.type }}
+{%- endif %}
+{%- endif %}{# END if app.cache_config is defined #}
+{%- if app.compute_role_arn is defined %}
+      ComputeRoleArn: {{ app.compute_role_arn | trim }}
+{%- endif %}
+{%- if app.custom_headers is defined %}
+      CustomHeaders: |-
+        {{ app.custom_headers | indent(width=8, first=false) }}
+{%- endif %}
+{%- if app.custom_rules is defined %}{# BEGIN if app.custom_rules is defined #}
+      CustomRules:
+{%- for rule in app.custom_rules %}{# BEGIN for rule in app.custom_rules #}
+        -
+          Source: {{ rule.source }}
+          Target: {{ rule.target }}
+{%- if rule.condition is defined %}
+          Condition: {{ rule.condition }}
+{%- endif %}
+{%- if rule.status is defined %}
+          Status: {{ rule.status }}
+{%- endif %}
+{%- endfor %}{# END for rule in app.custom_rules #}
+{%- endif %}{# END if app.custom_rules is defined #}
+{%- if app.description is defined %}
+      Description: {{ app.description }}
+{%- endif %}
+{%- if app.enable_branch_auto_deletion is defined %}
+      EnableBranchAutoDeletion: {{ app.enable_branch_auto_deletion | lower }}
+{%- endif %}
+{%- if app.environment_variables is defined %}{# BEGIN if app.environment_variables is defined #}
+      EnvironmentVariables:
+{%- for environment_variable in app.environment_variables %}
+        -
+          Name: {{ environment_variable.name }}
+          Value: {{ environment_variable.value }}
+{%- endfor %}
+{%- endif %}{# END if app.environment_variables is defined #}
+{%- if app.iam_service_role is defined %}
+      IAMServiceRole: {{ app.iam_service_role }}
+{%- endif %}
+{%- if app.job_config is defined %}
+      JobConfig:
+        BuildComputeType: {{ app.job_config.build_compute_type}}
+{%- endif %}
+{%- if app.platform is defined %}
+      Platform: {{ app.platform }}
+{%- endif %}
+{%- if app.repository is defined %}
+      Repository: {{ app.repository }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if app.tags is defined %}
+{%- for key,value in app.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for app in sceptre_user_data.apps %}
+{%- set app_name = app.name %}
+  {{ app_name }}AppId:
+    Description: Unique Id for the Amplify App {{ app_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ app_name }}
+        - AppId
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ app_name }}-AppId"
+  {{ app_name }}AppName:
+    Description: Name for the Amplify App {{ app_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ app_name }}
+        - AppName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ app_name }}-AppName"
+  {{ app_name }}Arn:
+    Description: The ARN for {{ app_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ app_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ app_name }}-Arn"
+  {{ app_name }}DefaultDomain:
+    Description: Default domain for the Amplify App {{ app_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ app_name }}
+        - DefaultDomain
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ app_name }}-DefaultDomain"
+{%- endfor %}{#
+# Supported structure as of 2026-08-10
+Type: AWS::Amplify::App
+Properties:
+  AccessToken: String
+  AutoBranchCreationConfig:
+    AutoBranchCreationPatterns:
+      - String
+    BasicAuthConfig:
+      EnableBasicAuth: Boolean
+      Password: String
+      Username: String
+    BuildSpec: String
+    EnableAutoBranchCreation: Boolean
+    EnableAutoBuild: Boolean
+    EnablePerformanceMode: Boolean
+    EnablePullRequestPreview: Boolean
+    EnvironmentVariables:
+      -
+        Name: String
+        Value: String
+    Framework: String
+    PullRequestEnvironmentName: String
+    Stage: String
+  BasicAuthConfig:
+    EnableBasicAuth: Boolean
+    Password: String
+    Username: String
+  BuildSpec: String
+  CacheConfig:
+    Type: String
+  ComputeRoleArn: String
+  CustomHeaders: String
+  CustomRules:
+    -
+      Condition: String
+      Source: String
+      Status: String
+      Target: String
+  Description: String
+  EnableBranchAutoDeletion: Boolean
+  EnvironmentVariables:
+    -
+      Name: String
+      Value: String
+  IAMServiceRole: String
+  JobConfig:
+    BuildComputeType: String
+  Name: String
+  OauthToken: String
+  Platform: String
+  Repository: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

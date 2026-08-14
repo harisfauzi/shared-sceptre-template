@@ -1,0 +1,69 @@
+---
+Description: {{sceptre_user_data.description|default('XRay Group(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for group in sceptre_user_data.groups %}
+{%- set group_name = group.name %}
+  {{ group_name }}:
+    Type: AWS::XRay::Group
+    DeletionPolicy: {{ group.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ group.update_replace_policy | default('Delete') }}
+    Properties:
+      GroupName: {{ group.group_name }}
+{%- if group.filter_expression is defined %}
+      FilterExpression: {{ group.filter_expression }}
+{%- endif %}
+{%- if group.insights_configuration is defined %}{# BEGIN if group.insights_configuration is defined #}
+      InsightsConfiguration:
+{%- if group.insights_configuration.insights_enabled is defined %}
+        InsightsEnabled: {{ group.insights_configuration.insights_enabled | lower }}
+{%- endif %}
+{%- if group.insights_configuration.notifications_enabled is defined %}
+        NotificationsEnabled: {{ group.insights_configuration.notifications_enabled | lower }}
+{%- endif %}
+{%- endif %}{# END if group.insights_configuration is defined #}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if group.tags is defined %}
+{%- for key,value in group.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for group in sceptre_user_data.groups %}
+{%- set group_name = group.name %}
+  {{ group_name }}:
+    Description: The ARN for {{ group_name }}
+    Value:
+      Ref: {{ group_name }}
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ group_name }}"
+  {{ group_name }}GroupARN:
+    Description: The ARN for {{ group_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ group_name }}
+        - GroupARN
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ group_name }}-GroupARN"
+{%- endfor %}{#
+# Supported structure as of 2026-08-10
+Type: AWS::XRay::Group
+Properties:
+  FilterExpression: String
+  GroupName: String
+  InsightsConfiguration:
+    InsightsEnabled: Boolean
+    NotificationsEnabled: Boolean
+  Tags:
+    -
+      Key: String
+      Value: String
+#}

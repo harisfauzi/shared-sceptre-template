@@ -1,0 +1,59 @@
+---
+template:
+  type: file
+  path: amplify/app.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample Amplify apps generated from Jinja2"
+  apps:
+    - name: MarketingSiteApp
+      app_name: marketing-site
+      repository: "{{git_repo}}"
+      platform: WEB
+      enable_branch_auto_deletion: true
+      environment_variables:
+        - name: ApiBaseUrl
+          value: https://api.example.com
+        - name: NodeEnv
+          value: production
+      custom_rules:
+        - source: /<*>
+          target: /index.html
+          status: "200"
+      tags:
+        Owner: PlatformTeam
+        Service: Amplify
+
+    - name: AdminPortalApp
+      app_name: admin-portal
+      repository: "{{git_repo}}"
+      platform: WEB
+      enable_branch_auto_deletion: false
+      custom_headers: |-
+        customHeaders:
+          - pattern: "**/*"
+            headers:
+              - key: X-Frame-Options
+                value: SAMEORIGIN
+      environment_variables:
+        - name: FeatureFlag
+          value: Enabled
+      auto_branch_creation_config:
+        auto_branch_creation_patterns:
+          - feature/*
+          - bugfix/*
+        enable_auto_branch_creation: true
+        enable_auto_build: true
+        enable_performance_mode: false
+        enable_pull_request_preview: true
+        framework: React
+        pull_request_environment_name: PrPreview
+        stage: DEVELOPMENT
+        environment_variables:
+          - name: PreviewMode
+            value: Enabled
+
+stack_tags:
+  Test: amplify-app

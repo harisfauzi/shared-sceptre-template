@@ -1,0 +1,385 @@
+{#
+# ComponentProperty
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-component-componentproperty.html
+BindingProperties:
+  Field: String
+  Property: String
+Bindings:
+  Key: Value
+CollectionBindingProperties:
+  Field: String
+  Property: String
+ComponentName: String
+Concat:
+  - ComponentProperty
+Condition:
+  Else:
+    ComponentProperty
+  Field: String
+  Operand: String
+  OperandType: String
+  Operator: String
+  Property: String
+  Then:
+    ComponentProperty
+Configured: Boolean
+DefaultValue: String
+Event: String
+ImportedValue: String
+Model: String
+Property: String
+Type: String
+UserAttribute: String
+Value: String
+#}{%- macro prep_component_property(component_property) %}
+{%- if component_property.binding_properties is defined %}{# BEGIN if component_property.binding_properties is defined #}
+BindingProperties:
+{%- if component_property.binding_properties.field is defined %}
+  Field: {{ component_property.binding_properties.field }}
+{%- endif %}
+  Property: {{ component_property.binding_properties.property }}
+{%- endif %}{# END if component_property.binding_properties is defined #}
+{%- if component_property.bindings is defined %}{# BEGIN if component_property.bindings is defined #}
+Bindings:
+{%- for key, binding_value in component_property.bindings.items() %}{# BEGIN for key, binding_value in component_property.bindings.items() #}
+  {{ key }}:
+    Element: {{ binding_value.element }}
+    Property: {{ binding_value.property }}
+{%- endfor %}{# END for key, binding_value in component_property.bindings.items() #}
+{%- endif %}{# END if component_property.bindings is defined #}
+{%- if component_property.collection_binding_properties is defined %}
+CollectionBindingProperties:
+{%- if component_property.collection_binding_properties.field is defined %}
+  Field: {{ component_property.collection_binding_properties.field }}
+{%- endif %}
+  Property: {{ component_property.collection_binding_properties.property }}
+{%- endif %}
+{%- if component_property.component_name is defined %}
+ComponentName: {{ component_property.component_name }}
+{%- endif %}
+{%- if component_property.concat is defined %}{# BEGIN if component_property.concat is defined #}
+Concat:
+{%- for item in component_property.concat %}
+  -
+    {{- prep_component_property(item) | indent(width=4, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if component_property.concat is defined #}
+{%- if component_property.condition is defined %}{# BEGIN if component_property.condition is defined #}
+Condition:
+{%- if component_property.condition.else is defined %}
+  Else:
+    {{- prep_component_property(component_property.condition.else) | indent(width=4, first=false) }}
+{%- endif %}
+{%- if component_property.condition.field is defined %}
+  Field: {{ component_property.condition.field }}
+{%- endif %}
+{%- if component_property.condition.operand is defined %}
+  Operand: {{ component_property.condition.operand }}
+{%- endif %}
+{%- if component_property.condition.operand_type is defined %}
+  OperandType: {{ component_property.condition.operand_type }}
+{%- endif %}
+{%- if component_property.condition.operator is defined %}
+  Operator: {{ component_property.condition.operator }}
+{%- endif %}
+{%- if component_property.condition.property is defined %}
+  Property: {{ component_property.condition.property }}
+{%- endif %}
+{%- if component_property.condition.then is defined %}
+  Then:
+    {{- prep_component_property(component_property.condition.then) | indent(width=4, first=false) }}
+{%- endif %}
+{%- endif %}{# END if component_property.condition is defined #}
+{%- if component_property.configured is defined %}
+Configured: {{ component_property.configured | lower }}
+{%- endif %}
+{%- if component_property.default_value is defined %}
+DefaultValue: {{ component_property.default_value }}
+{%- endif %}
+{%- if component_property.event is defined %}
+Event: {{ component_property.event }}
+{%- endif %}
+{%- if component_property.imported_value is defined %}
+ImportedValue: {{ component_property.imported_value }}
+{%- endif %}
+{%- if component_property.model is defined %}
+Model: {{ component_property.model }}
+{%- endif %}
+{%- if component_property.property is defined %}
+Property: {{ component_property.property }}
+{%- endif %}
+{%- if component_property.type is defined %}
+Type: {{ component_property.type }}
+{%- endif %}
+{%- if component_property.user_attribute is defined %}
+UserAttribute: {{ component_property.user_attribute }}
+{%- endif %}
+{%- if component_property.value is defined %}
+Value: {{ component_property.value }}
+{%- endif %}
+{%- endmacro %}
+
+
+{#
+# ActionParameters
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-component-actionparameters.html
+# as of 2026-08-10:
+Anchor:
+  ComponentProperty
+Fields:
+  Key: Value
+Global:
+  ComponentProperty
+Id:
+  ComponentProperty
+Model: String
+State:
+  ComponentName: String
+  Property: String
+  Set:
+    ComponentProperty
+Target:
+  ComponentProperty
+Type:
+  ComponentProperty
+Url:
+  ComponentProperty
+#}{%- macro prep_action_parameters(action_parameters) %}
+{%- if action_parameters.anchor is defined %}
+Anchor:
+  {{- prep_component_property(action_parameters.anchor) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if action_parameters.fields is defined %}{# BEGIN if action_parameters.fields is defined #}
+Fields:
+{%- for key, value in action_parameters.fields.items() %}
+  {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if action_parameters.fields is defined #}
+{%- if action_parameters.global is defined %}
+Global:
+  {{- prep_component_property(action_parameters.global) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if action_parameters.id is defined %}
+Id:
+  {{- prep_component_property(action_parameters.id) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if action_parameters.model is defined %}
+Model: {{ action_parameters.model }}
+{%- endif %}
+{%- if action_parameters.state is defined %}
+State:
+  ComponentName: {{ action_parameters.state.component_name }}
+  Property: {{ action_parameters.state.property }}
+  Set:
+    {{- prep_component_property(action_parameters.state.set) | indent(width=4, first=false) }}
+{%- endif %}
+{%- if action_parameters.target is defined %}
+Target:
+  {{- prep_component_property(action_parameters.target) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if action_parameters.type is defined %}
+Type:
+  {{- prep_component_property(action_parameters.type) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if action_parameters.url is defined %}
+Url:
+  {{- prep_component_property(action_parameters.url) | indent(width=2, first=false) }}
+{%- endif %}
+{%- endmacro %}
+
+
+{#
+# ComponentEvent
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-component-componentevent.html
+# as of 2026-08-10:
+Action: String
+BindingEvent: String
+Parameters:
+  ActionParameters
+#}{%- macro prep_component_event(component_event) %}
+{%- if component_event.action is defined %}
+Action: {{ component_event.action }}
+{%- endif %}
+{%- if component_event.binding_event is defined %}
+BindingEvent: {{ component_event.binding_event }}
+{%- endif %}
+{%- if component_event.parameters is defined %}
+Parameters:
+  {{- prep_action_parameters(component_event.parameters) | indent(width=2, first=false) }}
+{%- endif %}
+{%- endmacro %}
+
+
+{#
+# Predicate
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-component-predicate.html
+# as of 2026-08-10:
+And:
+  - Predicate
+Field: String
+Operand: String
+OperandType: String
+Operator: String
+Or:
+  - Predicate
+#}{%- macro prep_predicate(predicate) %}
+{%- if predicate.and is defined %}
+And:
+{%- for sub_predicate in predicate.and %}
+  -
+    {{- prep_predicate(sub_predicate) | indent(width=4, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- if predicate.field is defined %}
+Field: {{ predicate.field }}
+{%- endif %}
+{%- if predicate.operand is defined %}
+Operand: {{ predicate.operand }}
+{%- endif %}
+{%- if predicate.operand_type is defined %}
+OperandType: {{ predicate.operand_type }}
+{%- endif %}
+{%- if predicate.operator is defined %}
+Operator: {{ predicate.operator }}
+{%- endif %}
+{%- if predicate.or is defined %}
+Or:
+{%- for sub_predicate in predicate.or %}
+  -
+    {{- prep_predicate(sub_predicate) | indent(width=4, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}
+
+
+{#
+# ComponentBindingPropertiesValue
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-component-componentbindingpropertiesvalue.html
+# as of 2026-08-10:
+BindingProperties:
+  Bucket: String
+  DefaultValue: String
+  Field: String
+  Key: String
+  Model: String
+  Predicates:
+    - Predicate
+  SlotName: String
+  UserAttribute: String
+DefaultValue: String
+Type: String
+#}{%- macro prep_component_binding_property(binding_property) %}
+{%- if binding_property.binding_properties is defined %}{# BEGIN if binding_property.binding_properties is defined #}
+BindingProperties:
+{%- if binding_property.binding_properties.bucket is defined %}
+  Bucket: {{ binding_property.binding_properties.bucket }}
+{%- endif %}
+{%- if binding_property.binding_properties.default_value is defined %}
+  DefaultValue: {{ binding_property.binding_properties.default_value }}
+{%- endif %}
+{%- if binding_property.binding_properties.field is defined %}
+  Field: {{ binding_property.binding_properties.field }}
+{%- endif %}
+{%- if binding_property.binding_properties.key is defined %}
+  Key: {{ binding_property.binding_properties.key }}
+{%- endif %}
+{%- if binding_property.binding_properties.model is defined %}
+  Model: {{ binding_property.binding_properties.model }}
+{%- endif %}
+{%- if binding_property.binding_properties.predicates is defined %}{# BEGIN if binding_property.binding_properties.predicates is defined #}
+  Predicates:
+{%- for predicate in binding_property.binding_properties.predicates %}
+    -
+      {{- prep_predicate(predicate) | indent(width=6, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if binding_property.binding_properties.predicates is defined #}
+{%- if binding_property.binding_properties.slot_name is defined %}
+  SlotName: {{ binding_property.binding_properties.slot_name }}
+{%- endif %}
+{%- if binding_property.binding_properties.user_attribute is defined %}
+  UserAttribute: {{ binding_property.binding_properties.user_attribute }}
+{%- endif %}
+{%- endif %}{# END if binding_property.binding_properties is defined #}
+{%- if binding_property.default_value is defined %}
+DefaultValue: {{ binding_property.default_value }}
+{%- endif %}
+{%- if binding_property.type is defined %}
+Type: {{ binding_property.type }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# ComponentChild
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-component-componentchild.html
+# as of 2026-08-10:
+Children:
+  - ComponentChild
+ComponentType: String
+Events:
+  Key: Value
+Name: String
+Properties:
+  Key: Value
+SourceId: String
+#}{%- macro prep_component_child(component_child) %}
+Name: {{ component_child.name }}
+ComponentType: {{ component_child.component_type }}
+Properties:
+{%- for key, component_property in component_child.properties.items() %}
+  {{ key }}:
+    {{- prep_component_property(component_property) | indent(width=4, first=false) }}
+{%- endfor %}
+{%- if component_child.children is defined %}{# BEGIN if component_child.children is defined #}
+Children:
+{%- for child in component_child.children %}
+  -
+    {{- prep_component_child(child) | indent(width=4, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if component_child.children is defined #}
+{%- if component_child.events is defined %}{# BEGIN if component_child.events is defined #}
+Events:
+{%- for key, component_event in component_child.events.items() %}
+  {{ key }}:
+    {{- prep_component_event(component_event) | indent(width=4, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if component_child.events is defined #}
+{%- if component_child.source_id is defined %}
+SourceId: {{ component_child.source_id }}
+{%- endif %}
+{%- endmacro %}
+
+
+{#
+# ComponentDataConfiguration
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-component-componentdataconfiguration.html
+# as of 2026-08-10:
+Identifiers:
+  - String
+Model: String
+Predicate:
+  Predicate
+Sort:
+  -
+    Direction: String
+    Field: String
+#}{%- macro prep_component_data_configuration(component_data_configuration) %}
+Model: {{ component_data_configuration.model }}
+{%- if component_data_configuration.identifiers is defined %}{# BEGIN if component_data_configuration.identifiers is defined #}
+Identifiers:
+{%- for identifier in component_data_configuration.identifiers %}
+  - {{ identifier }}
+{%- endfor %}
+{%- endif %}{# END if component_data_configuration.identifiers is defined #}
+{%- if component_data_configuration.predicate is defined %}{# BEGIN if component_data_configuration.predicate is defined #}
+Predicate:
+  {{- prep_predicate(component_data_configuration.predicate) | indent(width=2, first=false) }}
+{%- endif %}{# END if component_data_configuration.predicate is defined #}
+{%- if component_data_configuration.sort is defined %}{# BEGIN if component_data_configuration.sort is defined #}
+Sort:
+{%- for item in component_data_configuration.sort %}
+  -
+    Direction: {{ item.direction }}
+    Field: {{ item.field }}
+{%- endfor %}
+{%- endif %}{# END if component_data_configuration.sort is defined #}
+{%- endmacro %}

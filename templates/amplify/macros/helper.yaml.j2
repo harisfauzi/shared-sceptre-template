@@ -1,0 +1,18 @@
+{#
+# BasicAuthConfig
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplify-app-basicauthconfig.html
+# as of 2026-08-10:
+EnableBasicAuth: Boolean
+Password: String
+Username: String
+#}{%- macro prep_basicauthconfig(basicauthconfig) %}
+{%- if basicauthconfig.enable_basic_auth is defined %}
+EnableBasicAuth: {{ basicauthconfig.enable_basic_auth | lower }}
+{%- endif %}
+{%- if basicauthconfig.password is defined %}
+Password: {{ basicauthconfig.password }}
+{%- endif %}
+{%- if basicauthconfig.username is defined %}
+Username: {{ basicauthconfig.username }}
+{%- endif %}
+{%- endmacro %}

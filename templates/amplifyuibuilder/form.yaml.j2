@@ -1,0 +1,157 @@
+---
+{%- import "macros/form-helper.yaml.j2" as helper %}
+Description: {{sceptre_user_data.description|default('AmplifyUIBuilder Form(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for form in sceptre_user_data.forms %}
+{%- set form_name = form.name %}
+  {{ form_name }}:
+    Type: AWS::AmplifyUIBuilder::Form
+    DeletionPolicy: {{ form.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ form.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if form.app_id is defined %}
+      AppId: {{ form.app_id | trim }}
+{%- endif %}
+{%- if form.cta is defined %}{# BEGIN if form.cta is defined #}
+      Cta:
+{%- if form.cta.cancel is defined %}
+        Cancel:
+          {{- helper.prep_form_button(form.cta.cancel) | indent(width=10, first=false) }}
+{%- endif %}
+{%- if form.cta._clear is defined %}
+        Clear:
+          {{- helper.prep_form_button(form.cta._clear) | indent(width=10, first=false) }}
+{%- endif %}
+{%- if form.cta.position is defined %}
+        Position: {{ form.cta.position }}
+{%- endif %}
+{%- if form.cta.submit is defined %}
+        Submit:
+          {{- helper.prep_form_button(form.cta.submit) | indent(width=10, first=false) }}
+{%- endif %}
+{%- endif %}{# END if form.cta is defined #}
+{%- if form.data_type is defined %}
+      DataType:
+        DataSourceType: {{ form.data_type.data_source_type }}
+        DataTypeName: {{ form.data_type.data_type_name }}
+{%- endif %}
+{%- if form.environment_name is defined %}
+      EnvironmentName: {{ form.environment_name }}
+{%- endif %}
+{%- if form.fields is defined %}{# BEGIN if form.fields is defined #}
+      Fields:
+{%- for key, field_config in form.fields.items() %}
+        {{ key }}:
+          {{- helper.prep_field_config(field_config) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if form.fields is defined #}
+{%- if form.form_action_type is defined %}
+      FormActionType: {{ form.form_action_type }}
+{%- endif %}
+{%- if form.label_decorator is defined %}
+      LabelDecorator: {{ form.label_decorator }}
+{%- endif %}
+{%- if form.form_name is defined %}
+      Name: {{ form.form_name }}
+{%- endif %}
+{%- if form.schema_version is defined %}}
+      SchemaVersion: {{ form.schema_version }}
+{%- endif %}
+{%- if form.sectional_elements is defined %}{# BEGIN if form.sectional_elements is defined #}
+      SectionalElements:
+{%- for key, sectional_element in form.sectional_elements.items() %}
+        {{ key }}:
+          {{- helper.prep_sectional_element(sectional_element) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if form.sectional_elements is defined #}
+{%- if form.style is defined %}{# BEGIN if form.style is defined #}
+      Style:
+{%- if form.style.horizontal_gap is defined %}
+        HorizontalGap:
+          {{- helper.prep_form_style_config(form.style.horizontal_gap) | indent(width=10, first=false) }}
+{%- endif %}
+{%- if form.style.outer_padding is defined %}
+        OuterPadding:
+          {{- helper.prep_form_style_config(form.style.outer_padding) | indent(width=10, first=false) }}
+{%- endif %}
+{%- if form.style.vertical_gap is defined %}
+        VerticalGap:
+          {{- helper.prep_form_style_config(form.style.vertical_gap) | indent(width=10, first=false) }}
+{%- endif %}
+{%- endif %}{# END if form.style is defined #}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if form.tags is defined %}
+{%- for key,value in form.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for form in sceptre_user_data.forms %}
+{%- set form_name = form.name %}
+  {{ form_name }}Id:
+    Description: The ID for the form {{ form_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ form_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ form_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-08-13
+Type: AWS::AmplifyUIBuilder::Form
+Properties:
+  AppId: String
+  Cta:
+    Cancel:
+      Children: String
+      Excluded: Boolean
+      Position:
+        Below: String
+        Fixed: String
+        RightOf: String
+    Clear:
+      Children: String
+      Excluded: Boolean
+      Position:
+        Below: String
+        Fixed: String
+        RightOf: String
+    Position: String
+    Submit:
+      Children: String
+      Excluded: Boolean
+      Position:
+        Below: String
+        Fixed: String
+        RightOf: String
+  DataType:
+    DataSourceType: String
+    DataTypeName: String
+  EnvironmentName: String
+  Fields:
+    Key: Value
+  FormActionType: String
+  LabelDecorator: String
+  Name: String
+  SchemaVersion: String
+  SectionalElements:
+    Key: Value
+  Style:
+    HorizontalGap:
+      TokenReference: String
+      Value: String
+    OuterPadding:
+      TokenReference: String
+      Value: String
+    VerticalGap:
+      TokenReference: String
+      Value: String
+  Tags:
+    Key: Value
+#}

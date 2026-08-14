@@ -1,0 +1,69 @@
+---
+template:
+  type: file
+  path: amplifyuibuilder/theme.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample AmplifyUIBuilder themes generated from Jinja2"
+  themes:
+    - name: BrandTheme
+      app_id: sampleapp1234
+      environment_name: dev
+      theme_name: Brand
+      overrides:
+        - key: primary-override
+          value:
+            value: "'#FF0000'"
+        - key: font-override
+          value:
+            children:
+              - key: font-weight
+                value:
+                  value: bold
+      tags:
+        Owner: PlatformTeam
+        Service: AmplifyUIBuilder
+      _values:
+        - key: font
+          value:
+            children:
+              - key: font-family
+                value:
+                  value: Amazon Ember
+              - key: font-size
+                value:
+                  children:
+                    - key: font-size-small
+                      value:
+                        value: "12px"
+                    - key: font-size-large
+                      value:
+                        value: "24px"
+        - key: colors
+          value:
+            children:
+              - key: primary
+                value:
+                  value: "'#0070F3'"
+              - key: secondary
+                value:
+                  value: "'#7928CA'"
+
+    - name: DarkModeTheme
+      app_id: sampleapp1234
+      theme_name: DarkMode
+      _values:
+        - key: background
+          value:
+            value: "'#000000'"
+        - key: text
+          value:
+            value: "'#FFFFFF'"
+      tags:
+        Owner: PlatformTeam
+        Service: AmplifyUIBuilder
+
+stack_tags:
+  Test: amplifyuibuilder-theme

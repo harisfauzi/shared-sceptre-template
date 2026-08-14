@@ -1,0 +1,127 @@
+---
+Description: {{sceptre_user_data.description|default('Amplify Domain(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for domain in sceptre_user_data.domains %}
+{%- set domain_name = domain.name %}
+  {{ domain_name }}:
+    Type: AWS::Amplify::Domain
+    DeletionPolicy: {{ domain.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ domain.update_replace_policy | default('Delete') }}
+    Properties:
+      AppId: {{ domain.app_id }}
+      DomainName: {{ domain.domain_name }}
+      SubDomainSettings:
+{%- for setting in domain.sub_domain_settings %}
+        -
+          BranchName: {{ setting.branch_name }}
+          Prefix: {{ setting.prefix }}
+{%- endfor %}
+{%- if domain.auto_sub_domain_creation_patterns is defined %}{# BEGIN if domain.auto_sub_domain_creation_patterns is defined #}
+      AutoSubDomainCreationPatterns:
+{%- for pattern in domain.auto_sub_domain_creation_patterns %}
+        - {{ pattern }}
+{%- endfor %}
+{%- endif %}{# END if domain.auto_sub_domain_creation_patterns is defined #}
+{%- if domain.auto_sub_domain_iam_role is defined %}
+      AutoSubDomainIAMRole: {{ domain.auto_sub_domain_iam_role | trim }}
+{%- endif %}
+{%- if domain.certificate_settings is defined %}{# BEGIN if domain.certificate_settings is defined #}
+      CertificateSettings:
+{%- if domain.certificate_settings.certificate_type is defined %}
+        CertificateType: {{ domain.certificate_settings.certificate_type }}
+{%- endif %}
+{%- if domain.certificate_settings.custom_certificate_arn is defined %}
+        CustomCertificateArn: {{ domain.certificate_settings.custom_certificate_arn | trim }}
+{%- endif %}
+{%- endif %}{# END if domain.certificate_settings is defined #}
+{%- if domain.enable_auto_sub_domain is defined %}
+      EnableAutoSubDomain: {{ domain.enable_auto_sub_domain | lower }}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for domain in sceptre_user_data.domains %}
+{%- set domain_name = domain.name %}
+  {{ domain_name }}Arn:
+    Description: The ARN for {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - Arn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-Arn"
+  {{ domain_name }}AutoSubDomainIAMRole:
+    Description: The IAM service role for the subdomain {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - AutoSubDomainIAMRole
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-AutoSubDomainIAMRole"
+  {{ domain_name }}CertificateRecord:
+    Description: DNS Record for certificate verification for domain {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - CertificateRecord
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-CertificateRecord"
+  {{ domain_name }}DomainName:
+    Description: Name of the domain {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - DomainName
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-DomainName"
+  {{ domain_name }}DomainStatus:
+    Description: Status for the Domain Association for {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - DomainStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-DomainStatus"
+  {{ domain_name }}StatusReason:
+    Description: Reason for the current status of the domain {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - StatusReason
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-StatusReason"
+  {{ domain_name }}UpdateStatus:
+    Description: The status of the domain update operation that is currently in progress for {{ domain_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ domain_name }}
+        - UpdateStatus
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ domain_name }}-UpdateStatus"
+{%- endfor %}{#
+# Supported structure as of 2026-08-10
+Type: AWS::Amplify::Domain
+Properties:
+  AppId: String
+  AutoSubDomainCreationPatterns:
+    - String
+  AutoSubDomainIAMRole: String
+  CertificateSettings:
+    CertificateType: String
+    CustomCertificateArn: String
+  DomainName: String
+  EnableAutoSubDomain: Boolean
+  SubDomainSettings:
+    -
+      BranchName: String
+      Prefix: String
+#}
