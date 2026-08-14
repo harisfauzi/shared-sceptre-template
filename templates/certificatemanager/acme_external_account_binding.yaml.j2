@@ -1,0 +1,56 @@
+---
+Description: {{sceptre_user_data.description|default('CertificateManager Acme External Account Binding(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for acme_external_account_binding in sceptre_user_data.acme_external_account_bindings %}
+{%- set acme_external_account_binding_name = acme_external_account_binding.name %}
+  {{ acme_external_account_binding_name }}:
+    Type: AWS::CertificateManager::AcmeExternalAccountBinding
+    DeletionPolicy: {{ acme_external_account_binding.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ acme_external_account_binding.update_replace_policy | default('Delete') }}
+    Properties:
+      AcmeEndpointArn: {{ acme_external_account_binding.acme_endpoint_arn | trim }}
+      RoleArn: {{ acme_external_account_binding.role_arn | trim }}
+{%- if acme_external_account_binding.expiration is defined %}
+      Expiration:
+        Type: {{ acme_external_account_binding.expiration.type }}
+        Value: {{ acme_external_account_binding.expiration.value }}
+{%- endif %}
+      Tags:
+        - Key: SourceRepoURL
+          Value: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if acme_external_account_binding.tags is defined %}
+{%- for key,value in acme_external_account_binding.tags.items() %}
+        - Key: {{ key }}
+          Value: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+
+Outputs:
+{%- for acme_external_account_binding in sceptre_user_data.acme_external_account_bindings %}
+{%- set acme_external_account_binding_name = acme_external_account_binding.name %}
+  {{ acme_external_account_binding_name }}AcmeExternalAccountBindingArn:
+    Description: ARN for {{ acme_external_account_binding_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ acme_external_account_binding_name }}
+        - AcmeExternalAccountBindingArn
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ acme_external_account_binding_name }}-AcmeExternalAccountBindingArn"
+{%- endfor %}{#
+# Supported structure as of 2026-08-14:
+Type: AWS::CertificateManager::AcmeExternalAccountBinding
+Properties:
+  AcmeEndpointArn: String
+  Expiration:
+    Type: String
+    Value: Integer
+  RoleArn: String
+  Tags:
+    -
+      Key: String
+      Value: String
+#}
