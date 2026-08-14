@@ -1,0 +1,27 @@
+{#
+# ThemeValues
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-theme-themevalues.html
+# as of 2026-08-14:
+Key: String
+Value:
+  Children:
+    - ThemeValues
+  Value: String
+#}{%- macro prep_theme_values(theme_values) %}
+{%- if theme_values.key is defined %}
+Key: String
+{%- endif %}
+{%- if theme_values.value is defined %}{# BEGIN if theme_values.value is defined #}
+Value:
+{%- if theme_values.value.children is defined %}{# BEGIN if theme_values.value.children is defined #}
+  Children:
+{%- for child in theme_values.value.children %}
+    -
+      {{- prep_theme_values(child) | indent(width=6, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if theme_values.value.children is defined #}
+{%- if theme_values.value.value is defined %}
+  Value: {{ theme_values.value.value }}
+{%- endif %}
+{%- endif %}{# END if theme_values.value is defined #}
+{%- endmacro %}
