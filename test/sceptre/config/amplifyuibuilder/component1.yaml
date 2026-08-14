@@ -1,0 +1,102 @@
+---
+template:
+  type: file
+  path: amplifyuibuilder/component.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample AmplifyUIBuilder components generated from Jinja2"
+  components:
+    - name: HeaderComponent
+      app_id: sampleapp1234
+      environment_name: dev
+      component_name: Header
+      component_type: View
+      schema_version: "1.0"
+      source_id: figma-source-header
+      binding_properties:
+        Title:
+          type: String
+          default_value: Welcome
+          binding_properties:
+            field: title
+            default_value: Welcome
+      properties:
+        BackgroundColor:
+          value: "'#FFFFFF'"
+        Width:
+          binding_properties:
+            property: width
+        IsVisible:
+          configured: true
+      collection_properties:
+        Items:
+          model: Product
+          identifiers:
+            - id
+          sort:
+            - direction: ASC
+              field: name
+      events:
+        OnClick:
+          action: Navigate
+          parameters:
+            target:
+              value: /home
+      children:
+        - name: Logo
+          component_type: Image
+          properties:
+            Src:
+              value: /logo.png
+        - name: NavBar
+          component_type: View
+          properties:
+            Orientation:
+              value: horizontal
+          children:
+            - name: NavLink
+              component_type: Text
+              properties:
+                Label:
+                  value: Home
+      overrides:
+        LogoOverride: |-
+          Width: "100"
+      tags:
+        Owner: PlatformTeam
+        Service: AmplifyUIBuilder
+      variants:
+        - variant_values:
+            Theme: Dark
+          overrides:
+            HeaderOverride: |-
+              BackgroundColor: "#000000"
+
+    - name: ProductCardComponent
+      app_id: sampleapp1234
+      component_name: ProductCard
+      component_type: View
+      schema_version: "1.0"
+      properties:
+        Title:
+          bindings:
+            TitleBinding:
+              element: titleElement
+              property: text
+      children:
+        - name: PriceLabel
+          component_type: Text
+          properties:
+            Value:
+              concat:
+                - value: "$"
+                - binding_properties:
+                    property: price
+      tags:
+        Owner: PlatformTeam
+        Service: AmplifyUIBuilder
+
+stack_tags:
+  Test: amplifyuibuilder-component

@@ -1,0 +1,153 @@
+---
+{%- import "macros/component-helper.yaml.j2" as helper %}
+Description: {{sceptre_user_data.description|default('AmplifyUIBuilder Component(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for component in sceptre_user_data.components %}
+{%- set component_name = component.name %}
+  {{ component_name }}:
+    Type: AWS::AmplifyUIBuilder::Component
+    DeletionPolicy: {{ component.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ component.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if component.app_id is defined %}
+      AppId: {{ component.app_id | trim }}
+{%- endif %}
+{%- if component.binding_properties is defined %}{# BEGIN if component.binding_properties is defined #}
+      BindingProperties:
+{%- for key, binding_property in component.binding_properties.items() %}
+        {{ key }}:
+          {{- helper.prep_component_binding_property(binding_property) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if component.binding_properties is defined #}
+{%- if component.children is defined %}{# BEGIN if component.children is defined #}
+      Children:
+{%- for child in component.children %}{# BEGIN for child in component.children #}
+        -
+          {{- helper.prep_component_child(child) | indent(width=10, first=false) }}
+{%- endfor %}{# END for child in component.children #}
+{%- endif %}{# END if component.children is defined #}
+{%- if component.collection_properties is defined %}{# BEGIN if component.collection_properties is defined #}
+      CollectionProperties:
+{%- for key, collection_property in component.collection_properties.items() %}
+        {{ key }}:
+          {{- helper.prep_component_data_configuration(collection_property) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if component.collection_properties is defined #}
+{%- if component.component_type is defined %}
+      ComponentType: {{ component.component_type }}
+{%- endif %}
+{%- if component.environment_name is defined %}
+      EnvironmentName: {{ component.environment_name }}
+{%- endif %}
+{%- if component.events is defined %}{# BEGIN if component.events is defined #}
+      Events:
+{%- for key, component_event in component.events.items() %}
+        {{ key }}:
+          {{- helper.prep_component_event(component_event) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if component.events is defined #}
+{%- if component.component_name is defined %}
+      Name: {{ component.component_name }}
+{%- endif %}
+{%- if component.overrides is defined %}{# BEGIN if component.overrides is defined #}
+      Overrides:
+{%- for key, override_value in component.overrides.items() %}
+        {{ key }}:
+          {{- override_value | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if component.overrides is defined #}
+{%- if component.properties is defined %}{# BEGIN if component.properties is defined #}
+      Properties:
+{%- for key, component_property in component.properties.items() %}
+        {{ key }}:
+          {{- helper.prep_component_property(component_property) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if component.properties is defined #}
+{%- if component.schema_version is defined %}
+      SchemaVersion: {{ component.schema_version }}
+{%- endif %}
+{%- if component.source_id is defined %}
+      SourceId: {{ component.source_id }}
+{%- endif %}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if component.tags is defined %}
+{%- for key,value in component.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if component.variants is defined %}{# BEGIN if component.variants is defined #}
+      Variants:
+{%- for variant in component.variants %}{# BEGIN for variant in component.variants #}
+        -
+{%- if variant.overrides is defined %}{# BEGIN if variant.overrides is defined #}
+          Overrides:
+{%- for key, override_value in variant.overrides.items() %}
+            {{ key }}:
+              {{- override_value | indent(width=14, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if variant.overrides is defined #}
+{%- if variant.variant_values is defined %}{# BEGIN if variant.variant_values is defined #}
+          VariantValues:
+{%- for key, value in variant.variant_values.items() %}
+            {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}{# END if variant.variant_values is defined #}
+{%- endfor %}{# END for variant in component.variants #}
+{%- endif %}{# END if component.variants is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for component in sceptre_user_data.components %}
+{%- set component_name = component.name %}
+  {{ component_name }}Id:
+    Description: The unique ID of the component {{ component_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ component_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ component_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-08-10
+Type: AWS::AmplifyUIBuilder::Component
+Properties:
+  AppId: String
+  BindingProperties:
+    Key: Value
+  Children:
+    - ComponentChild
+      Children:
+        - ComponentChild
+      ComponentType: String
+      Events:
+        Key: Value
+      Name: String
+      Properties:
+        Key: Value
+      SourceId: String
+  CollectionProperties:
+    Key: Value
+  ComponentType: String
+  EnvironmentName: String
+  Events:
+    Key: Value
+  Name: String
+  Overrides:
+    Key: Value
+  Properties:
+    Key: Value
+  SchemaVersion: String
+  SourceId: String
+  Tags:
+    Key: Value
+  Variants:
+    -
+      Overrides:
+        Key: Value
+      VariantValues:
+        Key: Value
+#}

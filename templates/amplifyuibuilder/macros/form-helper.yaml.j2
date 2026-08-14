@@ -1,0 +1,301 @@
+{#
+# FieldPosition
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-form-fieldposition.html
+# as of 2026-08-13:
+Below: String
+Fixed: String
+RightOf: String
+#}{%- macro prep_field_position(field_position) %}
+{%- if field_position.below is defined %}
+Below: {{ field_position.below }}
+{%- endif %}
+{%- if field_position.fixed is defined %}
+Fixed: {{ field_position.fixed }}
+{%- endif %}
+{%- if field_position.right_of is defined %}
+RightOf: {{ field_position.right_of }}
+{%- endif %}
+{%- endmacro %}
+
+
+{#
+# SectionalElement
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-form-sectionalelement.html
+# as of 2026-08-13:
+Excluded: Boolean
+Level: Number
+Orientation: String
+Position:
+  FieldPosition
+Text: String
+Type: String
+#}{%- macro prep_sectional_element(sectional_element) %}
+Type: {{ sectional_element.type }}
+{%- if sectional_element.excluded is defined %}
+Excluded: {{ sectional_element.excluded | lower }}
+{%- endif %}
+{%- if sectional_element.level is defined %}
+Level: {{ sectional_element.level }}
+{%- endif %}
+{%- if sectional_element.orientation is defined %}
+Orientation: {{ sectional_element.orientation }}
+{%- endif %}
+{%- if sectional_element.position is defined %}
+Position:
+  {{- prep_field_position(sectional_element.position) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if sectional_element.text is defined %}
+Text: {{ sectional_element.text }}
+{%- endif %}
+{%- endmacro %}
+
+
+{#
+# FormStyleConfig
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-form-formstyleconfig.html
+# as of 2026-08-13:
+TokenReference: String
+Value: String
+#}{%- macro prep_form_style_config(form_style_config) %}
+{%- if form_style_config.token_reference is defined %}
+TokenReference: {{ form_style_config.token_reference }}
+{%- endif %}
+{%- if form_style_config.value is defined %}
+Value: {{ form_style_config.value }}
+{%- endif %}
+{%- endmacro %}
+
+
+{#
+# FormButton
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-form-formbutton.html
+# as of 2026-08-13:
+Children: String
+Excluded: Boolean
+Position:
+  FieldPosition
+#}{%- macro prep_form_button(form_button) %}
+{%- if form_button.children is defined %}
+Children: {{ form_button.children }}
+{%- endif %}
+{%- if form_button.excluded is defined %}
+Excluded: {{ form_button.excluded | lower }}
+{%- endif %}
+{%- if form_button.position is defined %}
+Position:
+  {{- prep_field_position(form_button.position) | indent(width=2, first=false) }}
+{%- endif %}
+{%- endmacro %}
+
+
+{#
+# FormInputValuePropertyBindingProperties
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-form-forminputvaluepropertybindingproperties.html
+# as of 2026-08-13:
+Field: String
+Property: String
+#}{%- macro prep_form_input_value_property_binding_properties(binding_properties) %}
+{%- if binding_properties.field is defined %}
+Field: {{ binding_properties.field }}
+{%- endif %}
+{%- if binding_properties.property is defined %}
+Property: {{ binding_properties.property }}
+{%- endif %}
+{%- endmacro %}
+
+{#
+# FormInputValueProperty
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-form-forminputvalueproperty.html
+# as of 2026-08-13:
+BindingProperties:
+  Field: String
+  Property: String
+Concat:
+  - FormInputValueProperty
+Value: String
+#}{%- macro prep_form_input_value_property(form_input_value_property) %}
+{%- if form_input_value_property.binding_properties is defined %}{# BEGIN if form_input_value_property.binding_properties is defined #}
+BindingProperties:
+  Property: {{ form_input_value_property.binding_properties.property }}
+{%- if form_input_value_property.binding_properties.field is defined %}
+  Field: {{ form_input_value_property.binding_properties.field }}
+{%- endif %}
+{%- endif %}{# END if form_input_value_property.binding_properties is defined #}
+{%- if form_input_value_property.concat is defined %}{# BEGIN if form_input_value_property.concat is defined #}
+Concat:
+{%- for item in form_input_value_property.concat %}
+  -
+    {{- prep_form_input_value_property(item) | indent(width=4, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if form_input_value_property.concat is defined #}
+{%- if form_input_value_property.value is defined %}
+Value: {{ form_input_value_property.value }}
+{%- endif %}
+{%- endmacro %}
+
+
+{#
+# FieldConfig
+# Supported structure as per https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-properties-amplifyuibuilder-form-fieldconfig.html
+# as of 2026-08-13:
+Excluded: Boolean
+InputType:
+  DefaultChecked: Boolean
+  DefaultCountryCode: String
+  DefaultValue: String
+  DescriptiveText: String
+  FileUploaderConfig:
+    AcceptedFileTypes:
+      - String
+    AccessLevel: String
+    IsResumable: Boolean
+    MaxFileCount: Number
+    MaxSize: Number
+    ShowThumbnails: Boolean
+  IsArray: Boolean
+  MaxValue: Number
+  MinValue: Number
+  Name: String
+  Placeholder: String
+  ReadOnly: Boolean
+  Required: Boolean
+  Step: Number
+  Type: String
+  Value: String
+  ValueMappings:
+    BindingProperties:
+      Key: Value
+    Values:
+      -
+        DisplayValue:
+          FormInputValueProperty
+        Value:
+          FormInputValueProperty
+Label: String
+Position:
+  FieldPosition
+Validations:
+  -
+    NumValues:
+      - Number
+    StrValues:
+      - String
+    Type: String
+    ValidationMessage: String
+#}{%- macro prep_field_config(field_config) %}
+{%- if field_config.excluded is defined %}
+Excluded: {{ field_config.excluded | lower }}
+{%- endif %}
+{%- if field_config.input_type is defined %}{# BEGIN if field_config.input_type is defined #}
+InputType:
+  Type: {{ field_config.input_type.type }}
+{%- if field_config.input_type.default_checked is defined %}
+  DefaultChecked: {{ field_config.input_type.default_checked | lower }}
+{%- endif %}
+{%- if field_config.input_type.default_country_code is defined %}
+  DefaultCountryCode: {{ field_config.input_type.default_country_code }}
+{%- endif %}
+{%- if field_config.input_type.default_value is defined %}
+  DefaultValue: {{ field_config.input_type.default_value }}
+{%- endif %}
+{%- if field_config.input_type.descriptive_text is defined %}
+  DescriptiveText: {{ field_config.input_type.descriptive_text }}
+{%- endif %}
+{%- if field_config.input_type.file_uploader_config is defined %}{# BEGIN if field_config.input_type.file_uploader_config is defined #}
+  FileUploaderConfig:
+    AcceptedFileTypes:
+{%- for file_type in field_config.input_type.file_uploader_config.accepted_file_types %}
+      - {{ file_type }}
+{%- endfor %}
+    AccessLevel: {{ field_config.input_type.file_uploader_config.access_level }}
+{%- if field_config.input_type.file_uploader_config.is_resumable is defined %}
+    IsResumable: {{ field_config.input_type.file_uploader_config.is_resumable | lower }}
+{%- endif %}
+{%- if field_config.input_type.file_uploader_config.max_file_count is defined %}
+    MaxFileCount: {{ field_config.input_type.file_uploader_config.max_file_count }}
+{%- endif %}
+{%- if field_config.input_type.file_uploader_config.max_size is defined %}
+    MaxSize: {{ field_config.input_type.file_uploader_config.max_size }}
+{%- endif %}
+{%- if field_config.input_type.file_uploader_config.show_thumbnails is defined %}
+    ShowThumbnails: {{ field_config.input_type.file_uploader_config.show_thumbnails | lower }}
+{%- endif %}
+{%- endif %}{# END if field_config.input_type.file_uploader_config is defined #}
+{%- if field_config.input_type.is_array is defined %}
+  IsArray: {{ field_config.input_type.is_array | lower}}
+{%- endif %}
+{%- if field_config.input_type.max_value is defined %}
+  MaxValue: {{ field_config.input_type.max_value }}
+{%- endif %}
+{%- if field_config.input_type.min_value is defined %}
+  MinValue: {{ field_config.input_type.min_value }}
+{%- endif %}
+{%- if field_config.input_type.name is defined %}
+  Name: {{ field_config.input_type.name }}
+{%- endif %}
+{%- if field_config.input_type.placeholder is defined %}
+  Placeholder: {{ field_config.input_type.placeholder }}
+{%- endif %}
+{%- if field_config.input_type.read_only is defined %}
+  ReadOnly: {{ field_config.input_type.read_only | lower }}
+{%- endif %}
+{%- if field_config.input_type.required is defined %}
+  Required: {{ field_config.input_type.required | lower }}
+{%- endif %}
+{%- if field_config.input_type.step is defined %}
+  Step: {{ field_config.input_type.step }}
+{%- endif %}
+{%- if field_config.input_type.value is defined %}
+  Value: {{ field_config.input_type.value }}
+{%- endif %}
+{%- if field_config.input_type.value_mappings is defined %}{# BEGIN if field_config.input_type.value_mappings is defined #}
+  ValueMappings:
+    Values:
+{%- for mapping_value in field_config.input_type.value_mappings._values %}{# BEGIN for value in field_config.input_type.value_mappings._values #}
+      -
+        Value:
+          {{- prep_form_input_value_property(mapping_value.value) | indent(width=10, first=false) }}
+{%- if mapping_value.display_value is defined %}
+        DisplayValue:
+          {{- prep_form_input_value_property(mapping_value.display_value) | indent(width=10, first=false) }}
+{%- endif %}
+{%- endfor %}{# END for value in field_config.input_type.value_mappings._values #}
+{%- if field_config.input_type.value_mappings.binding_properties is defined %}
+    BindingProperties:
+{%- for key, binding_property in field_config.input_type.value_mappings.binding_properties.items() %}
+      {{ key }}:
+        {{- prep_form_input_value_property_binding_properties(binding_property) | indent(width=8, first=false) }}
+{%- endfor %}
+{%- endif %}
+{%- endif %}{# END if field_config.input_type.value_mappings is defined #}
+{%- endif %}{# END if field_config.input_type is defined #}
+{%- if field_config.label is defined %}
+Label: {{ field_config.label }}
+{%- endif %}
+{%- if field_config.position is defined %}
+Position:
+  {{- prep_field_position(field_config.position) | indent(width=2, first=false) }}
+{%- endif %}
+{%- if field_config.validations is defined %}{# BEGIN if field_config.validations is defined #}
+Validations:
+{%- for validation in field_config.validations %}{# BEGIN for validation in field_config.validations #}
+  -
+    Type: {{ validation.type }}
+{%- if validation.num_values is defined %}{# BEGIN if validation.num_values is defined #}
+    NumValues:
+{%- for num_value in validation.num_values %}
+      - {{ num_value }}
+{%- endfor %}
+{%- endif %}{# END if validation.num_values is defined #}
+{%- if validation.str_values is defined %}{# BEGIN if validation.str_values is defined #}
+    StrValues:
+{%- for str_value in validation.str_values %}
+      - {{ str_value }}
+{%- endfor %}
+{%- endif %}{# END if validation.str_values is defined #}
+{%- if validation.validation_message is defined %}
+    ValidationMessage: {{ validation.validation_message }}
+{%- endif %}
+{%- endfor %}{# END for validation in field_config.validations #}
+{%- endif %}{# END if field_config.validations is defined #}
+{%- endmacro %}

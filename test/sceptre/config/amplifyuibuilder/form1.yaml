@@ -1,0 +1,152 @@
+---
+template:
+  type: file
+  path: amplifyuibuilder/form.yaml.j2
+
+sceptre_user_data:
+  project_code: "{{project_code}}"
+  source_repo_url: "{{git_repo}}"
+  description: "Sample AmplifyUIBuilder forms generated from Jinja2"
+  forms:
+    - name: ContactForm
+      app_id: sampleapp1234
+      environment_name: dev
+      form_name: Contact
+      form_action_type: create
+      label_decorator: required
+      schema_version: "1.0"
+      data_type:
+        data_source_type: DataStore
+        data_type_name: Contact
+      cta:
+        position: top
+        cancel:
+          children: Cancel
+          excluded: false
+          position:
+            fixed: first
+        _clear:
+          children: Clear
+          excluded: false
+          position:
+            right_of: Cancel
+        submit:
+          children: Submit
+          position:
+            right_of: Clear
+      fields:
+        FullName:
+          label: Full Name
+          position:
+            fixed: first
+          input_type:
+            type: TextField
+            required: true
+            placeholder: Enter your full name
+            descriptive_text: As shown on your ID
+          validations:
+            - type: Required
+              validation_message: Full name is required
+        EmailAddress:
+          label: Email Address
+          position:
+            right_of: FullName
+          input_type:
+            type: TextField
+            required: true
+            value: "''"
+          validations:
+            - type: Regex
+              str_values:
+                - "^.+@.+\\..+$"
+              validation_message: Enter a valid email address
+        ContactType:
+          label: Contact Type
+          position:
+            below: FullName
+          input_type:
+            type: SelectField
+            is_array: false
+            default_value: General
+            value_mappings:
+              _values:
+                - value:
+                    value: general
+                  display_value:
+                    value: General
+                - value:
+                    value: support
+                  display_value:
+                    value: Support
+              binding_properties:
+                Options:
+                  field: contactTypeOptions
+                  property: options
+        Attachment:
+          label: Attachment
+          position:
+            below: ContactType
+          input_type:
+            type: FileUploader
+            file_uploader_config:
+              accepted_file_types:
+                - .png
+                - .jpg
+                - .pdf
+              access_level: private
+              is_resumable: true
+              max_file_count: 3
+              max_size: 5242880
+              show_thumbnails: true
+      sectional_elements:
+        HeaderText:
+          type: Heading
+          level: 2
+          text: Please fill out the contact form
+          position:
+            fixed: first
+        Divider:
+          type: Divider
+          orientation: horizontal
+          position:
+            below: HeaderText
+      style:
+        horizontal_gap:
+          value: "8px"
+        vertical_gap:
+          value: "16px"
+        outer_padding:
+          token_reference: padding.medium
+      tags:
+        Owner: PlatformTeam
+        Service: AmplifyUIBuilder
+
+    - name: FeedbackForm
+      app_id: sampleapp1234
+      form_name: Feedback
+      form_action_type: update
+      schema_version: "1.0"
+      data_type:
+        data_source_type: DataStore
+        data_type_name: Feedback
+      fields:
+        Rating:
+          label: Rating
+          input_type:
+            type: StepperField
+            min_value: 1
+            max_value: 5
+            step: 1
+            default_value: "5"
+        Comments:
+          label: Comments
+          input_type:
+            type: TextAreaField
+            required: false
+            read_only: false
+      tags:
+        Owner: PlatformTeam
+        Service: AmplifyUIBuilder
+
+stack_tags:
+  Test: amplifyuibuilder-form

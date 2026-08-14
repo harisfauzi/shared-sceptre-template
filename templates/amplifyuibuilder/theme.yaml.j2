@@ -1,0 +1,81 @@
+---
+{%- import "macros/theme-helper.yaml.j2" as helper %}
+Description: {{sceptre_user_data.description|default('Amplify App(s) for '+sceptre_user_data.project_code)}}
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+{%- for theme in sceptre_user_data.themes %}
+{%- set theme_name = theme.name %}
+  {{ theme_name }}:
+    Type: AWS::AmplifyUIBuilder::Theme
+    DeletionPolicy: {{ theme.deletion_policy | default('Delete') }}
+    UpdateReplacePolicy: {{ theme.update_replace_policy | default('Delete') }}
+    Properties:
+{%- if theme.app_id is defined %}
+      AppId: {{ theme.app_id }}
+{%- endif %}
+{%- if theme.environment_name is defined %}
+      EnvironmentName: {{ theme.environment_name }}
+{%- endif %}
+{%- if theme.theme_name is defined %}
+      Name: {{ theme.theme_name }}
+{%- endif %}
+{%- if theme.overrides is defined %}{# BEGIN if theme.overrides is defined #}
+      Overrides:
+{%- for override in theme.overrides %}
+        -
+          {{- helper.prep_theme_values(override) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if theme.overrides is defined #}
+      Tags:
+        SourceRepoURL: {{ sceptre_user_data.source_repo_url | default('unknown') }}
+{%- if theme.tags is defined %}
+{%- for key,value in theme.tags.items() %}
+        {{ key }}: {{ value }}
+{%- endfor %}
+{%- endif %}
+{%- if theme._values is defined %}{# BEGIN if theme._values is defined #}
+      Values:
+{%- for value in theme._values %}
+        -
+          {{- helper.prep_theme_values(value) | indent(width=10, first=false) }}
+{%- endfor %}
+{%- endif %}{# END if theme._values is defined #}
+{%- endfor %}
+
+Outputs:
+{%- for theme in sceptre_user_data.themes %}
+{%- set theme_name = theme.name %}
+  {{ theme_name }}Id:
+    Description: The ID for the theme {{ theme_name }}
+    Value:
+      Fn::GetAtt:
+        - {{ theme_name }}
+        - Id
+    Export:
+      Name:
+        Fn::Sub: "${AWS::StackName}-{{ theme_name }}-Id"
+{%- endfor %}{#
+# Supported structure as of 2026-08-14
+Type: AWS::AmplifyUIBuilder::Theme
+Properties:
+  AppId: String
+  EnvironmentName: String
+  Name: String
+  Overrides:
+    -
+      Key: String
+      Value:
+        Children:
+          - ThemeValues
+        Value: String
+  Tags:
+    Key: Value
+  Values:
+    -
+      Key: String
+      Value:
+        Children:
+          - ThemeValues
+        Value: String
+#}
